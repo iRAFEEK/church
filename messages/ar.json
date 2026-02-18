@@ -1,0 +1,771 @@
+{
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "add": "إضافة",
+    "view": "عرض",
+    "remove": "إزالة",
+    "search": "بحث",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "loading": "جارٍ التحميل...",
+    "saving": "جارٍ الحفظ...",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "all": "الكل",
+    "none": "لا شيء",
+    "unknown": "غير معروف",
+    "error": "خطأ",
+    "success": "نجاح",
+    "inactive": "غير نشط",
+    "active": "نشط",
+    "optional": "اختياري",
+    "required": "مطلوب"
+  },
+
+  "sidebar": {
+    "signOut": "تسجيل الخروج",
+    "signedOut": "تم تسجيل الخروج",
+    "fallbackUser": "مستخدم"
+  },
+
+  "topbar": {
+    "myProfile": "ملفي الشخصي",
+    "editProfile": "تعديل الملف",
+    "langToggle": "EN"
+  },
+
+  "nav": {
+    "sections": {
+      "main": "الرئيسية",
+      "groups": "المجموعات",
+      "people": "الأشخاص",
+      "ministry": "الخدمة",
+      "resources": "الموارد",
+      "admin": "الإدارة"
+    },
+    "dashboard": "لوحة التحكم",
+    "myProfile": "ملفي الشخصي",
+    "groups": "المجموعات",
+    "ministries": "الخدمات",
+    "members": "الأعضاء",
+    "visitorsQueue": "قائمة الزوار",
+    "myVisitors": "زواري",
+    "events": "الفعاليات",
+    "serving": "الخدمة",
+    "announcements": "الإعلانات",
+    "songs": "الترانيم",
+    "bible": "الكتاب المقدس",
+    "reports": "التقارير",
+    "qrCode": "رمز QR",
+    "settings": "الإعدادات"
+  },
+
+  "auth": {
+    "signInTitle": "تسجيل الدخول",
+    "signInDescription": "أدخل بريدك الإلكتروني وكلمة المرور للدخول",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "your@email.com",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "••••••••",
+    "submitButton": "دخول",
+    "submitting": "جاري الدخول...",
+    "errorTitle": "فشل تسجيل الدخول",
+    "validationEmail": "أدخل بريداً إلكترونياً صحيحاً",
+    "validationPassword": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+  },
+
+  "onboarding": {
+    "welcome": "مرحباً بك",
+    "welcomeSubtitle": "أهلاً بك في العائلة",
+    "cardTitle": "أكمل ملفك الشخصي",
+    "cardDescription": "نحتاج بعض المعلومات لإعداد حسابك. كل المعلومات سرية.",
+    "arabicNameSection": "الاسم بالعربية *",
+    "englishNameSection": "الاسم بالإنجليزية (اختياري)",
+    "firstNameAr": "الاسم الأول",
+    "lastNameAr": "اسم العائلة",
+    "firstNameEn": "First Name",
+    "lastNameEn": "Last Name",
+    "firstNameArPlaceholder": "يوحنا",
+    "lastNameArPlaceholder": "الحنا",
+    "firstNameEnPlaceholder": "John",
+    "lastNameEnPlaceholder": "Hanna",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "+961 XX XXX XXX",
+    "phoneDescription": "سيُستخدم لإرسال الإشعارات عبر واتساب",
+    "gender": "الجنس",
+    "genderPlaceholder": "اختر...",
+    "genderMale": "ذكر",
+    "genderFemale": "أنثى",
+    "dateOfBirth": "تاريخ الميلاد",
+    "occupation": "المهنة",
+    "occupationPlaceholder": "مثال: مهندس، طالب، معلم...",
+    "notificationPref": "تفضيل الإشعارات",
+    "notifWhatsapp": "واتساب",
+    "notifSms": "رسائل نصية",
+    "notifEmail": "بريد إلكتروني",
+    "notifAll": "الكل",
+    "notifNone": "لا شيء",
+    "submitButton": "ابدأ →",
+    "submitting": "جاري الحفظ...",
+    "validationFirstName": "الاسم الأول مطلوب",
+    "validationLastName": "اسم العائلة مطلوب",
+    "validationPhone": "رقم الهاتف غير صحيح",
+    "toastError": "حدث خطأ",
+    "toastSuccess": "أهلاً بك!",
+    "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح"
+  },
+
+  "error": {
+    "title": "حدث خطأ",
+    "description": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "goHome": "الرئيسية"
+  },
+
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "description": "الصفحة التي تبحث عنها غير موجودة أو تمت إزالتها.",
+    "goHome": "العودة للرئيسية"
+  },
+
+  "profile": {
+    "editButton": "تعديل",
+    "joinedAt": "انضم",
+    "tabInfo": "المعلومات",
+    "tabMilestones": "المراحل الروحية",
+    "tabAttendance": "الحضور",
+    "infoTitle": "المعلومات الشخصية",
+    "infoGender": "الجنس:",
+    "infoMale": "ذكر",
+    "infoFemale": "أنثى",
+    "infoEmpty": "لا توجد معلومات إضافية",
+    "infoCompleteProfile": "أكمل ملفك الشخصي",
+    "milestonesTitle": "المراحل الروحية",
+    "milestonesEmpty": "لا توجد مراحل روحية مسجلة بعد",
+    "attendanceTitle": "سجل الحضور",
+    "milestoneBaptism": "معمودية",
+    "milestoneSalvation": "خلاص",
+    "milestoneBiblePlan": "قراءة الكتاب المقدس",
+    "milestoneLeadership": "تدريب قيادي",
+    "milestoneMarriage": "زواج",
+    "milestoneOther": "أخرى",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "statusAtRisk": "يحتاج متابعة",
+    "statusVisitor": "زائر",
+    "roleMember": "عضو",
+    "roleGroupLeader": "قائد مجموعة",
+    "roleMinistryLeader": "قائد خدمة",
+    "roleSuperAdmin": "مشرف"
+  },
+
+  "profileEdit": {
+    "pageTitle": "تعديل الملف الشخصي",
+    "photoTitle": "الصورة الشخصية",
+    "arabicNameSection": "الاسم بالعربية *",
+    "englishNameSection": "الاسم بالإنجليزية",
+    "firstNameAr": "الاسم الأول",
+    "lastNameAr": "اسم العائلة",
+    "firstNameEn": "First Name",
+    "lastNameEn": "Last Name",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "+961 XX XXX XXX",
+    "gender": "الجنس",
+    "genderPlaceholder": "اختر...",
+    "genderMale": "ذكر",
+    "genderFemale": "أنثى",
+    "dateOfBirth": "تاريخ الميلاد",
+    "occupationAr": "المهنة (بالعربية)",
+    "occupationArPlaceholder": "مهندس، طالب، معلم...",
+    "notificationPref": "تفضيل الإشعارات",
+    "notifWhatsapp": "واتساب",
+    "notifSms": "رسائل نصية",
+    "notifEmail": "بريد إلكتروني",
+    "notifAll": "الكل",
+    "notifNone": "لا شيء",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ...",
+    "toastSaveFailed": "فشل الحفظ",
+    "toastSaveSuccess": "تم حفظ التغييرات",
+    "validationFirstName": "الاسم الأول مطلوب",
+    "validationLastName": "اسم العائلة مطلوب"
+  },
+
+  "members": {
+    "pageTitle": "الأعضاء",
+    "pageSubtitle": "{count} عضو في الكنيسة",
+    "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني...",
+    "filterAllRoles": "كل الأدوار",
+    "filterAllStatuses": "كل الحالات",
+    "searchButton": "بحث",
+    "tableMember": "العضو",
+    "tableRole": "الدور",
+    "tableStatus": "الحالة",
+    "tablePhone": "الهاتف",
+    "tableJoinedAt": "تاريخ الانضمام",
+    "tableViewButton": "عرض",
+    "paginationPage": "صفحة {current} من {total}",
+    "paginationPrevious": "السابق",
+    "paginationNext": "التالي",
+    "emptyTitle": "لا يوجد أعضاء",
+    "emptyNoResults": "لا توجد نتائج لهذا البحث",
+    "emptyNone": "لم يتم إضافة أعضاء بعد",
+    "roleMember": "عضو",
+    "roleGroupLeader": "قائد مجموعة",
+    "roleMinistryLeader": "قائد خدمة",
+    "roleSuperAdmin": "مشرف",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "statusAtRisk": "يحتاج متابعة",
+    "statusVisitor": "زائر"
+  },
+
+  "memberDetail": {
+    "pageTitle": "ملف العضو",
+    "joinedAt": "انضم",
+    "tabInfo": "المعلومات",
+    "tabMilestones": "المراحل الروحية",
+    "tabAdmin": "إدارة",
+    "infoGender": "الجنس:",
+    "infoMale": "ذكر",
+    "infoFemale": "أنثى",
+    "infoProfileIncomplete": "لم يُكمل العضو ملفه الشخصي بعد",
+    "milestonesEmpty": "لا توجد مراحل روحية مسجلة",
+    "adminCardTitle": "إدارة الحساب",
+    "adminChangeRole": "تغيير الدور",
+    "statusActive": "نشط",
+    "statusAtRisk": "يحتاج متابعة",
+    "statusInactive": "غير نشط",
+    "statusVisitor": "زائر"
+  },
+
+  "visitors": {
+    "adminPageTitle": "قائمة الزوار",
+    "adminPageSubtitle": "إدارة الزوار الجدد ومتابعتهم",
+    "adminViewFormLink": "استعراض نموذج الزيارة",
+    "adminStatsTotal": "الإجمالي",
+    "adminStatsNew": "جدد",
+    "adminStatsAssigned": "مُسنَدون",
+    "adminStatsOverdue": "متأخرون",
+    "leaderPageTitle": "زواري المُسنَدون",
+    "leaderPageSubtitle": "الزوار المُعيَّنون لك للمتابعة",
+    "leaderEmptyTitle": "لا يوجد زوار مُسنَدون إليك",
+    "leaderEmptySubtitle": "سيظهر الزوار هنا عند إسنادهم إليك",
+    "leaderCallButton": "اتصال",
+    "leaderLogContactButton": "تسجيل تواصل",
+    "leaderLogContactTitle": "تسجيل التواصل مع الزائر",
+    "leaderLogContactNotesPH": "ملاحظات عن التواصل...",
+    "leaderLogContactCancel": "إلغاء",
+    "leaderLogContactSubmit": "تسجيل التواصل",
+    "leaderLogContactSubmitting": "جارٍ الحفظ...",
+    "leaderToastContactLogged": "تم تسجيل التواصل",
+    "leaderToastError": "حدث خطأ",
+    "queueFilterAll": "الكل",
+    "queueOverdueSla": "متأخر عن SLA",
+    "queueVisitedAgo": "زار",
+    "queueAssignedTo": "مُسنَد إلى:",
+    "queueAssignButton": "إسناد",
+    "queueLogContactButton": "تسجيل تواصل",
+    "queueConvertButton": "تحويل لعضو",
+    "queueEmpty": "لا يوجد زوار في هذه الفئة",
+    "queueDialogAssignTitle": "إسناد الزائر لقائد",
+    "queueDialogContactTitle": "تسجيل تواصل",
+    "queueDialogConvertTitle": "تحويل إلى عضو",
+    "queueDialogVisitorLabel": "الزائر:",
+    "queueDialogLeaderPH": "اختر قائداً",
+    "queueDialogContactNotesPH": "ملاحظات التواصل...",
+    "queueDialogConvertConfirm": "سيتم إنشاء حساب جديد للزائر في النظام. هل أنت متأكد؟",
+    "queueDialogCancel": "إلغاء",
+    "queueDialogConfirm": "تأكيد",
+    "queueDialogSubmitting": "جارٍ الحفظ...",
+    "queueToastAssigned": "تم إسناد الزائر",
+    "queueToastContacted": "تم تسجيل التواصل",
+    "queueToastConverted": "تم تحويل الزائر لعضو",
+    "queueToastUpdateFailed": "فشل التحديث",
+    "queueToastError": "حدث خطأ، حاول مجدداً",
+    "statusNew": "جديد",
+    "statusAssigned": "مُسنَد",
+    "statusContacted": "تم التواصل",
+    "statusConverted": "أصبح عضواً",
+    "statusLost": "فقدنا التواصل"
+  },
+
+  "groups": {
+    "adminPageTitle": "المجموعات",
+    "adminPageSubtitle": "جميع مجموعات الكنيسة",
+    "ministriesButton": "الخدمات",
+    "newGroupButton": "مجموعة جديدة",
+    "newGroupPageTitle": "مجموعة جديدة",
+    "newGroupPageSubtitle": "أنشئ مجموعة جديدة في الكنيسة",
+    "editGroupPageTitle": "تعديل المجموعة",
+    "filterAllTypes": "كل الأنواع",
+    "filterAllMinistries": "كل الخدمات",
+    "tableEmptyTitle": "لا توجد مجموعات بعد",
+    "tableEmptySubtitle": "أنشئ أول مجموعة لبدء تنظيم الكنيسة",
+    "groupClosed": "المجموعة مغلقة",
+    "leaderUnset": "غير محدد",
+    "detailLeader": "القائد",
+    "detailLeaderUnset": "لم يُحدَّد قائد",
+    "detailMeeting": "الاجتماع",
+    "detailEditButton": "تعديل",
+    "detailInactive": "غير نشط",
+    "frequencyWeekly": "أسبوعي",
+    "frequencyBiweekly": "كل أسبوعين",
+    "frequencyMonthly": "شهري",
+    "frequencyIrregular": "غير منتظم",
+    "leaderStatsMembers": "عضو",
+    "leaderStatsGatherings": "اجتماع",
+    "leaderStatsAttendanceRate": "معدل الحضور",
+    "upcomingGathering": "الاجتماع القادم",
+    "defaultGatheringTopic": "اجتماع المجموعة",
+    "openGathering": "افتح لتسجيل الحضور ←",
+    "atRiskTitle": "أعضاء في خطر",
+    "atRiskViewProfile": "عرض الملف",
+    "newGatheringButton": "+ اجتماع جديد",
+    "gatheringHistory": "سجل الاجتماعات",
+    "activePrayers": "طلبات الصلاة النشطة",
+    "typeSmallGroup": "مجموعة صغيرة",
+    "typeYouth": "شباب",
+    "typeWomen": "نساء",
+    "typeMen": "رجال",
+    "typeFamily": "عائلات",
+    "typePrayer": "صلاة",
+    "typeOther": "أخرى",
+    "dayMonday": "الاثنين",
+    "dayTuesday": "الثلاثاء",
+    "dayWednesday": "الأربعاء",
+    "dayThursday": "الخميس",
+    "dayFriday": "الجمعة",
+    "daySaturday": "السبت",
+    "daySunday": "الأحد"
+  },
+
+  "groupForm": {
+    "nameEn": "الاسم (إنجليزي) *",
+    "nameEnPlaceholder": "Youth Group",
+    "nameAr": "الاسم (عربي)",
+    "nameArPlaceholder": "مجموعة الشباب",
+    "type": "النوع",
+    "ministry": "الخدمة",
+    "ministryPlaceholder": "اختر خدمة",
+    "leader": "القائد",
+    "leaderPlaceholder": "اختر قائداً",
+    "coLeader": "مساعد القائد",
+    "coLeaderPlaceholder": "اختياري",
+    "meetingDay": "يوم الاجتماع",
+    "meetingDayPlaceholder": "اختر اليوم",
+    "meetingTime": "وقت الاجتماع",
+    "meetingLocation": "مكان الاجتماع",
+    "meetingLocationPlaceholder": "القاعة الرئيسية",
+    "frequency": "التكرار",
+    "maxMembers": "الحد الأقصى للأعضاء",
+    "admissionStatus": "حالة القبول",
+    "openForJoining": "مفتوحة للانضمام",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ المجموعة",
+    "saving": "جارٍ الحفظ...",
+    "toastCreated": "تم إنشاء المجموعة",
+    "toastUpdated": "تم تحديث المجموعة",
+    "toastError": "حدث خطأ",
+    "validationName": "الاسم مطلوب"
+  },
+
+  "groupMembers": {
+    "sectionTitle": "الأعضاء",
+    "addButton": "إضافة عضو",
+    "emptyTitle": "لا يوجد أعضاء في هذه المجموعة",
+    "emptySubtitle": "أضف أعضاء لتبدأ",
+    "roleMember": "عضو",
+    "roleLeader": "قائد",
+    "roleCoLeader": "مساعد",
+    "statusAtRisk": "في خطر",
+    "viewLink": "عرض",
+    "removeButton": "إزالة",
+    "dialogTitle": "إضافة عضو للمجموعة",
+    "dialogSearchPH": "ابحث عن عضو...",
+    "dialogNoResults": "لا توجد نتائج",
+    "dialogAllAdded": "جميع الأعضاء في المجموعة",
+    "toastAdded": "تم إضافة العضو",
+    "toastRemoved": "تم إزالة العضو",
+    "toastError": "حدث خطأ"
+  },
+
+  "ministries": {
+    "pageTitle": "الخدمات",
+    "pageSubtitle": "إدارة الخدمات والوزارات الكنسية",
+    "addButton": "إضافة خدمة",
+    "emptyTitle": "لا توجد خدمات بعد",
+    "emptySubtitle": "أضف أول خدمة لتنظيم مجموعاتك",
+    "leaderLabel": "القائد:",
+    "inactive": "غير نشط",
+    "editButton": "تعديل",
+    "deactivateButton": "إيقاف",
+    "activateButton": "تفعيل",
+    "dialogCreateTitle": "إضافة خدمة جديدة",
+    "dialogEditTitle": "تعديل الخدمة",
+    "formNameEn": "الاسم (إنجليزي)",
+    "formNameEnPlaceholder": "Youth Ministry",
+    "formNameAr": "الاسم (عربي)",
+    "formNameArPlaceholder": "خدمة الشباب",
+    "formDescription": "الوصف",
+    "formLeader": "القائد المسؤول",
+    "formLeaderPlaceholder": "اختر قائداً",
+    "formCancel": "إلغاء",
+    "formSave": "حفظ",
+    "formSaving": "جارٍ الحفظ...",
+    "toastCreated": "تم إنشاء الخدمة",
+    "toastUpdated": "تم تحديث الخدمة",
+    "toastActivated": "تم تفعيل الخدمة",
+    "toastDeactivated": "تم إيقاف الخدمة",
+    "toastError": "حدث خطأ",
+    "validationName": "الاسم مطلوب"
+  },
+
+  "gathering": {
+    "newPageTitle": "اجتماع جديد",
+    "formDateTime": "التاريخ والوقت *",
+    "formLocation": "المكان",
+    "formTopic": "الموضوع / الدرس",
+    "formTopicPlaceholder": "موضوع الاجتماع",
+    "formNotes": "ملاحظات",
+    "formNotesPH": "أي ملاحظات...",
+    "formCancel": "إلغاء",
+    "formCreate": "إنشاء الاجتماع",
+    "formCreating": "جارٍ الإنشاء...",
+    "formLocationPH": "مكان الاجتماع",
+    "toastCreated": "تم إنشاء الاجتماع",
+    "toastError": "حدث خطأ",
+    "defaultTopic": "اجتماع المجموعة",
+    "completed": "اكتمل الاجتماع",
+    "notes": "ملاحظات الاجتماع",
+    "historyEmpty": "لا توجد اجتماعات مسجلة بعد",
+    "historyAttended": "حضر",
+    "statusScheduled": "مجدول",
+    "statusInProgress": "جارٍ",
+    "statusCompleted": "مكتمل",
+    "statusCancelled": "ملغى"
+  },
+
+  "attendance": {
+    "sectionTitle": "الحضور",
+    "presentCount": "{present} حاضر من أصل {total}",
+    "clickHint": "اضغط على الاسم لتغيير الحالة",
+    "completedLabel": "✓ مكتمل",
+    "emptyMembers": "لا يوجد أعضاء في المجموعة",
+    "statusPresent": "حاضر",
+    "statusLate": "متأخر",
+    "statusExcused": "معذور",
+    "statusAbsent": "غائب",
+    "saveButton": "حفظ الحضور",
+    "saving": "جارٍ الحفظ...",
+    "completeButton": "إنهاء الاجتماع ✓",
+    "completing": "جارٍ الإنهاء...",
+    "toastSaved": "تم حفظ الحضور",
+    "toastSaveError": "حدث خطأ في حفظ الحضور",
+    "toastCompleted": "اكتمل الاجتماع وتم التحقق من الغيابات",
+    "toastError": "حدث خطأ",
+    "historyRateLabel": "معدل الحضور",
+    "historyOutOf": "من أصل {total}",
+    "historyEmpty": "لا يوجد سجل حضور بعد",
+    "historyDefaultTopic": "اجتماع المجموعة"
+  },
+
+  "prayer": {
+    "sectionTitle": "طلبات الصلاة",
+    "activeCount": "{count} نشط",
+    "addButton": "إضافة طلب",
+    "empty": "لا توجد طلبات صلاة بعد",
+    "answeredSection": "إجابات الصلاة",
+    "addDialogTitle": "إضافة طلب صلاة",
+    "addDialogContentPH": "اكتب طلب الصلاة هنا...",
+    "addDialogPrivate": "🔒 خاص (للقائد فقط)",
+    "addDialogCancel": "إلغاء",
+    "addDialogAdd": "إضافة",
+    "addDialogAdding": "جارٍ الإضافة...",
+    "resolveDialogTitle": "تسجيل إجابة الصلاة",
+    "resolveDialogNotesPH": "كيف أجاب الله؟ (اختياري)",
+    "resolveDialogCancel": "إلغاء",
+    "resolveDialogConfirm": "تأكيد الإجابة",
+    "cardAnswered": "أُجيب ✓",
+    "cardLogAnswer": "تسجيل الإجابة →",
+    "cardUnknown": "مجهول",
+    "toastAdded": "تم إضافة طلب الصلاة",
+    "toastResolved": "تم تسجيل الإجابة",
+    "toastError": "حدث خطأ"
+  },
+
+  "qr": {
+    "pageTitle": "رمز QR للزيارة",
+    "pageSubtitle": "اطبع هذا الرمز وضعه عند مدخل الكنيسة. سيتمكن الزوار من مسحه لتسجيل زيارتهم.",
+    "scanToRegister": "امسح للتسجيل كزائر",
+    "linkLabel": "رابط الزيارة",
+    "copyButton": "نسخ الرابط",
+    "copied": "تم النسخ!",
+    "downloadButton": "تنزيل PNG",
+    "printHint": "اطبع الرمز بحجم A5 أو A4 وضعه عند المدخل للحصول على أفضل نتيجة",
+    "toastDownloaded": "تم تنزيل رمز QR",
+    "toastLinkCopied": "تم نسخ الرابط"
+  },
+
+  "join": {
+    "pageTitle": "أهلاً وسهلاً",
+    "pageSubtitle": "يسعدنا وجودك معنا. سجّل بياناتك وسيتواصل معك أحد أعضاء فريقنا قريباً.",
+    "firstNameLabel": "الاسم الأول *",
+    "firstNamePH": "جورج",
+    "lastNameLabel": "اسم العائلة *",
+    "lastNamePH": "حنا",
+    "phoneLabel": "رقم الهاتف",
+    "phonePH": "+961 71 000 000",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPH": "name@example.com",
+    "ageRangeLabel": "الفئة العمرية",
+    "ageRangePH": "اختر الفئة العمرية",
+    "occupationLabel": "المهنة",
+    "occupationPH": "مهندس، طالب، طبيب...",
+    "howHeardLabel": "كيف سمعت عنا؟",
+    "howHeardPH": "اختر",
+    "submitButton": "تسجيل الزيارة",
+    "submitting": "جارٍ الإرسال...",
+    "ageRangeUnder18": "أقل من 18",
+    "ageRange1825": "18 - 25",
+    "ageRange2635": "26 - 35",
+    "ageRange3645": "36 - 45",
+    "ageRange4655": "46 - 55",
+    "ageRange56Plus": "56 وأكثر",
+    "howHeardFriend": "صديق أو معرفة",
+    "howHeardSocialMedia": "وسائل التواصل الاجتماعي",
+    "howHeardWebsite": "الموقع الإلكتروني",
+    "howHeardEvent": "فعالية أو حدث",
+    "howHeardWalkIn": "زيارة مباشرة",
+    "howHeardOther": "أخرى",
+    "validationFirstName": "الاسم الأول مطلوب",
+    "validationLastName": "الاسم الأخير مطلوب",
+    "validationEmail": "بريد إلكتروني غير صحيح",
+    "errorGeneric": "حدث خطأ",
+    "errorUnexpected": "حدث خطأ غير متوقع"
+  },
+
+  "joinSuccess": {
+    "title": "أهلاً بك في عائلتنا!",
+    "description": "تم تسجيل زيارتك بنجاح. سيتواصل معك أحد أعضاء فريقنا خلال 48 ساعة لمساعدتك في الاندماج مع الكنيسة.",
+    "whatToExpect": "في انتظارك:",
+    "bulletWelcomeCall": "مكالمة ترحيب من أحد قادتنا",
+    "bulletSmallGroup": "دعوة للانضمام إلى مجموعة صغيرة",
+    "bulletChurch": "التعرف على عائلة الكنيسة",
+    "questions": "إذا كانت لديك أي أسئلة، لا تتردد في التواصل معنا مباشرة."
+  },
+
+  "dashboard": {
+    "welcome": "أهلاً، {name}",
+    "fallbackUser": "مستخدم",
+    "roleMember": "عضو",
+    "roleGroupLeader": "قائد مجموعة",
+    "roleMinistryLeader": "قائد خدمة",
+    "roleSuperAdmin": "مشرف",
+    "statsMembers": "الأعضاء",
+    "statsVisitors": "الزوار",
+    "statsEvents": "الفعاليات",
+    "statsServing": "الخدام",
+    "statsPlaceholder": "—",
+    "statsComingSoon": "سيُكمل قريباً",
+    "gettingStartedTitle": "البدء",
+    "gettingStartedDesc": "الخطوات الأولى لإعداد كنيستك",
+    "stepSignedIn": "تم تسجيل الدخول وإعداد الملف الشخصي",
+    "stepAddMembers": "إضافة أعضاء الكنيسة — /admin/members",
+    "stepCreateGroups": "إنشاء المجموعات — /admin/groups",
+    "stepShareQR": "مشاركة رمز QR للزوار — /admin/settings/qr"
+  },
+
+  "authLayout": {
+    "subtitle": "إكليسيا"
+  },
+
+  "milestone": {
+    "addButton": "إضافة مرحلة",
+    "dialogTitle": "إضافة مرحلة روحية",
+    "typeLabel": "النوع",
+    "titleLabel": "العنوان *",
+    "titlePlaceholder": "معمودية في الكنيسة...",
+    "dateLabel": "التاريخ (اختياري)",
+    "notesLabel": "ملاحظات (اختياري)",
+    "notesPlaceholder": "أضف ملاحظات...",
+    "cancelButton": "إلغاء",
+    "saveButton": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "toastError": "فشل الحفظ",
+    "toastSuccess": "تمت إضافة المرحلة الروحية",
+    "validationTitle": "العنوان مطلوب",
+    "typeBaptism": "معمودية",
+    "typeSalvation": "خلاص",
+    "typeBiblePlan": "قراءة الكتاب المقدس",
+    "typeLeadership": "تدريب قيادي",
+    "typeMarriage": "زواج",
+    "typeOther": "أخرى"
+  },
+
+  "roleEditor": {
+    "roleMember": "عضو",
+    "roleGroupLeader": "قائد مجموعة",
+    "roleMinistryLeader": "قائد خدمة",
+    "roleSuperAdmin": "مشرف",
+    "saveButton": "حفظ",
+    "toastError": "فشل تغيير الدور",
+    "toastSuccess": "تم تغيير الدور بنجاح"
+  },
+
+  "photoUpload": {
+    "invalidImage": "يرجى اختيار صورة صحيحة",
+    "tooLarge": "الصورة كبيرة جداً (الحد الأقصى 5MB)",
+    "uploadFailed": "فشل رفع الصورة",
+    "uploadSuccess": "تم رفع الصورة",
+    "changePhoto": "تغيير الصورة",
+    "addPhoto": "إضافة صورة",
+    "altText": "الصورة الشخصية"
+  },
+
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "loading": "جارٍ التحميل..."
+  },
+
+  "events": {
+    "adminPageTitle": "الفعاليات",
+    "adminPageSubtitle": "إدارة فعاليات وأنشطة الكنيسة",
+    "newEvent": "فعالية جديدة",
+    "newEventPageTitle": "إنشاء فعالية",
+    "newEventPageSubtitle": "إنشاء فعالية جديدة للكنيسة",
+    "editEventPageTitle": "تعديل الفعالية",
+    "editEventPageSubtitle": "تحديث تفاصيل الفعالية",
+    "editEvent": "تعديل",
+    "upcomingEvents": "الفعاليات القادمة",
+    "upcomingEventsSubtitle": "الفعاليات التي ستقام في كنيستك",
+    "noEvents": "لا توجد فعاليات بعد",
+    "noUpcomingEvents": "لا توجد فعاليات قادمة",
+    "eventNotFound": "الفعالية غير موجودة",
+    "loading": "جارٍ التحميل...",
+    "titleEn": "العنوان (بالإنجليزية) *",
+    "titleAr": "العنوان (بالعربية)",
+    "descriptionEn": "الوصف (بالإنجليزية)",
+    "descriptionAr": "الوصف (بالعربية)",
+    "eventType": "نوع الفعالية",
+    "location": "المكان",
+    "startsAt": "تاريخ ووقت البداية *",
+    "endsAt": "تاريخ ووقت النهاية",
+    "capacity": "السعة",
+    "capacityPlaceholder": "اتركه فارغاً للعدد غير المحدود",
+    "capacityLabel": "السعة",
+    "registrationCloses": "إغلاق التسجيل",
+    "isPublic": "فعالية عامة (مرئية للجميع)",
+    "registrationRequired": "التسجيل مطلوب",
+    "createEvent": "إنشاء الفعالية",
+    "updateEvent": "تحديث الفعالية",
+    "saving": "جارٍ الحفظ...",
+    "cancel": "إلغاء",
+    "requiredFields": "العنوان وتاريخ البداية مطلوبان",
+    "eventCreated": "تم إنشاء الفعالية",
+    "eventUpdated": "تم تحديث الفعالية",
+    "errorGeneral": "حدث خطأ",
+    "registrations": "التسجيلات",
+    "totalRegistrations": "الإجمالي",
+    "checkedInCount": "تم الحضور",
+    "pendingCount": "قيد الانتظار",
+    "searchRegistrations": "بحث في التسجيلات...",
+    "noRegistrations": "لا توجد تسجيلات بعد",
+    "checkedIn": "تم تسجيل الحضور",
+    "cancelled": "تم الإلغاء",
+    "registerForEvent": "تسجيل",
+    "registering": "جارٍ التسجيل...",
+    "registeredSuccess": "تم التسجيل بنجاح!",
+    "alreadyRegistered": "أنت مسجل مسبقاً",
+    "youAreRegistered": "أنت مسجل",
+    "type_service": "خدمة",
+    "type_conference": "مؤتمر",
+    "type_retreat": "خلوة",
+    "type_workshop": "ورشة عمل",
+    "type_social": "اجتماعي",
+    "type_outreach": "تبشير",
+    "type_other": "أخرى",
+    "status_draft": "مسودة",
+    "status_published": "منشور",
+    "status_cancelled": "ملغى",
+    "status_completed": "مكتمل",
+    "regStatus_registered": "مسجل",
+    "regStatus_checked_in": "حاضر",
+    "regStatus_cancelled": "ملغى"
+  },
+
+  "songs": {
+    "pageTitle": "الترانيم",
+    "pageSubtitle": "مكتبة ترانيم العبادة",
+    "addSong": "إضافة ترنيمة",
+    "newSong": "ترنيمة جديدة",
+    "newSongSubtitle": "أضف ترنيمة عبادة جديدة للمكتبة",
+    "editSong": "تعديل الترنيمة",
+    "searchPlaceholder": "ابحث في الترانيم بالعنوان أو الفنان أو الكلمات...",
+    "loading": "جارٍ التحميل...",
+    "noSongs": "لا توجد ترانيم بعد. أضف أول ترنيمة للبدء.",
+    "noSearchResults": "لا توجد ترانيم تطابق بحثك",
+    "noLyrics": "لم تُضف كلمات بعد",
+    "slides": "شرائح",
+    "slide": "شريحة",
+    "titleEn": "العنوان (بالإنجليزية) *",
+    "titleAr": "العنوان (بالعربية)",
+    "artistEn": "الفنان (بالإنجليزية)",
+    "artistAr": "الفنان (بالعربية)",
+    "lyricsEn": "الكلمات (بالإنجليزية)",
+    "lyricsAr": "الكلمات (بالعربية)",
+    "lyricsPlaceholder": "Type lyrics here...\n\nUse a blank line to separate slides",
+    "lyricsPlaceholderAr": "اكتب كلمات الترنيمة هنا...\n\nاستخدم سطراً فارغاً للفصل بين الشرائح",
+    "lyricsHint": "افصل بين الشرائح بسطر فارغ (اضغط Enter مرتين)",
+    "lyricsPreview": "معاينة الكلمات",
+    "tagsLabel": "الوسوم",
+    "tagsPlaceholder": "عبادة، تسبيح، عربي...",
+    "tagsHint": "وسوم مفصولة بفواصل لتسهيل البحث",
+    "titleRequired": "عنوان الترنيمة مطلوب",
+    "createSong": "إنشاء الترنيمة",
+    "updateSong": "تحديث الترنيمة",
+    "saving": "جارٍ الحفظ...",
+    "cancel": "إلغاء",
+    "songCreated": "تم إنشاء الترنيمة",
+    "songUpdated": "تم تحديث الترنيمة",
+    "songDeleted": "تم حذف الترنيمة",
+    "errorGeneral": "حدث خطأ",
+    "confirmDelete": "هل أنت متأكد من حذف \"{title}\"؟",
+    "present": "عرض",
+    "edit": "تعديل",
+    "displaySettings": "إعدادات العرض",
+    "bgColor": "لون الخلفية",
+    "bgImage": "صورة الخلفية",
+    "uploadBgImage": "رفع صورة",
+    "removeBgImage": "إزالة الصورة",
+    "uploading": "جارٍ الرفع...",
+    "textColor": "لون النص",
+    "fontFamily": "نوع الخط",
+    "fontSize": "حجم الخط",
+    "shortcuts": "اختصارات لوحة المفاتيح",
+    "shortcutNav": "التنقل بين الشرائح",
+    "shortcutNext": "الشريحة التالية",
+    "shortcutFullscreen": "ملء الشاشة",
+    "shortcutClose": "إغلاق الإعدادات"
+  },
+
+  "timeAgo": {
+    "now": "الآن",
+    "minutes": "منذ {count} دقيقة",
+    "hour": "منذ {count} ساعة",
+    "hours": "منذ {count} ساعات",
+    "day": "منذ {count} يوم",
+    "days": "منذ {count} أيام",
+    "week": "منذ {count} أسبوع",
+    "weeks": "منذ {count} أسابيع",
+    "month": "منذ {count} شهر",
+    "months": "منذ {count} أشهر"
+  }
+}

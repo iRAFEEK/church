@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -32,21 +33,22 @@ type Ministry = {
   leader?: Leader | null
 }
 
-const schema = z.object({
-  name: z.string().min(1, 'الاسم مطلوب'),
-  name_ar: z.string().optional(),
-  description: z.string().optional(),
-  leader_id: z.string().optional(),
-})
-
-type FormValues = z.infer<typeof schema>
-
 export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Ministry[]; leaders: Leader[] }) {
+  const t = useTranslations('ministries')
   const router = useRouter()
   const [ministries, setMinistries] = useState(initial)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Ministry | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const schema = z.object({
+    name: z.string().min(1, t('validationName')),
+    name_ar: z.string().optional(),
+    description: z.string().optional(),
+    leader_id: z.string().optional(),
+  })
+
+  type FormValues = z.infer<typeof schema>
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -90,7 +92,7 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
         const { data } = await res.json()
         const leader = leaders.find(l => l.id === data.leader_id) || null
         setMinistries(prev => prev.map(m => m.id === editing.id ? { ...data, leader } : m))
-        toast.success('تم تحديث الخدمة')
+        toast.success(t('toastUpdated'))
       } else {
         const res = await fetch('/api/ministries', {
           method: 'POST',
@@ -101,11 +103,11 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
         const { data } = await res.json()
         const leader = leaders.find(l => l.id === data.leader_id) || null
         setMinistries(prev => [...prev, { ...data, leader }])
-        toast.success('تم إنشاء الخدمة')
+        toast.success(t('toastCreated'))
       }
       setOpen(false)
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     } finally {
       setLoading(false)
     }
@@ -117,22 +119,22 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active: !m.is_active }),
     })
-    if (!res.ok) return toast.error('حدث خطأ')
+    if (!res.ok) return toast.error(t('toastError'))
     const { data } = await res.json()
     setMinistries(prev => prev.map(x => x.id === m.id ? { ...x, is_active: data.is_active } : x))
-    toast.success(data.is_active ? 'تم تفعيل الخدمة' : 'تم إيقاف الخدمة')
+    toast.success(data.is_active ? t('toastActivated') : t('toastDeactivated'))
   }
 
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button onClick={openCreate}>إضافة خدمة</Button>
+        <Button onClick={openCreate}>{t('addButton')}</Button>
       </div>
 
       {ministries.length === 0 ? (
         <div className="text-center py-16 text-zinc-400">
-          <p className="font-medium">لا توجد خدمات بعد</p>
-          <p className="text-sm mt-1">أضف أول خدمة لتنظيم مجموعاتك</p>
+          <p className="font-medium">{t('emptyTitle')}</p>
+          <p className="text-sm mt-1">{t('emptySubtitle')}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-zinc-200 divide-y divide-zinc-100">
@@ -142,20 +144,20 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-zinc-900">{m.name_ar || m.name}</span>
                   {!m.is_active && (
-                    <span className="text-xs bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">غير نشط</span>
+                    <span className="text-xs bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">{t('inactive')}</span>
                   )}
                 </div>
                 {m.name_ar && <p className="text-xs text-zinc-400">{m.name}</p>}
                 {m.leader && (
                   <p className="text-xs text-zinc-500 mt-0.5">
-                    القائد: {m.leader.first_name_ar || m.leader.first_name} {m.leader.last_name_ar || m.leader.last_name}
+                    {t('leaderLabel')} {m.leader.first_name_ar || m.leader.first_name} {m.leader.last_name_ar || m.leader.last_name}
                   </p>
                 )}
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(m)}>تعديل</Button>
+                <Button size="sm" variant="outline" onClick={() => openEdit(m)}>{t('editButton')}</Button>
                 <Button size="sm" variant="outline" onClick={() => toggleActive(m)}>
-                  {m.is_active ? 'إيقاف' : 'تفعيل'}
+                  {m.is_active ? t('deactivateButton') : t('activateButton')}
                 </Button>
               </div>
             </div>
@@ -166,37 +168,37 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'تعديل الخدمة' : 'إضافة خدمة جديدة'}</DialogTitle>
+            <DialogTitle>{editing ? t('dialogEditTitle') : t('dialogCreateTitle')}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الاسم (إنجليزي)</FormLabel>
-                  <FormControl><Input placeholder="Youth Ministry" dir="ltr" {...field} /></FormControl>
+                  <FormLabel>{t('formNameEn')}</FormLabel>
+                  <FormControl><Input placeholder={t('formNameEnPlaceholder')} dir="ltr" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="name_ar" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الاسم (عربي)</FormLabel>
-                  <FormControl><Input placeholder="خدمة الشباب" {...field} /></FormControl>
+                  <FormLabel>{t('formNameAr')}</FormLabel>
+                  <FormControl><Input placeholder={t('formNameArPlaceholder')} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>الوصف</FormLabel>
+                  <FormLabel>{t('formDescription')}</FormLabel>
                   <FormControl><Textarea rows={3} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="leader_id" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>القائد المسؤول</FormLabel>
+                  <FormLabel>{t('formLeader')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger><SelectValue placeholder="اختر قائداً" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t('formLeaderPlaceholder')} /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {leaders.map(l => (
@@ -210,8 +212,8 @@ export function MinistryCRUD({ ministries: initial, leaders }: { ministries: Min
                 </FormItem>
               )} />
               <div className="flex gap-2 justify-end">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>إلغاء</Button>
-                <Button type="submit" disabled={loading}>{loading ? 'جارٍ الحفظ...' : 'حفظ'}</Button>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t('formCancel')}</Button>
+                <Button type="submit" disabled={loading}>{loading ? t('formSaving') : t('formSave')}</Button>
               </div>
             </form>
           </Form>

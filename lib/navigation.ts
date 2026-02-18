@@ -91,6 +91,15 @@ export const NAV_ITEMS: NavItem[] = [
     section_ar: 'الخدمة',
   },
   {
+    label: 'Manage Events',
+    label_ar: 'إدارة الفعاليات',
+    href: '/admin/events',
+    iconName: 'CalendarPlus',
+    roles: ['ministry_leader', 'super_admin'],
+    section: 'Ministry',
+    section_ar: 'الخدمة',
+  },
+  {
     label: 'Serving',
     label_ar: 'الخدمة',
     href: '/serving',

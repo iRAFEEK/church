@@ -10,12 +10,46 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 type Ministry = { id: string; name: string; name_ar: string | null }
 type Leader = { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null }
 
+const GROUP_TYPE_KEYS = [
+  { value: 'small_group', key: 'typeSmallGroup' },
+  { value: 'youth', key: 'typeYouth' },
+  { value: 'women', key: 'typeWomen' },
+  { value: 'men', key: 'typeMen' },
+  { value: 'family', key: 'typeFamily' },
+  { value: 'prayer', key: 'typePrayer' },
+  { value: 'other', key: 'typeOther' },
+]
+
+const FREQUENCY_KEYS = [
+  { value: 'weekly', key: 'frequencyWeekly' },
+  { value: 'biweekly', key: 'frequencyBiweekly' },
+  { value: 'monthly', key: 'frequencyMonthly' },
+  { value: 'irregular', key: 'frequencyIrregular' },
+]
+
+const DAY_KEYS = [
+  { value: 'monday', key: 'dayMonday' },
+  { value: 'tuesday', key: 'dayTuesday' },
+  { value: 'wednesday', key: 'dayWednesday' },
+  { value: 'thursday', key: 'dayThursday' },
+  { value: 'friday', key: 'dayFriday' },
+  { value: 'saturday', key: 'daySaturday' },
+  { value: 'sunday', key: 'daySunday' },
+]
+
+type Props = {
+  ministries: Ministry[]
+  leaders: Leader[]
+  group?: z.infer<typeof schema> & { id: string }
+}
+
 const schema = z.object({
-  name: z.string().min(1, 'الاسم مطلوب'),
+  name: z.string().min(1, 'validationName'),
   name_ar: z.string().optional(),
   type: z.string().min(1),
   ministry_id: z.string().optional(),
@@ -32,42 +66,11 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-const GROUP_TYPES = [
-  { value: 'small_group', label: 'مجموعة صغيرة' },
-  { value: 'youth', label: 'شباب' },
-  { value: 'women', label: 'نساء' },
-  { value: 'men', label: 'رجال' },
-  { value: 'family', label: 'عائلات' },
-  { value: 'prayer', label: 'صلاة' },
-  { value: 'other', label: 'أخرى' },
-]
-
-const FREQUENCIES = [
-  { value: 'weekly', label: 'أسبوعي' },
-  { value: 'biweekly', label: 'كل أسبوعين' },
-  { value: 'monthly', label: 'شهري' },
-  { value: 'irregular', label: 'غير منتظم' },
-]
-
-const DAYS = [
-  { value: 'monday', label: 'الاثنين' },
-  { value: 'tuesday', label: 'الثلاثاء' },
-  { value: 'wednesday', label: 'الأربعاء' },
-  { value: 'thursday', label: 'الخميس' },
-  { value: 'friday', label: 'الجمعة' },
-  { value: 'saturday', label: 'السبت' },
-  { value: 'sunday', label: 'الأحد' },
-]
-
-type Props = {
-  ministries: Ministry[]
-  leaders: Leader[]
-  group?: FormValues & { id: string }
-}
-
 export function GroupForm({ ministries, leaders, group }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const t = useTranslations('groupForm')
+  const tGroups = useTranslations('groups')
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -117,11 +120,11 @@ export function GroupForm({ ministries, leaders, group }: Props) {
       })
       if (!res.ok) throw new Error()
 
-      toast.success(group ? 'تم تحديث المجموعة' : 'تم إنشاء المجموعة')
+      toast.success(group ? t('toastUpdated') : t('toastCreated'))
       router.push('/admin/groups')
       router.refresh()
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     } finally {
       setLoading(false)
     }
@@ -133,15 +136,15 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="name" render={({ field }) => (
             <FormItem>
-              <FormLabel>الاسم (إنجليزي) *</FormLabel>
-              <FormControl><Input dir="ltr" placeholder="Youth Group" {...field} /></FormControl>
+              <FormLabel>{t('nameEn')}</FormLabel>
+              <FormControl><Input dir="ltr" placeholder={t('nameEnPlaceholder')} {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
           <FormField control={form.control} name="name_ar" render={({ field }) => (
             <FormItem>
-              <FormLabel>الاسم (عربي)</FormLabel>
-              <FormControl><Input placeholder="مجموعة الشباب" {...field} /></FormControl>
+              <FormLabel>{t('nameAr')}</FormLabel>
+              <FormControl><Input placeholder={t('nameArPlaceholder')} {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
@@ -149,11 +152,11 @@ export function GroupForm({ ministries, leaders, group }: Props) {
 
         <FormField control={form.control} name="type" render={({ field }) => (
           <FormItem>
-            <FormLabel>النوع</FormLabel>
+            <FormLabel>{t('type')}</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
               <SelectContent>
-                {GROUP_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                {GROUP_TYPE_KEYS.map(gt => <SelectItem key={gt.value} value={gt.value}>{tGroups(gt.key)}</SelectItem>)}
               </SelectContent>
             </Select>
           </FormItem>
@@ -161,9 +164,9 @@ export function GroupForm({ ministries, leaders, group }: Props) {
 
         <FormField control={form.control} name="ministry_id" render={({ field }) => (
           <FormItem>
-            <FormLabel>الخدمة</FormLabel>
+            <FormLabel>{t('ministry')}</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl><SelectTrigger><SelectValue placeholder="اختر خدمة" /></SelectTrigger></FormControl>
+              <FormControl><SelectTrigger><SelectValue placeholder={t('ministryPlaceholder')} /></SelectTrigger></FormControl>
               <SelectContent>
                 {ministries.map(m => <SelectItem key={m.id} value={m.id}>{m.name_ar || m.name}</SelectItem>)}
               </SelectContent>
@@ -174,9 +177,9 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="leader_id" render={({ field }) => (
             <FormItem>
-              <FormLabel>القائد</FormLabel>
+              <FormLabel>{t('leader')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="اختر قائداً" /></SelectTrigger></FormControl>
+                <FormControl><SelectTrigger><SelectValue placeholder={t('leaderPlaceholder')} /></SelectTrigger></FormControl>
                 <SelectContent>
                   {leaders.map(l => (
                     <SelectItem key={l.id} value={l.id}>
@@ -189,9 +192,9 @@ export function GroupForm({ ministries, leaders, group }: Props) {
           )} />
           <FormField control={form.control} name="co_leader_id" render={({ field }) => (
             <FormItem>
-              <FormLabel>مساعد القائد</FormLabel>
+              <FormLabel>{t('coLeader')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="اختياري" /></SelectTrigger></FormControl>
+                <FormControl><SelectTrigger><SelectValue placeholder={t('coLeaderPlaceholder')} /></SelectTrigger></FormControl>
                 <SelectContent>
                   {leaders.map(l => (
                     <SelectItem key={l.id} value={l.id}>
@@ -207,18 +210,18 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="meeting_day" render={({ field }) => (
             <FormItem>
-              <FormLabel>يوم الاجتماع</FormLabel>
+              <FormLabel>{t('meetingDay')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder="اختر اليوم" /></SelectTrigger></FormControl>
+                <FormControl><SelectTrigger><SelectValue placeholder={t('meetingDayPlaceholder')} /></SelectTrigger></FormControl>
                 <SelectContent>
-                  {DAYS.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+                  {DAY_KEYS.map(d => <SelectItem key={d.value} value={d.value}>{tGroups(d.key)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormItem>
           )} />
           <FormField control={form.control} name="meeting_time" render={({ field }) => (
             <FormItem>
-              <FormLabel>وقت الاجتماع</FormLabel>
+              <FormLabel>{t('meetingTime')}</FormLabel>
               <FormControl><Input type="time" dir="ltr" {...field} /></FormControl>
             </FormItem>
           )} />
@@ -227,17 +230,17 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="meeting_location" render={({ field }) => (
             <FormItem>
-              <FormLabel>مكان الاجتماع</FormLabel>
-              <FormControl><Input placeholder="القاعة الرئيسية" {...field} /></FormControl>
+              <FormLabel>{t('meetingLocation')}</FormLabel>
+              <FormControl><Input placeholder={t('meetingLocationPlaceholder')} {...field} /></FormControl>
             </FormItem>
           )} />
           <FormField control={form.control} name="meeting_frequency" render={({ field }) => (
             <FormItem>
-              <FormLabel>التكرار</FormLabel>
+              <FormLabel>{t('frequency')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                 <SelectContent>
-                  {FREQUENCIES.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                  {FREQUENCY_KEYS.map(f => <SelectItem key={f.value} value={f.value}>{tGroups(f.key)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormItem>
@@ -247,13 +250,13 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="max_members" render={({ field }) => (
             <FormItem>
-              <FormLabel>الحد الأقصى للأعضاء</FormLabel>
+              <FormLabel>{t('maxMembers')}</FormLabel>
               <FormControl><Input type="number" placeholder="12" dir="ltr" {...field} /></FormControl>
             </FormItem>
           )} />
           <FormField control={form.control} name="is_open" render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>حالة القبول</FormLabel>
+              <FormLabel>{t('admissionStatus')}</FormLabel>
               <div className="flex items-center gap-2 mt-2">
                 <input
                   type="checkbox"
@@ -262,15 +265,15 @@ export function GroupForm({ ministries, leaders, group }: Props) {
                   onChange={e => field.onChange(e.target.checked)}
                   className="w-4 h-4"
                 />
-                <label htmlFor="is_open" className="text-sm">مفتوحة للانضمام</label>
+                <label htmlFor="is_open" className="text-sm">{t('openForJoining')}</label>
               </div>
             </FormItem>
           )} />
         </div>
 
         <div className="flex gap-2 justify-end pt-2">
-          <Button type="button" variant="outline" onClick={() => router.back()}>إلغاء</Button>
-          <Button type="submit" disabled={loading}>{loading ? 'جارٍ الحفظ...' : 'حفظ المجموعة'}</Button>
+          <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancelButton')}</Button>
+          <Button type="submit" disabled={loading}>{loading ? t('saving') : t('saveButton')}</Button>
         </div>
       </form>
     </Form>

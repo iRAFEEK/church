@@ -2,12 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { GroupForm } from '@/components/groups/GroupForm'
+import { getTranslations } from 'next-intl/server'
 
 export default async function NewGroupPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
   if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
 
+  const t = await getTranslations('groups')
   const supabase = await createClient()
 
   const { data: ministries } = await supabase
@@ -26,8 +28,8 @@ export default async function NewGroupPage() {
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">مجموعة جديدة</h1>
-        <p className="text-sm text-zinc-500 mt-1">أنشئ مجموعة جديدة في الكنيسة</p>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('newGroupPageTitle')}</h1>
+        <p className="text-sm text-zinc-500 mt-1">{t('newGroupPageSubtitle')}</p>
       </div>
       <GroupForm ministries={ministries || []} leaders={leaders || []} />
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { formatGatheringDate } from '@/lib/gatherings'
 
 type Gathering = {
@@ -11,11 +12,11 @@ type Gathering = {
   attendance?: Array<{ count: number }>
 }
 
-const STATUS_AR: Record<string, string> = {
-  scheduled: 'مجدول',
-  in_progress: 'جارٍ',
-  completed: 'مكتمل',
-  cancelled: 'ملغى',
+const STATUS_KEYS: Record<string, string> = {
+  scheduled: 'statusScheduled',
+  in_progress: 'statusInProgress',
+  completed: 'statusCompleted',
+  cancelled: 'statusCancelled',
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -32,10 +33,12 @@ export function GatheringHistory({
   gatherings: Gathering[]
   groupId: string
 }) {
+  const t = useTranslations('gathering')
+
   if (gatherings.length === 0) {
     return (
       <div className="text-center py-8 text-zinc-400 text-sm rounded-xl border border-zinc-200">
-        لا توجد اجتماعات مسجلة بعد
+        {t('historyEmpty')}
       </div>
     )
   }
@@ -52,7 +55,7 @@ export function GatheringHistory({
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-zinc-900">
-                {g.topic || 'اجتماع المجموعة'}
+                {g.topic || t('defaultTopic')}
               </p>
               <p className="text-xs text-zinc-400 mt-0.5">
                 {formatGatheringDate(g.scheduled_at)}
@@ -60,10 +63,10 @@ export function GatheringHistory({
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {g.status === 'completed' && (
-                <span className="text-xs text-zinc-400">{count} حضر</span>
+                <span className="text-xs text-zinc-400">{count} {t('historyAttended')}</span>
               )}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[g.status] || ''}`}>
-                {STATUS_AR[g.status] || g.status}
+                {t(STATUS_KEYS[g.status] || g.status)}
               </span>
             </div>
           </Link>

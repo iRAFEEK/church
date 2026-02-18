@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
@@ -10,6 +11,7 @@ type Props = {
 }
 
 export function QRGenerator({ joinUrl, churchName }: Props) {
+  const t = useTranslations('qr')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [copied, setCopied] = useState(false)
 
@@ -35,13 +37,13 @@ export function QRGenerator({ joinUrl, churchName }: Props) {
     link.download = `${churchName}-qr.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
-    toast.success('تم تنزيل رمز QR')
+    toast.success(t('toastDownloaded'))
   }
 
   async function copyLink() {
     await navigator.clipboard.writeText(joinUrl)
     setCopied(true)
-    toast.success('تم نسخ الرابط')
+    toast.success(t('toastLinkCopied'))
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -54,29 +56,29 @@ export function QRGenerator({ joinUrl, churchName }: Props) {
         </div>
         <div className="text-center">
           <p className="font-semibold text-zinc-900">{churchName}</p>
-          <p className="text-xs text-zinc-400 mt-0.5">امسح للتسجيل كزائر</p>
+          <p className="text-xs text-zinc-400 mt-0.5">{t('scanToRegister')}</p>
         </div>
       </div>
 
       {/* URL */}
       <div className="bg-zinc-50 rounded-lg p-3">
-        <p className="text-xs text-zinc-500 mb-1">رابط الزيارة</p>
+        <p className="text-xs text-zinc-500 mb-1">{t('linkLabel')}</p>
         <p className="text-sm font-mono text-zinc-700 break-all" dir="ltr">{joinUrl}</p>
       </div>
 
       {/* Actions */}
       <div className="flex gap-3">
         <Button onClick={copyLink} variant="outline" className="flex-1">
-          {copied ? 'تم النسخ!' : 'نسخ الرابط'}
+          {copied ? t('copied') : t('copyButton')}
         </Button>
         <Button onClick={downloadQR} className="flex-1">
-          تنزيل PNG
+          {t('downloadButton')}
         </Button>
       </div>
 
       {/* Print hint */}
       <div className="text-xs text-zinc-400 text-center">
-        💡 اطبع الرمز بحجم A5 أو A4 وضعه عند المدخل للحصول على أفضل نتيجة
+        {t('printHint')}
       </div>
     </div>
   )

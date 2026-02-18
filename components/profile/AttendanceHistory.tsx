@@ -1,3 +1,6 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { formatGatheringDate } from '@/lib/gatherings'
 
 type AttendanceRecord = {
@@ -12,11 +15,11 @@ type AttendanceRecord = {
   } | null
 }
 
-const STATUS_AR: Record<string, string> = {
-  present: 'حاضر',
-  late: 'متأخر',
-  excused: 'معذور',
-  absent: 'غائب',
+const STATUS_KEYS: Record<string, string> = {
+  present: 'statusPresent',
+  late: 'statusLate',
+  excused: 'statusExcused',
+  absent: 'statusAbsent',
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -27,10 +30,12 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) {
+  const t = useTranslations('attendance')
+
   if (records.length === 0) {
     return (
       <div className="text-center py-8 text-zinc-400 text-sm rounded-xl border border-zinc-200">
-        لا يوجد سجل حضور بعد
+        {t('historyEmpty')}
       </div>
     )
   }
@@ -44,12 +49,12 @@ export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) 
       <div className="flex items-center gap-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-zinc-900">{rate}%</p>
-          <p className="text-xs text-zinc-500">معدل الحضور</p>
+          <p className="text-xs text-zinc-500">{t('historyRateLabel')}</p>
         </div>
         <div className="h-8 w-px bg-zinc-200" />
         <div className="text-center">
           <p className="text-2xl font-bold text-zinc-900">{presentCount}</p>
-          <p className="text-xs text-zinc-500">من أصل {records.length}</p>
+          <p className="text-xs text-zinc-500">{t('historyOutOf', { total: records.length })}</p>
         </div>
       </div>
 
@@ -61,7 +66,7 @@ export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) 
             <div key={r.id} className="flex items-center gap-3 px-4 py-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-zinc-900">
-                  {g?.topic || 'اجتماع المجموعة'}
+                  {g?.topic || t('historyDefaultTopic')}
                 </p>
                 <p className="text-xs text-zinc-400 mt-0.5">
                   {g ? formatGatheringDate(g.scheduled_at) : '—'}
@@ -69,7 +74,7 @@ export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) 
                 </p>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[r.status] || ''}`}>
-                {STATUS_AR[r.status] || r.status}
+                {t(STATUS_KEYS[r.status] || r.status)}
               </span>
             </div>
           )

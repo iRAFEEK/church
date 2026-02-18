@@ -4,12 +4,14 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { VisitorQueue } from '@/components/visitors/VisitorQueue'
+import { getTranslations } from 'next-intl/server'
 
 export default async function AdminVisitorsPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
   if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
 
+  const t = await getTranslations('visitors')
   const supabase = await createClient()
 
   // Get church SLA
@@ -48,24 +50,24 @@ export default async function AdminVisitorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">قائمة الزوار</h1>
-          <p className="text-sm text-zinc-500 mt-1">إدارة الزوار الجدد ومتابعتهم</p>
+          <h1 className="text-2xl font-bold text-zinc-900">{t('adminPageTitle')}</h1>
+          <p className="text-sm text-zinc-500 mt-1">{t('adminPageSubtitle')}</p>
         </div>
         <Link
           href="/join"
           target="_blank"
           className="text-sm text-zinc-600 border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-colors"
         >
-          استعراض نموذج الزيارة
+          {t('adminViewFormLink')}
         </Link>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="الإجمالي" value={stats.total} />
-        <StatCard label="جدد" value={stats.new} color="blue" />
-        <StatCard label="مُسنَدون" value={stats.assigned} color="yellow" />
-        <StatCard label="متأخرون" value={stats.overdue} color="red" />
+        <StatCard label={t('adminStatsTotal')} value={stats.total} />
+        <StatCard label={t('adminStatsNew')} value={stats.new} color="blue" />
+        <StatCard label={t('adminStatsAssigned')} value={stats.assigned} color="yellow" />
+        <StatCard label={t('adminStatsOverdue')} value={stats.overdue} color="red" />
       </div>
 
       {/* Visitor Queue */}

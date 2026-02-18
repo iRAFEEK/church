@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { Loader2, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { PhotoUpload } from '@/components/profile/PhotoUpload'
@@ -23,28 +24,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import type { Profile } from '@/types'
 
-const editSchema = z.object({
-  first_name_ar: z.string().min(1, 'الاسم الأول مطلوب'),
-  last_name_ar: z.string().min(1, 'اسم العائلة مطلوب'),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  phone: z.string().optional(),
-  date_of_birth: z.string().optional(),
-  gender: z.enum(['male', 'female']).optional(),
-  occupation_ar: z.string().optional(),
-  occupation: z.string().optional(),
-  notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']),
-  preferred_language: z.enum(['ar', 'en']),
-})
+type EditForm = z.infer<ReturnType<typeof createEditSchema>>
 
-type EditForm = z.infer<typeof editSchema>
+function createEditSchema(t: (key: string) => string) {
+  return z.object({
+    first_name_ar: z.string().min(1, t('validationFirstName')),
+    last_name_ar: z.string().min(1, t('validationLastName')),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    phone: z.string().optional(),
+    date_of_birth: z.string().optional(),
+    gender: z.enum(['male', 'female']).optional(),
+    occupation_ar: z.string().optional(),
+    occupation: z.string().optional(),
+    notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']),
+    preferred_language: z.enum(['ar', 'en']),
+  })
+}
 
 export default function ProfileEditPage() {
   const router = useRouter()
+  const t = useTranslations('profileEdit')
   const [isLoading, setIsLoading] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string>('')
   const [loading, setLoading] = useState(true)
+
+  const editSchema = createEditSchema(t)
 
   const form = useForm<EditForm>({
     resolver: zodResolver(editSchema),
@@ -122,11 +128,11 @@ export default function ProfileEditPage() {
 
     if (error) {
       setIsLoading(false)
-      toast.error('فشل الحفظ', { description: error.message })
+      toast.error(t('toastSaveFailed'), { description: error.message })
       return
     }
 
-    toast.success('تم حفظ التغييرات')
+    toast.success(t('toastSaveSuccess'))
     setIsLoading(false)
     router.push('/profile')
     router.refresh()
@@ -149,12 +155,12 @@ export default function ProfileEditPage() {
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">تعديل الملف الشخصي</h1>
+        <h1 className="text-2xl font-bold">{t('pageTitle')}</h1>
       </div>
 
       {/* Photo */}
       <Card>
-        <CardHeader><CardTitle className="text-base">الصورة الشخصية</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t('photoTitle')}</CardTitle></CardHeader>
         <CardContent className="flex justify-center">
           {profile && (
             <PhotoUpload
@@ -175,19 +181,19 @@ export default function ProfileEditPage() {
               {/* Arabic Name */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  الاسم بالعربية *
+                  {t('arabicNameSection')}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="first_name_ar" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الاسم الأول</FormLabel>
+                      <FormLabel>{t('firstNameAr')}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="last_name_ar" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>اسم العائلة</FormLabel>
+                      <FormLabel>{t('lastNameAr')}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,19 +206,19 @@ export default function ProfileEditPage() {
               {/* English Name */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  الاسم بالإنجليزية
+                  {t('englishNameSection')}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="first_name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>{t('firstNameEn')}</FormLabel>
                       <FormControl><Input dir="ltr" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="last_name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name</FormLabel>
+                      <FormLabel>{t('lastNameEn')}</FormLabel>
                       <FormControl><Input dir="ltr" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -225,8 +231,8 @@ export default function ProfileEditPage() {
               {/* Contact */}
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>رقم الهاتف / Phone</FormLabel>
-                  <FormControl><Input type="tel" dir="ltr" placeholder="+961 XX XXX XXX" {...field} /></FormControl>
+                  <FormLabel>{t('phone')}</FormLabel>
+                  <FormControl><Input type="tel" dir="ltr" placeholder={t('phonePlaceholder')} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -235,14 +241,14 @@ export default function ProfileEditPage() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="gender" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>الجنس</FormLabel>
+                    <FormLabel>{t('gender')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('genderPlaceholder')} /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="male">ذكر</SelectItem>
-                        <SelectItem value="female">أنثى</SelectItem>
+                        <SelectItem value="male">{t('genderMale')}</SelectItem>
+                        <SelectItem value="female">{t('genderFemale')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -251,7 +257,7 @@ export default function ProfileEditPage() {
 
                 <FormField control={form.control} name="date_of_birth" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>تاريخ الميلاد</FormLabel>
+                    <FormLabel>{t('dateOfBirth')}</FormLabel>
                     <FormControl><Input type="date" dir="ltr" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -260,8 +266,8 @@ export default function ProfileEditPage() {
 
               <FormField control={form.control} name="occupation_ar" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>المهنة (بالعربية)</FormLabel>
-                  <FormControl><Input placeholder="مهندس، طالب، معلم..." {...field} /></FormControl>
+                  <FormLabel>{t('occupationAr')}</FormLabel>
+                  <FormControl><Input placeholder={t('occupationArPlaceholder')} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -271,17 +277,17 @@ export default function ProfileEditPage() {
               {/* Preferences */}
               <FormField control={form.control} name="notification_pref" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>تفضيل الإشعارات</FormLabel>
+                  <FormLabel>{t('notificationPref')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="whatsapp">واتساب</SelectItem>
-                      <SelectItem value="sms">رسائل نصية</SelectItem>
-                      <SelectItem value="email">بريد إلكتروني</SelectItem>
-                      <SelectItem value="all">الكل</SelectItem>
-                      <SelectItem value="none">لا شيء</SelectItem>
+                      <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
+                      <SelectItem value="sms">{t('notifSms')}</SelectItem>
+                      <SelectItem value="email">{t('notifEmail')}</SelectItem>
+                      <SelectItem value="all">{t('notifAll')}</SelectItem>
+                      <SelectItem value="none">{t('notifNone')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -290,10 +296,10 @@ export default function ProfileEditPage() {
 
               <div className="flex gap-3 justify-end pt-2">
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/profile">إلغاء</Link>
+                  <Link href="/profile">{t('cancelButton')}</Link>
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ التغييرات'}
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('saveButton')}
                 </Button>
               </div>
             </form>

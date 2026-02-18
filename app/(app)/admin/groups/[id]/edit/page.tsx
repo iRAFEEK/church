@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { GroupForm } from '@/components/groups/GroupForm'
+import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -11,6 +12,7 @@ export default async function EditGroupPage({ params }: Params) {
   if (!user) redirect('/login')
   if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
 
+  const t = await getTranslations('groups')
   const supabase = await createClient()
 
   const { data: group } = await supabase
@@ -37,7 +39,7 @@ export default async function EditGroupPage({ params }: Params) {
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">تعديل المجموعة</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('editGroupPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{group.name_ar || group.name}</p>
       </div>
       <GroupForm

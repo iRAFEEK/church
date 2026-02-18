@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -27,16 +28,17 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email / أدخل بريداً إلكترونياً صحيحاً'),
-  password: z.string().min(6, 'Password must be at least 6 characters / كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
-})
-
-type LoginForm = z.infer<typeof loginSchema>
-
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const t = useTranslations('auth')
+
+  const loginSchema = z.object({
+    email: z.string().email(t('validationEmail')),
+    password: z.string().min(6, t('validationPassword')),
+  })
+
+  type LoginForm = z.infer<typeof loginSchema>
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -54,14 +56,13 @@ export default function LoginPage() {
 
     if (error) {
       setIsLoading(false)
-      toast.error('فشل تسجيل الدخول / Login failed', {
+      toast.error(t('errorTitle'), {
         description: error.message,
       })
       return
     }
 
     if (data.user) {
-      // Check if onboarding is complete
       const { data: profile } = await supabase
         .from('profiles')
         .select('onboarding_completed')
@@ -81,11 +82,10 @@ export default function LoginPage() {
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">
-          <span className="block">تسجيل الدخول</span>
-          <span className="block text-sm font-normal text-muted-foreground mt-1">Sign In</span>
+          {t('signInTitle')}
         </CardTitle>
         <CardDescription>
-          أدخل بريدك الإلكتروني وكلمة المرور للدخول
+          {t('signInDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -96,11 +96,11 @@ export default function LoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>البريد الإلكتروني / Email</FormLabel>
+                  <FormLabel>{t('emailLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder={t('emailPlaceholder')}
                       autoComplete="email"
                       dir="ltr"
                       {...field}
@@ -115,11 +115,11 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>كلمة المرور / Password</FormLabel>
+                  <FormLabel>{t('passwordLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t('passwordPlaceholder')}
                       autoComplete="current-password"
                       dir="ltr"
                       {...field}
@@ -137,10 +137,10 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  جاري الدخول...
+                  {t('submitting')}
                 </>
               ) : (
-                'دخول / Sign In'
+                t('submitButton')
               )}
             </Button>
           </form>

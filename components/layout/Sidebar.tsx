@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import {
   LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
   Calendar, Heart, Megaphone, Music, BookOpen, BarChart3,
@@ -28,28 +29,29 @@ interface SidebarProps {
   profile: Profile
   churchName: string
   churchNameAr: string
-  lang?: string
 }
 
-export function Sidebar({ profile, churchName, churchNameAr, lang = 'ar' }: SidebarProps) {
+export function Sidebar({ profile, churchName, churchNameAr }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const isRTL = lang === 'ar'
+  const locale = useLocale()
+  const t = useTranslations('sidebar')
+  const isRTL = locale === 'ar'
 
   const navItems = getNavForRole(profile.role)
-  const sections = getNavSections(navItems, lang as 'ar' | 'en')
+  const sections = getNavSections(navItems, locale as 'ar' | 'en')
 
-  const displayName = lang === 'ar'
-    ? `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim() || profile.email || 'مستخدم'
-    : `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim() || profile.email || 'User'
+  const displayName = isRTL
+    ? `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim() || profile.email || t('fallbackUser')
+    : `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim() || profile.email || t('fallbackUser')
 
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    toast.success(lang === 'ar' ? 'تم تسجيل الخروج' : 'Signed out')
+    toast.success(t('signedOut'))
     router.push('/login')
     router.refresh()
   }
@@ -72,8 +74,8 @@ export function Sidebar({ profile, churchName, churchNameAr, lang = 'ar' }: Side
       )}>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="font-bold text-sm truncate">{lang === 'ar' ? churchNameAr : churchName}</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">{lang === 'ar' ? churchName : churchNameAr}</p>
+            <p className="font-bold text-sm truncate">{isRTL ? churchNameAr : churchName}</p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">{isRTL ? churchName : churchNameAr}</p>
           </div>
         )}
         <Button
@@ -99,7 +101,7 @@ export function Sidebar({ profile, churchName, churchNameAr, lang = 'ar' }: Side
               {items.map((item) => {
                 const Icon = ICON_MAP[item.iconName] ?? User
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-                const label = lang === 'ar' ? item.label_ar : item.label
+                const label = isRTL ? item.label_ar : item.label
 
                 return (
                   <Link
@@ -152,10 +154,10 @@ export function Sidebar({ profile, churchName, churchNameAr, lang = 'ar' }: Side
             !collapsed && 'w-full justify-start gap-2'
           )}
           onClick={handleSignOut}
-          title={collapsed ? (lang === 'ar' ? 'تسجيل الخروج' : 'Sign out') : undefined}
+          title={collapsed ? t('signOut') : undefined}
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && (lang === 'ar' ? 'تسجيل الخروج' : 'Sign out')}
+          {!collapsed && t('signOut')}
         </Button>
       </div>
     </aside>

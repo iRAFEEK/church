@@ -6,28 +6,38 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { GroupMemberManager } from '@/components/groups/GroupMemberManager'
+import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
 
-const GROUP_TYPE_AR: Record<string, string> = {
-  small_group: 'مجموعة صغيرة',
-  youth: 'شباب',
-  women: 'نساء',
-  men: 'رجال',
-  family: 'عائلات',
-  prayer: 'صلاة',
-  other: 'أخرى',
+const GROUP_TYPE_KEY: Record<string, string> = {
+  small_group: 'typeSmallGroup',
+  youth: 'typeYouth',
+  women: 'typeWomen',
+  men: 'typeMen',
+  family: 'typeFamily',
+  prayer: 'typePrayer',
+  other: 'typeOther',
 }
 
-const DAYS_AR: Record<string, string> = {
-  monday: 'الاثنين', tuesday: 'الثلاثاء', wednesday: 'الأربعاء',
-  thursday: 'الخميس', friday: 'الجمعة', saturday: 'السبت', sunday: 'الأحد',
+const DAYS_KEY: Record<string, string> = {
+  monday: 'dayMonday', tuesday: 'dayTuesday', wednesday: 'dayWednesday',
+  thursday: 'dayThursday', friday: 'dayFriday', saturday: 'daySaturday', sunday: 'daySunday',
+}
+
+const FREQUENCY_KEY: Record<string, string> = {
+  weekly: 'frequencyWeekly',
+  biweekly: 'frequencyBiweekly',
+  monthly: 'frequencyMonthly',
+  irregular: 'frequencyIrregular',
 }
 
 export default async function GroupDetailPage({ params }: Params) {
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
+
+  const t = await getTranslations('groups')
 
   const supabase = await createClient()
 
@@ -77,7 +87,7 @@ export default async function GroupDetailPage({ params }: Params) {
           {group.name_ar && <p className="text-sm text-zinc-400">{group.name}</p>}
           <div className="flex gap-2 mt-2 flex-wrap">
             <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
-              {GROUP_TYPE_AR[group.type] || group.type}
+              {GROUP_TYPE_KEY[group.type] ? t(GROUP_TYPE_KEY[group.type] as any) : group.type}
             </span>
             {group.ministry && (
               <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
@@ -85,13 +95,13 @@ export default async function GroupDetailPage({ params }: Params) {
               </span>
             )}
             {!group.is_active && (
-              <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">غير نشط</span>
+              <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">{t('detailInactive')}</span>
             )}
           </div>
         </div>
         {isAdmin && (
           <Link href={`/admin/groups/${id}/edit`}>
-            <Button variant="outline" size="sm">تعديل</Button>
+            <Button variant="outline" size="sm">{t('detailEditButton')}</Button>
           </Link>
         )}
       </div>
@@ -100,7 +110,7 @@ export default async function GroupDetailPage({ params }: Params) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Leader */}
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium text-zinc-500 mb-3">القائد</p>
+          <p className="text-xs font-medium text-zinc-500 mb-3">{t('detailLeader')}</p>
           {leader ? (
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
@@ -115,26 +125,22 @@ export default async function GroupDetailPage({ params }: Params) {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">لم يُحدَّد قائد</p>
+            <p className="text-sm text-zinc-400">{t('detailLeaderUnset')}</p>
           )}
         </div>
 
         {/* Meeting */}
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
-          <p className="text-xs font-medium text-zinc-500 mb-3">الاجتماع</p>
+          <p className="text-xs font-medium text-zinc-500 mb-3">{t('detailMeeting')}</p>
           <div className="space-y-1 text-sm text-zinc-700">
             {group.meeting_day && (
-              <p>📅 {DAYS_AR[group.meeting_day] || group.meeting_day}
+              <p>📅 {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as any) : group.meeting_day}
                 {group.meeting_time && ` - ${group.meeting_time}`}
               </p>
             )}
             {group.meeting_location && <p>📍 {group.meeting_location_ar || group.meeting_location}</p>}
-            <p>🔄 {
-              group.meeting_frequency === 'weekly' ? 'أسبوعي' :
-              group.meeting_frequency === 'biweekly' ? 'كل أسبوعين' :
-              group.meeting_frequency === 'monthly' ? 'شهري' : 'غير منتظم'
-            }</p>
-            <p>👥 {activeMembers.length} عضو{group.max_members ? ` / ${group.max_members}` : ''}</p>
+            <p>🔄 {FREQUENCY_KEY[group.meeting_frequency] ? t(FREQUENCY_KEY[group.meeting_frequency] as any) : group.meeting_frequency}</p>
+            <p>👥 {activeMembers.length} {t('leaderStatsMembers')}{group.max_members ? ` / ${group.max_members}` : ''}</p>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,6 +19,7 @@ type Group = {
 }
 
 export function NewGatheringForm({ group }: { group: Group }) {
+  const t = useTranslations('gathering')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -57,10 +59,10 @@ export function NewGatheringForm({ group }: { group: Group }) {
       })
       if (!res.ok) throw new Error()
       const { data } = await res.json()
-      toast.success('تم إنشاء الاجتماع')
+      toast.success(t('toastCreated'))
       router.push(`/groups/${group.id}/gathering/${data.id}`)
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     } finally {
       setLoading(false)
     }
@@ -69,7 +71,7 @@ export function NewGatheringForm({ group }: { group: Group }) {
   return (
     <div className="bg-white rounded-xl border border-zinc-200 p-6 space-y-4">
       <div>
-        <label className="text-sm font-medium text-zinc-700 mb-1 block">التاريخ والوقت *</label>
+        <label className="text-sm font-medium text-zinc-700 mb-1 block">{t('formDateTime')}</label>
         <Input
           type="datetime-local"
           value={form.scheduled_at}
@@ -78,34 +80,34 @@ export function NewGatheringForm({ group }: { group: Group }) {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-zinc-700 mb-1 block">المكان</label>
+        <label className="text-sm font-medium text-zinc-700 mb-1 block">{t('formLocation')}</label>
         <Input
-          placeholder={group.meeting_location || 'مكان الاجتماع'}
+          placeholder={group.meeting_location || t('formLocationPH')}
           value={form.location}
           onChange={e => set('location', e.target.value)}
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-zinc-700 mb-1 block">الموضوع / الدرس</label>
+        <label className="text-sm font-medium text-zinc-700 mb-1 block">{t('formTopic')}</label>
         <Input
-          placeholder="موضوع الاجتماع"
+          placeholder={t('formTopicPlaceholder')}
           value={form.topic}
           onChange={e => set('topic', e.target.value)}
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-zinc-700 mb-1 block">ملاحظات</label>
+        <label className="text-sm font-medium text-zinc-700 mb-1 block">{t('formNotes')}</label>
         <Textarea
-          placeholder="أي ملاحظات..."
+          placeholder={t('formNotesPH')}
           value={form.notes}
           onChange={e => set('notes', e.target.value)}
           rows={3}
         />
       </div>
       <div className="flex gap-2 justify-end pt-2">
-        <Button variant="outline" onClick={() => router.back()}>إلغاء</Button>
+        <Button variant="outline" onClick={() => router.back()}>{t('formCancel')}</Button>
         <Button onClick={submit} disabled={loading || !form.scheduled_at}>
-          {loading ? 'جارٍ الإنشاء...' : 'إنشاء الاجتماع'}
+          {loading ? t('formCreating') : t('formCreate')}
         </Button>
       </div>
     </div>

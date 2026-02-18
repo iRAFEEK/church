@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 type Profile = {
   id: string
@@ -27,10 +28,10 @@ type Member = {
   profile: Profile | null
 }
 
-const ROLE_AR: Record<string, string> = {
-  member: 'عضو',
-  leader: 'قائد',
-  co_leader: 'مساعد',
+const ROLE_KEYS: Record<string, string> = {
+  member: 'roleMember',
+  leader: 'roleLeader',
+  co_leader: 'roleCoLeader',
 }
 
 export function GroupMemberManager({
@@ -44,6 +45,7 @@ export function GroupMemberManager({
   allMembers: Profile[]
   canManage: boolean
 }) {
+  const t = useTranslations('groupMembers')
   const [members, setMembers] = useState(initialMembers)
   const [addOpen, setAddOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -73,10 +75,10 @@ export function GroupMemberManager({
       if (!res.ok) throw new Error()
       const { data } = await res.json()
       setMembers(prev => [...prev, { ...data, profile }])
-      toast.success('تم إضافة العضو')
+      toast.success(t('toastAdded'))
       setSearch('')
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     } finally {
       setLoading(false)
     }
@@ -92,25 +94,25 @@ export function GroupMemberManager({
       })
       if (!res.ok) throw new Error()
       setMembers(prev => prev.filter(m => m.id !== member.id))
-      toast.success('تم إزالة العضو')
+      toast.success(t('toastRemoved'))
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     }
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-zinc-900">الأعضاء ({members.length})</h2>
+        <h2 className="text-lg font-semibold text-zinc-900">{t('sectionTitle')} ({members.length})</h2>
         {canManage && (
-          <Button size="sm" onClick={() => setAddOpen(true)}>إضافة عضو</Button>
+          <Button size="sm" onClick={() => setAddOpen(true)}>{t('addButton')}</Button>
         )}
       </div>
 
       {members.length === 0 ? (
         <div className="text-center py-10 text-zinc-400 rounded-xl border border-zinc-200">
-          <p className="font-medium">لا يوجد أعضاء في هذه المجموعة</p>
-          <p className="text-sm mt-1">أضف أعضاء لتبدأ</p>
+          <p className="font-medium">{t('emptyTitle')}</p>
+          <p className="text-sm mt-1">{t('emptySubtitle')}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-zinc-200 bg-white divide-y divide-zinc-100">
@@ -131,24 +133,24 @@ export function GroupMemberManager({
                     <span className="font-medium text-zinc-900 text-sm">{name}</span>
                     {m.role_in_group !== 'member' && (
                       <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
-                        {ROLE_AR[m.role_in_group]}
+                        {ROLE_KEYS[m.role_in_group] ? t(ROLE_KEYS[m.role_in_group]) : m.role_in_group}
                       </span>
                     )}
                     {p.status === 'at_risk' && (
-                      <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">في خطر</span>
+                      <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">{t('statusAtRisk')}</span>
                     )}
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Link href={`/admin/members/${p.id}`} className="text-xs text-zinc-500 hover:text-zinc-700">
-                    عرض
+                    {t('viewLink')}
                   </Link>
                   {canManage && (
                     <button
                       onClick={() => removeMember(m)}
                       className="text-xs text-red-500 hover:text-red-700"
                     >
-                      إزالة
+                      {t('removeButton')}
                     </button>
                   )}
                 </div>
@@ -162,10 +164,10 @@ export function GroupMemberManager({
       <Dialog open={addOpen} onOpenChange={() => { setAddOpen(false); setSearch('') }}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>إضافة عضو للمجموعة</DialogTitle>
+            <DialogTitle>{t('dialogTitle')}</DialogTitle>
           </DialogHeader>
           <Input
-            placeholder="ابحث عن عضو..."
+            placeholder={t('dialogSearchPH')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             autoFocus
@@ -173,7 +175,7 @@ export function GroupMemberManager({
           <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
             {available.length === 0 ? (
               <p className="text-center text-sm text-zinc-400 py-4">
-                {search ? 'لا توجد نتائج' : 'جميع الأعضاء في المجموعة'}
+                {search ? t('dialogNoResults') : t('dialogAllAdded')}
               </p>
             ) : (
               available.slice(0, 20).map(p => {

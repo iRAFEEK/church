@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getLocale } from 'next-intl/server'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -13,16 +15,18 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const lang = cookieStore.get('lang')?.value ?? 'ar'
-  const dir = lang === 'ar' ? 'rtl' : 'ltr'
+  const locale = await getLocale()
+  const messages = await getMessages()
+  const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <html lang={lang} dir={dir} suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className="min-h-screen bg-background antialiased">
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <Toaster
-          position={dir === 'rtl' ? 'bottom-right' : 'bottom-right'}
+          position="bottom-right"
           richColors
           closeButton
         />

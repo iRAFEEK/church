@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -39,6 +40,7 @@ export function PrayerList({
   currentUserId: string
   isLeader: boolean
 }) {
+  const t = useTranslations('prayer')
   const [prayers, setPrayers] = useState(initialPrayers)
   const [addOpen, setAddOpen] = useState(false)
   const [content, setContent] = useState('')
@@ -62,9 +64,9 @@ export function PrayerList({
       setContent('')
       setIsPrivate(false)
       setAddOpen(false)
-      toast.success('تم إضافة طلب الصلاة')
+      toast.success(t('toastAdded'))
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     } finally {
       setSubmitting(false)
     }
@@ -87,9 +89,9 @@ export function PrayerList({
       ))
       setResolveTarget(null)
       setResolveNotes('')
-      toast.success('تم تسجيل الإجابة')
+      toast.success(t('toastResolved'))
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('toastError'))
     }
   }
 
@@ -100,25 +102,25 @@ export function PrayerList({
     <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
         <div>
-          <h2 className="font-semibold text-zinc-900">طلبات الصلاة</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">{active.length} نشط</p>
+          <h2 className="font-semibold text-zinc-900">{t('sectionTitle')}</h2>
+          <p className="text-xs text-zinc-500 mt-0.5">{t('activeCount', { count: active.length })}</p>
         </div>
         <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
-          إضافة طلب
+          {t('addButton')}
         </Button>
       </div>
 
       {prayers.length === 0 ? (
-        <p className="text-center py-8 text-sm text-zinc-400">لا توجد طلبات صلاة بعد</p>
+        <p className="text-center py-8 text-sm text-zinc-400">{t('empty')}</p>
       ) : (
         <div className="divide-y divide-zinc-50">
-          {active.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => setResolveTarget(p)} />)}
+          {active.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => setResolveTarget(p)} t={t} />)}
           {answered.length > 0 && (
             <>
               <div className="px-4 py-2 bg-zinc-50">
-                <p className="text-xs font-medium text-zinc-400">إجابات الصلاة</p>
+                <p className="text-xs font-medium text-zinc-400">{t('answeredSection')}</p>
               </div>
-              {answered.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => {}} />)}
+              {answered.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => {}} t={t} />)}
             </>
           )}
         </div>
@@ -128,11 +130,11 @@ export function PrayerList({
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>إضافة طلب صلاة</DialogTitle>
+            <DialogTitle>{t('addDialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
-              placeholder="اكتب طلب الصلاة هنا..."
+              placeholder={t('addDialogContentPH')}
               value={content}
               onChange={e => setContent(e.target.value)}
               rows={4}
@@ -147,13 +149,13 @@ export function PrayerList({
                 className="w-4 h-4"
               />
               <label htmlFor="is_private" className="text-sm text-zinc-700">
-                🔒 خاص (للقائد فقط)
+                {t('addDialogPrivate')}
               </label>
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setAddOpen(false)}>إلغاء</Button>
+              <Button variant="outline" onClick={() => setAddOpen(false)}>{t('addDialogCancel')}</Button>
               <Button onClick={addPrayer} disabled={submitting || !content.trim()}>
-                {submitting ? 'جارٍ الإضافة...' : 'إضافة'}
+                {submitting ? t('addDialogAdding') : t('addDialogAdd')}
               </Button>
             </div>
           </div>
@@ -164,22 +166,22 @@ export function PrayerList({
       <Dialog open={!!resolveTarget} onOpenChange={() => { setResolveTarget(null); setResolveNotes('') }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تسجيل إجابة الصلاة</DialogTitle>
+            <DialogTitle>{t('resolveDialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {resolveTarget && (
               <p className="text-sm text-zinc-600 bg-zinc-50 rounded-lg p-3">{resolveTarget.content}</p>
             )}
             <Textarea
-              placeholder="كيف أجاب الله؟ (اختياري)"
+              placeholder={t('resolveDialogNotesPH')}
               value={resolveNotes}
               onChange={e => setResolveNotes(e.target.value)}
               rows={3}
             />
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setResolveTarget(null)}>إلغاء</Button>
+              <Button variant="outline" onClick={() => setResolveTarget(null)}>{t('resolveDialogCancel')}</Button>
               <Button onClick={() => resolveTarget && resolve(resolveTarget)}>
-                تأكيد الإجابة
+                {t('resolveDialogConfirm')}
               </Button>
             </div>
           </div>
@@ -194,15 +196,17 @@ function PrayerCard({
   isLeader,
   currentUserId,
   onResolve,
+  t,
 }: {
   prayer: Prayer
   isLeader: boolean
   currentUserId: string
   onResolve: () => void
+  t: ReturnType<typeof useTranslations>
 }) {
   const name = prayer.submitter
     ? `${prayer.submitter.first_name_ar || prayer.submitter.first_name || ''} ${prayer.submitter.last_name_ar || prayer.submitter.last_name || ''}`.trim()
-    : 'مجهول'
+    : t('cardUnknown')
   const initials = (prayer.submitter?.first_name_ar || prayer.submitter?.first_name || '?')[0].toUpperCase()
   const isAnswered = prayer.status === 'answered'
 
@@ -217,7 +221,7 @@ function PrayerCard({
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-medium text-zinc-700">{name}</span>
             {prayer.is_private && <span className="text-xs text-zinc-400">🔒</span>}
-            {isAnswered && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">أُجيب ✓</span>}
+            {isAnswered && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">{t('cardAnswered')}</span>}
           </div>
           <p className="text-sm text-zinc-700 leading-relaxed">{prayer.content}</p>
           {isLeader && !isAnswered && (
@@ -225,7 +229,7 @@ function PrayerCard({
               onClick={onResolve}
               className="text-xs text-green-600 mt-2 hover:text-green-700"
             >
-              تسجيل الإجابة →
+              {t('cardLogAnswer')}
             </button>
           )}
         </div>

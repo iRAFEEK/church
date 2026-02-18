@@ -220,6 +220,35 @@ export interface GroupMember {
 }
 
 // ============================================================
+// PHASE 6: SONGS
+// ============================================================
+
+export interface SongDisplaySettings {
+  bg_color: string
+  bg_image: string | null
+  text_color: string
+  font_family: 'sans' | 'serif' | 'mono' | 'arabic'
+  font_size: number
+}
+
+export interface Song {
+  id: string
+  church_id: string
+  created_by: string | null
+  title: string
+  title_ar: string | null
+  artist: string | null
+  artist_ar: string | null
+  lyrics: string | null
+  lyrics_ar: string | null
+  tags: string[]
+  display_settings: SongDisplaySettings
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// ============================================================
 // API RESPONSE TYPES
 // ============================================================
 

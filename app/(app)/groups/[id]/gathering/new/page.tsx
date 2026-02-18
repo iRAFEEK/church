@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { NewGatheringForm } from '@/components/gathering/NewGatheringForm'
+import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -9,6 +10,8 @@ export default async function NewGatheringPage({ params }: Params) {
   const { id: group_id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
+
+  const t = await getTranslations('gathering')
 
   const supabase = await createClient()
 
@@ -27,7 +30,7 @@ export default async function NewGatheringPage({ params }: Params) {
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">اجتماع جديد</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('newPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{group.name_ar || group.name}</p>
       </div>
       <NewGatheringForm group={group} />

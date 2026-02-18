@@ -1,8 +1,8 @@
 'use client'
 
-import { Bell } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -17,12 +17,13 @@ interface TopbarProps {
   profile: Profile
   churchName: string
   churchNameAr: string
-  lang: string
   onLangChange: (lang: 'ar' | 'en') => void
 }
 
-export function Topbar({ profile, churchName, churchNameAr, lang, onLangChange }: TopbarProps) {
-  const isRTL = lang === 'ar'
+export function Topbar({ profile, churchName, churchNameAr, onLangChange }: TopbarProps) {
+  const locale = useLocale()
+  const t = useTranslations('topbar')
+  const isRTL = locale === 'ar'
 
   const displayName = isRTL
     ? `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim() || profile.email || ''
@@ -48,14 +49,11 @@ export function Topbar({ profile, churchName, churchNameAr, lang, onLangChange }
           className="text-xs font-semibold h-8 px-3"
           onClick={() => onLangChange(isRTL ? 'en' : 'ar')}
         >
-          {isRTL ? 'EN' : 'عر'}
+          {t('langToggle')}
         </Button>
 
-        {/* Notifications (placeholder) */}
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <Bell className="h-4 w-4" />
-          {/* Badge placeholder — implemented in Phase 4 */}
-        </Button>
+        {/* Notifications */}
+        <NotificationBell />
 
         {/* User Avatar */}
         <DropdownMenu>
@@ -77,12 +75,12 @@ export function Topbar({ profile, churchName, churchNameAr, lang, onLangChange }
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <a href="/profile">
-                {isRTL ? 'ملفي الشخصي' : 'My Profile'}
+                {t('myProfile')}
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <a href="/profile/edit">
-                {isRTL ? 'تعديل الملف' : 'Edit Profile'}
+                {t('editProfile')}
               </a>
             </DropdownMenuItem>
           </DropdownMenuContent>
