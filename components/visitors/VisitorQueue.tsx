@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -33,14 +34,6 @@ type Visitor = {
   assigned_profile?: Leader | null
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  new: 'جديد',
-  assigned: 'مُسنَد',
-  contacted: 'تم التواصل',
-  converted: 'أصبح عضواً',
-  lost: 'فقدنا التواصل',
-}
-
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-blue-100 text-blue-700',
   assigned: 'bg-yellow-100 text-yellow-700',
@@ -58,6 +51,7 @@ export function VisitorQueue({
   leaders: Leader[]
   slaHours: number
 }) {
+  const t = useTranslations('visitors')
   const [filter, setFilter] = useState<string>('all')
   const [selected, setSelected] = useState<Visitor | null>(null)
   const [mode, setMode] = useState<'assign' | 'contact' | 'convert' | null>(null)
@@ -65,6 +59,14 @@ export function VisitorQueue({
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [localVisitors, setLocalVisitors] = useState(visitors)
+
+  const STATUS_LABELS: Record<string, string> = {
+    new: t('statusNew'),
+    assigned: t('statusAssigned'),
+    contacted: t('statusContacted'),
+    converted: t('statusConverted'),
+    lost: t('statusLost'),
+  }
 
   const slaMs = slaHours * 60 * 60 * 1000
   const now = Date.now()
@@ -97,19 +99,19 @@ export function VisitorQueue({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error('فشل التحديث')
+      if (!res.ok) throw new Error(t('queueToastUpdateFailed'))
       const { data } = await res.json()
 
       setLocalVisitors(prev => prev.map(v => v.id === selected.id ? { ...v, ...data } : v))
       toast.success(
-        mode === 'assign' ? 'تم إسناد الزائر' :
-        mode === 'contact' ? 'تم تسجيل التواصل' :
-        'تم تحويل الزائر لعضو'
+        mode === 'assign' ? t('queueToastAssigned') :
+        mode === 'contact' ? t('queueToastContacted') :
+        t('queueToastConverted')
       )
       setSelected(null)
       setMode(null)
     } catch {
-      toast.error('حدث خطأ، حاول مجدداً')
+      toast.error(t('queueToastError'))
     } finally {
       setLoading(false)
     }
@@ -129,7 +131,7 @@ export function VisitorQueue({
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
             }`}
           >
-            {f === 'all' ? 'الكل' : STATUS_LABELS[f]}
+            {f === 'all' ? t('queueFilterAll') : STATUS_LABELS[f]}
             <span className="ms-1.5 text-xs opacity-60">
               {f === 'all' ? localVisitors.length : localVisitors.filter(v => v.status === f).length}
             </span>
@@ -140,7 +142,7 @@ export function VisitorQueue({
       {/* Table */}
       <div className="rounded-xl border border-zinc-200 overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="py-12 text-center text-zinc-400 text-sm">لا يوجد زوار في هذه الفئة</div>
+          <div className="py-12 text-center text-zinc-400 text-sm">{t('queueEmpty')}</div>
         ) : (
           <div className="divide-y divide-zinc-100">
             {filtered.map(v => (
@@ -156,15 +158,15 @@ export function VisitorQueue({
                     </span>
                     {isOverdue(v) && (
                       <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
-                        متأخر عن SLA
+                        {t('queueOverdueSla')}
                       </span>
                     )}
                   </div>
                   <div className="flex gap-3 mt-1 text-xs text-zinc-400 flex-wrap">
                     {v.phone && <span>{v.phone}</span>}
-                    <span>زار {formatDistanceToNow(v.visited_at)}</span>
+                    <span>{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</span>
                     {v.assigned_profile && (
-                      <span>مُسنَد إلى: {v.assigned_profile.first_name} {v.assigned_profile.last_name}</span>
+                      <span>{t('queueAssignedTo')} {v.assigned_profile.first_name} {v.assigned_profile.last_name}</span>
                     )}
                   </div>
                 </div>
@@ -173,17 +175,17 @@ export function VisitorQueue({
                 <div className="flex gap-2 shrink-0">
                   {v.status === 'new' && (
                     <Button size="sm" variant="outline" onClick={() => openAction(v, 'assign')}>
-                      إسناد
+                      {t('queueAssignButton')}
                     </Button>
                   )}
                   {['assigned', 'new'].includes(v.status) && (
                     <Button size="sm" variant="outline" onClick={() => openAction(v, 'contact')}>
-                      تسجيل تواصل
+                      {t('queueLogContactButton')}
                     </Button>
                   )}
                   {v.status === 'contacted' && (
                     <Button size="sm" variant="outline" onClick={() => openAction(v, 'convert')}>
-                      تحويل لعضو
+                      {t('queueConvertButton')}
                     </Button>
                   )}
                 </div>
@@ -198,22 +200,22 @@ export function VisitorQueue({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {mode === 'assign' && 'إسناد الزائر لقائد'}
-              {mode === 'contact' && 'تسجيل تواصل'}
-              {mode === 'convert' && 'تحويل إلى عضو'}
+              {mode === 'assign' && t('queueDialogAssignTitle')}
+              {mode === 'contact' && t('queueDialogContactTitle')}
+              {mode === 'convert' && t('queueDialogConvertTitle')}
             </DialogTitle>
           </DialogHeader>
 
           {selected && (
             <div className="space-y-4">
               <p className="text-sm text-zinc-600">
-                الزائر: <strong>{selected.first_name} {selected.last_name}</strong>
+                {t('queueDialogVisitorLabel')} <strong>{selected.first_name} {selected.last_name}</strong>
               </p>
 
               {mode === 'assign' && (
                 <Select value={assignTo} onValueChange={setAssignTo}>
                   <SelectTrigger>
-                    <SelectValue placeholder="اختر قائداً" />
+                    <SelectValue placeholder={t('queueDialogLeaderPH')} />
                   </SelectTrigger>
                   <SelectContent>
                     {leaders.map(l => (
@@ -227,7 +229,7 @@ export function VisitorQueue({
 
               {mode === 'contact' && (
                 <Textarea
-                  placeholder="ملاحظات التواصل..."
+                  placeholder={t('queueDialogContactNotesPH')}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   rows={4}
@@ -236,16 +238,16 @@ export function VisitorQueue({
 
               {mode === 'convert' && (
                 <p className="text-sm text-zinc-500">
-                  سيتم إنشاء حساب جديد للزائر في النظام. هل أنت متأكد؟
+                  {t('queueDialogConvertConfirm')}
                 </p>
               )}
 
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => { setSelected(null); setMode(null) }}>
-                  إلغاء
+                  {t('queueDialogCancel')}
                 </Button>
                 <Button onClick={submitAction} disabled={loading || (mode === 'assign' && !assignTo)}>
-                  {loading ? 'جارٍ الحفظ...' : 'تأكيد'}
+                  {loading ? t('queueDialogSubmitting') : t('queueDialogConfirm')}
                 </Button>
               </div>
             </div>

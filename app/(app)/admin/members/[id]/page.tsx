@@ -10,14 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield } from 'lucide-react'
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
+import { getTranslations, getLocale } from 'next-intl/server'
 import type { Profile, ProfileMilestone } from '@/types'
-
-const ROLE_LABELS: Record<string, string> = {
-  member: 'عضو',
-  group_leader: 'قائد مجموعة',
-  ministry_leader: 'قائد خدمة',
-  super_admin: 'مشرف',
-}
 
 const MILESTONE_ICONS: Record<string, string> = {
   baptism: '💧', salvation: '✝️', bible_plan_completed: '📖',
@@ -33,6 +27,9 @@ export default async function MemberDetailPage({
   const { id } = await params
 
   if (!isAdmin(currentUser)) redirect('/')
+
+  const t = await getTranslations('memberDetail')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -57,6 +54,22 @@ export default async function MemberDetailPage({
   const displayName = nameAr || nameEn || memberProfile.email || '—'
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      active: t('statusActive'),
+      at_risk: t('statusAtRisk'),
+      inactive: t('statusInactive'),
+      visitor: t('statusVisitor'),
+    }
+    return map[status] ?? status
+  }
+
+  const getStatusVariant = (status: string) => {
+    if (status === 'active') return 'default'
+    if (status === 'at_risk') return 'destructive'
+    return 'secondary'
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Back */}
@@ -66,7 +79,7 @@ export default async function MemberDetailPage({
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-xl font-bold">ملف العضو</h1>
+        <h1 className="text-xl font-bold">{t('pageTitle')}</h1>
       </div>
 
       {/* Profile Header */}
@@ -83,17 +96,15 @@ export default async function MemberDetailPage({
               {nameEn && <p className="text-muted-foreground" dir="ltr">{nameEn}</p>}
 
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                <Badge variant="secondary">{ROLE_LABELS[memberProfile.role] ?? memberProfile.role}</Badge>
-                <Badge variant={memberProfile.status === 'active' ? 'default' : memberProfile.status === 'at_risk' ? 'destructive' : 'secondary'}>
-                  {memberProfile.status === 'active' ? 'نشط' :
-                   memberProfile.status === 'at_risk' ? 'يحتاج متابعة' :
-                   memberProfile.status === 'inactive' ? 'غير نشط' : 'زائر'}
+                <Badge variant="secondary">{memberProfile.role}</Badge>
+                <Badge variant={getStatusVariant(memberProfile.status)}>
+                  {getStatusLabel(memberProfile.status)}
                 </Badge>
               </div>
 
               {memberProfile.joined_church_at && (
                 <p className="text-sm text-muted-foreground">
-                  انضم {new Date(memberProfile.joined_church_at).toLocaleDateString('ar', { year: 'numeric', month: 'long' })}
+                  {t('joinedAt')} {new Date(memberProfile.joined_church_at).toLocaleDateString(locale, { year: 'numeric', month: 'long' })}
                 </p>
               )}
             </div>
@@ -104,9 +115,9 @@ export default async function MemberDetailPage({
       {/* Tabs */}
       <Tabs defaultValue="info" dir="rtl">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="info">المعلومات</TabsTrigger>
-          <TabsTrigger value="milestones">المراحل الروحية</TabsTrigger>
-          <TabsTrigger value="admin">إدارة</TabsTrigger>
+          <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
+          <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
+          <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>
         </TabsList>
 
         {/* Info Tab */}
@@ -134,19 +145,19 @@ export default async function MemberDetailPage({
               {memberProfile.date_of_birth && (
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{new Date(memberProfile.date_of_birth).toLocaleDateString('ar')}</span>
+                  <span>{new Date(memberProfile.date_of_birth).toLocaleDateString(locale)}</span>
                 </div>
               )}
               {memberProfile.gender && (
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground">الجنس:</span>
-                  <span>{memberProfile.gender === 'male' ? 'ذكر' : 'أنثى'}</span>
+                  <span className="text-sm text-muted-foreground">{t('infoGender')}</span>
+                  <span>{memberProfile.gender === 'male' ? t('infoMale') : t('infoFemale')}</span>
                 </div>
               )}
 
               {!memberProfile.phone && !memberProfile.email && !memberProfile.occupation_ar && (
                 <p className="text-muted-foreground text-sm text-center py-4">
-                  لم يُكمل العضو ملفه الشخصي بعد
+                  {t('infoProfileIncomplete')}
                 </p>
               )}
             </CardContent>
@@ -166,7 +177,7 @@ export default async function MemberDetailPage({
                         <p className="font-medium">{milestone.title}</p>
                         {milestone.date && (
                           <p className="text-xs text-muted-foreground">
-                            {new Date(milestone.date).toLocaleDateString('ar')}
+                            {new Date(milestone.date).toLocaleDateString(locale)}
                           </p>
                         )}
                         {milestone.notes && (
@@ -178,7 +189,7 @@ export default async function MemberDetailPage({
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8 text-sm">
-                  لا توجد مراحل روحية مسجلة
+                  {t('milestonesEmpty')}
                 </p>
               )}
             </CardContent>
@@ -191,13 +202,13 @@ export default async function MemberDetailPage({
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                إدارة الحساب
+                {t('adminCardTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Role Change */}
               <div>
-                <p className="text-sm font-medium mb-2">تغيير الدور</p>
+                <p className="text-sm font-medium mb-2">{t('adminChangeRole')}</p>
                 <MemberRoleEditor
                   memberId={memberProfile.id}
                   currentRole={memberProfile.role}

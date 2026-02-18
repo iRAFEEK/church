@@ -1,8 +1,12 @@
-export default function AuthLayout({
+import { getTranslations } from 'next-intl/server'
+
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const t = await getTranslations('authLayout')
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
       <div className="w-full max-w-md">
@@ -11,7 +15,7 @@ export default function AuthLayout({
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
             Ekklesia
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">إكليسيا</p>
+          <p className="text-sm text-zinc-500 mt-1">{t('subtitle')}</p>
         </div>
         {children}
       </div>

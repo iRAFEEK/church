@@ -3,11 +3,13 @@ import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { LeaderVisitorList } from '@/components/visitors/LeaderVisitorList'
+import { getTranslations } from 'next-intl/server'
 
 export default async function LeaderVisitorsPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
 
+  const t = await getTranslations('visitors')
   const supabase = await createClient()
 
   const { data: visitors } = await supabase
@@ -22,8 +24,8 @@ export default async function LeaderVisitorsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">زواري المُسنَدون</h1>
-        <p className="text-sm text-zinc-500 mt-1">الزوار المُعيَّنون لك للمتابعة</p>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('leaderPageTitle')}</h1>
+        <p className="text-sm text-zinc-500 mt-1">{t('leaderPageSubtitle')}</p>
       </div>
 
       <LeaderVisitorList visitors={visitors || []} slaHours={slaHours} />

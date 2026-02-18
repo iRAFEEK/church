@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,12 +22,6 @@ type Visitor = {
   contacted_at: string | null
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  new: 'جديد',
-  assigned: 'مُسنَد إليك',
-  contacted: 'تم التواصل',
-}
-
 const AGE_AR: Record<string, string> = {
   under_18: 'أقل من 18',
   '18_25': '18–25',
@@ -37,6 +32,7 @@ const AGE_AR: Record<string, string> = {
 }
 
 export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[]; slaHours: number }) {
+  const t = useTranslations('visitors')
   const [localVisitors, setLocalVisitors] = useState(visitors)
   const [selected, setSelected] = useState<Visitor | null>(null)
   const [notes, setNotes] = useState('')
@@ -61,10 +57,10 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
       if (!res.ok) throw new Error()
       const { data } = await res.json()
       setLocalVisitors(prev => prev.map(v => v.id === selected.id ? { ...v, ...data } : v))
-      toast.success('تم تسجيل التواصل')
+      toast.success(t('leaderToastContactLogged'))
       setSelected(null)
     } catch {
-      toast.error('حدث خطأ')
+      toast.error(t('leaderToastError'))
     } finally {
       setLoading(false)
     }
@@ -73,8 +69,8 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
   if (localVisitors.length === 0) {
     return (
       <div className="text-center py-16 text-zinc-400">
-        <p className="text-lg font-medium mb-1">لا يوجد زوار مُسنَدون إليك</p>
-        <p className="text-sm">سيظهر الزوار هنا عند إسنادهم إليك</p>
+        <p className="text-lg font-medium mb-1">{t('leaderEmptyTitle')}</p>
+        <p className="text-sm">{t('leaderEmptySubtitle')}</p>
       </div>
     )
   }
@@ -94,12 +90,12 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                 <span className="font-semibold text-zinc-900">{v.first_name} {v.last_name}</span>
                 {isOverdue(v) && (
                   <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
-                    متأخر عن SLA
+                    {t('queueOverdueSla')}
                   </span>
                 )}
                 {v.status === 'contacted' && (
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                    تم التواصل
+                    {t('statusContacted')}
                   </span>
                 )}
               </div>
@@ -109,7 +105,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                 {v.email && <p>✉️ {v.email}</p>}
                 {v.occupation && <p>💼 {v.occupation}</p>}
                 {v.age_range && <p>🎂 {AGE_AR[v.age_range] || v.age_range}</p>}
-                <p className="text-xs text-zinc-400 mt-1">زار {formatDistanceToNow(v.visited_at)}</p>
+                <p className="text-xs text-zinc-400 mt-1">{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</p>
               </div>
 
               {v.contact_notes && (
@@ -125,7 +121,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                   href={`tel:${v.phone}`}
                   className="text-sm text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors text-center"
                 >
-                  اتصال
+                  {t('leaderCallButton')}
                 </a>
               )}
               {v.status !== 'contacted' && (
@@ -133,7 +129,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                   size="sm"
                   onClick={() => { setSelected(v); setNotes(v.contact_notes || '') }}
                 >
-                  تسجيل تواصل
+                  {t('leaderLogContactButton')}
                 </Button>
               )}
             </div>
@@ -144,7 +140,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تسجيل التواصل مع الزائر</DialogTitle>
+            <DialogTitle>{t('leaderLogContactTitle')}</DialogTitle>
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
@@ -152,15 +148,15 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                 {selected.first_name} {selected.last_name}
               </p>
               <Textarea
-                placeholder="ملاحظات عن التواصل..."
+                placeholder={t('leaderLogContactNotesPH')}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 rows={4}
               />
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setSelected(null)}>إلغاء</Button>
+                <Button variant="outline" onClick={() => setSelected(null)}>{t('leaderLogContactCancel')}</Button>
                 <Button onClick={markContacted} disabled={loading}>
-                  {loading ? 'جارٍ الحفظ...' : 'تسجيل التواصل'}
+                  {loading ? t('leaderLogContactSubmitting') : t('leaderLogContactSubmit')}
                 </Button>
               </div>
             </div>

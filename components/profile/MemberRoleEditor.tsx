@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -18,17 +19,18 @@ interface MemberRoleEditorProps {
   currentUserRole: UserRole
 }
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: 'member', label: 'عضو' },
-  { value: 'group_leader', label: 'قائد مجموعة' },
-  { value: 'ministry_leader', label: 'قائد خدمة' },
-  { value: 'super_admin', label: 'مشرف' },
+const ROLE_KEYS: { value: UserRole; key: string }[] = [
+  { value: 'member', key: 'roleMember' },
+  { value: 'group_leader', key: 'roleGroupLeader' },
+  { value: 'ministry_leader', key: 'roleMinistryLeader' },
+  { value: 'super_admin', key: 'roleSuperAdmin' },
 ]
 
 export function MemberRoleEditor({ memberId, currentRole, currentUserRole }: MemberRoleEditorProps) {
   const [role, setRole] = useState<UserRole>(currentRole)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const t = useTranslations('roleEditor')
 
   const canAssignSuperAdmin = currentUserRole === 'super_admin'
 
@@ -45,11 +47,11 @@ export function MemberRoleEditor({ memberId, currentRole, currentUserRole }: Mem
 
     if (error) {
       setIsLoading(false)
-      toast.error('فشل تغيير الدور', { description: error.message })
+      toast.error(t('toastError'), { description: error.message })
       return
     }
 
-    toast.success('تم تغيير الدور بنجاح')
+    toast.success(t('toastSuccess'))
     setIsLoading(false)
     router.refresh()
   }
@@ -61,11 +63,11 @@ export function MemberRoleEditor({ memberId, currentRole, currentUserRole }: Mem
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {ROLE_OPTIONS.filter(opt =>
+          {ROLE_KEYS.filter(opt =>
             canAssignSuperAdmin ? true : opt.value !== 'super_admin'
           ).map(opt => (
             <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
+              {t(opt.key)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -75,7 +77,7 @@ export function MemberRoleEditor({ memberId, currentRole, currentUserRole }: Mem
         disabled={role === currentRole || isLoading}
         size="sm"
       >
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ'}
+        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('saveButton')}
       </Button>
     </div>
   )

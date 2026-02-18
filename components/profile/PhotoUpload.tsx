@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { Camera, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
   const [preview, setPreview] = useState<string | null>(currentPhotoUrl ?? null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations('photoUpload')
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -27,13 +29,13 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('يرجى اختيار صورة صحيحة / Please select a valid image')
+      toast.error(t('invalidImage'))
       return
     }
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('الصورة كبيرة جداً (الحد الأقصى 5MB) / Image too large (max 5MB)')
+      toast.error(t('tooLarge'))
       return
     }
 
@@ -56,7 +58,7 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
       setUploading(false)
       setPreview(currentPhotoUrl ?? null)
       URL.revokeObjectURL(objectUrl)
-      toast.error('فشل رفع الصورة / Upload failed', { description: error.message })
+      toast.error(t('uploadFailed'), { description: error.message })
       return
     }
 
@@ -67,7 +69,7 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
 
     setUploading(false)
     onUpload(publicUrl)
-    toast.success('تم رفع الصورة / Photo uploaded')
+    toast.success(t('uploadSuccess'))
     URL.revokeObjectURL(objectUrl)
   }
 
@@ -94,7 +96,7 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
         {preview ? (
           <Image
             src={preview}
-            alt="Profile photo"
+            alt={t('altText')}
             fill
             className="object-cover"
             sizes="96px"
@@ -119,7 +121,7 @@ export function PhotoUpload({ currentPhotoUrl, userId, churchId, onUpload, class
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
         >
-          {preview ? 'تغيير الصورة' : 'إضافة صورة'}
+          {preview ? t('changePhoto') : t('addPhoto')}
         </Button>
         {preview && (
           <Button

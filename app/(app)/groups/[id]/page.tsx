@@ -7,18 +7,22 @@ import { Button } from '@/components/ui/button'
 import { GroupMemberManager } from '@/components/groups/GroupMemberManager'
 import { GatheringHistory } from '@/components/gathering/GatheringHistory'
 import { PrayerList } from '@/components/gathering/PrayerList'
+import { getTranslations, getLocale } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
 
-const DAYS_AR: Record<string, string> = {
-  monday: 'الاثنين', tuesday: 'الثلاثاء', wednesday: 'الأربعاء',
-  thursday: 'الخميس', friday: 'الجمعة', saturday: 'السبت', sunday: 'الأحد',
+const DAYS_KEY: Record<string, string> = {
+  monday: 'dayMonday', tuesday: 'dayTuesday', wednesday: 'dayWednesday',
+  thursday: 'dayThursday', friday: 'dayFriday', saturday: 'daySaturday', sunday: 'daySunday',
 }
 
 export default async function GroupLeaderPage({ params }: Params) {
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
+
+  const t = await getTranslations('groups')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -87,6 +91,8 @@ export default async function GroupLeaderPage({ params }: Params) {
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
+  const dateLocale = locale === 'ar' ? 'ar-LB' : 'en-US'
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -94,14 +100,14 @@ export default async function GroupLeaderPage({ params }: Params) {
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{group.name_ar || group.name}</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {DAYS_AR[group.meeting_day] || group.meeting_day}
+            {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as any) : group.meeting_day}
             {group.meeting_time && ` · ${group.meeting_time}`}
             {group.meeting_location && ` · ${group.meeting_location_ar || group.meeting_location}`}
           </p>
         </div>
         {isLeaderOrAdmin && (
           <Link href={`/groups/${id}/gathering/new`}>
-            <Button size="sm">+ اجتماع جديد</Button>
+            <Button size="sm">{t('newGatheringButton')}</Button>
           </Link>
         )}
       </div>
@@ -111,17 +117,17 @@ export default async function GroupLeaderPage({ params }: Params) {
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
             <p className="text-2xl font-bold text-zinc-900">{activeMembers.length}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">عضو</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsMembers')}</p>
           </div>
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
             <p className="text-2xl font-bold text-zinc-900">{completed.length}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">اجتماع</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsGatherings')}</p>
           </div>
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
             <p className="text-2xl font-bold text-zinc-900">
               {avgAttendance !== null ? `${avgAttendance}%` : '—'}
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">معدل الحضور</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsAttendanceRate')}</p>
           </div>
         </div>
       )}
@@ -132,19 +138,19 @@ export default async function GroupLeaderPage({ params }: Params) {
           href={`/groups/${id}/gathering/${upcoming.id}`}
           className="block rounded-xl bg-zinc-900 text-white p-4 hover:bg-zinc-800 transition-colors"
         >
-          <p className="text-xs text-zinc-400 mb-1">الاجتماع القادم</p>
-          <p className="font-semibold">{upcoming.topic || 'اجتماع المجموعة'}</p>
+          <p className="text-xs text-zinc-400 mb-1">{t('upcomingGathering')}</p>
+          <p className="font-semibold">{upcoming.topic || t('defaultGatheringTopic')}</p>
           <p className="text-sm text-zinc-300 mt-1">
-            {new Date(upcoming.scheduled_at).toLocaleDateString('ar-LB', { weekday: 'long', day: 'numeric', month: 'long' })}
+            {new Date(upcoming.scheduled_at).toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <p className="text-xs text-zinc-400 mt-2">افتح لتسجيل الحضور ←</p>
+          <p className="text-xs text-zinc-400 mt-2">{t('openGathering')}</p>
         </Link>
       )}
 
       {/* At-risk alert */}
       {atRiskMembers.length > 0 && isLeaderOrAdmin && (
         <div className="rounded-xl bg-red-50 border border-red-200 p-4">
-          <p className="text-sm font-medium text-red-700 mb-2">⚠️ أعضاء في خطر ({atRiskMembers.length})</p>
+          <p className="text-sm font-medium text-red-700 mb-2">⚠️ {t('atRiskTitle')} ({atRiskMembers.length})</p>
           <div className="space-y-2">
             {atRiskMembers.map((m: { id: string; profile: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null }) => {
               const p = m.profile
@@ -160,7 +166,7 @@ export default async function GroupLeaderPage({ params }: Params) {
                       {p.first_name_ar || p.first_name} {p.last_name_ar || p.last_name}
                     </span>
                   </div>
-                  <Link href={`/admin/members/${p.id}`} className="text-xs text-red-500 hover:text-red-700">عرض الملف</Link>
+                  <Link href={`/admin/members/${p.id}`} className="text-xs text-red-500 hover:text-red-700">{t('atRiskViewProfile')}</Link>
                 </div>
               )
             })}
@@ -179,7 +185,7 @@ export default async function GroupLeaderPage({ params }: Params) {
       {/* Gathering History */}
       {gatherings && gatherings.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 mb-3">سجل الاجتماعات</h2>
+          <h2 className="text-lg font-semibold text-zinc-900 mb-3">{t('gatheringHistory')}</h2>
           <GatheringHistory gatherings={gatherings as Parameters<typeof GatheringHistory>[0]['gatherings']} groupId={id} />
         </div>
       )}
@@ -187,7 +193,7 @@ export default async function GroupLeaderPage({ params }: Params) {
       {/* Active Prayer Requests */}
       {(activePrayers && activePrayers.length > 0 || isLeaderOrAdmin) && (
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 mb-3">طلبات الصلاة النشطة</h2>
+          <h2 className="text-lg font-semibold text-zinc-900 mb-3">{t('activePrayers')}</h2>
           <PrayerList
             gatheringId=""
             groupId={id}

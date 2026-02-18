@@ -4,6 +4,7 @@ import { redirect, notFound } from 'next/navigation'
 import { AttendanceRoster } from '@/components/gathering/AttendanceRoster'
 import { PrayerList } from '@/components/gathering/PrayerList'
 import { formatGatheringDate, formatGatheringTime } from '@/lib/gatherings'
+import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string; gatheringId: string }> }
 
@@ -11,6 +12,8 @@ export default async function GatheringPage({ params }: Params) {
   const { id: group_id, gatheringId } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
+
+  const t = await getTranslations('gathering')
 
   const supabase = await createClient()
 
@@ -86,7 +89,7 @@ export default async function GatheringPage({ params }: Params) {
       <div>
         <p className="text-sm text-zinc-500">{group.name_ar || group.name}</p>
         <h1 className="text-2xl font-bold text-zinc-900 mt-0.5">
-          {gathering.topic || 'اجتماع المجموعة'}
+          {gathering.topic || t('defaultTopic')}
         </h1>
         <p className="text-sm text-zinc-500 mt-1">
           {formatGatheringDate(gathering.scheduled_at)} · {formatGatheringTime(gathering.scheduled_at)}
@@ -96,7 +99,7 @@ export default async function GatheringPage({ params }: Params) {
         )}
         {isCompleted && (
           <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-            ✓ اكتمل الاجتماع
+            {t('completed')}
           </span>
         )}
       </div>
@@ -122,7 +125,7 @@ export default async function GatheringPage({ params }: Params) {
       {/* Notes */}
       {gathering.notes && (
         <div className="bg-zinc-50 rounded-xl border border-zinc-200 p-4">
-          <p className="text-xs font-medium text-zinc-500 mb-2">ملاحظات الاجتماع</p>
+          <p className="text-xs font-medium text-zinc-500 mb-2">{t('notes')}</p>
           <p className="text-sm text-zinc-700 leading-relaxed">{gathering.notes}</p>
         </div>
       )}

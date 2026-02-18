@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -36,23 +37,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const milestoneSchema = z.object({
-  type: z.enum(['baptism', 'salvation', 'bible_plan_completed', 'leadership_training', 'marriage', 'other']),
-  title: z.string().min(1, 'العنوان مطلوب'),
-  title_ar: z.string().optional(),
-  date: z.string().optional(),
-  notes: z.string().optional(),
-})
-
-type MilestoneForm = z.infer<typeof milestoneSchema>
-
-const MILESTONE_TYPES = [
-  { value: 'baptism', label: 'معمودية', labelEn: 'Baptism' },
-  { value: 'salvation', label: 'خلاص', labelEn: 'Salvation' },
-  { value: 'bible_plan_completed', label: 'قراءة الكتاب المقدس', labelEn: 'Bible Plan Completed' },
-  { value: 'leadership_training', label: 'تدريب قيادي', labelEn: 'Leadership Training' },
-  { value: 'marriage', label: 'زواج', labelEn: 'Marriage' },
-  { value: 'other', label: 'أخرى', labelEn: 'Other' },
+const MILESTONE_TYPE_KEYS = [
+  { value: 'baptism', key: 'typeBaptism' },
+  { value: 'salvation', key: 'typeSalvation' },
+  { value: 'bible_plan_completed', key: 'typeBiblePlan' },
+  { value: 'leadership_training', key: 'typeLeadership' },
+  { value: 'marriage', key: 'typeMarriage' },
+  { value: 'other', key: 'typeOther' },
 ] as const
 
 interface AddMilestoneProps {
@@ -64,6 +55,17 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const t = useTranslations('milestone')
+
+  const milestoneSchema = z.object({
+    type: z.enum(['baptism', 'salvation', 'bible_plan_completed', 'leadership_training', 'marriage', 'other']),
+    title: z.string().min(1, t('validationTitle')),
+    title_ar: z.string().optional(),
+    date: z.string().optional(),
+    notes: z.string().optional(),
+  })
+
+  type MilestoneForm = z.infer<typeof milestoneSchema>
 
   const form = useForm<MilestoneForm>({
     resolver: zodResolver(milestoneSchema),
@@ -94,11 +96,11 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
 
     if (error) {
       setIsLoading(false)
-      toast.error('فشل الحفظ', { description: error.message })
+      toast.error(t('toastError'), { description: error.message })
       return
     }
 
-    toast.success('تمت إضافة المرحلة الروحية')
+    toast.success(t('toastSuccess'))
     setIsLoading(false)
     setOpen(false)
     form.reset()
@@ -110,12 +112,12 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plus className="h-4 w-4" />
-          إضافة مرحلة
+          {t('addButton')}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>إضافة مرحلة روحية</DialogTitle>
+          <DialogTitle>{t('dialogTitle')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -124,7 +126,7 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>النوع / Type</FormLabel>
+                  <FormLabel>{t('typeLabel')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -132,9 +134,9 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {MILESTONE_TYPES.map(t => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
+                      {MILESTONE_TYPE_KEYS.map(mt => (
+                        <SelectItem key={mt.value} value={mt.value}>
+                          {t(mt.key)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -149,9 +151,9 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>العنوان *</FormLabel>
+                  <FormLabel>{t('titleLabel')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="معمودية في الكنيسة..." {...field} />
+                    <Input placeholder={t('titlePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +165,7 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>التاريخ (اختياري)</FormLabel>
+                  <FormLabel>{t('dateLabel')}</FormLabel>
                   <FormControl>
                     <Input type="date" dir="ltr" {...field} />
                   </FormControl>
@@ -177,9 +179,9 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>ملاحظات (اختياري)</FormLabel>
+                  <FormLabel>{t('notesLabel')}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="أضف ملاحظات..." rows={3} {...field} />
+                    <Textarea placeholder={t('notesPlaceholder')} rows={3} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,10 +190,10 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                إلغاء
+                {t('cancelButton')}
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'حفظ'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('saveButton')}
               </Button>
             </DialogFooter>
           </form>

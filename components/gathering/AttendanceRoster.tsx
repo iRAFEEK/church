@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -18,11 +19,18 @@ type Member = {
   attendance_status: string
 }
 
-const STATUS_CONFIG: Record<AttendanceStatus, { label: string; color: string; bg: string }> = {
-  present: { label: 'حاضر', color: 'text-green-700', bg: 'bg-green-100' },
-  late:    { label: 'متأخر', color: 'text-yellow-700', bg: 'bg-yellow-100' },
-  excused: { label: 'معذور', color: 'text-blue-700', bg: 'bg-blue-100' },
-  absent:  { label: 'غائب', color: 'text-zinc-500', bg: 'bg-zinc-100' },
+const STATUS_KEYS: Record<AttendanceStatus, string> = {
+  present: 'statusPresent',
+  late:    'statusLate',
+  excused: 'statusExcused',
+  absent:  'statusAbsent',
+}
+
+const STATUS_STYLE: Record<AttendanceStatus, { color: string; bg: string }> = {
+  present: { color: 'text-green-700', bg: 'bg-green-100' },
+  late:    { color: 'text-yellow-700', bg: 'bg-yellow-100' },
+  excused: { color: 'text-blue-700', bg: 'bg-blue-100' },
+  absent:  { color: 'text-zinc-500', bg: 'bg-zinc-100' },
 }
 
 const STATUS_ORDER: AttendanceStatus[] = ['present', 'late', 'excused', 'absent']
@@ -40,6 +48,7 @@ export function AttendanceRoster({
   canManage: boolean
   isCompleted: boolean
 }) {
+  const t = useTranslations('attendance')
   const router = useRouter()
   const [members, setMembers] = useState(initialMembers)
   const [submitting, setSubmitting] = useState(false)
@@ -79,9 +88,9 @@ export function AttendanceRoster({
         body: JSON.stringify({ records }),
       })
       if (!res.ok) throw new Error()
-      toast.success('تم حفظ الحضور')
+      toast.success(t('toastSaved'))
     } catch {
-      toast.error('حدث خطأ في حفظ الحضور')
+      toast.error(t('toastSaveError'))
     } finally {
       setSubmitting(false)
     }
@@ -99,10 +108,10 @@ export function AttendanceRoster({
           body: JSON.stringify({ status: 'completed' }),
         })
         if (!res.ok) throw new Error()
-        toast.success('اكتمل الاجتماع وتم التحقق من الغيابات')
+        toast.success(t('toastCompleted'))
         router.refresh()
       } catch {
-        toast.error('حدث خطأ')
+        toast.error(t('toastError'))
       }
     })
   }
@@ -112,16 +121,16 @@ export function AttendanceRoster({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
         <div>
-          <h2 className="font-semibold text-zinc-900">الحضور</h2>
+          <h2 className="font-semibold text-zinc-900">{t('sectionTitle')}</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            {presentCount} حاضر من أصل {members.length}
+            {t('presentCount', { present: presentCount, total: members.length })}
           </p>
         </div>
         {canManage && !isCompleted && (
-          <div className="text-xs text-zinc-400">اضغط على الاسم لتغيير الحالة</div>
+          <div className="text-xs text-zinc-400">{t('clickHint')}</div>
         )}
         {isCompleted && (
-          <span className="text-xs text-green-600 font-medium">✓ مكتمل</span>
+          <span className="text-xs text-green-600 font-medium">{t('completedLabel')}</span>
         )}
       </div>
 
@@ -136,11 +145,11 @@ export function AttendanceRoster({
       {/* Roster */}
       <div className="divide-y divide-zinc-50">
         {members.length === 0 ? (
-          <p className="text-center py-8 text-sm text-zinc-400">لا يوجد أعضاء في المجموعة</p>
+          <p className="text-center py-8 text-sm text-zinc-400">{t('emptyMembers')}</p>
         ) : (
           members.map(m => {
             const status = m.attendance_status as AttendanceStatus
-            const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.absent
+            const style = STATUS_STYLE[status] || STATUS_STYLE.absent
             const name = `${m.first_name_ar || m.first_name || ''} ${m.last_name_ar || m.last_name || ''}`.trim()
             const initials = (m.first_name_ar || m.first_name || '?')[0].toUpperCase()
 
@@ -165,17 +174,17 @@ export function AttendanceRoster({
                         onClick={e => { e.stopPropagation(); setStatus(m.profile_id, s) }}
                         className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
                           status === s
-                            ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color}`
+                            ? `${STATUS_STYLE[s].bg} ${STATUS_STYLE[s].color}`
                             : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100'
                         }`}
                       >
-                        {STATUS_CONFIG[s].label}
+                        {t(STATUS_KEYS[s])}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${cfg.bg} ${cfg.color}`}>
-                    {cfg.label}
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${style.bg} ${style.color}`}>
+                    {t(STATUS_KEYS[status] || STATUS_KEYS.absent)}
                   </span>
                 )}
               </div>
@@ -193,14 +202,14 @@ export function AttendanceRoster({
             onClick={submitAttendance}
             disabled={submitting || completing}
           >
-            {submitting ? 'جارٍ الحفظ...' : 'حفظ الحضور'}
+            {submitting ? t('saving') : t('saveButton')}
           </Button>
           <Button
             className="flex-1 bg-green-600 hover:bg-green-700"
             onClick={completeGathering}
             disabled={submitting || completing}
           >
-            {completing ? 'جارٍ الإنهاء...' : 'إنهاء الاجتماع ✓'}
+            {completing ? t('completing') : t('completeButton')}
           </Button>
         </div>
       )}

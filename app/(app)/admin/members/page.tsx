@@ -8,28 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { UserCheck, Search } from 'lucide-react'
+import { getTranslations, getLocale } from 'next-intl/server'
 import type { Profile } from '@/types'
-
-const ROLE_LABELS: Record<string, { ar: string; color: string }> = {
-  member: { ar: 'عضو', color: 'secondary' },
-  group_leader: { ar: 'قائد مجموعة', color: 'default' },
-  ministry_leader: { ar: 'قائد خدمة', color: 'default' },
-  super_admin: { ar: 'مشرف', color: 'default' },
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  active: 'success',
-  inactive: 'secondary',
-  at_risk: 'warning',
-  visitor: 'outline',
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'نشط',
-  inactive: 'غير نشط',
-  at_risk: 'يحتاج متابعة',
-  visitor: 'زائر',
-}
 
 interface SearchParams {
   q?: string
@@ -51,6 +31,9 @@ export default async function MembersPage({
   if (!isAdmin(profile)) {
     redirect('/')
   }
+
+  const t = await getTranslations('members')
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -83,13 +66,34 @@ export default async function MembersPage({
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
   const currentPage = page + 1
 
+  const ROLE_LABELS: Record<string, { label: string; color: string }> = {
+    member: { label: t('roleMember'), color: 'secondary' },
+    group_leader: { label: t('roleGroupLeader'), color: 'default' },
+    ministry_leader: { label: t('roleMinistryLeader'), color: 'default' },
+    super_admin: { label: t('roleSuperAdmin'), color: 'default' },
+  }
+
+  const STATUS_COLORS: Record<string, string> = {
+    active: 'success',
+    inactive: 'secondary',
+    at_risk: 'warning',
+    visitor: 'outline',
+  }
+
+  const STATUS_LABELS: Record<string, string> = {
+    active: t('statusActive'),
+    inactive: t('statusInactive'),
+    at_risk: t('statusAtRisk'),
+    visitor: t('statusVisitor'),
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">الأعضاء</h1>
-          <p className="text-muted-foreground text-sm">{count ?? 0} عضو في الكنيسة</p>
+          <h1 className="text-2xl font-bold">{t('pageTitle')}</h1>
+          <p className="text-muted-foreground text-sm">{t('pageSubtitle', { count: count ?? 0 })}</p>
         </div>
       </div>
 
@@ -102,7 +106,7 @@ export default async function MembersPage({
               <Input
                 name="q"
                 defaultValue={search}
-                placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                placeholder={t('searchPlaceholder')}
                 className="ps-9"
               />
             </div>
@@ -112,11 +116,11 @@ export default async function MembersPage({
               defaultValue={roleFilter ?? ''}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">كل الأدوار</option>
-              <option value="member">عضو</option>
-              <option value="group_leader">قائد مجموعة</option>
-              <option value="ministry_leader">قائد خدمة</option>
-              <option value="super_admin">مشرف</option>
+              <option value="">{t('filterAllRoles')}</option>
+              <option value="member">{t('roleMember')}</option>
+              <option value="group_leader">{t('roleGroupLeader')}</option>
+              <option value="ministry_leader">{t('roleMinistryLeader')}</option>
+              <option value="super_admin">{t('roleSuperAdmin')}</option>
             </select>
 
             <select
@@ -124,13 +128,13 @@ export default async function MembersPage({
               defaultValue={statusFilter ?? ''}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">كل الحالات</option>
-              <option value="active">نشط</option>
-              <option value="inactive">غير نشط</option>
-              <option value="at_risk">يحتاج متابعة</option>
+              <option value="">{t('filterAllStatuses')}</option>
+              <option value="active">{t('statusActive')}</option>
+              <option value="inactive">{t('statusInactive')}</option>
+              <option value="at_risk">{t('statusAtRisk')}</option>
             </select>
 
-            <Button type="submit" variant="outline">بحث</Button>
+            <Button type="submit" variant="outline">{t('searchButton')}</Button>
           </form>
         </CardContent>
       </Card>
@@ -142,11 +146,11 @@ export default async function MembersPage({
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
-                  <th className="ps-6 py-3 text-sm font-medium text-muted-foreground">العضو</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">الدور</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">الحالة</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">الهاتف</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">تاريخ الانضمام</th>
+                  <th className="ps-6 py-3 text-sm font-medium text-muted-foreground">{t('tableMember')}</th>
+                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableRole')}</th>
+                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableStatus')}</th>
+                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tablePhone')}</th>
+                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableJoinedAt')}</th>
                   <th className="pe-6 py-3"></th>
                 </tr>
               </thead>
@@ -175,7 +179,7 @@ export default async function MembersPage({
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant="secondary" className="text-xs">
-                          {ROLE_LABELS[member.role]?.ar ?? member.role}
+                          {ROLE_LABELS[member.role]?.label ?? member.role}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
@@ -191,12 +195,12 @@ export default async function MembersPage({
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {member.joined_church_at
-                          ? new Date(member.joined_church_at).toLocaleDateString('ar')
+                          ? new Date(member.joined_church_at).toLocaleDateString(locale)
                           : '—'}
                       </td>
                       <td className="pe-6 py-3">
                         <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/admin/members/${member.id}`}>عرض</Link>
+                          <Link href={`/admin/members/${member.id}`}>{t('tableViewButton')}</Link>
                         </Button>
                       </td>
                     </tr>
@@ -210,17 +214,17 @@ export default async function MembersPage({
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-3 border-t">
               <p className="text-sm text-muted-foreground">
-                صفحة {currentPage} من {totalPages}
+                {t('paginationPage', { current: currentPage, total: totalPages })}
               </p>
               <div className="flex gap-2">
                 {currentPage > 1 && (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`?q=${search}&page=${currentPage - 1}`}>السابق</Link>
+                    <Link href={`?q=${search}&page=${currentPage - 1}`}>{t('paginationPrevious')}</Link>
                   </Button>
                 )}
                 {currentPage < totalPages && (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`?q=${search}&page=${currentPage + 1}`}>التالي</Link>
+                    <Link href={`?q=${search}&page=${currentPage + 1}`}>{t('paginationNext')}</Link>
                   </Button>
                 )}
               </div>
@@ -231,9 +235,9 @@ export default async function MembersPage({
         <Card>
           <CardContent className="py-16 text-center">
             <UserCheck className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-1">لا يوجد أعضاء</h3>
+            <h3 className="text-lg font-semibold mb-1">{t('emptyTitle')}</h3>
             <p className="text-muted-foreground text-sm">
-              {search ? 'لا توجد نتائج لهذا البحث' : 'لم يتم إضافة أعضاء بعد'}
+              {search ? t('emptyNoResults') : t('emptyNone')}
             </p>
           </CardContent>
         </Card>

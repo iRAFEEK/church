@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { useTranslations } from 'next-intl'
 
 type Leader = {
   id: string
@@ -30,24 +31,24 @@ type Group = {
 
 type Ministry = { id: string; name: string; name_ar: string | null }
 
-const GROUP_TYPE_AR: Record<string, string> = {
-  small_group: 'مجموعة صغيرة',
-  youth: 'شباب',
-  women: 'نساء',
-  men: 'رجال',
-  family: 'عائلات',
-  prayer: 'صلاة',
-  other: 'أخرى',
+const GROUP_TYPE_KEYS: Record<string, string> = {
+  small_group: 'typeSmallGroup',
+  youth: 'typeYouth',
+  women: 'typeWomen',
+  men: 'typeMen',
+  family: 'typeFamily',
+  prayer: 'typePrayer',
+  other: 'typeOther',
 }
 
-const DAYS_AR: Record<string, string> = {
-  monday: 'الاثنين',
-  tuesday: 'الثلاثاء',
-  wednesday: 'الأربعاء',
-  thursday: 'الخميس',
-  friday: 'الجمعة',
-  saturday: 'السبت',
-  sunday: 'الأحد',
+const DAY_KEYS: Record<string, string> = {
+  monday: 'dayMonday',
+  tuesday: 'dayTuesday',
+  wednesday: 'dayWednesday',
+  thursday: 'dayThursday',
+  friday: 'dayFriday',
+  saturday: 'daySaturday',
+  sunday: 'daySunday',
 }
 
 export function GroupsTable({
@@ -59,6 +60,7 @@ export function GroupsTable({
   ministries: Ministry[]
   isAdmin: boolean
 }) {
+  const t = useTranslations('groups')
   const [filter, setFilter] = useState<string>('all')
   const [ministryFilter, setMinistryFilter] = useState<string>('all')
 
@@ -71,8 +73,8 @@ export function GroupsTable({
   if (groups.length === 0) {
     return (
       <div className="text-center py-16 text-zinc-400">
-        <p className="font-medium">لا توجد مجموعات بعد</p>
-        <p className="text-sm mt-1">أنشئ أول مجموعة لبدء تنظيم الكنيسة</p>
+        <p className="font-medium">{t('tableEmptyTitle')}</p>
+        <p className="text-sm mt-1">{t('tableEmptySubtitle')}</p>
       </div>
     )
   }
@@ -86,9 +88,9 @@ export function GroupsTable({
           value={filter}
           onChange={e => setFilter(e.target.value)}
         >
-          <option value="all">كل الأنواع</option>
-          {Object.entries(GROUP_TYPE_AR).map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
+          <option value="all">{t('filterAllTypes')}</option>
+          {Object.entries(GROUP_TYPE_KEYS).map(([v, key]) => (
+            <option key={v} value={v}>{t(key)}</option>
           ))}
         </select>
 
@@ -98,7 +100,7 @@ export function GroupsTable({
             value={ministryFilter}
             onChange={e => setMinistryFilter(e.target.value)}
           >
-            <option value="all">كل الخدمات</option>
+            <option value="all">{t('filterAllMinistries')}</option>
             {ministries.map(m => (
               <option key={m.id} value={m.id}>{m.name_ar || m.name}</option>
             ))}
@@ -112,7 +114,7 @@ export function GroupsTable({
           const memberCount = g.group_members?.[0]?.count || 0
           const leaderName = g.leader
             ? `${g.leader.first_name_ar || g.leader.first_name} ${g.leader.last_name_ar || g.leader.last_name}`
-            : 'غير محدد'
+            : t('leaderUnset')
 
           return (
             <Link
@@ -127,27 +129,27 @@ export function GroupsTable({
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
-                    {GROUP_TYPE_AR[g.type] || g.type}
+                    {GROUP_TYPE_KEYS[g.type] ? t(GROUP_TYPE_KEYS[g.type]) : g.type}
                   </span>
                   {!g.is_active && (
-                    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">غير نشط</span>
+                    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">{t('detailInactive')}</span>
                   )}
                 </div>
               </div>
 
               <div className="text-xs text-zinc-500 space-y-1 mt-3">
-                <p>👤 {leaderName}</p>
-                <p>👥 {memberCount} عضو{g.max_members ? ` / ${g.max_members}` : ''}</p>
+                <p>{leaderName}</p>
+                <p>{memberCount} {t('leaderStatsMembers')}{g.max_members ? ` / ${g.max_members}` : ''}</p>
                 {g.meeting_day && (
-                  <p>📅 {DAYS_AR[g.meeting_day] || g.meeting_day}</p>
+                  <p>{DAY_KEYS[g.meeting_day] ? t(DAY_KEYS[g.meeting_day]) : g.meeting_day}</p>
                 )}
                 {g.ministry && (
-                  <p>🏛 {g.ministry.name_ar || g.ministry.name}</p>
+                  <p>{g.ministry.name_ar || g.ministry.name}</p>
                 )}
               </div>
 
               {!g.is_open && (
-                <p className="text-xs text-orange-500 mt-2">المجموعة مغلقة</p>
+                <p className="text-xs text-orange-500 mt-2">{t('groupClosed')}</p>
               )}
             </Link>
           )

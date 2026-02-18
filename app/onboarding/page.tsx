@@ -7,11 +7,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Form,
   FormControl,
@@ -36,23 +36,24 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-const onboardingSchema = z.object({
-  first_name_ar: z.string().min(1, 'الاسم الأول مطلوب'),
-  last_name_ar: z.string().min(1, 'اسم العائلة مطلوب'),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  phone: z.string().min(8, 'رقم الهاتف غير صحيح').optional().or(z.literal('')),
-  date_of_birth: z.string().optional(),
-  gender: z.enum(['male', 'female']).optional(),
-  occupation_ar: z.string().optional(),
-  notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']).default('whatsapp'),
-})
-
-type OnboardingForm = z.infer<typeof onboardingSchema>
-
 export default function OnboardingPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const t = useTranslations('onboarding')
+
+  const onboardingSchema = z.object({
+    first_name_ar: z.string().min(1, t('validationFirstName')),
+    last_name_ar: z.string().min(1, t('validationLastName')),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    phone: z.string().min(8, t('validationPhone')).optional().or(z.literal('')),
+    date_of_birth: z.string().optional(),
+    gender: z.enum(['male', 'female']).optional(),
+    occupation_ar: z.string().optional(),
+    notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']).default('whatsapp'),
+  })
+
+  type OnboardingForm = z.infer<typeof onboardingSchema>
 
   const form = useForm<OnboardingForm>({
     resolver: zodResolver(onboardingSchema),
@@ -97,14 +98,14 @@ export default function OnboardingPage() {
 
     if (error) {
       setIsLoading(false)
-      toast.error('حدث خطأ / An error occurred', {
+      toast.error(t('toastError'), {
         description: error.message,
       })
       return
     }
 
-    toast.success('أهلاً بك! / Welcome!', {
-      description: 'تم إنشاء ملفك الشخصي بنجاح',
+    toast.success(t('toastSuccess'), {
+      description: t('toastSuccessDesc'),
     })
     router.push('/')
     router.refresh()
@@ -114,15 +115,15 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">مرحباً بك</h1>
-          <p className="text-sm text-zinc-500 mt-1">Welcome to the family</p>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{t('welcome')}</h1>
+          <p className="text-sm text-zinc-500 mt-1">{t('welcomeSubtitle')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>أكمل ملفك الشخصي</CardTitle>
+            <CardTitle>{t('cardTitle')}</CardTitle>
             <CardDescription>
-              نحتاج بعض المعلومات لإعداد حسابك. كل المعلومات سرية.
+              {t('cardDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -131,7 +132,7 @@ export default function OnboardingPage() {
                 {/* Arabic Name (required) */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    الاسم بالعربية *
+                    {t('arabicNameSection')}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -139,9 +140,9 @@ export default function OnboardingPage() {
                       name="first_name_ar"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>الاسم الأول</FormLabel>
+                          <FormLabel>{t('firstNameAr')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="يوحنا" {...field} />
+                            <Input placeholder={t('firstNameArPlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -152,9 +153,9 @@ export default function OnboardingPage() {
                       name="last_name_ar"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>اسم العائلة</FormLabel>
+                          <FormLabel>{t('lastNameAr')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="الحنا" {...field} />
+                            <Input placeholder={t('lastNameArPlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -166,7 +167,7 @@ export default function OnboardingPage() {
                 {/* English Name (optional) */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    الاسم بالإنجليزية (اختياري)
+                    {t('englishNameSection')}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -174,9 +175,9 @@ export default function OnboardingPage() {
                       name="first_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>First Name</FormLabel>
+                          <FormLabel>{t('firstNameEn')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="John" dir="ltr" {...field} />
+                            <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -187,9 +188,9 @@ export default function OnboardingPage() {
                       name="last_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Last Name</FormLabel>
+                          <FormLabel>{t('lastNameEn')}</FormLabel>
                           <FormControl>
-                            <Input placeholder="Hanna" dir="ltr" {...field} />
+                            <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -204,17 +205,17 @@ export default function OnboardingPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>رقم الهاتف / Phone</FormLabel>
+                      <FormLabel>{t('phone')}</FormLabel>
                       <FormControl>
                         <Input
                           type="tel"
-                          placeholder="+961 XX XXX XXX"
+                          placeholder={t('phonePlaceholder')}
                           dir="ltr"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        سيُستخدم لإرسال الإشعارات عبر واتساب
+                        {t('phoneDescription')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -227,16 +228,16 @@ export default function OnboardingPage() {
                   name="gender"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الجنس / Gender</FormLabel>
+                      <FormLabel>{t('gender')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="اختر..." />
+                            <SelectValue placeholder={t('genderPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="male">ذكر / Male</SelectItem>
-                          <SelectItem value="female">أنثى / Female</SelectItem>
+                          <SelectItem value="male">{t('genderMale')}</SelectItem>
+                          <SelectItem value="female">{t('genderFemale')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -250,7 +251,7 @@ export default function OnboardingPage() {
                   name="date_of_birth"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>تاريخ الميلاد / Date of Birth</FormLabel>
+                      <FormLabel>{t('dateOfBirth')}</FormLabel>
                       <FormControl>
                         <Input type="date" dir="ltr" {...field} />
                       </FormControl>
@@ -265,9 +266,9 @@ export default function OnboardingPage() {
                   name="occupation_ar"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>المهنة / Occupation</FormLabel>
+                      <FormLabel>{t('occupation')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="مثال: مهندس، طالب، معلم..." {...field} />
+                        <Input placeholder={t('occupationPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -280,7 +281,7 @@ export default function OnboardingPage() {
                   name="notification_pref"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>تفضيل الإشعارات / Notification Preference</FormLabel>
+                      <FormLabel>{t('notificationPref')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -288,11 +289,11 @@ export default function OnboardingPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="whatsapp">واتساب / WhatsApp</SelectItem>
-                          <SelectItem value="sms">رسائل نصية / SMS</SelectItem>
-                          <SelectItem value="email">بريد إلكتروني / Email</SelectItem>
-                          <SelectItem value="all">الكل / All</SelectItem>
-                          <SelectItem value="none">لا شيء / None</SelectItem>
+                          <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
+                          <SelectItem value="sms">{t('notifSms')}</SelectItem>
+                          <SelectItem value="email">{t('notifEmail')}</SelectItem>
+                          <SelectItem value="all">{t('notifAll')}</SelectItem>
+                          <SelectItem value="none">{t('notifNone')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -309,10 +310,10 @@ export default function OnboardingPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      جاري الحفظ...
+                      {t('submitting')}
                     </>
                   ) : (
-                    'ابدأ / Get Started →'
+                    t('submitButton')
                   )}
                 </Button>
               </form>
