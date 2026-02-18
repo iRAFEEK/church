@@ -1,15 +1,14 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Pencil, Phone, Mail, MapPin, Briefcase, Calendar, Star } from 'lucide-react'
+import { Pencil, Phone, Mail, Briefcase, Calendar, Star } from 'lucide-react'
 import type { ProfileMilestone } from '@/types'
+import { AttendanceHistory } from '@/components/profile/AttendanceHistory'
 
 const MILESTONE_ICONS: Record<string, string> = {
   baptism: '💧',
@@ -52,6 +51,13 @@ export default async function ProfilePage() {
     .select('*')
     .eq('profile_id', profile.id)
     .order('date', { ascending: false })
+
+  const { data: attendanceRecords } = await supabase
+    .from('attendance')
+    .select('*, gathering:gathering_id(id, scheduled_at, topic, status, group:group_id(id, name, name_ar))')
+    .eq('profile_id', profile.id)
+    .order('marked_at', { ascending: false })
+    .limit(40)
 
   const displayNameAr = `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim()
   const displayNameEn = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim()
@@ -111,9 +117,10 @@ export default async function ProfilePage() {
 
       {/* Tabs */}
       <Tabs defaultValue="info" dir="rtl">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="info">المعلومات الشخصية</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="info">المعلومات</TabsTrigger>
           <TabsTrigger value="milestones">المراحل الروحية</TabsTrigger>
+          <TabsTrigger value="attendance">الحضور</TabsTrigger>
         </TabsList>
 
         {/* Personal Info Tab */}
@@ -202,6 +209,18 @@ export default async function ProfilePage() {
                   <p className="text-sm">لا توجد مراحل روحية مسجلة بعد</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Attendance Tab */}
+        <TabsContent value="attendance">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">سجل الحضور</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AttendanceHistory records={(attendanceRecords || []) as Parameters<typeof AttendanceHistory>[0]['records']} />
             </CardContent>
           </Card>
         </TabsContent>
