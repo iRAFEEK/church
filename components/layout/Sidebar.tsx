@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
   Calendar, Heart, Megaphone, Music, BookOpen, BarChart3,
-  Settings, ChevronLeft, ChevronRight, LogOut
+  Settings, ChevronLeft, ChevronRight, LogOut, Building2, QrCode, UserRound
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation'
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
   Calendar, Heart, Megaphone, Music, BookOpen, BarChart3, Settings,
+  Building2, QrCode, UserRound,
 }
 
 interface SidebarProps {
