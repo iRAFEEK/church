@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/join',        // QR visitor form (Phase 2)
   '/api/webhooks', // Twilio/external webhooks
   '/api/visitors', // Public visitor submission (Phase 2)
+  '/api/cron',     // Cron jobs (secured by CRON_SECRET)
 ]
 
 function isPublicPath(pathname: string): boolean {
@@ -42,8 +43,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired
-  const { data: { user } } = await supabase.auth.getUser()
+  // Use getSession for fast local JWT check (no network round trip).
+  // Secure verification happens in getCurrentUserWithRole() on each page.
+  const { data: { session } } = await supabase.auth.getSession()
 
   const { pathname } = request.nextUrl
 
@@ -53,7 +55,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect to login if not authenticated
-  if (!user) {
+  if (!session) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)

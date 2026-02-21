@@ -41,3 +41,6 @@ next-env.d.ts
 *.pdf
 *.html
 *Supabase_files/
+
+# large bible seed data
+data/bible/

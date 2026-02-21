@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bell, CheckCheck } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ interface Notification {
 }
 
 export function NotificationBell() {
+  const router = useRouter()
   const t = useTranslations('notifications')
   const locale = useLocale()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -99,11 +101,11 @@ export function NotificationBell() {
     setOpen(false)
     // Navigate based on reference type
     if (notification.reference_type === 'visitor' && notification.reference_id) {
-      window.location.href = '/admin/visitors'
+      router.push('/admin/visitors')
     } else if (notification.reference_type === 'gathering' && notification.reference_id) {
-      window.location.href = `/groups`
+      router.push('/groups')
     } else if (notification.reference_type === 'profile' && notification.reference_id) {
-      window.location.href = `/admin/members/${notification.reference_id}`
+      router.push(`/admin/members/${notification.reference_id}`)
     }
   }
 

@@ -249,6 +249,152 @@ export interface Song {
 }
 
 // ============================================================
+// PHASE 5: ANNOUNCEMENTS & SERVING
+// ============================================================
+
+export type AnnouncementStatus = 'draft' | 'published' | 'archived'
+export type ServingSignupStatus = 'signed_up' | 'confirmed' | 'cancelled'
+
+export interface Announcement {
+  id: string
+  church_id: string
+  created_by: string | null
+  title: string
+  title_ar: string | null
+  body: string | null
+  body_ar: string | null
+  status: AnnouncementStatus
+  is_pinned: boolean
+  expires_at: string | null
+  published_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ServingArea {
+  id: string
+  church_id: string
+  ministry_id: string | null
+  name: string
+  name_ar: string | null
+  description: string | null
+  description_ar: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ServingSlot {
+  id: string
+  serving_area_id: string
+  church_id: string
+  title: string
+  title_ar: string | null
+  date: string
+  start_time: string | null
+  end_time: string | null
+  max_volunteers: number | null
+  notes: string | null
+  notes_ar: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ServingSignup {
+  id: string
+  slot_id: string
+  church_id: string
+  profile_id: string
+  status: ServingSignupStatus
+  signed_up_at: string
+  cancelled_at: string | null
+}
+
+// ============================================================
+// PHASE 7: BIBLE READER
+// ============================================================
+
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange'
+
+export interface BibleBookmark {
+  id: string
+  profile_id: string
+  church_id: string
+  bible_id: string
+  book_id: string
+  chapter_id: string
+  verse_id: string | null
+  reference_label: string
+  reference_label_ar: string | null
+  note: string | null
+  created_at: string
+}
+
+export interface BibleHighlight {
+  id: string
+  profile_id: string
+  church_id: string
+  bible_id: string
+  book_id: string
+  chapter_id: string
+  verse_id: string
+  reference_label: string
+  reference_label_ar: string | null
+  color: HighlightColor
+  created_at: string
+}
+
+export interface ApiBible {
+  id: string
+  name: string
+  nameLocal: string
+  language: { id: string; name: string; nameLocal: string }
+  abbreviation: string
+  abbreviationLocal: string
+  description: string
+  descriptionLocal: string
+}
+
+export interface ApiBibleBook {
+  id: string
+  bibleId: string
+  abbreviation: string
+  name: string
+  nameLong: string
+}
+
+export interface ApiBibleChapter {
+  id: string
+  bibleId: string
+  bookId: string
+  number: string
+  reference: string
+}
+
+export interface ApiBibleChapterContent {
+  id: string
+  bibleId: string
+  bookId: string
+  number: string
+  reference: string
+  content: string
+  verseCount: number
+  copyright: string
+}
+
+export interface ApiBibleVerse {
+  id: string
+  orgId: string
+  bibleId: string
+  bookId: string
+  chapterId: string
+  reference: string
+  content: string
+  copyright: string
+}
+
+// ============================================================
 // API RESPONSE TYPES
 // ============================================================
 

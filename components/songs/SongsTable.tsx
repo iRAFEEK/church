@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Search, Music } from 'lucide-react'
+import { ListShimmer } from '@/components/ui/list-shimmer'
 import type { Song } from '@/types'
 
 export function SongsTable() {
@@ -62,7 +63,7 @@ export function SongsTable() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-muted-foreground">{t('loading')}</div>
+        <ListShimmer count={6} />
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           {search ? t('noSearchResults') : t('noSongs')}

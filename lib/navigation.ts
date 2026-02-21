@@ -91,15 +91,6 @@ export const NAV_ITEMS: NavItem[] = [
     section_ar: 'الخدمة',
   },
   {
-    label: 'Manage Events',
-    label_ar: 'إدارة الفعاليات',
-    href: '/admin/events',
-    iconName: 'CalendarPlus',
-    roles: ['ministry_leader', 'super_admin'],
-    section: 'Ministry',
-    section_ar: 'الخدمة',
-  },
-  {
     label: 'Serving',
     label_ar: 'الخدمة',
     href: '/serving',
@@ -116,6 +107,16 @@ export const NAV_ITEMS: NavItem[] = [
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     section: 'Ministry',
     section_ar: 'الخدمة',
+  },
+  // ─── Notifications ─────────────────────────────────
+  {
+    label: 'Notifications',
+    label_ar: 'الإشعارات',
+    href: '/notifications',
+    iconName: 'Bell',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    section: 'Main',
+    section_ar: 'الرئيسية',
   },
 
   // ─── Resources ──────────────────────────────────────────

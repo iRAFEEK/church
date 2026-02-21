@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/gathering-reminders", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/visitor-sla", "schedule": "0 */2 * * *" },
+    { "path": "/api/cron/event-reminders", "schedule": "0 8 * * *" }
+  ]
+}
