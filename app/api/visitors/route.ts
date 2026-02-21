@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
+import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
 
 // POST /api/visitors — public, no auth required
 export async function POST(req: NextRequest) {
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) throw error
+
+    // Fire-and-forget: send welcome WhatsApp to visitor
+    notifyWelcomeVisitor(data.id, resolvedChurchId).catch(console.error)
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (e: unknown) {

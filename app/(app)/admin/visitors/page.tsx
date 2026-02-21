@@ -17,19 +17,23 @@ export default async function AdminVisitorsPage() {
   // Get church SLA
   const slaHours = user.church.visitor_sla_hours || 48
 
-  const { data: visitors } = await supabase
-    .from('visitors')
-    .select('*, assigned_profile:assigned_to(id,first_name,last_name,first_name_ar,last_name_ar)')
-    .neq('status', 'converted')
-    .order('visited_at', { ascending: false })
+  // Parallelize independent queries
+  const [visitorsResult, leadersResult] = await Promise.all([
+    supabase
+      .from('visitors')
+      .select('*, assigned_profile:assigned_to(id,first_name,last_name,first_name_ar,last_name_ar)')
+      .neq('status', 'converted')
+      .order('visited_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('id,first_name,last_name,first_name_ar,last_name_ar')
+      .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
+      .eq('status', 'active')
+      .order('first_name'),
+  ])
 
-  // Get leaders for assignment dropdown
-  const { data: leaders } = await supabase
-    .from('profiles')
-    .select('id,first_name,last_name,first_name_ar,last_name_ar')
-    .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
-    .eq('status', 'active')
-    .order('first_name')
+  const visitors = visitorsResult.data
+  const leaders = leadersResult.data
 
   const now = Date.now()
   const slaMs = slaHours * 60 * 60 * 1000

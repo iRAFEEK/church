@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
+import { Languages } from 'lucide-react'
 import type { Song } from '@/types'
 
 interface SongFormProps {
@@ -17,8 +18,11 @@ interface SongFormProps {
 export function SongForm({ song }: SongFormProps) {
   const router = useRouter()
   const t = useTranslations('songs')
+  const tc = useTranslations('common')
   const locale = useLocale()
+  const isAr = locale === 'ar'
   const [loading, setLoading] = useState(false)
+  const [showTranslation, setShowTranslation] = useState(false)
 
   const [form, setForm] = useState({
     title: song?.title || '',
@@ -30,9 +34,16 @@ export function SongForm({ song }: SongFormProps) {
     tags: song?.tags?.join(', ') || '',
   })
 
+  const titleField = isAr ? 'title_ar' : 'title'
+  const titleAltField = isAr ? 'title' : 'title_ar'
+  const artistField = isAr ? 'artist_ar' : 'artist'
+  const artistAltField = isAr ? 'artist' : 'artist_ar'
+  const lyricsField = isAr ? 'lyrics_ar' : 'lyrics'
+  const lyricsAltField = isAr ? 'lyrics' : 'lyrics_ar'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.title) {
+    if (!form[titleField]) {
       toast.error(t('titleRequired'))
       return
     }
@@ -45,7 +56,7 @@ export function SongForm({ song }: SongFormProps) {
         .filter(Boolean)
 
       const payload = {
-        title: form.title,
+        title: form.title || form.title_ar || '',
         title_ar: form.title_ar || null,
         artist: form.artist || null,
         artist_ar: form.artist_ar || null,
@@ -81,43 +92,22 @@ export function SongForm({ song }: SongFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('titleEn')}</Label>
-          <Input
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            dir="ltr"
-            placeholder="Amazing Grace"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{t('titleAr')}</Label>
-          <Input
-            value={form.title_ar}
-            onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-            dir="rtl"
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>{tc('title')} *</Label>
+        <Input
+          value={form[titleField]}
+          onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
+          dir={isAr ? 'rtl' : 'ltr'}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('artistEn')}</Label>
-          <Input
-            value={form.artist}
-            onChange={(e) => setForm({ ...form, artist: e.target.value })}
-            dir="ltr"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{t('artistAr')}</Label>
-          <Input
-            value={form.artist_ar}
-            onChange={(e) => setForm({ ...form, artist_ar: e.target.value })}
-            dir="rtl"
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>{tc('artist')}</Label>
+        <Input
+          value={form[artistField]}
+          onChange={(e) => setForm({ ...form, [artistField]: e.target.value })}
+          dir={isAr ? 'rtl' : 'ltr'}
+        />
       </div>
 
       <div className="space-y-2">
@@ -131,31 +121,58 @@ export function SongForm({ song }: SongFormProps) {
         <p className="text-xs text-muted-foreground">{t('tagsHint')}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('lyricsEn')}</Label>
-          <Textarea
-            value={form.lyrics}
-            onChange={(e) => setForm({ ...form, lyrics: e.target.value })}
-            rows={12}
-            dir="ltr"
-            placeholder={t('lyricsPlaceholder')}
-            className="font-mono text-sm"
-          />
-          <p className="text-xs text-muted-foreground">{t('lyricsHint')}</p>
-        </div>
-        <div className="space-y-2">
-          <Label>{t('lyricsAr')}</Label>
-          <Textarea
-            value={form.lyrics_ar}
-            onChange={(e) => setForm({ ...form, lyrics_ar: e.target.value })}
-            rows={12}
-            dir="rtl"
-            placeholder={t('lyricsPlaceholderAr')}
-            className="font-mono text-sm"
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>{tc('lyrics')}</Label>
+        <Textarea
+          value={form[lyricsField]}
+          onChange={(e) => setForm({ ...form, [lyricsField]: e.target.value })}
+          rows={12}
+          dir={isAr ? 'rtl' : 'ltr'}
+          placeholder={isAr ? t('lyricsPlaceholderAr') : t('lyricsPlaceholder')}
+          className="font-mono text-sm"
+        />
+        <p className="text-xs text-muted-foreground">{tc('lyricsHint')}</p>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowTranslation(!showTranslation)}
+        className="flex items-center gap-2 text-sm text-primary hover:underline"
+      >
+        <Languages className="h-4 w-4" />
+        {showTranslation ? tc('hideTranslation') : tc('addTranslation')}
+      </button>
+
+      {showTranslation && (
+        <div className="space-y-4 rounded-lg border p-4 bg-muted/30 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="space-y-2">
+            <Label>{tc('title')} ({isAr ? 'EN' : 'AR'})</Label>
+            <Input
+              value={form[titleAltField]}
+              onChange={(e) => setForm({ ...form, [titleAltField]: e.target.value })}
+              dir={isAr ? 'ltr' : 'rtl'}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{tc('artist')} ({isAr ? 'EN' : 'AR'})</Label>
+            <Input
+              value={form[artistAltField]}
+              onChange={(e) => setForm({ ...form, [artistAltField]: e.target.value })}
+              dir={isAr ? 'ltr' : 'rtl'}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{tc('lyrics')} ({isAr ? 'EN' : 'AR'})</Label>
+            <Textarea
+              value={form[lyricsAltField]}
+              onChange={(e) => setForm({ ...form, [lyricsAltField]: e.target.value })}
+              rows={12}
+              dir={isAr ? 'ltr' : 'rtl'}
+              className="font-mono text-sm"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" disabled={loading}>

@@ -1,8 +1,11 @@
-import { getCurrentUserWithRole } from '@/lib/auth'
+import { getCurrentUserWithRole, isAdmin, isLeader } from '@/lib/auth'
 import { getTranslations, getLocale } from 'next-intl/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
-import { Users, UserPlus, Calendar, Heart } from 'lucide-react'
+import { fetchAdminDashboard, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
+import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
+import { LeaderDashboard } from '@/components/dashboard/LeaderDashboard'
+import { MemberDashboard } from '@/components/dashboard/MemberDashboard'
 
 const ROLE_KEYS: Record<string, string> = {
   member: 'roleMember',
@@ -12,9 +15,10 @@ const ROLE_KEYS: Record<string, string> = {
 }
 
 export default async function DashboardPage() {
-  const { profile, church } = await getCurrentUserWithRole()
+  const { id, profile, church } = await getCurrentUserWithRole()
   const t = await getTranslations('dashboard')
   const locale = await getLocale()
+  const supabase = await createClient()
 
   const isRTL = locale === 'ar'
   const firstName = isRTL
@@ -27,84 +31,47 @@ export default async function DashboardPage() {
 
   const roleKey = ROLE_KEYS[profile.role] ?? 'roleMember'
 
-  return (
-    <div className="space-y-6">
-      {/* Welcome */}
+  // Welcome header (shared across all roles)
+  const header = (
+    <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          {t('welcome', { name: firstName })} 👋
+          {t('welcome', { name: firstName })}
         </h1>
-        <p className="text-muted-foreground">
-          {churchName}
-        </p>
+        <p className="text-muted-foreground">{churchName}</p>
       </div>
+      <Badge variant="secondary" className="text-sm">
+        {t(roleKey)}
+      </Badge>
+    </div>
+  )
 
-      {/* Role Badge */}
-      <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="text-sm">
-          {t(roleKey)}
-        </Badge>
+  if (isAdmin(profile)) {
+    const data = await fetchAdminDashboard(supabase, id, profile.church_id, church.visitor_sla_hours ?? 48)
+    return (
+      <div className="space-y-6">
+        {header}
+        <AdminDashboard data={data} />
       </div>
+    )
+  }
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('statsMembers')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{t('statsPlaceholder')}</div>
-            <p className="text-xs text-muted-foreground">{t('statsComingSoon')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('statsVisitors')}</CardTitle>
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{t('statsPlaceholder')}</div>
-            <p className="text-xs text-muted-foreground">{t('statsComingSoon')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('statsEvents')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{t('statsPlaceholder')}</div>
-            <p className="text-xs text-muted-foreground">{t('statsComingSoon')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('statsServing')}</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{t('statsPlaceholder')}</div>
-            <p className="text-xs text-muted-foreground">{t('statsComingSoon')}</p>
-          </CardContent>
-        </Card>
+  if (isLeader(profile)) {
+    const data = await fetchLeaderDashboard(supabase, id, profile.church_id)
+    return (
+      <div className="space-y-6">
+        {header}
+        <LeaderDashboard data={data} />
       </div>
+    )
+  }
 
-      {/* Getting Started */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('gettingStartedTitle')}</CardTitle>
-          <CardDescription>{t('gettingStartedDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>✅ {t('stepSignedIn')}</p>
-            <p>⬜ {t('stepAddMembers')}</p>
-            <p>⬜ {t('stepCreateGroups')}</p>
-            <p>⬜ {t('stepShareQR')}</p>
-          </div>
-        </CardContent>
-      </Card>
+  // Member dashboard
+  const data = await fetchMemberDashboard(supabase, id, profile.church_id)
+  return (
+    <div className="space-y-6">
+      {header}
+      <MemberDashboard data={data} />
     </div>
   )
 }

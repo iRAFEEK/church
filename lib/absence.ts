@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { notifyAtRiskMember } from '@/lib/messaging/triggers'
 
 /**
  * Count consecutive absences for a profile in a group
@@ -75,11 +76,16 @@ export async function checkAndFlagAtRisk(gatheringId: string): Promise<void> {
     const streak = await getConsecutiveAbsences(member.profile_id, gathering.group_id)
 
     if (streak >= 2) {
-      await supabase
+      const { count } = await supabase
         .from('profiles')
         .update({ status: 'at_risk' })
         .eq('id', member.profile_id)
         .eq('status', 'active') // only flag if currently active
+
+      // Only notify if status actually changed (was active, now at_risk)
+      if (count && count > 0) {
+        notifyAtRiskMember(member.profile_id, gathering.group_id, gathering.church_id, streak).catch(console.error)
+      }
     }
   }
 }

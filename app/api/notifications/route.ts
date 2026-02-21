@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = parseInt(searchParams.get('pageSize') || '20')
   const unreadOnly = searchParams.get('unread') === 'true'
+  const typeFilter = searchParams.get('type')
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
@@ -24,6 +25,9 @@ export async function GET(req: NextRequest) {
 
   if (unreadOnly) {
     query = query.is('read_at', null)
+  }
+  if (typeFilter) {
+    query = query.eq('type', typeFilter)
   }
 
   const { data, error, count } = await query
