@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
@@ -8,6 +8,20 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Ekklesia',
   description: 'Church Management Platform',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Ekklesia',
+  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#09090b',
 }
 
 export default async function RootLayout({
@@ -26,7 +40,7 @@ export default async function RootLayout({
           {children}
         </NextIntlClientProvider>
         <Toaster
-          position="bottom-right"
+          position="top-center"
           richColors
           closeButton
         />

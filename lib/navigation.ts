@@ -15,7 +15,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: 'Dashboard',
     label_ar: 'لوحة التحكم',
-    href: '/admin',
+    href: '/dashboard',
     iconName: 'LayoutDashboard',
     roles: ['ministry_leader', 'super_admin'],
     section: 'Main',
@@ -44,7 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: 'Ministries',
     label_ar: 'الخدمات',
-    href: '/admin/groups/ministries',
+    href: '/admin/ministries',
     iconName: 'Building2',
     roles: ['ministry_leader', 'super_admin'],
     section: 'Groups',
@@ -169,8 +169,16 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ]
 
+/** Paths that appear in the mobile bottom tab bar */
+export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/ministries', '/events', '/bible']
+
 export function getNavForRole(role: UserRole): NavItem[] {
   return NAV_ITEMS.filter(item => item.roles.includes(role))
+}
+
+/** Items NOT shown in the bottom tab bar — displayed in the "More" sheet */
+export function getSecondaryNavItems(items: NavItem[]): NavItem[] {
+  return items.filter(item => !PRIMARY_MOBILE_PATHS.includes(item.href))
 }
 
 export function getNavSections(items: NavItem[], lang: 'en' | 'ar' = 'ar'): { section: string; items: NavItem[] }[] {

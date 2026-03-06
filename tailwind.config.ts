@@ -61,6 +61,11 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      spacing: {
+        'safe-top': 'var(--safe-area-top)',
+        'safe-bottom': 'var(--safe-area-bottom)',
+        'bottom-nav': 'var(--bottom-nav-height)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

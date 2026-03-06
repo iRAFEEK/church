@@ -1,8 +1,8 @@
-import { getCurrentUserWithRole, isAdmin, isLeader } from '@/lib/auth'
+import { getCurrentUserWithRole, isLeader } from '@/lib/auth'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
-import { fetchAdminDashboard, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
+import { fetchAdminDashboard, fetchMinistryLeaderDashboard, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
 import { LeaderDashboard } from '@/components/dashboard/LeaderDashboard'
 import { MemberDashboard } from '@/components/dashboard/MemberDashboard'
@@ -46,8 +46,18 @@ export default async function DashboardPage() {
     </div>
   )
 
-  if (isAdmin(profile)) {
+  if (profile.role === 'super_admin') {
     const data = await fetchAdminDashboard(supabase, id, profile.church_id, church.visitor_sla_hours ?? 48)
+    return (
+      <div className="space-y-6">
+        {header}
+        <AdminDashboard data={data} />
+      </div>
+    )
+  }
+
+  if (profile.role === 'ministry_leader') {
+    const data = await fetchMinistryLeaderDashboard(supabase, id, profile.church_id, church.visitor_sla_hours ?? 48)
     return (
       <div className="space-y-6">
         {header}

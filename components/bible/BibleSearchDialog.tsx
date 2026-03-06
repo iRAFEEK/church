@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Search, Loader2 } from 'lucide-react'
 import { BIBLE_BOOKS_AR } from '@/lib/bible/constants'
 
-const BIBLE_ID = 'ar-svd'
-
 interface SearchResult {
   id: string
   reference: string
@@ -20,11 +18,12 @@ interface SearchResult {
 }
 
 interface BibleSearchProps {
+  bibleId: string
   onNavigate: (chapterId: string, verseNum?: number) => void
   variant?: 'default' | 'presenter'
 }
 
-export function BibleSearch({ onNavigate, variant = 'default' }: BibleSearchProps) {
+export function BibleSearch({ bibleId, onNavigate, variant = 'default' }: BibleSearchProps) {
   const t = useTranslations('bible')
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -42,7 +41,7 @@ export function BibleSearch({ onNavigate, variant = 'default' }: BibleSearchProp
 
     setLoading(true)
     try {
-      const res = await fetch(`/api/bible/${BIBLE_ID}/search?query=${encodeURIComponent(q.trim())}&limit=10`)
+      const res = await fetch(`/api/bible/${bibleId}/search?query=${encodeURIComponent(q.trim())}&limit=10`)
       if (!res.ok) throw new Error()
       const json = await res.json()
       const data = json.data || {}

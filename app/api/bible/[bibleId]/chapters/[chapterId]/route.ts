@@ -21,7 +21,7 @@ export async function GET(
 
     if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-    const chapter = await getChapterContent(chapterId)
+    const chapter = await getChapterContent(bibleId, chapterId)
 
     const { data: highlights, error: hlError } = await supabase
       .from('bible_highlights')

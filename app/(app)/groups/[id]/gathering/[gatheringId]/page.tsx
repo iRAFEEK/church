@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
-import { AttendanceRoster } from '@/components/gathering/AttendanceRoster'
+import { AttendanceSection } from '@/components/gathering/AttendanceSection'
 import { PrayerList } from '@/components/gathering/PrayerList'
 import { formatGatheringDate, formatGatheringTime } from '@/lib/gatherings'
 import { getTranslations } from 'next-intl/server'
@@ -52,7 +52,7 @@ export default async function GatheringPage({ params }: Params) {
   if (!canManage) {
     // Members can still view but not edit
     const isMember = (groupMembers || []).some(m => m.profile_id === user.profile.id)
-    if (!isMember) redirect('/')
+    if (!isMember) redirect('/dashboard')
   }
 
   const isCompleted = gathering.status === 'completed'
@@ -104,8 +104,8 @@ export default async function GatheringPage({ params }: Params) {
         )}
       </div>
 
-      {/* Attendance Roster */}
-      <AttendanceRoster
+      {/* Attendance */}
+      <AttendanceSection
         gatheringId={gatheringId}
         groupId={group_id}
         members={members}

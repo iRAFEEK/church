@@ -7,6 +7,8 @@ export type NotificationType =
   | 'at_risk_alert'
   | 'visitor_sla_warning'
   | 'event_reminder'
+  | 'event_service_request'
+  | 'event_service_assigned'
   | 'general'
 
 export interface MessagePayload {

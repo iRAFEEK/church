@@ -10,7 +10,7 @@ export default async function BiblePresenterPage({
   params: Promise<{ bibleId: string; chapterId: string }>
   searchParams: Promise<{ verse?: string }>
 }) {
-  const { chapterId } = await params
+  const { bibleId, chapterId } = await params
   const { verse } = await searchParams
   const supabase = await createClient()
 
@@ -18,8 +18,8 @@ export default async function BiblePresenterPage({
   if (!user) redirect('/login')
 
   const [data, books] = await Promise.all([
-    getChapterVerses(chapterId).catch(() => null),
-    getBooks().catch(() => []),
+    getChapterVerses(bibleId, chapterId).catch(() => null),
+    getBooks(bibleId).catch(() => []),
   ])
 
   if (!data || data.verses.length === 0) notFound()
@@ -29,6 +29,7 @@ export default async function BiblePresenterPage({
 
   return (
     <BiblePresenter
+      bibleId={bibleId}
       bookId={bookId}
       chapterId={chapterId}
       reference={data.reference}

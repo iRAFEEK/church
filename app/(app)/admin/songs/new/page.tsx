@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server'
 export default async function NewSongPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
+  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
 
   const t = await getTranslations('songs')
 

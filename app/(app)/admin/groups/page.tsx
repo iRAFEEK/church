@@ -9,7 +9,7 @@ import { getTranslations } from 'next-intl/server'
 export default async function GroupsPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
+  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
 
   const t = await getTranslations('groups')
   const supabase = await createClient()
@@ -40,11 +40,6 @@ export default async function GroupsPage() {
           <p className="text-sm text-zinc-500 mt-1">{t('adminPageSubtitle')}</p>
         </div>
         <div className="flex gap-2">
-          {isAdmin && (
-            <Link href="/admin/groups/ministries">
-              <Button variant="outline">{t('ministriesButton')}</Button>
-            </Link>
-          )}
           {isAdmin && (
             <Link href="/admin/groups/new">
               <Button>{t('newGroupButton')}</Button>

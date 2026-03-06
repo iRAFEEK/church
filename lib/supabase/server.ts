@@ -1,4 +1,5 @@
 import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 function getCookieMethods(): CookieMethodsServer {
@@ -29,9 +30,9 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
-  return createServerClient(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: getCookieMethods() }
+    { auth: { autoRefreshToken: false, persistSession: false } }
   )
 }

@@ -27,7 +27,7 @@ export default function ErrorPage({
         </p>
         <div className="flex gap-3 justify-center">
           <Button onClick={reset}>{t('retry')}</Button>
-          <Button variant="outline" onClick={() => window.location.href = '/'}>
+          <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
             {t('goHome')}
           </Button>
         </div>

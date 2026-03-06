@@ -162,7 +162,7 @@ async function seedVersion(data: BibleData) {
 
 async function main() {
   const dataDir = join(process.cwd(), 'data', 'bible')
-  const files = ['ar-svd.json', 'en-kjva.json']
+  const files = ['ar-svd.json', 'ar-svd-dc.json', 'ar-nav.json', 'en-kjva.json']
 
   for (const file of files) {
     const filePath = join(dataDir, file)

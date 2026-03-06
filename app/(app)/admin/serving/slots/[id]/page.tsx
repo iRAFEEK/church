@@ -14,7 +14,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!isAdmin(user.profile)) redirect('/')
+  if (!isAdmin(user.profile)) redirect('/dashboard')
 
   const t = await getTranslations('serving')
   const cookieStore = await cookies()

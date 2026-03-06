@@ -54,7 +54,7 @@ export default async function GroupLeaderPage({ params }: Params) {
       m.profile?.id === user.profile.id && m.is_active
   )
 
-  if (!isLeaderOrAdmin && !isMember) redirect('/')
+  if (!isLeaderOrAdmin && !isMember) redirect('/dashboard')
 
   const activeMembers = (group.group_members || []).filter((m: { is_active: boolean }) => m.is_active)
   const atRiskMembers = activeMembers.filter((m: { profile: { status: string } | null }) => m.profile?.status === 'at_risk')

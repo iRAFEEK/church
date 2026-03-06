@@ -29,7 +29,7 @@ export default async function MembersPage({
   const params = await searchParams
 
   if (!isAdmin(profile)) {
-    redirect('/')
+    redirect('/dashboard')
   }
 
   const t = await getTranslations('members')

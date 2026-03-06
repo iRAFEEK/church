@@ -172,7 +172,15 @@
     "roleMember": "عضو",
     "roleGroupLeader": "قائد مجموعة",
     "roleMinistryLeader": "قائد خدمة",
-    "roleSuperAdmin": "مشرف"
+    "roleSuperAdmin": "مشرف",
+    "qlMembers": "الأعضاء",
+    "qlVisitors": "زوار جدد",
+    "qlGroups": "المجموعات",
+    "qlMinistries": "الخدمات",
+    "qlEvents": "الأحداث",
+    "qlSongs": "الترانيم",
+    "qlAnnouncements": "الإعلانات",
+    "qlServing": "مجالات الخدمة"
   },
 
   "profileEdit": {
@@ -384,7 +392,31 @@
     "toastCreated": "تم إنشاء المجموعة",
     "toastUpdated": "تم تحديث المجموعة",
     "toastError": "حدث خطأ",
-    "validationName": "الاسم مطلوب"
+    "validationName": "الاسم مطلوب",
+    "registerNewLeader": "تسجيل قائد جديد",
+    "noLeadersHint": "لا يوجد قادة. سجّل قائداً جديداً للبدء."
+  },
+
+  "leaderRegistration": {
+    "title": "تسجيل قائد جديد",
+    "subtitle": "إنشاء حساب لقائد مجموعة جديد",
+    "email": "البريد الإلكتروني *",
+    "emailPlaceholder": "leader@example.com",
+    "firstName": "الاسم الأول *",
+    "lastName": "اسم العائلة *",
+    "firstNameAr": "الاسم الأول (عربي)",
+    "lastNameAr": "اسم العائلة (عربي)",
+    "phone": "رقم الهاتف",
+    "phonePlaceholder": "+961...",
+    "submit": "تسجيل القائد",
+    "submitting": "جارٍ التسجيل...",
+    "validationRequired": "البريد الإلكتروني والاسم مطلوبان",
+    "validationEmail": "يرجى إدخال بريد إلكتروني صالح",
+    "errorGeneric": "حدث خطأ",
+    "errorEmailTaken": "هذا البريد الإلكتروني مسجّل بالفعل في كنيسة أخرى",
+    "toastCreated": "تم تسجيل القائد بنجاح. تم إرسال رابط لتعيين كلمة المرور.",
+    "toastPromoted": "تمت ترقية العضو الحالي إلى قائد مجموعة",
+    "toastExisting": "هذا الشخص قائد بالفعل"
   },
 
   "groupMembers": {
@@ -411,6 +443,7 @@
     "pageTitle": "الخدمات",
     "pageSubtitle": "إدارة الخدمات والوزارات الكنسية",
     "addButton": "إضافة خدمة",
+    "newButton": "خدمة جديدة",
     "emptyTitle": "لا توجد خدمات بعد",
     "emptySubtitle": "أضف أول خدمة لتنظيم مجموعاتك",
     "leaderLabel": "القائد:",
@@ -435,7 +468,69 @@
     "toastActivated": "تم تفعيل الخدمة",
     "toastDeactivated": "تم إيقاف الخدمة",
     "toastError": "حدث خطأ",
-    "validationName": "الاسم مطلوب"
+    "validationName": "الاسم مطلوب",
+    "detailEditButton": "تعديل",
+    "detailMembers": "أعضاء",
+    "detailDescription": "الوصف",
+    "detailGroups": "المجموعات التابعة",
+    "detailNoGroups": "لا توجد مجموعات",
+    "detailInactive": "غير نشط"
+  },
+  "ministryForm": {
+    "nameEn": "الاسم (إنجليزي)",
+    "nameEnPlaceholder": "Youth Ministry",
+    "nameAr": "الاسم (عربي)",
+    "nameArPlaceholder": "خدمة الشباب",
+    "descriptionEn": "الوصف (إنجليزي)",
+    "descriptionEnPlaceholder": "وصف هذه الخدمة...",
+    "descriptionAr": "الوصف (عربي)",
+    "descriptionArPlaceholder": "وصف هذه الخدمة...",
+    "photo": "صورة الخدمة",
+    "photoUpload": "رفع صورة",
+    "photoChange": "تغيير الصورة",
+    "photoRemove": "إزالة الصورة",
+    "photoDragHint": "اضغط للرفع (الحد الأقصى 5 ميجا)",
+    "photoTooLarge": "يجب أن تكون الصورة أقل من 5 ميجا",
+    "settings": "الإعدادات",
+    "isActive": "نشط",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "saveButton": "حفظ الخدمة",
+    "toastCreated": "تم إنشاء الخدمة",
+    "toastUpdated": "تم تحديث الخدمة",
+    "toastError": "حدث خطأ"
+  },
+  "ministryMembers": {
+    "sectionTitle": "الأعضاء",
+    "addButton": "إضافة عضو",
+    "emptyTitle": "لا يوجد أعضاء بعد",
+    "emptySubtitle": "أضف أعضاء لهذه الخدمة",
+    "roleMember": "عضو",
+    "roleLeader": "قائد",
+    "roleCoLeader": "مساعد قائد",
+    "dialogTitle": "إضافة عضو للخدمة",
+    "dialogSearchPH": "البحث بالاسم...",
+    "dialogNoResults": "لا توجد نتائج",
+    "dialogAllAdded": "تمت إضافة جميع الأعضاء",
+    "toastAdded": "تمت إضافة العضو",
+    "toastRemoved": "تمت إزالة العضو",
+    "toastRoleChanged": "تم تحديث الدور",
+    "toastError": "حدث خطأ",
+    "viewLink": "عرض",
+    "removeButton": "إزالة",
+    "statusAtRisk": "معرض للخطر",
+    "roleUpgradeConfirm": "تعيين كقائد سيمنحه صلاحية قائد خدمة مع وصول للوحة التحكم. متابعة؟",
+    "sendNotification": "إشعار",
+    "notifyTitle": "إرسال لأعضاء الخدمة",
+    "notifyTitleAr": "العنوان (عربي)",
+    "notifyBodyAr": "الرسالة (عربي)",
+    "notifyTitleEn": "العنوان (إنجليزي)",
+    "notifyBodyEn": "الرسالة (إنجليزي)",
+    "notifyCancel": "إلغاء",
+    "notifySend": "إرسال",
+    "notifySending": "جارٍ الإرسال...",
+    "notifySent": "تم إرسال الإشعار إلى {count} عضو",
+    "notifyError": "فشل إرسال الإشعار"
   },
 
   "gathering": {
@@ -484,7 +579,10 @@
     "historyRateLabel": "معدل الحضور",
     "historyOutOf": "من أصل {total}",
     "historyEmpty": "لا يوجد سجل حضور بعد",
-    "historyDefaultTopic": "اجتماع المجموعة"
+    "historyDefaultTopic": "اجتماع المجموعة",
+    "swipeView": "بطاقات",
+    "listView": "قائمة",
+    "undo": "تراجع"
   },
 
   "prayer": {
@@ -733,6 +831,8 @@
       "at_risk_alert": "تنبيه عضو في خطر",
       "visitor_sla_warning": "تحذير تأخر متابعة",
       "event_reminder": "تذكير فعالية",
+      "event_service_request": "طلب خدمة",
+      "event_service_assigned": "تعيين خدمة",
       "general": "عام"
     }
   },
@@ -800,7 +900,46 @@
     "status_completed": "مكتمل",
     "regStatus_registered": "مسجل",
     "regStatus_checked_in": "حاضر",
-    "regStatus_cancelled": "ملغى"
+    "regStatus_cancelled": "ملغى",
+    "serviceNeeds": "احتياجات الخدمة",
+    "addServiceNeed": "إضافة احتياج خدمة",
+    "editServiceNeed": "تعديل احتياج الخدمة",
+    "removeServiceNeed": "إزالة",
+    "selectMinistryOrGroup": "اختر خدمة أو مجموعة",
+    "ministry": "خدمة",
+    "group": "مجموعة",
+    "volunteersNeeded": "المتطوعين المطلوبين",
+    "serviceNotes": "ملاحظات (مثال: 2 مصوّر، 1 مهندس صوت)",
+    "serviceNotesAr": "ملاحظات (عربي)",
+    "noServiceNeeds": "لم تتم إضافة احتياجات خدمة بعد",
+    "serviceNeedsSummary": "{count} فرق مطلوبة، {total} متطوع مطلوب",
+    "fulfillment": "{assigned} من {needed} تم تعيينهم",
+    "fullyStaffed": "مكتمل العدد",
+    "partiallyStaffed": "جزئياً مكتمل",
+    "needsStaffing": "يحتاج تعيين",
+    "assignMember": "تعيين عضو",
+    "removeAssignment": "إزالة التعيين",
+    "confirmAssignment": "تأكيد",
+    "declineAssignment": "رفض",
+    "manageStaffing": "إدارة التعيينات",
+    "staffingPageTitle": "تعيينات الفعالية",
+    "staffingPageSubtitle": "تعيين المتطوعين للخدمة في هذه الفعالية",
+    "assignedStatus": "مُعيَّن",
+    "confirmedStatus": "مؤكَّد",
+    "declinedStatus": "مرفوض",
+    "searchMembers": "بحث عن أعضاء...",
+    "alreadyAssigned": "مُعيَّن مسبقاً",
+    "assignmentCreated": "تم تعيين العضو بنجاح",
+    "assignmentRemoved": "تم إزالة التعيين",
+    "assignmentUpdated": "تم تحديث حالة التعيين",
+    "leaderUpcomingNeeds": "احتياجات الخدمة القادمة",
+    "leaderNoNeeds": "لا توجد احتياجات خدمة قادمة",
+    "myAssignments": "تعييناتي للخدمة",
+    "noAssignments": "لا توجد تعيينات قادمة",
+    "confirmServing": "تأكيد الخدمة",
+    "declineServing": "رفض الخدمة",
+    "youConfirmed": "تم التأكيد",
+    "youDeclined": "تم الرفض"
   },
 
   "songs": {
@@ -1133,5 +1272,292 @@
     "sendSuccess": "تم إرسال الإشعار",
     "sentCount": "تم الإرسال إلى {count} مستلم",
     "sendFailed": "فشل إرسال الإشعار"
+  },
+  "bottomNav": {
+    "home": "الرئيسية",
+    "groups": "المجموعات",
+    "events": "الفعاليات",
+    "bible": "الكتاب",
+    "more": "المزيد"
+  },
+  "moreSheet": {
+    "title": "القائمة",
+    "switchLang": "English",
+    "signOut": "تسجيل الخروج"
+  },
+  "landing": {
+    "navAbout": "من نحن",
+    "navLeadership": "القيادة",
+    "navJoin": "انضم",
+    "navLogin": "تسجيل الدخول",
+    "heroTagline": "مرحباً بكم في مجتمع كنيستنا",
+    "heroJoinButton": "انضم إلى كنيستنا",
+    "heroLoginButton": "تسجيل الدخول",
+    "aboutTitle": "من نحن",
+    "leadersTitle": "قيادتنا",
+    "ctaTitle": "هل أنت مستعد للانضمام؟",
+    "ctaSubtitle": "يسعدنا أن نرحب بك في مجتمعنا",
+    "ctaButton": "سجّل في كنيستنا",
+    "ctaLoginPrompt": "هل أنت عضو بالفعل؟",
+    "ctaLoginLink": "سجّل دخولك هنا",
+    "footerText": "مدعوم من إكليسيا"
+  },
+  "marketing": {
+    "nav": {
+      "features": "المميزات",
+      "howItWorks": "كيف يعمل",
+      "whoItsFor": "لمن هو",
+      "support": "ادعمنا",
+      "login": "تسجيل الدخول",
+      "getStarted": "ابدأ الآن"
+    },
+    "hero": {
+      "badge": "مجاني بالكامل — مبني لمجده",
+      "headline": "ارعَ كنيستك بوضوح",
+      "subheadline": "منصة مجانية تساعد الرعاة والقادة على إدارة جماعتهم، ومتابعة الزوار، وتنسيق المتطوعين، وتنمية كنيستهم — مبنية لخدمة الرب يسوع المسيح، وليس للربح.",
+      "ctaPrimary": "سجّل كنيستك",
+      "ctaSecondary": "انضم لكنيستك"
+    },
+    "mission": {
+      "headline": "مبني لخدمة الملكوت",
+      "text": "إكليسيا مجانية بالكامل. نؤمن أن أدوات الكنيسة يجب أن تخدم ملكوت الله، لا المساهمين. هذا المشروع ليس للربح — بل لمجده.",
+      "pillar1Title": "مجاني للأبد",
+      "pillar1Desc": "لا رسوم مخفية، لا حواجز دفع، لا مستويات مدفوعة. كل الميزات متاحة لكل كنيسة.",
+      "pillar2Title": "لكل كنيسة",
+      "pillar2Desc": "سواء كان لديك ١٠ أعضاء أو ١٠,٠٠٠، إكليسيا مصممة لتنمو مع خدمتك.",
+      "pillar3Title": "العربية أولاً",
+      "pillar3Desc": "مبنية من الصفر للكنائس الناطقة بالعربية، مع دعم كامل للإنجليزية."
+    },
+    "features": {
+      "title": "كل ما تحتاجه كنيستك",
+      "subtitle": "من استقبال الزوار إلى أمسية العبادة — منصة واحدة لخدمتك بأكملها.",
+      "visitors": {
+        "title": "مسار الزوار",
+        "desc": "لا تفقد أثر أي زائر مرة أخرى. تسجيل بـ QR يلتقط بيانات الضيوف فوراً ويعيّن المتابعة لفريقك.",
+        "bullet1": "تسجيل الزوار عبر رمز QR عند الباب",
+        "bullet2": "تنبيهات متابعة تلقائية مع مواعيد محددة",
+        "bullet3": "تتبع تحويل الزائر إلى عضو",
+        "bullet4": "تعيين الزوار لقادة المجموعات"
+      },
+      "groups": {
+        "title": "المجموعات والحضور",
+        "desc": "أدِر المجموعات الصغيرة، وتتبع أنماط الحضور، وحدد الأعضاء الذين قد يحتاجون رعاية إضافية.",
+        "bullet1": "إنشاء وإدارة المجموعات الصغيرة",
+        "bullet2": "حضور رقمي بضغطة واحدة",
+        "bullet3": "تنبيهات اكتشاف الأعضاء المعرضين للخطر",
+        "bullet4": "لوحات صحة المجموعة"
+      },
+      "events": {
+        "title": "الفعاليات والخدمة",
+        "desc": "نظّم فعاليات الكنيسة ونسّق المتطوعين بسهولة مع التسجيل الذاتي.",
+        "bullet1": "إنشاء فعاليات مع تتبع التسجيل",
+        "bullet2": "مناطق خدمة المتطوعين وفترات زمنية",
+        "bullet3": "تسجيل ذاتي للأعضاء",
+        "bullet4": "تتبع الحضور لكل فعالية"
+      },
+      "worship": {
+        "title": "العبادة والكتاب المقدس",
+        "desc": "مكتبة ترانيم مدمجة مع وضع عرض الكلمات وقارئ كتاب مقدس مع إشارات مرجعية وتمييز.",
+        "bullet1": "مكتبة ترانيم مع الكلمات والأوتار",
+        "bullet2": "وضع عرض بملء الشاشة للبروجكتور",
+        "bullet3": "قارئ كتاب مقدس مع تصفح الأسفار",
+        "bullet4": "ضع إشارة مرجعية وميّز آياتك المفضلة"
+      },
+      "communication": {
+        "title": "التواصل",
+        "desc": "تواصل مع جماعتك بإعلانات وإشعارات مستهدفة — بدون مجموعات واتساب مبعثرة.",
+        "bullet1": "إعلانات كنسية مع نشر/مسودة",
+        "bullet2": "إشعارات مستهدفة حسب الدور أو المجموعة",
+        "bullet3": "مركز إشعارات داخل التطبيق",
+        "bullet4": "جاهز لتكامل البريد والرسائل"
+      },
+      "dashboards": {
+        "title": "لوحات التحكم والتقارير",
+        "desc": "لوحات تحكم حسب الدور تعطي كل قائد الرؤى التي يحتاجها — من مؤشرات عامة إلى اتجاهات المجموعة.",
+        "bullet1": "لوحة تحكم المشرف مع مؤشرات الكنيسة",
+        "bullet2": "عرض قائد المجموعة مع اتجاهات الأعضاء",
+        "bullet3": "تحليلات ورسوم بيانية للحضور",
+        "bullet4": "تقارير مسار الزوار"
+      }
+    },
+    "story": {
+      "title": "يوم مع إكليسيا",
+      "subtitle": "شاهد كيف يستخدم الرعاة والقادة إكليسيا خلال يوم عادي.",
+      "step1": {
+        "time": "٧:٠٠ صباحاً",
+        "text": "يفتح الراعي لوحة التحكم ويرى ٣ زوار جدد من خدمة الأحد وعضوين تم تحديدهما كمعرضين للخطر."
+      },
+      "step2": {
+        "time": "٩:٠٠ صباحاً",
+        "text": "يفتح قائد المجموعة التطبيق ويسجل حضور اجتماع الصلاة الصباحي — ١٢ من ١٤ عضواً حاضرون."
+      },
+      "step3": {
+        "time": "١٢:٠٠ ظهراً",
+        "text": "ينشر فريق الإدارة إعلاناً عن خلوة يوم الجمعة، ويصل فوراً إلى أكثر من ٢٠٠ عضو."
+      },
+      "step4": {
+        "time": "٣:٠٠ عصراً",
+        "text": "يحضّر قائد العبادة قائمة ترانيم الأحد، ويرتب الأغاني ويحمّل الكلمات في وضع العرض."
+      },
+      "step5": {
+        "time": "٦:٠٠ مساءً",
+        "text": "يسجل متطوع لخدمة الاستقبال يوم الأحد عبر وحدة الخدمة — بدون مكالمات هاتفية."
+      }
+    },
+    "comparison": {
+      "title": "قبل وبعد إكليسيا",
+      "without": "بدون إكليسيا",
+      "with": "مع إكليسيا",
+      "pain1": "الزوار يضيعون — لا نظام متابعة",
+      "pain2": "الحضور يُسجل على ورق أو جداول مبعثرة",
+      "pain3": "لا طريقة لتحديد الأعضاء غير المنخرطين أو المعرضين للخطر",
+      "pain4": "الإعلانات عبر مجموعات واتساب مبعثرة",
+      "pain5": "تنسيق المتطوعين يعتمد على المكالمات والذاكرة",
+      "solution1": "مسار زوار عبر QR مع تنبيهات متابعة تلقائية",
+      "solution2": "حضور رقمي مع اتجاهات وتحليلات",
+      "solution3": "اكتشاف تلقائي للأعضاء المعرضين للخطر مع إشعارات للقادة",
+      "solution4": "إعلانات مستهدفة ثنائية اللغة من مكان واحد",
+      "solution5": "تسجيل ذاتي للمتطوعين مع إدارة الفترات"
+    },
+    "whoItsFor": {
+      "title": "لمن إكليسيا؟",
+      "verse": "\"ارعَ غنمي.\" — يوحنا ٢١:١٧",
+      "leadersTitle": "للرعاة وقادة الكنائس",
+      "leadersDesc": "سجّل كنيستك واحصل على منصة إدارة متكاملة — زوار، أعضاء، مجموعات، فعاليات، خدمة، والمزيد.",
+      "leadersFeature1": "سجّل وأعدّ كنيستك في دقائق",
+      "leadersFeature2": "أدِر الأعضاء وتتبع الزوار عبر رموز QR",
+      "leadersFeature3": "نسّق الفعاليات والمجموعات وخدمة المتطوعين",
+      "leadersFeature4": "لوحات تحكم وتحليلات لرعاية حكيمة",
+      "leadersCta": "سجّل كنيستك",
+      "membersTitle": "لأعضاء الكنيسة",
+      "membersDesc": "ابحث عن كنيستك، ابقَ على تواصل، ولا تفوّت ما يحدث في مجتمعك.",
+      "membersFeature1": "ابحث عن كنيستك وانضم إليها",
+      "membersFeature2": "اعرض الفعاليات والإعلانات القادمة",
+      "membersFeature3": "انضم للمجموعات وتتبع مشاركتك",
+      "membersFeature4": "اقرأ الكتاب المقدس مع إشارات مرجعية وتمييز",
+      "membersCta": "انضم لكنيستك"
+    },
+    "support": {
+      "title": "مجاني دائماً. جميع المميزات.",
+      "subtitle": "إكليسيا مجانية لكل كنيسة، للأبد. لا مستويات، لا حدود، لا حواجز دفع.",
+      "feature1": "أعضاء ومشرفون بلا حدود",
+      "feature2": "مسار زوار كامل مع متابعة تلقائية",
+      "feature3": "مجموعات ولقاءات وتتبع الحضور",
+      "feature4": "فعاليات مع تسجيل وخدمة متطوعين",
+      "feature5": "قارئ كتاب مقدس بترجمات عربية متعددة",
+      "feature6": "مكتبة ترانيم مع وضع العرض",
+      "feature7": "إعلانات وإشعارات",
+      "feature8": "لوحات تحكم وتحليلات",
+      "donateTitle": "ادعم الرسالة",
+      "donateText": "إكليسيا تكلف أموالاً لتشغيلها — خوادم وقواعد بيانات وتطوير. إذا باركت هذه الأداة كنيستك، فكّر في دعم الرسالة لنستمر في خدمة كنائس الشرق الأوسط.",
+      "donateCta": "ادعم إكليسيا",
+      "getStartedCta": "ابدأ الآن — مجاناً"
+    },
+    "footer": {
+      "description": "إدارة كنسية مجانية للشرق الأوسط. مبنية لخدمة الرب يسوع المسيح.",
+      "product": "المنتج",
+      "ministry": "الخدمة",
+      "legal": "قانوني",
+      "features": "المميزات",
+      "support": "ادعم الرسالة",
+      "demo": "عرض تجريبي",
+      "contact": "تواصل معنا",
+      "faq": "الأسئلة الشائعة",
+      "privacy": "سياسة الخصوصية",
+      "terms": "شروط الاستخدام",
+      "copyright": "© ٢٠٢٦ إكليسيا. مبنية لمجده."
+    }
+  },
+  "registration": {
+    "back": "رجوع",
+    "progress": "الخطوة {current} من {total}",
+    "creating": "جارٍ إعداد كنيستك...",
+    "errorGeneric": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "step0": {
+      "headline": "لنقم بإعداد كنيستك",
+      "subheadline": "في ٣ دقائق فقط، ستحصل على منصة إدارة كنسية متكاملة",
+      "feature1": "إدارة الأعضاء والزوار",
+      "feature2": "المجموعات وتتبع الحضور",
+      "feature3": "الفعاليات والخدمة والتواصل",
+      "cta": "هيا نبدأ"
+    },
+    "step1": {
+      "headline": "أنشئ حساب المشرف",
+      "subheadline": "سيكون هذا الحساب الرئيسي لإدارة كنيستك",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "pastor@church.com",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "٦ أحرف على الأقل",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "confirmPasswordPlaceholder": "اكتب كلمة المرور مرة أخرى",
+      "validationEmail": "يرجى إدخال بريد إلكتروني صالح",
+      "validationPassword": "كلمة المرور يجب أن تكون ٦ أحرف على الأقل",
+      "validationPasswordMatch": "كلمتا المرور غير متطابقتين",
+      "emailExists": "هذا البريد الإلكتروني مسجل بالفعل",
+      "continue": "متابعة"
+    },
+    "step2": {
+      "headline": "ما اسم كنيستك؟",
+      "subheadline": "هذا ما سيظهر في التطبيق",
+      "nameArLabel": "اسم الكنيسة بالعربية",
+      "nameArPlaceholder": "كنيسة النعمة",
+      "nameEnLabel": "اسم الكنيسة بالإنجليزية",
+      "nameEnPlaceholder": "Grace Church",
+      "nameEnOptional": "اختياري",
+      "previewLabel": "معاينة",
+      "previewPlaceholder": "كنيستك",
+      "continue": "متابعة"
+    },
+    "step3": {
+      "headline": "بعض التفاصيل السريعة",
+      "subheadline": "ساعدنا في إعداد كنيستك بشكل صحيح",
+      "countryLabel": "أين تقع كنيستك؟",
+      "timezoneLabel": "المنطقة الزمنية",
+      "languageLabel": "اللغة الأساسية",
+      "languageAr": "العربية",
+      "languageEn": "الإنجليزية",
+      "denominationLabel": "الطائفة",
+      "bibleLabel": "ترجمة الكتاب المقدس الافتراضية",
+      "continue": "متابعة"
+    },
+    "step4": {
+      "headline": "رحّب بزوارك",
+      "subheadline": "اكتب رسالة سيراها الزوار عند مسح رمز QR الخاص بكنيستك",
+      "messagePlaceholder": "أهلاً بك في كنيستنا! يسعدنا وجودك معنا...",
+      "previewLabel": "كيف سيراها الزوار",
+      "continue": "متابعة",
+      "skip": "تخطي الآن"
+    },
+    "step5leaders": {
+      "headline": "أضف قادة كنيستك",
+      "subheadline": "أظهر للزوار والأعضاء من يقود كنيستك",
+      "infoText": "سيظهر القادة في الصفحة العامة لكنيستك. يمكنك دائماً إضافة أو تعديل أو إزالة القادة لاحقاً من الإعدادات.",
+      "nameArLabel": "الاسم (عربي)",
+      "nameArPlaceholder": "القس جورج",
+      "nameEnLabel": "الاسم (إنجليزي)",
+      "nameEnPlaceholder": "Pastor George",
+      "titleArLabel": "اللقب (عربي)",
+      "titleArPlaceholder": "الراعي الأول",
+      "titleEnLabel": "اللقب (إنجليزي)",
+      "titleEnPlaceholder": "Senior Pastor",
+      "addButton": "إضافة",
+      "cancelButton": "إلغاء",
+      "addLeaderButton": "أضف قائداً",
+      "continue": "متابعة",
+      "continueEmpty": "متابعة بدون قادة",
+      "skip": "سأضيف القادة لاحقاً"
+    },
+    "step5": {
+      "headline": "كنيستك جاهزة!",
+      "subheadline": "كل شيء معد وجاهز للعمل",
+      "summaryChurch": "الكنيسة",
+      "summaryAdmin": "المشرف",
+      "summaryCountry": "البلد",
+      "cta": "الذهاب إلى لوحة التحكم",
+      "tip1": "ادعُ أعضاء فريقك",
+      "tip2": "أنشئ مجموعتك الأولى",
+      "tip3": "اطبع رمز QR للزوار",
+      "tipsHeadline": "ما التالي؟"
+    }
   }
 }

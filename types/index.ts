@@ -77,11 +77,33 @@ export interface Church {
   country: string
   timezone: string
   primary_language: string
+  denomination: string | null
   welcome_message: string | null
   welcome_message_ar: string | null
   visitor_sla_hours: number
   logo_url: string | null
   primary_color: string
+  default_bible_id: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// ============================================================
+// CHURCH LEADERS
+// ============================================================
+
+export interface ChurchLeader {
+  id: string
+  church_id: string
+  name: string
+  name_ar: string | null
+  title: string
+  title_ar: string | null
+  photo_url: string | null
+  bio: string | null
+  bio_ar: string | null
+  display_order: number
   is_active: boolean
   created_at: string
   updated_at: string
@@ -123,6 +145,7 @@ export interface Profile {
   // Preferences
   notification_pref: NotificationPref
   preferred_language: string
+  preferred_bible_id: string | null
 
   // Onboarding
   onboarding_completed: boolean
@@ -183,9 +206,20 @@ export interface Ministry {
   leader_id: string | null
   description: string | null
   description_ar: string | null
+  photo_url: string | null
   is_active: boolean
   created_at: string
   updated_at: string
+}
+
+export interface MinistryMember {
+  id: string
+  ministry_id: string
+  profile_id: string
+  church_id: string
+  role_in_ministry: GroupMemberRole
+  joined_at: string
+  is_active: boolean
 }
 
 export interface Group {
@@ -392,6 +426,57 @@ export interface ApiBibleVerse {
   reference: string
   content: string
   copyright: string
+}
+
+// ============================================================
+// EVENT SERVICE PLANNING
+// ============================================================
+
+export type EventAssignmentStatus = 'assigned' | 'confirmed' | 'declined'
+
+export interface EventServiceNeed {
+  id: string
+  event_id: string
+  church_id: string
+  ministry_id: string | null
+  group_id: string | null
+  volunteers_needed: number
+  notes: string | null
+  notes_ar: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventServiceAssignment {
+  id: string
+  service_need_id: string
+  church_id: string
+  profile_id: string
+  assigned_by: string | null
+  status: EventAssignmentStatus
+  status_changed_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventServiceNeedWithDetails extends EventServiceNeed {
+  ministry?: { id: string; name: string; name_ar: string | null; leader_id: string | null }
+  group?: { id: string; name: string; name_ar: string | null; leader_id: string | null; co_leader_id: string | null }
+  assignments: EventServiceAssignmentWithProfile[]
+  assigned_count: number
+}
+
+export interface EventServiceAssignmentWithProfile extends EventServiceAssignment {
+  profile: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    first_name_ar: string | null
+    last_name_ar: string | null
+    photo_url: string | null
+    phone: string | null
+  }
 }
 
 // ============================================================

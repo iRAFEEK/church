@@ -50,7 +50,6 @@ export function NotificationBell() {
     fetchNotifications()
   }, [fetchNotifications])
 
-  // Real-time subscription for new notifications
   useEffect(() => {
     const supabase = createBrowserClient()
 
@@ -99,7 +98,6 @@ export function NotificationBell() {
 
   const handleNavigate = (notification: Notification) => {
     setOpen(false)
-    // Navigate based on reference type
     if (notification.reference_type === 'visitor' && notification.reference_id) {
       router.push('/admin/visitors')
     } else if (notification.reference_type === 'gathering' && notification.reference_id) {
@@ -109,11 +107,25 @@ export function NotificationBell() {
     }
   }
 
+  // On mobile, tap navigates to /notifications page instead of opening popover
+  const handleBellClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      router.push('/notifications')
+      return
+    }
+    setOpen(!open)
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <Bell className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 md:h-8 md:w-8 relative"
+          onClick={handleBellClick}
+        >
+          <Bell className="h-5 w-5 md:h-4 md:w-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -end-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -123,7 +135,7 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent
         align={locale === 'ar' ? 'start' : 'end'}
-        className="w-80 p-0"
+        className="w-80 p-0 hidden md:block"
       >
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold text-sm">{t('title')}</h3>

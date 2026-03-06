@@ -26,7 +26,7 @@ export default async function MemberDetailPage({
   const { profile: currentUser } = await getCurrentUserWithRole()
   const { id } = await params
 
-  if (!isAdmin(currentUser)) redirect('/')
+  if (!isAdmin(currentUser)) redirect('/dashboard')
 
   const t = await getTranslations('memberDetail')
   const locale = await getLocale()

@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server'
 export default async function NewAnnouncementPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!isAdmin(user.profile)) redirect('/')
+  if (!isAdmin(user.profile)) redirect('/dashboard')
 
   const t = await getTranslations('announcements')
 

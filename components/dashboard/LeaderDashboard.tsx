@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { StatCard } from './StatCard'
+import { LeaderServiceNeeds } from '@/components/events/LeaderServiceNeeds'
 import type { LeaderDashboardData } from '@/types/dashboard'
 
 interface Props {
@@ -39,8 +40,41 @@ export function LeaderDashboard({ data }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Row 1: KPI Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {/* Mobile: Large action cards */}
+      <div className="grid grid-cols-2 gap-3 md:hidden">
+        {primaryGroup && (
+          <Link
+            href={`/groups/${primaryGroup.id}/gathering/new`}
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl bg-green-50 border-2 border-green-100 hover:bg-green-100 active:scale-95 transition-all"
+          >
+            <CalendarCheck className="h-8 w-8 text-green-600" />
+            <span className="text-sm font-semibold text-green-800">{t('leaderStartGathering')}</span>
+          </Link>
+        )}
+        {data.assignedVisitorCount > 0 ? (
+          <Link
+            href="/visitors"
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl bg-blue-50 border-2 border-blue-100 hover:bg-blue-100 active:scale-95 transition-all relative"
+          >
+            <UserRound className="h-8 w-8 text-blue-600" />
+            <span className="text-sm font-semibold text-blue-800">{t('leaderViewVisitors')}</span>
+            <span className="absolute top-2 end-2 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+              {data.assignedVisitorCount}
+            </span>
+          </Link>
+        ) : (
+          <Link
+            href="/events"
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl bg-purple-50 border-2 border-purple-100 hover:bg-purple-100 active:scale-95 transition-all"
+          >
+            <Calendar className="h-8 w-8 text-purple-600" />
+            <span className="text-sm font-semibold text-purple-800">{t('kpiUpcomingEvents') || 'Events'}</span>
+          </Link>
+        )}
+      </div>
+
+      {/* Desktop: KPI Cards */}
+      <div className="hidden md:grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('kpiGroupMembers')}
           value={totalMembers}
@@ -137,6 +171,9 @@ export function LeaderDashboard({ data }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Row 2.5: Upcoming Service Needs */}
+      <LeaderServiceNeeds />
 
       {/* Row 3: Quick Actions + Recent Gatherings */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">

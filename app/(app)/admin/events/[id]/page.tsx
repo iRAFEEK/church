@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EventRegistrations } from '@/components/events/EventRegistrations'
+import { EventServiceFulfillment } from '@/components/events/EventServiceFulfillment'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 
@@ -12,7 +13,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
+  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
 
   const t = await getTranslations('events')
   const locale = await getLocale()
@@ -93,6 +94,11 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
         {description && (
           <p className="text-sm">{description}</p>
         )}
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t('serviceNeeds')}</h2>
+        <EventServiceFulfillment eventId={id} />
       </div>
 
       <div className="space-y-3">

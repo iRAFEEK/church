@@ -22,5 +22,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
--- Repopulate text_plain with the improved normalization
-UPDATE bible_verses SET text_plain = strip_tashkeel(text);
+-- NOTE: Run this separately in the SQL editor with a longer timeout:
+-- UPDATE bible_verses SET text_plain = strip_tashkeel(text);
