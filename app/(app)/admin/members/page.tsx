@@ -1,6 +1,5 @@
-import { getCurrentUserWithRole, isAdmin } from '@/lib/auth'
+import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,12 +24,8 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { profile } = await getCurrentUserWithRole()
+  const { profile } = await requireRole('ministry_leader', 'super_admin')
   const params = await searchParams
-
-  if (!isAdmin(profile)) {
-    redirect('/dashboard')
-  }
 
   const t = await getTranslations('members')
   const locale = await getLocale()

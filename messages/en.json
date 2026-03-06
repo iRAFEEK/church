@@ -1271,7 +1271,10 @@
     "confirmSend": "Send",
     "sendSuccess": "Notification sent",
     "sentCount": "Sent to {count} recipients",
-    "sendFailed": "Failed to send notification"
+    "sendFailed": "Failed to send notification",
+    "scopeInfo_ministry_leader": "You can send to members of your ministries and their groups",
+    "scopeInfo_group_leader": "You can send to members of your groups",
+    "closeCompose": "Close"
   },
   "bottomNav": {
     "home": "Home",

@@ -1,13 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireRole } from '@/lib/auth'
 import { QRGenerator } from '@/components/admin/QRGenerator'
 import { getTranslations } from 'next-intl/server'
 
 export default async function QRPage() {
-  const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  const user = await requireRole('ministry_leader', 'super_admin')
 
   const t = await getTranslations('qr')
   const supabase = await createClient()

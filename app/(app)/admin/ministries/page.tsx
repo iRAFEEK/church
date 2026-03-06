@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireRole } from '@/lib/auth'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -8,9 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 export default async function MinistriesPage() {
-  const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  const user = await requireRole('ministry_leader', 'super_admin')
 
   const t = await getTranslations('ministries')
   const supabase = await createClient()

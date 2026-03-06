@@ -106,3 +106,15 @@ export function isAdmin(profile: Profile): boolean {
 export function isLeader(profile: Profile): boolean {
   return hasRole(profile, 'group_leader', 'ministry_leader', 'super_admin')
 }
+
+/**
+ * Server-side route guard. Call at top of admin page Server Components.
+ * Redirects to /dashboard if user lacks one of the allowed roles.
+ */
+export async function requireRole(...allowedRoles: Profile['role'][]): Promise<AuthUser> {
+  const user = await getCurrentUserWithRole()
+  if (!allowedRoles.includes(user.profile.role)) {
+    redirect('/dashboard')
+  }
+  return user
+}

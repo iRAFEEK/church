@@ -3,8 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveAudience, type AudienceTarget } from '@/lib/messaging/audience'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { whatsappProvider } from '@/lib/messaging/providers/whatsapp'
+import { getSendableScopes, validateTargetsAgainstScopes } from '@/lib/messaging/scopes'
 
-// POST /api/notifications/send — send targeted notification (admin only)
+// POST /api/notifications/send — send targeted notification (role-scoped)
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -17,7 +18,9 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  if (!['super_admin', 'ministry_leader'].includes(profile.role)) {
+
+  const scopes = await getSendableScopes(user.id, profile.church_id, profile.role)
+  if (!scopes.canSend) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -35,6 +38,11 @@ export async function POST(req: NextRequest) {
   }
   if (!targets?.length) {
     return NextResponse.json({ error: 'At least one target is required' }, { status: 400 })
+  }
+
+  const validation = validateTargetsAgainstScopes(targets, scopes)
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 403 })
   }
 
   const audience = await resolveAudience(profile.church_id, targets)

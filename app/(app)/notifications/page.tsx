@@ -112,8 +112,11 @@ export default function NotificationsPage() {
   const locale = useLocale()
   const router = useRouter()
 
-  // User role
+  // User role & scopes
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [canSend, setCanSend] = useState(false)
+  const [allowedTargetTypes, setAllowedTargetTypes] = useState<string[]>([])
+  const [isUnscoped, setIsUnscoped] = useState(false)
 
   // Notification list state
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -125,7 +128,7 @@ export default function NotificationsPage() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
 
-  // Compose panel state (admin only)
+  // Compose panel state
   const [showCompose, setShowCompose] = useState(false)
   const [allChurch, setAllChurch] = useState(false)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
@@ -146,27 +149,32 @@ export default function NotificationsPage() {
   const [showConfirm, setShowConfirm] = useState(false)
 
   const PAGE_SIZE = 20
-  const isAdmin = userRole === 'super_admin' || userRole === 'ministry_leader'
 
-  // Load user role
+  // Load user scopes on mount (replaces simple role check)
   useEffect(() => {
-    async function loadRole() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (data) setUserRole(data.role)
+    async function loadScopes() {
+      try {
+        const res = await fetch('/api/notifications/scopes')
+        if (!res.ok) return
+        const data = await res.json()
+        setUserRole(data.role)
+        setCanSend(data.canSend)
+        setAllowedTargetTypes(data.allowedTargetTypes || [])
+        setIsUnscoped(data.isUnscoped)
+
+        // For scoped users, pre-populate their allowed ministries/groups
+        if (data.canSend && !data.isUnscoped) {
+          if (data.ministries?.length) setMinistries(data.ministries)
+          if (data.groups?.length) setGroups(data.groups)
+        }
+      } catch { /* ignore */ }
     }
-    loadRole()
+    loadScopes()
   }, [])
 
-  // Load groups/ministries when compose opens
+  // For super_admin: load all groups/ministries when compose opens
   useEffect(() => {
-    if (!showCompose) return
+    if (!showCompose || !isUnscoped) return
     async function loadOptions() {
       const [groupsRes, ministriesRes] = await Promise.all([
         fetch('/api/groups'),
@@ -182,7 +190,7 @@ export default function NotificationsPage() {
       }
     }
     loadOptions()
-  }, [showCompose])
+  }, [showCompose, isUnscoped])
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
@@ -308,7 +316,7 @@ export default function NotificationsPage() {
   }
 
   const hasTargets = buildTargets().length > 0
-  const canSend = hasTargets && titleAr.trim() && bodyAr.trim() && !sending
+  const canSubmit = hasTargets && titleAr.trim() && bodyAr.trim() && !sending
 
   // ── Render ───────────────────────────────────────────
 
@@ -332,7 +340,7 @@ export default function NotificationsPage() {
               {t('markAllRead')}
             </Button>
           )}
-          {isAdmin && (
+          {canSend && (
             <Button
               size="sm"
               onClick={() => setShowCompose(!showCompose)}
@@ -347,7 +355,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* ── Compose Panel (admin only) ───────────────── */}
-      {showCompose && isAdmin && (
+      {showCompose && canSend && (
         <div className="space-y-4">
           {/* Audience */}
           <Card>
@@ -358,45 +366,57 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* All Church */}
-              <button
-                onClick={() => {
-                  setAllChurch(!allChurch)
-                  if (!allChurch) {
-                    setSelectedRoles([]); setSelectedGroups([]); setSelectedMinistries([])
-                    setSelectedStatuses([]); setSelectedVisitorStatuses([]); setSelectedGender('')
-                  }
-                }}
-                className={`w-full p-3 rounded-lg border-2 text-start transition-colors ${
-                  allChurch ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="font-medium">{tc('allChurch')}</span>
+              {/* Scope info for non-super_admin */}
+              {!isUnscoped && (
+                <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                  <Info className="h-4 w-4 shrink-0" />
+                  {userRole === 'ministry_leader' ? tc('scopeInfo_ministry_leader') : tc('scopeInfo_group_leader')}
                 </div>
-              </button>
+              )}
+
+              {/* All Church — super_admin only */}
+              {allowedTargetTypes.includes('all_church') && (
+                <button
+                  onClick={() => {
+                    setAllChurch(!allChurch)
+                    if (!allChurch) {
+                      setSelectedRoles([]); setSelectedGroups([]); setSelectedMinistries([])
+                      setSelectedStatuses([]); setSelectedVisitorStatuses([]); setSelectedGender('')
+                    }
+                  }}
+                  className={`w-full p-3 rounded-lg border-2 text-start transition-colors ${
+                    allChurch ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="font-medium">{tc('allChurch')}</span>
+                  </div>
+                </button>
+              )}
 
               {!allChurch && (
                 <>
-                  {/* Roles */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Shield className="h-3.5 w-3.5" /> {tc('byRole')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {ROLES.map(role => (
-                        <Badge key={role} variant={selectedRoles.includes(role) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedRoles, role, setSelectedRoles)}>
-                          {tc(`role_${role}`)}
-                        </Badge>
-                      ))}
+                  {/* Roles — super_admin only */}
+                  {allowedTargetTypes.includes('roles') && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <Shield className="h-3.5 w-3.5" /> {tc('byRole')}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {ROLES.map(role => (
+                          <Badge key={role} variant={selectedRoles.includes(role) ? 'default' : 'outline'}
+                            className="cursor-pointer px-3 py-1.5"
+                            onClick={() => toggleInArray(selectedRoles, role, setSelectedRoles)}>
+                            {tc(`role_${role}`)}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Groups */}
-                  {groups.length > 0 && (
+                  {/* Groups — available for super_admin, ministry_leader, group_leader */}
+                  {allowedTargetTypes.includes('groups') && groups.length > 0 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-1.5">
                         <Users className="h-3.5 w-3.5" /> {tc('byGroup')}
@@ -413,8 +433,8 @@ export default function NotificationsPage() {
                     </div>
                   )}
 
-                  {/* Ministries */}
-                  {ministries.length > 0 && (
+                  {/* Ministries — super_admin and ministry_leader */}
+                  {allowedTargetTypes.includes('ministries') && ministries.length > 0 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-1.5">
                         <Building2 className="h-3.5 w-3.5" /> {tc('byMinistry')}
@@ -431,55 +451,61 @@ export default function NotificationsPage() {
                     </div>
                   )}
 
-                  {/* Status */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <AlertTriangle className="h-3.5 w-3.5" /> {tc('byStatus')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {STATUSES.map(s => (
-                        <Badge key={s} variant={selectedStatuses.includes(s) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedStatuses, s, setSelectedStatuses)}>
-                          {tc(`status_${s}`)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Visitors */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <UserPlus className="h-3.5 w-3.5" /> {tc('byVisitors')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {VISITOR_STATUSES.map(vs => (
-                        <Badge key={vs} variant={selectedVisitorStatuses.includes(vs) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedVisitorStatuses, vs, setSelectedVisitorStatuses)}>
-                          {tc(`visitor_${vs}`)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Gender */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Heart className="h-3.5 w-3.5" /> {tc('byGender')}
-                    </label>
-                    <Select value={selectedGender || 'none'} onValueChange={(v) => setSelectedGender(v === 'none' ? '' : v)}>
-                      <SelectTrigger className="w-auto min-w-[160px]">
-                        <SelectValue placeholder={tc('genderPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{tc('genderAll')}</SelectItem>
-                        {GENDERS.map(g => (
-                          <SelectItem key={g} value={g}>{tc(`gender_${g}`)}</SelectItem>
+                  {/* Status — super_admin only */}
+                  {allowedTargetTypes.includes('statuses') && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5" /> {tc('byStatus')}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {STATUSES.map(s => (
+                          <Badge key={s} variant={selectedStatuses.includes(s) ? 'default' : 'outline'}
+                            className="cursor-pointer px-3 py-1.5"
+                            onClick={() => toggleInArray(selectedStatuses, s, setSelectedStatuses)}>
+                            {tc(`status_${s}`)}
+                          </Badge>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visitors — super_admin only */}
+                  {allowedTargetTypes.includes('visitors') && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <UserPlus className="h-3.5 w-3.5" /> {tc('byVisitors')}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {VISITOR_STATUSES.map(vs => (
+                          <Badge key={vs} variant={selectedVisitorStatuses.includes(vs) ? 'default' : 'outline'}
+                            className="cursor-pointer px-3 py-1.5"
+                            onClick={() => toggleInArray(selectedVisitorStatuses, vs, setSelectedVisitorStatuses)}>
+                            {tc(`visitor_${vs}`)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gender — super_admin only */}
+                  {allowedTargetTypes.includes('gender') && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <Heart className="h-3.5 w-3.5" /> {tc('byGender')}
+                      </label>
+                      <Select value={selectedGender || 'none'} onValueChange={(v) => setSelectedGender(v === 'none' ? '' : v)}>
+                        <SelectTrigger className="w-auto min-w-[160px]">
+                          <SelectValue placeholder={tc('genderPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{tc('genderAll')}</SelectItem>
+                          {GENDERS.map(g => (
+                            <SelectItem key={g} value={g}>{tc(`gender_${g}`)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -527,7 +553,7 @@ export default function NotificationsPage() {
 
           {/* Send Button */}
           <div className="flex justify-end">
-            <Button size="lg" disabled={!canSend} onClick={() => setShowConfirm(true)} className="gap-2">
+            <Button size="lg" disabled={!canSubmit} onClick={() => setShowConfirm(true)} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {sending ? tc('sending') : tc('sendButton')}
             </Button>

@@ -76,6 +76,25 @@ export default async function DashboardPage() {
     )
   }
 
+  // Check if member is a ministry co-leader — show LeaderDashboard if so
+  const { data: coLeaderCheck } = await supabase
+    .from('ministry_members')
+    .select('id')
+    .eq('profile_id', id)
+    .eq('is_active', true)
+    .eq('role_in_ministry', 'co_leader')
+    .limit(1)
+
+  if (coLeaderCheck && coLeaderCheck.length > 0) {
+    const data = await fetchLeaderDashboard(supabase, id, profile.church_id)
+    return (
+      <div className="space-y-6">
+        {header}
+        <LeaderDashboard data={data} />
+      </div>
+    )
+  }
+
   // Member dashboard
   const data = await fetchMemberDashboard(supabase, id, profile.church_id)
   return (

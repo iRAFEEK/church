@@ -1,15 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireRole } from '@/lib/auth'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { VisitorQueue } from '@/components/visitors/VisitorQueue'
 import { getTranslations } from 'next-intl/server'
 
 export default async function AdminVisitorsPage() {
-  const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  const user = await requireRole('ministry_leader', 'super_admin')
 
   const t = await getTranslations('visitors')
   const supabase = await createClient()
