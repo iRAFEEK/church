@@ -17,7 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'لوحة التحكم',
     href: '/dashboard',
     iconName: 'LayoutDashboard',
-    roles: ['ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     section: 'Main',
     section_ar: 'الرئيسية',
   },

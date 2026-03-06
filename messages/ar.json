@@ -1271,7 +1271,10 @@
     "confirmSend": "إرسال",
     "sendSuccess": "تم إرسال الإشعار",
     "sentCount": "تم الإرسال إلى {count} مستلم",
-    "sendFailed": "فشل إرسال الإشعار"
+    "sendFailed": "فشل إرسال الإشعار",
+    "scopeInfo_ministry_leader": "يمكنك الإرسال لأعضاء خدماتك ومجموعاتها",
+    "scopeInfo_group_leader": "يمكنك الإرسال لأعضاء مجموعاتك",
+    "closeCompose": "إغلاق"
   },
   "bottomNav": {
     "home": "الرئيسية",

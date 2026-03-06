@@ -854,6 +854,34 @@ export async function fetchMinistryLeaderDashboard(
   }
 }
 
+// ─── Helpers: Co-led Ministry Groups ─────────────
+
+async function getCoLedMinistryGroupIds(
+  supabase: SupabaseClient,
+  profileId: string,
+  churchId: string
+): Promise<string[]> {
+  const { data: coLedMinistries } = await supabase
+    .from('ministry_members')
+    .select('ministry_id')
+    .eq('profile_id', profileId)
+    .eq('is_active', true)
+    .eq('role_in_ministry', 'co_leader')
+
+  if (!coLedMinistries || coLedMinistries.length === 0) return []
+
+  const ministryIds = coLedMinistries.map((m: any) => m.ministry_id)
+
+  const { data: groups } = await supabase
+    .from('groups')
+    .select('id')
+    .eq('church_id', churchId)
+    .eq('is_active', true)
+    .in('ministry_id', ministryIds)
+
+  return (groups || []).map((g: any) => g.id)
+}
+
 // ─── Leader Dashboard ─────────────────────────────
 
 export async function fetchLeaderDashboard(
@@ -861,7 +889,7 @@ export async function fetchLeaderDashboard(
   profileId: string,
   churchId: string
 ): Promise<LeaderDashboardData> {
-  // Get leader's groups
+  // Get groups where user is direct leader/co-leader
   const { data: leaderGroups } = await supabase
     .from('groups')
     .select('id, name, name_ar')
@@ -869,7 +897,23 @@ export async function fetchLeaderDashboard(
     .eq('is_active', true)
     .or(`leader_id.eq.${profileId},co_leader_id.eq.${profileId}`)
 
-  const groups = leaderGroups || []
+  // Also include groups from ministries where user is co_leader
+  const coLedGroupIds = await getCoLedMinistryGroupIds(supabase, profileId, churchId)
+  const directGroupIds = new Set((leaderGroups || []).map(g => g.id))
+  const additionalGroupIds = coLedGroupIds.filter(id => !directGroupIds.has(id))
+
+  let additionalGroups: { id: string; name: string; name_ar: string }[] = []
+  if (additionalGroupIds.length > 0) {
+    const { data } = await supabase
+      .from('groups')
+      .select('id, name, name_ar')
+      .eq('church_id', churchId)
+      .eq('is_active', true)
+      .in('id', additionalGroupIds)
+    additionalGroups = (data || []) as any[]
+  }
+
+  const groups = [...(leaderGroups || []), ...additionalGroups]
   const groupIds = groups.map(g => g.id)
 
   if (groupIds.length === 0) {

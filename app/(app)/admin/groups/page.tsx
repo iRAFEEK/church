@@ -1,15 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requireRole } from '@/lib/auth'
 import Link from 'next/link'
 import { GroupsTable } from '@/components/groups/GroupsTable'
 import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 
 export default async function GroupsPage() {
-  const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  const user = await requireRole('group_leader', 'ministry_leader', 'super_admin')
 
   const t = await getTranslations('groups')
   const supabase = await createClient()
