@@ -11,8 +11,6 @@ import { Label } from '@/components/ui/label'
 import { BIBLE_BOOKS_AR, getBookSection } from '@/lib/bible/constants'
 import type { ApiBibleBook } from '@/types'
 
-const BIBLE_ID = 'ar-svd'
-
 interface Verse {
   id: string
   verse_number: number
@@ -28,6 +26,7 @@ interface SearchResult {
 }
 
 interface BiblePresenterProps {
+  bibleId: string
   bookId: string
   chapterId: string
   reference: string
@@ -43,6 +42,7 @@ const FONT_MAP: Record<string, string> = {
 }
 
 export function BiblePresenter({
+  bibleId,
   bookId: initialBookId,
   chapterId: initialChapterId,
   reference: initialReference,
@@ -123,7 +123,7 @@ export function BiblePresenter({
     setSearchLoading(true)
     searchDebounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/bible/${BIBLE_ID}/search?query=${encodeURIComponent(searchQuery.trim())}&limit=10`)
+        const res = await fetch(`/api/bible/${bibleId}/search?query=${encodeURIComponent(searchQuery.trim())}&limit=10`)
         if (!res.ok) throw new Error()
         const json = await res.json()
         const data = json.data || {}
@@ -168,7 +168,7 @@ export function BiblePresenter({
     setShowSearch(false)
     setGoToLoading(true)
     try {
-      const res = await fetch(`/api/bible/${BIBLE_ID}/chapters/${chapterId}/verses`)
+      const res = await fetch(`/api/bible/${bibleId}/chapters/${chapterId}/verses`)
       if (!res.ok) return
       const json = await res.json()
       const data = json.data || {}
@@ -270,7 +270,7 @@ export function BiblePresenter({
     setGoToChapters([])
     setGoToChapterId('')
 
-    fetch(`/api/bible/${BIBLE_ID}/books/${goToBookId}/chapters`)
+    fetch(`/api/bible/${bibleId}/books/${goToBookId}/chapters`)
       .then(r => r.json())
       .then(json => {
         const chs = (json.data || []).map((c: any) => ({ id: c.id, number: c.number }))
@@ -283,7 +283,7 @@ export function BiblePresenter({
   const handleGoTo = useCallback(async (chapterId: string, verseNum?: number) => {
     setGoToLoading(true)
     try {
-      const res = await fetch(`/api/bible/${BIBLE_ID}/chapters/${chapterId}/verses`)
+      const res = await fetch(`/api/bible/${bibleId}/chapters/${chapterId}/verses`)
       if (!res.ok) return
       const json = await res.json()
       const data = json.data || {}

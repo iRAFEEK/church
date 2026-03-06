@@ -25,7 +25,7 @@ export default async function NewGatheringPage({ params }: Params) {
 
   const isLeader = group.leader_id === user.profile.id || group.co_leader_id === user.profile.id
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
-  if (!isLeader && !isAdmin) redirect('/')
+  if (!isLeader && !isAdmin) redirect('/dashboard')
 
   return (
     <div className="max-w-lg mx-auto space-y-6">

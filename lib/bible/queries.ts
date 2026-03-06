@@ -4,26 +4,37 @@ import type {
   ApiBibleChapterContent, ApiBibleVerse,
 } from '@/types'
 
-const BIBLE_ID = 'ar-svd'
+// ============================================================
+// Public query functions — support any seeded Bible version
+// ============================================================
 
-// ============================================================
-// Public query functions — optimized for single Arabic SVD version
-// ============================================================
+/** Get the first available Bible version ID (used as default). */
+async function getDefaultBibleId(): Promise<string> {
+  const supabase = await createAdminClient()
+  const { data } = await supabase
+    .from('bible_versions')
+    .select('id')
+    .limit(1)
+    .single()
+  return data?.id ?? ''
+}
 
 /**
- * Get all books for Arabic SVD.
+ * Get all books for a given Bible version.
  */
-export async function getBooks(): Promise<ApiBibleBook[]> {
+export async function getBooks(bibleId?: string): Promise<ApiBibleBook[]> {
+  if (!bibleId) bibleId = await getDefaultBibleId()
+  if (!bibleId) return []
   const supabase = await createAdminClient()
   const { data } = await supabase
     .from('bible_books')
     .select('id, abbreviation, name, name_long, sort_order')
-    .eq('bible_id', BIBLE_ID)
+    .eq('bible_id', bibleId)
     .order('sort_order')
 
   return (data || []).map((b: any) => ({
     id: b.id,
-    bibleId: BIBLE_ID,
+    bibleId,
     abbreviation: b.abbreviation,
     name: b.name,
     nameLong: b.name_long,
@@ -31,16 +42,18 @@ export async function getBooks(): Promise<ApiBibleBook[]> {
 }
 
 /**
- * Get ALL chapters for Arabic SVD, grouped by book_id.
+ * Get ALL chapters for a Bible version, grouped by book_id.
  * Returns a flat map: { [bookId]: [{ id, number }] }
  * This eliminates the need for per-book chapter fetches.
  */
-export async function getAllChaptersMap(): Promise<Record<string, { id: string; number: string }[]>> {
+export async function getAllChaptersMap(bibleId?: string): Promise<Record<string, { id: string; number: string }[]>> {
+  if (!bibleId) bibleId = await getDefaultBibleId()
+  if (!bibleId) return {}
   const supabase = await createAdminClient()
   const { data } = await supabase
     .from('bible_chapters')
     .select('id, book_id, chapter_number')
-    .eq('bible_id', BIBLE_ID)
+    .eq('bible_id', bibleId)
     .order('chapter_number')
 
   const map: Record<string, { id: string; number: string }[]> = {}
@@ -55,18 +68,18 @@ export async function getAllChaptersMap(): Promise<Record<string, { id: string; 
 /**
  * Get chapters for a specific book (used by API routes / presenter).
  */
-export async function getChapters(bookId: string): Promise<ApiBibleChapter[]> {
+export async function getChapters(bibleId: string, bookId: string): Promise<ApiBibleChapter[]> {
   const supabase = await createAdminClient()
   const { data } = await supabase
     .from('bible_chapters')
     .select('id, book_id, chapter_number, reference')
-    .eq('bible_id', BIBLE_ID)
+    .eq('bible_id', bibleId)
     .eq('book_id', bookId)
     .order('chapter_number')
 
   return (data || []).map((c: any) => ({
     id: c.id,
-    bibleId: BIBLE_ID,
+    bibleId,
     bookId: c.book_id,
     number: String(c.chapter_number),
     reference: c.reference,
@@ -76,20 +89,20 @@ export async function getChapters(bookId: string): Promise<ApiBibleChapter[]> {
 /**
  * Get the content of a chapter, building HTML with data-verse-id spans.
  */
-export async function getChapterContent(chapterId: string): Promise<ApiBibleChapterContent> {
+export async function getChapterContent(bibleId: string, chapterId: string): Promise<ApiBibleChapterContent> {
   const supabase = await createAdminClient()
 
   const [chapterResult, versesResult] = await Promise.all([
     supabase
       .from('bible_chapters')
       .select('book_id, chapter_number, reference')
-      .eq('bible_id', BIBLE_ID)
+      .eq('bible_id', bibleId)
       .eq('id', chapterId)
       .single(),
     supabase
       .from('bible_verses')
       .select('id, verse_number, text')
-      .eq('bible_id', BIBLE_ID)
+      .eq('bible_id', bibleId)
       .eq('chapter_id', chapterId)
       .order('verse_number'),
   ])
@@ -107,7 +120,7 @@ export async function getChapterContent(chapterId: string): Promise<ApiBibleChap
 
   return {
     id: chapterId,
-    bibleId: BIBLE_ID,
+    bibleId,
     bookId: chapter?.book_id || chapterId.split('.')[0],
     number: String(chapter?.chapter_number || ''),
     reference: chapter?.reference || '',
@@ -120,7 +133,7 @@ export async function getChapterContent(chapterId: string): Promise<ApiBibleChap
 /**
  * Get individual verses for a chapter (used by presenter).
  */
-export async function getChapterVerses(chapterId: string): Promise<{
+export async function getChapterVerses(bibleId: string, chapterId: string): Promise<{
   verses: { id: string; verse_number: number; text: string }[]
   reference: string
 }> {
@@ -130,13 +143,13 @@ export async function getChapterVerses(chapterId: string): Promise<{
     supabase
       .from('bible_chapters')
       .select('reference')
-      .eq('bible_id', BIBLE_ID)
+      .eq('bible_id', bibleId)
       .eq('id', chapterId)
       .single(),
     supabase
       .from('bible_verses')
       .select('id, verse_number, text')
-      .eq('bible_id', BIBLE_ID)
+      .eq('bible_id', bibleId)
       .eq('chapter_id', chapterId)
       .order('verse_number'),
   ])
@@ -167,6 +180,7 @@ function normalizeArabic(text: string): string {
  * Splits query into words and matches each independently (AND logic).
  */
 export async function searchBible(
+  bibleId: string,
   query: string,
   limit: number = 10
 ): Promise<{ verses: ApiBibleVerse[]; total: number }> {
@@ -179,7 +193,7 @@ export async function searchBible(
   let q = supabase
     .from('bible_verses')
     .select('id, book_id, chapter_id, verse_number, text')
-    .eq('bible_id', BIBLE_ID)
+    .eq('bible_id', bibleId)
 
   // Each word must appear somewhere in text_plain (AND logic)
   for (const word of words) {
@@ -191,7 +205,7 @@ export async function searchBible(
   const verses: ApiBibleVerse[] = (data || []).map((v: any) => ({
     id: v.id,
     orgId: v.id,
-    bibleId: BIBLE_ID,
+    bibleId,
     bookId: v.book_id,
     chapterId: v.chapter_id,
     reference: `${v.chapter_id}:${v.verse_number}`,

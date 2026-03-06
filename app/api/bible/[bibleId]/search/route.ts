@@ -19,7 +19,7 @@ export async function GET(
 
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    const data = await searchBible(query, limit)
+    const data = await searchBible(bibleId, query, limit)
     return NextResponse.json({ data })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server'
 export default async function NewEventPage() {
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
+  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
 
   const t = await getTranslations('events')
 

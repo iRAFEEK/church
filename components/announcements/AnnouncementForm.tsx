@@ -3,19 +3,25 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Stepper } from '@/components/ui/stepper'
 import { toast } from 'sonner'
-import { Languages } from 'lucide-react'
+import { Megaphone, FileText, Settings, Pin } from 'lucide-react'
 import type { Announcement, AnnouncementStatus } from '@/types'
 
 interface AnnouncementFormProps {
   announcement?: Announcement
 }
+
+const STEPS = [
+  { title: 'Content', titleAr: 'المحتوى' },
+  { title: 'Translation', titleAr: 'الترجمة' },
+  { title: 'Settings', titleAr: 'الإعدادات' },
+]
 
 export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
   const router = useRouter()
@@ -24,7 +30,7 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [loading, setLoading] = useState(false)
-  const [showTranslation, setShowTranslation] = useState(false)
+  const [step, setStep] = useState(0)
 
   const [form, setForm] = useState({
     title: announcement?.title || '',
@@ -41,8 +47,7 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
   const bodyField = isAr ? 'body_ar' : 'body'
   const bodyAltField = isAr ? 'body' : 'body_ar'
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     const primaryTitle = form[titleField]
     if (!primaryTitle) {
       toast.error(t('requiredTitle'))
@@ -86,48 +91,65 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
     }
   }
 
+  const canProceed = step === 0 ? !!form[titleField] : true
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label>{tc('title')} *</Label>
-        <Input
-          value={form[titleField]}
-          onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
-          dir={isAr ? 'rtl' : 'ltr'}
-        />
-      </div>
+    <Stepper
+      steps={STEPS}
+      currentStep={step}
+      onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
+      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onSubmit={handleSubmit}
+      isSubmitting={loading}
+      submitLabel={announcement ? t('updateAnnouncement') : t('createAnnouncement')}
+      submitLabelAr={announcement ? t('updateAnnouncement') : t('createAnnouncement')}
+      canProceed={canProceed}
+    >
+      {/* Step 1: Content */}
+      {step === 0 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Megaphone className="h-5 w-5" />
+              <span className="text-sm font-medium">{tc('title')} *</span>
+            </div>
+            <Input
+              value={form[titleField]}
+              onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
+              dir={isAr ? 'rtl' : 'ltr'}
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <FileText className="h-5 w-5" />
+              <span className="text-sm font-medium">{tc('body')}</span>
+            </div>
+            <Textarea
+              value={form[bodyField]}
+              onChange={(e) => setForm({ ...form, [bodyField]: e.target.value })}
+              rows={6}
+              dir={isAr ? 'rtl' : 'ltr'}
+            />
+          </div>
+        </div>
+      )}
 
-      <div className="space-y-2">
-        <Label>{tc('body')}</Label>
-        <Textarea
-          value={form[bodyField]}
-          onChange={(e) => setForm({ ...form, [bodyField]: e.target.value })}
-          rows={6}
-          dir={isAr ? 'rtl' : 'ltr'}
-        />
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setShowTranslation(!showTranslation)}
-        className="flex items-center gap-2 text-sm text-primary hover:underline"
-      >
-        <Languages className="h-4 w-4" />
-        {showTranslation ? tc('hideTranslation') : tc('addTranslation')}
-      </button>
-
-      {showTranslation && (
-        <div className="space-y-4 rounded-lg border p-4 bg-muted/30 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="space-y-2">
-            <Label>{tc('title')} ({isAr ? 'EN' : 'AR'})</Label>
+      {/* Step 2: Translation */}
+      {step === 1 && (
+        <div className="space-y-5 pt-4">
+          <p className="text-sm text-zinc-500">{tc('addTranslation')}</p>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')} ({isAr ? 'EN' : 'AR'})</Label>
             <Input
               value={form[titleAltField]}
               onChange={(e) => setForm({ ...form, [titleAltField]: e.target.value })}
               dir={isAr ? 'ltr' : 'rtl'}
+              className="min-h-[48px]"
             />
           </div>
-          <div className="space-y-2">
-            <Label>{tc('body')} ({isAr ? 'EN' : 'AR'})</Label>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{tc('body')} ({isAr ? 'EN' : 'AR'})</Label>
             <Textarea
               value={form[bodyAltField]}
               onChange={(e) => setForm({ ...form, [bodyAltField]: e.target.value })}
@@ -138,47 +160,67 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>{t('status')}</Label>
-          <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as AnnouncementStatus })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">{t('status_draft')}</SelectItem>
-              <SelectItem value="published">{t('status_published')}</SelectItem>
-              <SelectItem value="archived">{t('status_archived')}</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Step 3: Settings & Review */}
+      {step === 2 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Settings className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('status')}</span>
+            </div>
+            <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as AnnouncementStatus })}>
+              <SelectTrigger className="min-h-[48px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">{t('status_draft')}</SelectItem>
+                <SelectItem value="published">{t('status_published')}</SelectItem>
+                <SelectItem value="archived">{t('status_archived')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('expiresAt')}</Label>
+            <Input
+              type="date"
+              value={form.expires_at}
+              onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
+              dir="ltr"
+              className="min-h-[48px]"
+            />
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
+            <Switch
+              checked={form.is_pinned}
+              onCheckedChange={(v) => setForm({ ...form, is_pinned: v })}
+            />
+            <div className="flex items-center gap-2">
+              <Pin className="h-4 w-4 text-zinc-400" />
+              <Label>{t('isPinned')}</Label>
+            </div>
+          </div>
+          <div className="space-y-3 pt-2">
+            <ReviewItem icon={<Megaphone className="h-4 w-4" />} label={tc('title')} value={form[titleField]} />
+            {form[bodyField] && (
+              <ReviewItem
+                icon={<FileText className="h-4 w-4" />}
+                label={tc('body')}
+                value={form[bodyField].length > 100 ? form[bodyField].slice(0, 100) + '...' : form[bodyField]}
+              />
+            )}
+          </div>
         </div>
+      )}
+    </Stepper>
+  )
+}
 
-        <div className="space-y-2">
-          <Label>{t('expiresAt')}</Label>
-          <Input
-            type="date"
-            value={form.expires_at}
-            onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
-          />
-        </div>
-
-        <div className="flex items-center gap-3 pt-6">
-          <Switch
-            checked={form.is_pinned}
-            onCheckedChange={(v) => setForm({ ...form, is_pinned: v })}
-          />
-          <Label>{t('isPinned')}</Label>
-        </div>
+function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
       </div>
-
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? t('saving') : announcement ? t('updateAnnouncement') : t('createAnnouncement')}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          {t('cancel')}
-        </Button>
-      </div>
-    </form>
+    </div>
   )
 }

@@ -1,16 +1,19 @@
 /**
- * Download Bible text from getbible.net API and save as local JSON files.
+ * Download Bible text from getbible.net and helloao.org APIs and save as local JSON files.
  * Run once: npx tsx scripts/download-bible.ts
  *
  * Produces:
- *   data/bible/ar-svd.json  — Arabic Smith & Van Dyke (66 books)
- *   data/bible/en-kjva.json — English KJV with Apocrypha (80 books)
+ *   data/bible/ar-svd.json   — Arabic Smith & Van Dyke (66 books)
+ *   data/bible/ar-svd-dc.json — Arabic SVD with Deuterocanonical books
+ *   data/bible/ar-nav.json   — Arabic New Arabic Version / كتاب الحياة (66 books)
+ *   data/bible/en-kjva.json  — English KJV with Apocrypha (80 books)
  */
 
-import { writeFileSync } from 'fs'
+import { writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
-const API_BASE = 'https://api.getbible.net/v2'
+const GETBIBLE_API = 'https://api.getbible.net/v2'
+const HELLOAO_API = 'https://bible.helloao.org/api'
 
 // getbible.net book_nr → USFM code mapping
 const BOOK_NR_TO_USFM: Record<number, string> = {
@@ -103,6 +106,13 @@ const BOOK_LONG_NAMES_AR: Record<string, string> = {
   '2PE': 'رسالة بطرس الثانية', '1JN': 'رسالة يوحنا الأولى',
   '2JN': 'رسالة يوحنا الثانية', '3JN': 'رسالة يوحنا الثالثة',
   JUD: 'رسالة يهوذا', REV: 'سفر الرؤيا',
+  // Deuterocanonical
+  '1ES': 'سفر أسدراس الأول', '2ES': 'سفر أسدراس الثاني',
+  TOB: 'سفر طوبيا', JDT: 'سفر يهوديت', ESG: 'تتمة سفر أستير',
+  WIS: 'سفر الحكمة', SIR: 'سفر يشوع بن سيراخ',
+  BAR: 'سفر باروخ', S3Y: 'صلاة عزريا', SUS: 'سوسنة',
+  BEL: 'بال والتنين', MAN: 'صلاة منسى',
+  '1MA': 'سفر المكابيين الأول', '2MA': 'سفر المكابيين الثاني',
 }
 
 // Short Arabic book names
@@ -129,24 +139,18 @@ const BOOK_SHORT_NAMES_AR: Record<string, string> = {
   JAS: 'يعقوب', '1PE': 'بطرس الأولى', '2PE': 'بطرس الثانية',
   '1JN': 'يوحنا الأولى', '2JN': 'يوحنا الثانية', '3JN': 'يوحنا الثالثة',
   JUD: 'يهوذا', REV: 'رؤيا',
+  // Deuterocanonical
+  '1ES': 'أسدراس الأول', '2ES': 'أسدراس الثاني',
+  TOB: 'طوبيا', JDT: 'يهوديت', ESG: 'تتمة أستير',
+  WIS: 'الحكمة', SIR: 'يشوع بن سيراخ',
+  BAR: 'باروخ', S3Y: 'صلاة عزريا', SUS: 'سوسنة',
+  BEL: 'بال والتنين', MAN: 'صلاة منسى',
+  '1MA': 'المكابيين الأول', '2MA': 'المكابيين الثاني',
 }
 
-interface GetBibleBook {
-  nr: number
-  name: string
-  url: string
-  sha: string
-  chapters: Array<{
-    chapter: number
-    name: string
-    verses: Array<{
-      chapter: number
-      verse: number
-      name: string
-      text: string
-    }>
-  }>
-}
+// ============================================================
+// Shared types
+// ============================================================
 
 interface BibleDataBook {
   id: string
@@ -191,23 +195,42 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function downloadTranslation(
+// ============================================================
+// getbible.net downloader (for SVD and KJVA)
+// ============================================================
+
+interface GetBibleBook {
+  nr: number
+  name: string
+  url: string
+  sha: string
+  chapters: Array<{
+    chapter: number
+    name: string
+    verses: Array<{
+      chapter: number
+      verse: number
+      name: string
+      text: string
+    }>
+  }>
+}
+
+async function downloadFromGetBible(
   translationKey: string,
   versionMeta: BibleData['version'],
   isArabic: boolean
 ): Promise<BibleData> {
-  console.log(`\nDownloading ${versionMeta.name}...`)
+  console.log(`\nDownloading ${versionMeta.name} from getbible.net...`)
 
-  // Get books list (just metadata, no chapters/verses)
   const booksIndex = await fetchJSON<Record<string, { nr: number; name: string; url: string }>>(
-    `${API_BASE}/${translationKey}/books.json`
+    `${GETBIBLE_API}/${translationKey}/books.json`
   )
 
   const books: BibleDataBook[] = []
   let totalVerses = 0
   let sortOrder = 0
 
-  // Sort books by number
   const sortedEntries = Object.values(booksIndex).sort((a, b) => a.nr - b.nr)
 
   for (const entry of sortedEntries) {
@@ -220,10 +243,9 @@ async function downloadTranslation(
     sortOrder++
     console.log(`  [${sortOrder}/${sortedEntries.length}] ${entry.name} (${usfm})...`)
 
-    // Fetch the full book data (all chapters + verses)
     let bookData: GetBibleBook
     try {
-      bookData = await fetchJSON<GetBibleBook>(`${API_BASE}/${translationKey}/${entry.nr}.json`)
+      bookData = await fetchJSON<GetBibleBook>(`${GETBIBLE_API}/${translationKey}/${entry.nr}.json`)
     } catch (err: any) {
       console.log(`    ERROR: Failed to fetch book: ${err.message}`)
       continue
@@ -266,20 +288,111 @@ async function downloadTranslation(
       chapters,
     })
 
-    // Small delay between book fetches to be respectful
     await sleep(200)
   }
 
   console.log(`\n  Total: ${books.length} books, ${totalVerses} verses`)
-
   return { version: versionMeta, books }
 }
 
+// ============================================================
+// helloao.org downloader (for NAV)
+// ============================================================
+
+interface HelloaoBookInfo {
+  id: string
+  name: string
+  commonName: string
+  numberOfChapters: number
+  order: number
+}
+
+interface HelloaoChapterContent {
+  type: string
+  number?: number
+  content?: string[]
+}
+
+async function downloadFromHelloao(
+  translationKey: string,
+  versionMeta: BibleData['version'],
+): Promise<BibleData> {
+  console.log(`\nDownloading ${versionMeta.name} from helloao.org...`)
+
+  // Get book list
+  const booksResponse = await fetchJSON<{ books: HelloaoBookInfo[] }>(
+    `${HELLOAO_API}/${translationKey}/books.json`
+  )
+
+  const books: BibleDataBook[] = []
+  let totalVerses = 0
+
+  const sortedBooks = booksResponse.books.sort((a, b) => a.order - b.order)
+
+  for (let i = 0; i < sortedBooks.length; i++) {
+    const bookInfo = sortedBooks[i]
+    const usfm = bookInfo.id // helloao uses USFM codes directly
+    const sortOrder = i + 1
+
+    const bookName = BOOK_SHORT_NAMES_AR[usfm] || bookInfo.commonName || bookInfo.name
+    const bookNameLong = BOOK_LONG_NAMES_AR[usfm] || bookInfo.name
+
+    console.log(`  [${sortOrder}/${sortedBooks.length}] ${bookName} (${usfm}) — ${bookInfo.numberOfChapters} chapters...`)
+
+    const chapters: BibleDataBook['chapters'] = []
+
+    for (let chNum = 1; chNum <= bookInfo.numberOfChapters; chNum++) {
+      try {
+        const chapterResponse = await fetchJSON<{ chapter: { content: HelloaoChapterContent[] } }>(
+          `${HELLOAO_API}/${translationKey}/${usfm}/${chNum}.json`
+        )
+
+        const verses: Array<{ number: number; text: string }> = []
+        for (const item of chapterResponse.chapter.content) {
+          if (item.type === 'verse' && item.number && item.content) {
+            verses.push({
+              number: item.number,
+              text: item.content.join(' ').trim(),
+            })
+          }
+        }
+
+        const reference = `${bookName} ${chNum}`
+        chapters.push({ number: chNum, reference, verses })
+        totalVerses += verses.length
+      } catch (err: any) {
+        console.log(`    ERROR: Chapter ${chNum}: ${err.message}`)
+      }
+
+      await sleep(200)
+    }
+
+    console.log(`    ${chapters.length} chapters, ${chapters.reduce((s, c) => s + c.verses.length, 0)} verses`)
+
+    books.push({
+      id: usfm,
+      abbreviation: usfm,
+      name: bookName,
+      nameLong: bookNameLong,
+      sortOrder,
+      chapters,
+    })
+  }
+
+  console.log(`\n  Total: ${books.length} books, ${totalVerses} verses`)
+  return { version: versionMeta, books }
+}
+
+// ============================================================
+// Main
+// ============================================================
+
 async function main() {
   const dataDir = join(process.cwd(), 'data', 'bible')
+  mkdirSync(dataDir, { recursive: true })
 
-  // Download Arabic SVD (66 books)
-  const arSvd = await downloadTranslation('arabicsv', {
+  // Download Arabic SVD from getbible.net (66 books)
+  const arSvd = await downloadFromGetBible('arabicsv', {
     id: 'ar-svd',
     name: 'Smith & Van Dyke',
     nameLocal: 'سميث وفاندايك',
@@ -296,8 +409,45 @@ async function main() {
   writeFileSync(join(dataDir, 'ar-svd.json'), JSON.stringify(arSvd, null, 2), 'utf-8')
   console.log(`\nSaved ar-svd.json`)
 
-  // Download KJV with Apocrypha
-  const enKjva = await downloadTranslation('kjva', {
+  // Download Arabic SVD with Deuterocanonical from getbible.net
+  // getbible.net arabicsv includes all books it has; we include apocrypha in mappings
+  const arSvdDc = await downloadFromGetBible('arabicsv', {
+    id: 'ar-svd-dc',
+    name: 'Smith & Van Dyke (with Deuterocanonical)',
+    nameLocal: 'سميث وفاندايك (مع الأسفار القانونية الثانية)',
+    abbreviation: 'SVD-DC',
+    abbreviationLocal: 'ف.س+',
+    languageId: 'ara',
+    languageName: 'Arabic',
+    languageNameLocal: 'العربية',
+    description: 'Arabic Bible - Smith & Van Dyke with Deuterocanonical books',
+    descriptionLocal: 'الكتاب المقدس - ترجمة سميث وفاندايك مع الأسفار القانونية الثانية',
+    copyright: 'Public Domain',
+  }, true)
+
+  writeFileSync(join(dataDir, 'ar-svd-dc.json'), JSON.stringify(arSvdDc, null, 2), 'utf-8')
+  console.log(`Saved ar-svd-dc.json`)
+
+  // Download Arabic NAV from helloao.org (66 books)
+  const arNav = await downloadFromHelloao('ARBNAV', {
+    id: 'ar-nav',
+    name: 'New Arabic Version',
+    nameLocal: 'كتاب الحياة',
+    abbreviation: 'NAV',
+    abbreviationLocal: 'NAV',
+    languageId: 'ara',
+    languageName: 'Arabic',
+    languageNameLocal: 'العربية',
+    description: 'New Arabic Version - Book of Life',
+    descriptionLocal: 'كتاب الحياة - الترجمة العربية المبسطة',
+    copyright: 'CC BY-SA - Biblica',
+  })
+
+  writeFileSync(join(dataDir, 'ar-nav.json'), JSON.stringify(arNav, null, 2), 'utf-8')
+  console.log(`Saved ar-nav.json`)
+
+  // Download KJV with Apocrypha from getbible.net
+  const enKjva = await downloadFromGetBible('kjva', {
     id: 'en-kjva',
     name: 'King James Version (with Apocrypha)',
     nameLocal: 'King James Version (with Apocrypha)',

@@ -172,7 +172,15 @@
     "roleMember": "Member",
     "roleGroupLeader": "Group Leader",
     "roleMinistryLeader": "Ministry Leader",
-    "roleSuperAdmin": "Admin"
+    "roleSuperAdmin": "Admin",
+    "qlMembers": "Members",
+    "qlVisitors": "New Visitors",
+    "qlGroups": "Groups",
+    "qlMinistries": "Ministries",
+    "qlEvents": "Events",
+    "qlSongs": "Songs",
+    "qlAnnouncements": "Announcements",
+    "qlServing": "Serving Areas"
   },
 
   "profileEdit": {
@@ -384,7 +392,31 @@
     "toastCreated": "Group created",
     "toastUpdated": "Group updated",
     "toastError": "An error occurred",
-    "validationName": "Name is required"
+    "validationName": "Name is required",
+    "registerNewLeader": "Register New Leader",
+    "noLeadersHint": "No leaders found. Register a new leader to get started."
+  },
+
+  "leaderRegistration": {
+    "title": "Register New Leader",
+    "subtitle": "Create an account for a new group leader",
+    "email": "Email *",
+    "emailPlaceholder": "leader@example.com",
+    "firstName": "First Name *",
+    "lastName": "Last Name *",
+    "firstNameAr": "First Name (Arabic)",
+    "lastNameAr": "Last Name (Arabic)",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+961...",
+    "submit": "Register Leader",
+    "submitting": "Registering...",
+    "validationRequired": "Email and name are required",
+    "validationEmail": "Please enter a valid email address",
+    "errorGeneric": "An error occurred",
+    "errorEmailTaken": "This email is already registered in another church",
+    "toastCreated": "Leader registered successfully. A password reset email has been sent.",
+    "toastPromoted": "Existing member promoted to group leader",
+    "toastExisting": "This person is already a leader"
   },
 
   "groupMembers": {
@@ -411,6 +443,7 @@
     "pageTitle": "Ministries",
     "pageSubtitle": "Manage church ministries and services",
     "addButton": "Add Ministry",
+    "newButton": "New Ministry",
     "emptyTitle": "No ministries yet",
     "emptySubtitle": "Add the first ministry to organize your groups",
     "leaderLabel": "Leader:",
@@ -435,7 +468,69 @@
     "toastActivated": "Ministry activated",
     "toastDeactivated": "Ministry deactivated",
     "toastError": "An error occurred",
-    "validationName": "Name is required"
+    "validationName": "Name is required",
+    "detailEditButton": "Edit",
+    "detailMembers": "members",
+    "detailDescription": "Description",
+    "detailGroups": "Groups under this Ministry",
+    "detailNoGroups": "No groups assigned",
+    "detailInactive": "Inactive"
+  },
+  "ministryForm": {
+    "nameEn": "Name (English)",
+    "nameEnPlaceholder": "Youth Ministry",
+    "nameAr": "Name (Arabic)",
+    "nameArPlaceholder": "خدمة الشباب",
+    "descriptionEn": "Description (English)",
+    "descriptionEnPlaceholder": "Describe this ministry...",
+    "descriptionAr": "Description (Arabic)",
+    "descriptionArPlaceholder": "وصف هذه الخدمة...",
+    "photo": "Ministry Photo",
+    "photoUpload": "Upload Photo",
+    "photoChange": "Change Photo",
+    "photoRemove": "Remove Photo",
+    "photoDragHint": "Click to upload (max 5MB)",
+    "photoTooLarge": "Photo must be less than 5MB",
+    "settings": "Settings",
+    "isActive": "Active",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "saveButton": "Save Ministry",
+    "toastCreated": "Ministry created",
+    "toastUpdated": "Ministry updated",
+    "toastError": "An error occurred"
+  },
+  "ministryMembers": {
+    "sectionTitle": "Members",
+    "addButton": "Add Member",
+    "emptyTitle": "No members yet",
+    "emptySubtitle": "Add members to this ministry",
+    "roleMember": "Member",
+    "roleLeader": "Leader",
+    "roleCoLeader": "Co-Leader",
+    "dialogTitle": "Add Ministry Member",
+    "dialogSearchPH": "Search by name...",
+    "dialogNoResults": "No members match your search",
+    "dialogAllAdded": "All members have been added",
+    "toastAdded": "Member added",
+    "toastRemoved": "Member removed",
+    "toastRoleChanged": "Role updated",
+    "toastError": "An error occurred",
+    "viewLink": "View",
+    "removeButton": "Remove",
+    "statusAtRisk": "At Risk",
+    "roleUpgradeConfirm": "Assigning as leader will upgrade their role to Ministry Leader with admin access. Continue?",
+    "sendNotification": "Notify",
+    "notifyTitle": "Send to Ministry Members",
+    "notifyTitleAr": "Title (Arabic)",
+    "notifyBodyAr": "Message (Arabic)",
+    "notifyTitleEn": "Title (English)",
+    "notifyBodyEn": "Message (English)",
+    "notifyCancel": "Cancel",
+    "notifySend": "Send",
+    "notifySending": "Sending...",
+    "notifySent": "Notification sent to {count} members",
+    "notifyError": "Failed to send notification"
   },
 
   "gathering": {
@@ -484,7 +579,10 @@
     "historyRateLabel": "Attendance Rate",
     "historyOutOf": "out of {total}",
     "historyEmpty": "No attendance record yet",
-    "historyDefaultTopic": "Group Meeting"
+    "historyDefaultTopic": "Group Meeting",
+    "swipeView": "Cards",
+    "listView": "List",
+    "undo": "Undo"
   },
 
   "prayer": {
@@ -733,6 +831,8 @@
       "at_risk_alert": "At-Risk Alert",
       "visitor_sla_warning": "SLA Warning",
       "event_reminder": "Event Reminder",
+      "event_service_request": "Service Request",
+      "event_service_assigned": "Service Assignment",
       "general": "General"
     }
   },
@@ -800,7 +900,46 @@
     "status_completed": "Completed",
     "regStatus_registered": "Registered",
     "regStatus_checked_in": "Checked In",
-    "regStatus_cancelled": "Cancelled"
+    "regStatus_cancelled": "Cancelled",
+    "serviceNeeds": "Service Needs",
+    "addServiceNeed": "Add Service Need",
+    "editServiceNeed": "Edit Service Need",
+    "removeServiceNeed": "Remove",
+    "selectMinistryOrGroup": "Select Ministry or Group",
+    "ministry": "Ministry",
+    "group": "Group",
+    "volunteersNeeded": "Volunteers Needed",
+    "serviceNotes": "Notes (e.g., 2 camera operators, 1 sound engineer)",
+    "serviceNotesAr": "Notes (Arabic)",
+    "noServiceNeeds": "No service needs added yet",
+    "serviceNeedsSummary": "{count} teams tagged, {total} volunteers needed",
+    "fulfillment": "{assigned} of {needed} assigned",
+    "fullyStaffed": "Fully Staffed",
+    "partiallyStaffed": "Partially Staffed",
+    "needsStaffing": "Needs Staffing",
+    "assignMember": "Assign Member",
+    "removeAssignment": "Remove Assignment",
+    "confirmAssignment": "Confirm",
+    "declineAssignment": "Decline",
+    "manageStaffing": "Manage Staffing",
+    "staffingPageTitle": "Event Staffing",
+    "staffingPageSubtitle": "Assign volunteers to serve at this event",
+    "assignedStatus": "Assigned",
+    "confirmedStatus": "Confirmed",
+    "declinedStatus": "Declined",
+    "searchMembers": "Search members...",
+    "alreadyAssigned": "Already assigned",
+    "assignmentCreated": "Member assigned successfully",
+    "assignmentRemoved": "Assignment removed",
+    "assignmentUpdated": "Assignment status updated",
+    "leaderUpcomingNeeds": "Upcoming Service Needs",
+    "leaderNoNeeds": "No upcoming service needs",
+    "myAssignments": "My Service Assignments",
+    "noAssignments": "No upcoming assignments",
+    "confirmServing": "Confirm Serving",
+    "declineServing": "Decline Serving",
+    "youConfirmed": "You confirmed",
+    "youDeclined": "You declined"
   },
 
   "songs": {
@@ -1133,5 +1272,292 @@
     "sendSuccess": "Notification sent",
     "sentCount": "Sent to {count} recipients",
     "sendFailed": "Failed to send notification"
+  },
+  "bottomNav": {
+    "home": "Home",
+    "groups": "Groups",
+    "events": "Events",
+    "bible": "Bible",
+    "more": "More"
+  },
+  "moreSheet": {
+    "title": "Menu",
+    "switchLang": "العربية",
+    "signOut": "Sign Out"
+  },
+  "landing": {
+    "navAbout": "About",
+    "navLeadership": "Leadership",
+    "navJoin": "Join",
+    "navLogin": "Login",
+    "heroTagline": "Welcome to our church community",
+    "heroJoinButton": "Join Our Church",
+    "heroLoginButton": "Sign In",
+    "aboutTitle": "About Us",
+    "leadersTitle": "Our Leadership",
+    "ctaTitle": "Ready to Join?",
+    "ctaSubtitle": "We would love to welcome you into our community",
+    "ctaButton": "Sign Up for Our Church",
+    "ctaLoginPrompt": "Already a member?",
+    "ctaLoginLink": "Sign in here",
+    "footerText": "Powered by Ekklesia"
+  },
+  "marketing": {
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "whoItsFor": "Who It's For",
+      "support": "Support",
+      "login": "Login",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "100% Free — Built for His Glory",
+      "headline": "Shepherd Your Church with Clarity",
+      "subheadline": "A free platform that helps pastors and leaders manage their congregation, track visitors, coordinate volunteers, and grow their church — built to serve the Lord Jesus Christ, not for profit.",
+      "ctaPrimary": "Register Your Church",
+      "ctaSecondary": "Join Your Church"
+    },
+    "mission": {
+      "headline": "Built to Serve the Kingdom",
+      "text": "Ekklesia is completely free. We believe church tools should serve the Kingdom of God, not shareholders. This project is not built for profit — it's built for His glory.",
+      "pillar1Title": "Free Forever",
+      "pillar1Desc": "No hidden fees, no paywalls, no premium tiers. Every feature is available to every church.",
+      "pillar2Title": "For Every Church",
+      "pillar2Desc": "Whether you have 10 members or 10,000, Ekklesia is designed to grow with your ministry.",
+      "pillar3Title": "Arabic-First",
+      "pillar3Desc": "Built from the ground up for Arabic-speaking churches, with full English support."
+    },
+    "features": {
+      "title": "Everything Your Church Needs",
+      "subtitle": "From welcoming visitors to worship night — one platform for your entire ministry.",
+      "visitors": {
+        "title": "Visitor Pipeline",
+        "desc": "Never lose track of a visitor again. QR-powered registration captures guest info instantly and assigns follow-up to your team.",
+        "bullet1": "QR code visitor registration at the door",
+        "bullet2": "Automatic follow-up SLA with alerts",
+        "bullet3": "Visitor-to-member conversion tracking",
+        "bullet4": "Assign visitors to group leaders"
+      },
+      "groups": {
+        "title": "Groups & Attendance",
+        "desc": "Manage small groups, track attendance patterns, and identify members who might need extra care.",
+        "bullet1": "Create and manage small groups",
+        "bullet2": "Digital attendance with one tap",
+        "bullet3": "At-risk member detection alerts",
+        "bullet4": "Group health dashboards"
+      },
+      "events": {
+        "title": "Events & Serving",
+        "desc": "Organize church events and coordinate volunteers effortlessly with self-service sign-up.",
+        "bullet1": "Event creation with RSVP tracking",
+        "bullet2": "Volunteer serving areas and time slots",
+        "bullet3": "Self-service sign-up for members",
+        "bullet4": "Attendance tracking per event"
+      },
+      "worship": {
+        "title": "Worship & Bible",
+        "desc": "A built-in song library with lyrics presenter mode and a Bible reader with bookmarks and highlights.",
+        "bullet1": "Song library with lyrics and chords",
+        "bullet2": "Full-screen presenter mode for projection",
+        "bullet3": "Bible reader with chapter navigation",
+        "bullet4": "Bookmark and highlight your favorite verses"
+      },
+      "communication": {
+        "title": "Communication",
+        "desc": "Reach your congregation with targeted announcements and notifications — no scattered WhatsApp groups.",
+        "bullet1": "Church-wide announcements with publish/draft",
+        "bullet2": "Targeted notifications by role or group",
+        "bullet3": "In-app notification center",
+        "bullet4": "Email and messaging integration ready"
+      },
+      "dashboards": {
+        "title": "Dashboards & Reports",
+        "desc": "Role-based dashboards give every leader the insights they need — from high-level KPIs to group-level trends.",
+        "bullet1": "Admin dashboard with church-wide KPIs",
+        "bullet2": "Group leader view with member trends",
+        "bullet3": "Attendance analytics and charts",
+        "bullet4": "Visitor pipeline reports"
+      }
+    },
+    "story": {
+      "title": "A Day with Ekklesia",
+      "subtitle": "See how pastors and leaders use Ekklesia throughout a typical day.",
+      "step1": {
+        "time": "7:00 AM",
+        "text": "Pastor opens the dashboard and sees 3 new visitors from Sunday's service and 2 members flagged as at-risk."
+      },
+      "step2": {
+        "time": "9:00 AM",
+        "text": "A group leader opens the app and marks attendance for the morning prayer meeting — 12 of 14 members present."
+      },
+      "step3": {
+        "time": "12:00 PM",
+        "text": "The admin team publishes an announcement about Friday's retreat, instantly reaching 200+ members."
+      },
+      "step4": {
+        "time": "3:00 PM",
+        "text": "The worship leader prepares Sunday's setlist, arranging songs and loading lyrics into presenter mode."
+      },
+      "step5": {
+        "time": "6:00 PM",
+        "text": "A volunteer signs up for Sunday ushering through the serving module — no phone calls needed."
+      }
+    },
+    "comparison": {
+      "title": "Before & After Ekklesia",
+      "without": "Without Ekklesia",
+      "with": "With Ekklesia",
+      "pain1": "Visitors fall through the cracks — no follow-up system",
+      "pain2": "Attendance tracked on paper or scattered spreadsheets",
+      "pain3": "No way to identify disengaged or at-risk members",
+      "pain4": "Announcements via scattered WhatsApp groups",
+      "pain5": "Volunteer coordination relies on phone calls and memory",
+      "solution1": "QR visitor pipeline with automatic follow-up alerts",
+      "solution2": "Digital attendance with trends and analytics",
+      "solution3": "Automatic at-risk detection with leader notifications",
+      "solution4": "Targeted, bilingual announcements from one place",
+      "solution5": "Self-service volunteer sign-up with slot management"
+    },
+    "whoItsFor": {
+      "title": "Who Is Ekklesia For?",
+      "verse": "\"Feed my sheep.\" — John 21:17",
+      "leadersTitle": "For Pastors & Church Leaders",
+      "leadersDesc": "Register your church and get a complete management platform — visitors, members, groups, events, serving, and more.",
+      "leadersFeature1": "Register and set up your church in minutes",
+      "leadersFeature2": "Manage members and track visitors with QR codes",
+      "leadersFeature3": "Coordinate events, groups, and volunteer serving",
+      "leadersFeature4": "Dashboards and analytics to shepherd wisely",
+      "leadersCta": "Register Your Church",
+      "membersTitle": "For Church Members",
+      "membersDesc": "Find your church, stay connected, and never miss what's happening in your community.",
+      "membersFeature1": "Find and join your church",
+      "membersFeature2": "View upcoming events and announcements",
+      "membersFeature3": "Join groups and track your involvement",
+      "membersFeature4": "Read the Bible with bookmarks and highlights",
+      "membersCta": "Join Your Church"
+    },
+    "support": {
+      "title": "Always Free. All Features.",
+      "subtitle": "Ekklesia is free for every church, forever. No tiers, no limits, no paywalls.",
+      "feature1": "Unlimited members and admins",
+      "feature2": "Full visitor pipeline with follow-up SLA",
+      "feature3": "Groups, gatherings, and attendance tracking",
+      "feature4": "Events with RSVP and volunteer serving",
+      "feature5": "Bible reader with multiple Arabic translations",
+      "feature6": "Song library with presenter mode",
+      "feature7": "Announcements and notifications",
+      "feature8": "Dashboards and analytics",
+      "donateTitle": "Support the Mission",
+      "donateText": "Ekklesia costs money to run — servers, databases, and development. If this tool blesses your church, consider supporting the mission so we can keep serving churches across the Middle East.",
+      "donateCta": "Support Ekklesia",
+      "getStartedCta": "Get Started — It's Free"
+    },
+    "footer": {
+      "description": "Free church management for the Middle East. Built to serve the Lord Jesus Christ.",
+      "product": "Product",
+      "ministry": "Ministry",
+      "legal": "Legal",
+      "features": "Features",
+      "support": "Support the Mission",
+      "demo": "Demo",
+      "contact": "Contact",
+      "faq": "FAQ",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "copyright": "© 2026 Ekklesia. Built for His glory."
+    }
+  },
+  "registration": {
+    "back": "Back",
+    "progress": "Step {current} of {total}",
+    "creating": "Setting up your church...",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "step0": {
+      "headline": "Let's set up your church",
+      "subheadline": "In just 3 minutes, you'll have a fully configured church management platform",
+      "feature1": "Member & Visitor Management",
+      "feature2": "Groups & Attendance Tracking",
+      "feature3": "Events, Serving & Communication",
+      "cta": "Let's Go"
+    },
+    "step1": {
+      "headline": "Create your admin account",
+      "subheadline": "This will be the main account for managing your church",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "pastor@church.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Type password again",
+      "validationEmail": "Please enter a valid email",
+      "validationPassword": "Password must be at least 6 characters",
+      "validationPasswordMatch": "Passwords don't match",
+      "emailExists": "This email is already registered",
+      "continue": "Continue"
+    },
+    "step2": {
+      "headline": "What's your church called?",
+      "subheadline": "This is how your church will appear in the app",
+      "nameArLabel": "Church name in Arabic",
+      "nameArPlaceholder": "كنيسة النعمة",
+      "nameEnLabel": "Church name in English",
+      "nameEnPlaceholder": "Grace Church",
+      "nameEnOptional": "Optional",
+      "previewLabel": "Preview",
+      "previewPlaceholder": "Your Church",
+      "continue": "Continue"
+    },
+    "step3": {
+      "headline": "A few quick details",
+      "subheadline": "Help us configure your church correctly",
+      "countryLabel": "Where is your church?",
+      "timezoneLabel": "Timezone",
+      "languageLabel": "Primary language",
+      "languageAr": "Arabic",
+      "languageEn": "English",
+      "denominationLabel": "Denomination",
+      "bibleLabel": "Default Bible translation",
+      "continue": "Continue"
+    },
+    "step4": {
+      "headline": "Welcome your visitors",
+      "subheadline": "Write a message visitors will see when they scan your QR code",
+      "messagePlaceholder": "Welcome to our church! We're glad you're here...",
+      "previewLabel": "How visitors will see it",
+      "continue": "Continue",
+      "skip": "Skip for now"
+    },
+    "step5leaders": {
+      "headline": "Add your church leaders",
+      "subheadline": "Show visitors and members who leads your church",
+      "infoText": "Leaders will appear on your church's public page. You can always add, edit, or remove leaders later from Settings.",
+      "nameArLabel": "Name (Arabic)",
+      "nameArPlaceholder": "القس جورج",
+      "nameEnLabel": "Name (English)",
+      "nameEnPlaceholder": "Pastor George",
+      "titleArLabel": "Title (Arabic)",
+      "titleArPlaceholder": "الراعي الأول",
+      "titleEnLabel": "Title (English)",
+      "titleEnPlaceholder": "Senior Pastor",
+      "addButton": "Add",
+      "cancelButton": "Cancel",
+      "addLeaderButton": "Add a leader",
+      "continue": "Continue",
+      "continueEmpty": "Continue without leaders",
+      "skip": "I'll add leaders later"
+    },
+    "step5": {
+      "headline": "Your church is ready!",
+      "subheadline": "Everything is set up and ready to go",
+      "summaryChurch": "Church",
+      "summaryAdmin": "Admin",
+      "summaryCountry": "Country",
+      "cta": "Go to Dashboard",
+      "tip1": "Invite your team members",
+      "tip2": "Create your first group",
+      "tip3": "Print your visitor QR code",
+      "tipsHeadline": "What's next?"
+    }
   }
 }

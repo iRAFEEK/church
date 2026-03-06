@@ -95,3 +95,31 @@
 html {
   transition: none;
 }
+
+/* ─── Mobile & PWA ─────────────────────────────────── */
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-nav-height: 4rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav-height: 0px;
+  }
+}
+
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+@media (max-width: 767px) {
+  nav a,
+  nav button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}

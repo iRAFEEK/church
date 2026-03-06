@@ -2,10 +2,12 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { CalendarCheck, Trophy, Users, Bell, Calendar, Heart, Megaphone, Pin } from 'lucide-react'
+import { CalendarCheck, Trophy, Users, Bell, Calendar, Heart, Megaphone, Pin, BookOpen, HandHeart } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
+import { MyServiceAssignments } from '@/components/events/MyServiceAssignments'
+import { cn } from '@/lib/utils'
 import type { MemberDashboardData } from '@/types/dashboard'
 
 interface Props {
@@ -19,8 +21,18 @@ export function MemberDashboard({ data }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Row 1: Personal KPIs */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {/* Mobile Quick Actions (visible on small screens) */}
+      <div className="grid grid-cols-3 gap-3 md:hidden">
+        <QuickActionCard href="/events" icon={Calendar} label={isAr ? 'الأحداث' : 'Events'} count={data.upcomingEvents.length} />
+        <QuickActionCard href="/serving" icon={HandHeart} label={isAr ? 'الخدمة' : 'Serving'} count={data.servingSlots.length} />
+        <QuickActionCard href="/bible" icon={BookOpen} label={isAr ? 'الكتاب' : 'Bible'} />
+        <QuickActionCard href="/announcements" icon={Megaphone} label={isAr ? 'إعلانات' : 'News'} count={data.recentAnnouncements.length} />
+        <QuickActionCard href="/notifications" icon={Bell} label={isAr ? 'تنبيهات' : 'Alerts'} count={data.kpis.unreadNotifications || undefined} />
+        <QuickActionCard href="/profile" icon={Trophy} label={isAr ? 'ملفي' : 'Profile'} />
+      </div>
+
+      {/* Desktop KPIs (hidden on mobile) */}
+      <div className="hidden md:grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('kpiMyAttendance')}
           value={data.kpis.attendanceRate !== null ? `${data.kpis.attendanceRate}%` : '—'}
@@ -145,6 +157,9 @@ export function MemberDashboard({ data }: Props) {
         </Card>
       </div>
 
+      {/* Row 2.5: My Service Assignments */}
+      <MyServiceAssignments />
+
       {/* Row 3: Serving + Announcements */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         {/* My Serving */}
@@ -230,5 +245,27 @@ export function MemberDashboard({ data }: Props) {
         </Card>
       </div>
     </div>
+  )
+}
+
+function QuickActionCard({ href, icon: Icon, label, count }: {
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  count?: number
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-zinc-100 hover:bg-zinc-50 active:scale-95 transition-all relative"
+    >
+      <Icon className="h-7 w-7 text-primary" />
+      <span className="text-xs font-medium text-zinc-700">{label}</span>
+      {count !== undefined && count > 0 && (
+        <span className="absolute top-2 end-2 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+          {count > 9 ? '9+' : count}
+        </span>
+      )}
+    </Link>
   )
 }

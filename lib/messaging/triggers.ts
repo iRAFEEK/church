@@ -193,6 +193,157 @@ export async function notifyVisitorSLA(visitorId: string, churchId: string) {
 }
 
 /**
+ * Notify ministry/group leader when their team is tagged for an event.
+ * Called from PUT /api/events/[id]/service-needs
+ */
+export async function notifyEventServiceRequest(eventId: string, serviceNeedId: string, churchId: string) {
+  try {
+    const supabase = await createClient()
+
+    const { data: need } = await supabase
+      .from('event_service_needs')
+      .select('ministry_id, group_id, volunteers_needed')
+      .eq('id', serviceNeedId)
+      .single()
+
+    if (!need) return
+
+    const { data: event } = await supabase
+      .from('events')
+      .select('title, title_ar, starts_at')
+      .eq('id', eventId)
+      .single()
+
+    if (!event) return
+
+    let leaderId: string | null = null
+    let teamName = ''
+
+    if (need.ministry_id) {
+      const { data: ministry } = await supabase
+        .from('ministries')
+        .select('name, name_ar, leader_id')
+        .eq('id', need.ministry_id)
+        .single()
+      if (!ministry?.leader_id) return
+      leaderId = ministry.leader_id
+      teamName = ministry.name_ar || ministry.name
+    } else if (need.group_id) {
+      const { data: group } = await supabase
+        .from('groups')
+        .select('name, name_ar, leader_id')
+        .eq('id', need.group_id)
+        .single()
+      if (!group?.leader_id) return
+      leaderId = group.leader_id
+      teamName = group.name_ar || group.name
+    }
+
+    if (!leaderId) return
+
+    const eventName = event.title_ar || event.title
+    const date = new Date(event.starts_at).toLocaleDateString('ar-EG', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    const count = String(need.volunteers_needed)
+    const template = TEMPLATES.event_service_request
+
+    await sendNotification({
+      profileId: leaderId,
+      churchId,
+      type: 'event_service_request',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { teamName, eventName, date, count }),
+      bodyAr: interpolate(template.bodyAr, { teamName, eventName, date, count }),
+      referenceId: eventId,
+      referenceType: 'event',
+      data: { teamName, eventName, date, count },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyEventServiceRequest error:', error)
+  }
+}
+
+/**
+ * Notify a member when they are assigned to serve at an event.
+ * Called from POST /api/events/[id]/service-needs/[needId]/assignments
+ */
+export async function notifyEventServiceAssigned(assignmentId: string, churchId: string) {
+  try {
+    const supabase = await createClient()
+
+    const { data: assignment } = await supabase
+      .from('event_service_assignments')
+      .select('profile_id, service_need_id')
+      .eq('id', assignmentId)
+      .single()
+
+    if (!assignment) return
+
+    const { data: need } = await supabase
+      .from('event_service_needs')
+      .select('event_id, ministry_id, group_id')
+      .eq('id', assignment.service_need_id)
+      .single()
+
+    if (!need) return
+
+    const { data: event } = await supabase
+      .from('events')
+      .select('title, title_ar, starts_at')
+      .eq('id', need.event_id)
+      .single()
+
+    if (!event) return
+
+    let teamName = ''
+    if (need.ministry_id) {
+      const { data: ministry } = await supabase
+        .from('ministries')
+        .select('name, name_ar')
+        .eq('id', need.ministry_id)
+        .single()
+      teamName = ministry?.name_ar || ministry?.name || ''
+    } else if (need.group_id) {
+      const { data: group } = await supabase
+        .from('groups')
+        .select('name, name_ar')
+        .eq('id', need.group_id)
+        .single()
+      teamName = group?.name_ar || group?.name || ''
+    }
+
+    const eventName = event.title_ar || event.title
+    const date = new Date(event.starts_at).toLocaleDateString('ar-EG', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    const template = TEMPLATES.event_service_assigned
+
+    await sendNotification({
+      profileId: assignment.profile_id,
+      churchId,
+      type: 'event_service_assigned',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { eventName, date, teamName }),
+      bodyAr: interpolate(template.bodyAr, { eventName, date, teamName }),
+      referenceId: need.event_id,
+      referenceType: 'event',
+      data: { eventName, date, teamName },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyEventServiceAssigned error:', error)
+  }
+}
+
+/**
  * Send gathering reminder to all group members.
  * Called by a cron/scheduled function.
  */

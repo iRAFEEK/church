@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Stepper } from '@/components/ui/stepper'
 import { toast } from 'sonner'
+import { Calendar, MapPin, FileText, Settings, Type, Users } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ServiceNeedsPicker, type ServiceNeedDraft } from './ServiceNeedsPicker'
 
 interface EventFormProps {
   event?: {
@@ -29,12 +32,28 @@ interface EventFormProps {
   }
 }
 
+const STEPS = [
+  { title: 'Title & Type', titleAr: 'العنوان والنوع' },
+  { title: 'When?', titleAr: 'متى؟' },
+  { title: 'Where?', titleAr: 'أين؟' },
+  { title: 'Details', titleAr: 'التفاصيل' },
+  { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
+  { title: 'Review', titleAr: 'مراجعة' },
+]
+
+const EVENT_TYPE_ICONS: Record<string, string> = {
+  service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
+  social: '🎉', outreach: '🤝', other: '📌',
+}
+
 export function EventForm({ event }: EventFormProps) {
   const router = useRouter()
   const t = useTranslations('events')
+  const tc = useTranslations('common')
   const locale = useLocale()
   const isRTL = locale === 'ar'
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(0)
 
   const [form, setForm] = useState({
     title: event?.title || '',
@@ -51,8 +70,36 @@ export function EventForm({ event }: EventFormProps) {
     registration_closes_at: event?.registration_closes_at ? event.registration_closes_at.slice(0, 16) : '',
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [serviceNeeds, setServiceNeeds] = useState<ServiceNeedDraft[]>([])
+
+  // Load existing service needs when editing
+  useEffect(() => {
+    if (event?.id) {
+      fetch(`/api/events/${event.id}/service-needs`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.data) {
+            setServiceNeeds(
+              d.data.map((n: any) => ({
+                ministry_id: n.ministry_id || undefined,
+                group_id: n.group_id || undefined,
+                volunteers_needed: n.volunteers_needed,
+                notes: n.notes || '',
+                notes_ar: n.notes_ar || '',
+                _name: n.ministry?.name || n.group?.name || '',
+                _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
+                _type: n.ministry_id ? 'ministry' as const : 'group' as const,
+              }))
+            )
+          }
+        })
+        .catch(() => {})
+    }
+  }, [event?.id])
+
+  const eventTypes = ['service', 'conference', 'retreat', 'workshop', 'social', 'outreach', 'other']
+
+  const handleSubmit = async () => {
     if (!form.title || !form.starts_at) {
       toast.error(t('requiredFields'))
       return
@@ -61,11 +108,17 @@ export function EventForm({ event }: EventFormProps) {
     setLoading(true)
     try {
       const payload = {
-        ...form,
-        capacity: form.capacity ? Number(form.capacity) : null,
-        ends_at: form.ends_at || null,
+        title: form.title,
+        title_ar: form.title_ar || null,
         description: form.description || null,
         description_ar: form.description_ar || null,
+        event_type: form.event_type,
+        starts_at: form.starts_at,
+        ends_at: form.ends_at || null,
+        location: form.location || null,
+        capacity: form.capacity ? Number(form.capacity) : null,
+        is_public: form.is_public,
+        registration_required: form.registration_required,
         registration_closes_at: form.registration_closes_at || null,
       }
 
@@ -79,8 +132,37 @@ export function EventForm({ event }: EventFormProps) {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed')
+        const errData = await res.json()
+        throw new Error(errData.error || 'Failed')
+      }
+
+      // Get the event ID — for new events, parse from response; for edits, use the prop
+      let eventId = event?.id
+      if (!eventId) {
+        const eventData = await res.json()
+        eventId = eventData.data?.id
+      }
+
+      // Save service needs (don't block the event save on failure)
+      if (eventId) {
+        try {
+          await fetch(`/api/events/${eventId}/service-needs`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              needs: serviceNeeds.map(n => ({
+                ministry_id: n.ministry_id || null,
+                group_id: n.group_id || null,
+                volunteers_needed: n.volunteers_needed,
+                notes: n.notes || null,
+                notes_ar: n.notes_ar || null,
+              })),
+            }),
+          })
+        } catch {
+          // Service needs save failed — event itself is saved
+          console.error('Failed to save service needs')
+        }
       }
 
       toast.success(event ? t('eventUpdated') : t('eventCreated'))
@@ -93,136 +175,217 @@ export function EventForm({ event }: EventFormProps) {
     }
   }
 
-  const eventTypes = ['service', 'conference', 'retreat', 'workshop', 'social', 'outreach', 'other']
+  const canProceed =
+    step === 0 ? !!form.title :
+    step === 1 ? !!form.starts_at :
+    true
+
+  const totalVolunteers = serviceNeeds.reduce((sum, n) => sum + n.volunteers_needed, 0)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('titleEn')}</Label>
-          <Input
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            dir="ltr"
-          />
+    <Stepper
+      steps={STEPS}
+      currentStep={step}
+      onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
+      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onSubmit={handleSubmit}
+      isSubmitting={loading}
+      submitLabel={event ? t('updateEvent') : t('createEvent')}
+      submitLabelAr={event ? t('updateEvent') : t('createEvent')}
+      canProceed={canProceed}
+    >
+      {/* Step 1: Title & Type */}
+      {step === 0 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Type className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('titleEn')} *</span>
+            </div>
+            <Input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              dir="ltr"
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('titleAr')}</Label>
+            <Input
+              value={form.title_ar}
+              onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
+              dir="rtl"
+              className="min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-2 block">{t('eventType')}</Label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {eventTypes.map(type => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setForm({ ...form, event_type: type })}
+                  className={cn(
+                    'flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-sm',
+                    form.event_type === type
+                      ? 'border-primary bg-primary/5 font-medium'
+                      : 'border-zinc-100 hover:border-zinc-200'
+                  )}
+                >
+                  <span className="text-xl">{EVENT_TYPE_ICONS[type]}</span>
+                  <span className="text-xs">{t(`type_${type}`)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>{t('titleAr')}</Label>
-          <Input
-            value={form.title_ar}
-            onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-            dir="rtl"
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('descriptionEn')}</Label>
-          <Textarea
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            rows={3}
-            dir="ltr"
-          />
+      {/* Step 2: When */}
+      {step === 1 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Calendar className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('startsAt')} *</span>
+            </div>
+            <Input
+              type="datetime-local"
+              value={form.starts_at}
+              onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
+              dir="ltr"
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('endsAt')}</Label>
+            <Input
+              type="datetime-local"
+              value={form.ends_at}
+              onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
+              dir="ltr"
+              className="min-h-[48px]"
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>{t('descriptionAr')}</Label>
-          <Textarea
-            value={form.description_ar}
-            onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
-            rows={3}
-            dir="rtl"
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('eventType')}</Label>
-          <select
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={form.event_type}
-            onChange={(e) => setForm({ ...form, event_type: e.target.value })}
-          >
-            {eventTypes.map(type => (
-              <option key={type} value={type}>{t(`type_${type}`)}</option>
-            ))}
-          </select>
+      {/* Step 3: Where */}
+      {step === 2 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <MapPin className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('location')}</span>
+            </div>
+            <Input
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('capacity')}</Label>
+            <Input
+              type="number"
+              placeholder={t('capacityPlaceholder')}
+              value={form.capacity}
+              onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+              dir="ltr"
+              className="min-h-[48px]"
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>{t('location')}</Label>
-          <Input
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('startsAt')}</Label>
-          <Input
-            type="datetime-local"
-            value={form.starts_at}
-            onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
-          />
+      {/* Step 4: Details */}
+      {step === 3 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <FileText className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('descriptionEn')}</span>
+            </div>
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('descriptionAr')}</Label>
+            <Textarea
+              value={form.description_ar}
+              onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
+              rows={3}
+              dir="rtl"
+            />
+          </div>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
+              <Switch
+                checked={form.is_public}
+                onCheckedChange={(checked) => setForm({ ...form, is_public: checked })}
+              />
+              <Label>{t('isPublic')}</Label>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
+              <Switch
+                checked={form.registration_required}
+                onCheckedChange={(checked) => setForm({ ...form, registration_required: checked })}
+              />
+              <Label>{t('registrationRequired')}</Label>
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>{t('endsAt')}</Label>
-          <Input
-            type="datetime-local"
-            value={form.ends_at}
-            onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('capacity')}</Label>
-          <Input
-            type="number"
-            placeholder={t('capacityPlaceholder')}
-            value={form.capacity}
-            onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{t('registrationCloses')}</Label>
-          <Input
-            type="datetime-local"
-            value={form.registration_closes_at}
-            onChange={(e) => setForm({ ...form, registration_closes_at: e.target.value })}
-          />
-        </div>
-      </div>
+      {/* Step 5: Service Needs */}
+      {step === 4 && (
+        <ServiceNeedsPicker
+          serviceNeeds={serviceNeeds}
+          onChange={setServiceNeeds}
+        />
+      )}
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={form.is_public}
-            onCheckedChange={(checked) => setForm({ ...form, is_public: checked })}
-          />
-          <Label>{t('isPublic')}</Label>
+      {/* Step 6: Review */}
+      {step === 5 && (
+        <div className="space-y-3 pt-4">
+          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleEn')} value={form.title} />
+          {form.title_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleAr')} value={form.title_ar} />}
+          <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('eventType')} value={`${EVENT_TYPE_ICONS[form.event_type]} ${t(`type_${form.event_type}`)}`} />
+          {form.starts_at && (
+            <ReviewItem
+              icon={<Calendar className="h-4 w-4" />}
+              label={t('startsAt')}
+              value={new Date(form.starts_at).toLocaleString(isRTL ? 'ar' : 'en', { dateStyle: 'medium', timeStyle: 'short' })}
+            />
+          )}
+          {form.location && <ReviewItem icon={<MapPin className="h-4 w-4" />} label={t('location')} value={form.location} />}
+          {form.capacity && <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('capacity')} value={String(form.capacity)} />}
+          {serviceNeeds.length > 0 && (
+            <ReviewItem
+              icon={<Users className="h-4 w-4" />}
+              label={t('serviceNeeds')}
+              value={t('serviceNeedsSummary', { count: String(serviceNeeds.length), total: String(totalVolunteers) })}
+            />
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={form.registration_required}
-            onCheckedChange={(checked) => setForm({ ...form, registration_required: checked })}
-          />
-          <Label>{t('registrationRequired')}</Label>
-        </div>
-      </div>
+      )}
+    </Stepper>
+  )
+}
 
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? t('saving') : event ? t('updateEvent') : t('createEvent')}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          {t('cancel')}
-        </Button>
+function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
       </div>
-    </form>
+    </div>
   )
 }

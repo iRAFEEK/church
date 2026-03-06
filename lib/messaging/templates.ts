@@ -69,6 +69,26 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectAr: 'تأخر: لم يتم التواصل مع الزائر {visitorName}',
   },
 
+  event_service_request: {
+    whatsappTemplate: 'event_service_request',
+    titleEn: 'Service Needed for Event',
+    titleAr: 'مطلوب خدمة لفعالية',
+    bodyEn: 'Your team {teamName} has been requested to serve at {eventName} on {date}. {count} volunteers needed.',
+    bodyAr: 'تم طلب فريقك {teamName} للخدمة في {eventName} يوم {date}. مطلوب {count} متطوعين.',
+    emailSubjectEn: 'Service needed: {teamName} for {eventName}',
+    emailSubjectAr: 'مطلوب خدمة: {teamName} لـ {eventName}',
+  },
+
+  event_service_assigned: {
+    whatsappTemplate: 'event_service_assigned',
+    titleEn: 'You\'ve Been Assigned to Serve',
+    titleAr: 'تم تعيينك للخدمة',
+    bodyEn: 'You have been assigned to serve at {eventName} on {date} with {teamName}. Please confirm or decline.',
+    bodyAr: 'تم تعيينك للخدمة في {eventName} يوم {date} مع {teamName}. يرجى التأكيد أو الرفض.',
+    emailSubjectEn: 'Serving assignment: {eventName}',
+    emailSubjectAr: 'تعيين خدمة: {eventName}',
+  },
+
   event_reminder: {
     whatsappTemplate: 'event_reminder',
     titleEn: 'Event Tomorrow',

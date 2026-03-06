@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
-// GET /api/bible/bibles — single Arabic SVD version
+// GET /api/bible/bibles — list all available Bible versions
 export async function GET(_req: NextRequest) {
-  return NextResponse.json({
-    data: [{ id: 'ar-svd', name: 'الكتاب المقدس - سميث وفاندايك', language: { id: 'ara' } }],
-  })
+  try {
+    const supabase = await createAdminClient()
+    const { data, error } = await supabase
+      .from('bible_versions')
+      .select('id, name, name_local, abbreviation, abbreviation_local, language_id, language_name, language_name_local, copyright')
+      .order('language_id')
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    return NextResponse.json({ data: data || [] })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 }

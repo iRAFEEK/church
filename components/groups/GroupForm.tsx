@@ -1,28 +1,29 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Stepper } from '@/components/ui/stepper'
 import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { Users, UserCheck, Calendar, Settings, Type, UserPlus } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { RegisterLeaderDialog } from './RegisterLeaderDialog'
 
 type Ministry = { id: string; name: string; name_ar: string | null }
 type Leader = { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null }
 
 const GROUP_TYPE_KEYS = [
-  { value: 'small_group', key: 'typeSmallGroup' },
-  { value: 'youth', key: 'typeYouth' },
-  { value: 'women', key: 'typeWomen' },
-  { value: 'men', key: 'typeMen' },
-  { value: 'family', key: 'typeFamily' },
-  { value: 'prayer', key: 'typePrayer' },
-  { value: 'other', key: 'typeOther' },
+  { value: 'small_group', key: 'typeSmallGroup', icon: '👥' },
+  { value: 'youth', key: 'typeYouth', icon: '🧑‍🤝‍🧑' },
+  { value: 'women', key: 'typeWomen', icon: '👩' },
+  { value: 'men', key: 'typeMen', icon: '👨' },
+  { value: 'family', key: 'typeFamily', icon: '👨‍👩‍👧' },
+  { value: 'prayer', key: 'typePrayer', icon: '🙏' },
+  { value: 'other', key: 'typeOther', icon: '📌' },
 ]
 
 const FREQUENCY_KEYS = [
@@ -42,72 +43,87 @@ const DAY_KEYS = [
   { value: 'sunday', key: 'daySunday' },
 ]
 
+const STEPS = [
+  { title: 'Name & Type', titleAr: 'الاسم والنوع' },
+  { title: 'Leadership', titleAr: 'القيادة' },
+  { title: 'Meeting Details', titleAr: 'تفاصيل الاجتماع' },
+  { title: 'Review', titleAr: 'مراجعة' },
+]
+
 type Props = {
   ministries: Ministry[]
   leaders: Leader[]
-  group?: z.infer<typeof schema> & { id: string }
+  group?: {
+    id: string
+    name: string
+    name_ar?: string
+    type: string
+    ministry_id?: string
+    leader_id?: string
+    co_leader_id?: string
+    meeting_day?: string
+    meeting_time?: string
+    meeting_location?: string
+    meeting_location_ar?: string
+    meeting_frequency?: string
+    max_members?: string
+    is_open: boolean
+  }
 }
-
-const schema = z.object({
-  name: z.string().min(1, 'validationName'),
-  name_ar: z.string().optional(),
-  type: z.string().min(1),
-  ministry_id: z.string().optional(),
-  leader_id: z.string().optional(),
-  co_leader_id: z.string().optional(),
-  meeting_day: z.string().optional(),
-  meeting_time: z.string().optional(),
-  meeting_location: z.string().optional(),
-  meeting_location_ar: z.string().optional(),
-  meeting_frequency: z.string().optional(),
-  max_members: z.string().optional(),
-  is_open: z.boolean().default(true),
-})
-
-type FormValues = z.infer<typeof schema>
 
 export function GroupForm({ ministries, leaders, group }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(0)
+  const [localLeaders, setLocalLeaders] = useState<Leader[]>(leaders)
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false)
   const t = useTranslations('groupForm')
   const tGroups = useTranslations('groups')
+  const locale = useLocale()
+  const isRTL = locale === 'ar'
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: group || {
-      name: '',
-      name_ar: '',
-      type: 'small_group',
-      ministry_id: '',
-      leader_id: '',
-      co_leader_id: '',
-      meeting_day: '',
-      meeting_time: '',
-      meeting_location: '',
-      meeting_location_ar: '',
-      meeting_frequency: 'weekly',
-      max_members: '',
-      is_open: true,
-    },
+  const [form, setForm] = useState({
+    name: group?.name || '',
+    name_ar: group?.name_ar || '',
+    type: group?.type || 'small_group',
+    ministry_id: group?.ministry_id || '',
+    leader_id: group?.leader_id || '',
+    co_leader_id: group?.co_leader_id || '',
+    meeting_day: group?.meeting_day || '',
+    meeting_time: group?.meeting_time || '',
+    meeting_location: group?.meeting_location || '',
+    meeting_location_ar: group?.meeting_location_ar || '',
+    meeting_frequency: group?.meeting_frequency || 'weekly',
+    max_members: group?.max_members || '',
+    is_open: group?.is_open ?? true,
   })
 
-  async function onSubmit(values: FormValues) {
+  function set(key: string, val: string | boolean) {
+    setForm(prev => ({ ...prev, [key]: val }))
+  }
+
+  async function handleSubmit() {
+    if (!form.name) {
+      toast.error(t('toastError'))
+      return
+    }
+
     setLoading(true)
     try {
       const body = {
-        name: values.name,
-        name_ar: values.name_ar || null,
-        type: values.type,
-        ministry_id: values.ministry_id || null,
-        leader_id: values.leader_id || null,
-        co_leader_id: values.co_leader_id || null,
-        meeting_day: values.meeting_day || null,
-        meeting_time: values.meeting_time || null,
-        meeting_location: values.meeting_location || null,
-        meeting_location_ar: values.meeting_location_ar || null,
-        meeting_frequency: values.meeting_frequency || 'weekly',
-        max_members: values.max_members ? parseInt(values.max_members) : null,
-        is_open: values.is_open,
+        name: form.name,
+        name_ar: form.name_ar || null,
+        type: form.type,
+        ministry_id: form.ministry_id || null,
+        leader_id: form.leader_id || null,
+        co_leader_id: form.co_leader_id || null,
+        meeting_day: form.meeting_day || null,
+        meeting_time: form.meeting_time || null,
+        meeting_location: form.meeting_location || null,
+        meeting_location_ar: form.meeting_location_ar || null,
+        meeting_frequency: form.meeting_frequency || 'weekly',
+        max_members: form.max_members ? parseInt(form.max_members as string) : null,
+        is_open: form.is_open,
       }
 
       const url = group ? `/api/groups/${group.id}` : '/api/groups'
@@ -130,152 +146,237 @@ export function GroupForm({ ministries, leaders, group }: Props) {
     }
   }
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white rounded-xl border border-zinc-200 p-6">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="name" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('nameEn')}</FormLabel>
-              <FormControl><Input dir="ltr" placeholder={t('nameEnPlaceholder')} {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="name_ar" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('nameAr')}</FormLabel>
-              <FormControl><Input placeholder={t('nameArPlaceholder')} {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-        </div>
+  function handleLeaderCreated(newLeader: Leader) {
+    setLocalLeaders(prev => [...prev, newLeader])
+    set('leader_id', newLeader.id)
+  }
 
-        <FormField control={form.control} name="type" render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t('type')}</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+  const leaderName = (id: string) => {
+    const l = localLeaders.find(l => l.id === id)
+    if (!l) return ''
+    return `${l.first_name_ar || l.first_name || ''} ${l.last_name_ar || l.last_name || ''}`.trim()
+  }
+
+  const canProceed = step === 0 ? !!form.name : true
+
+  return (
+    <Stepper
+      steps={STEPS}
+      currentStep={step}
+      onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
+      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onSubmit={handleSubmit}
+      isSubmitting={loading}
+      submitLabel={group ? t('saveButton') : t('saveButton')}
+      submitLabelAr={group ? t('saveButton') : t('saveButton')}
+      canProceed={canProceed}
+    >
+      {/* Step 1: Name & Type */}
+      {step === 0 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Type className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('nameEn')} *</span>
+            </div>
+            <Input
+              value={form.name}
+              onChange={e => set('name', e.target.value)}
+              dir="ltr"
+              placeholder={t('nameEnPlaceholder')}
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('nameAr')}</Label>
+            <Input
+              value={form.name_ar}
+              onChange={e => set('name_ar', e.target.value)}
+              placeholder={t('nameArPlaceholder')}
+              className="min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-2 block">{t('type')}</Label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {GROUP_TYPE_KEYS.map(gt => (
+                <button
+                  key={gt.value}
+                  type="button"
+                  onClick={() => set('type', gt.value)}
+                  className={cn(
+                    'flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all',
+                    form.type === gt.value
+                      ? 'border-primary bg-primary/5 font-medium'
+                      : 'border-zinc-100 hover:border-zinc-200'
+                  )}
+                >
+                  <span className="text-xl">{gt.icon}</span>
+                  <span className="text-xs">{tGroups(gt.key)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Leadership */}
+      {step === 1 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <UserCheck className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('leader')}</span>
+            </div>
+            {localLeaders.length > 0 ? (
+              <Select value={form.leader_id} onValueChange={v => set('leader_id', v)}>
+                <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('leaderPlaceholder')} /></SelectTrigger>
+                <SelectContent>
+                  {localLeaders.map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.first_name_ar || l.first_name} {l.last_name_ar || l.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-zinc-400 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                {t('noLeadersHint')}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => setRegisterDialogOpen(true)}
+              className="flex items-center gap-2 text-sm text-primary hover:underline mt-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              {t('registerNewLeader')}
+            </button>
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('coLeader')}</Label>
+            <Select value={form.co_leader_id} onValueChange={v => set('co_leader_id', v)}>
+              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('coLeaderPlaceholder')} /></SelectTrigger>
               <SelectContent>
-                {GROUP_TYPE_KEYS.map(gt => <SelectItem key={gt.value} value={gt.value}>{tGroups(gt.key)}</SelectItem>)}
+                {localLeaders.map(l => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.first_name_ar || l.first_name} {l.last_name_ar || l.last_name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </FormItem>
-        )} />
-
-        <FormField control={form.control} name="ministry_id" render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t('ministry')}</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl><SelectTrigger><SelectValue placeholder={t('ministryPlaceholder')} /></SelectTrigger></FormControl>
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('ministry')}</Label>
+            <Select value={form.ministry_id} onValueChange={v => set('ministry_id', v)}>
+              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('ministryPlaceholder')} /></SelectTrigger>
               <SelectContent>
                 {ministries.map(m => <SelectItem key={m.id} value={m.id}>{m.name_ar || m.name}</SelectItem>)}
               </SelectContent>
             </Select>
-          </FormItem>
-        )} />
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="leader_id" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('leader')}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder={t('leaderPlaceholder')} /></SelectTrigger></FormControl>
-                <SelectContent>
-                  {leaders.map(l => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.first_name_ar || l.first_name} {l.last_name_ar || l.last_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="co_leader_id" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('coLeader')}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder={t('coLeaderPlaceholder')} /></SelectTrigger></FormControl>
-                <SelectContent>
-                  {leaders.map(l => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.first_name_ar || l.first_name} {l.last_name_ar || l.last_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )} />
+          <RegisterLeaderDialog
+            open={registerDialogOpen}
+            onOpenChange={setRegisterDialogOpen}
+            onLeaderCreated={handleLeaderCreated}
+          />
         </div>
+      )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="meeting_day" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('meetingDay')}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue placeholder={t('meetingDayPlaceholder')} /></SelectTrigger></FormControl>
+      {/* Step 3: Meeting Details */}
+      {step === 2 && (
+        <div className="space-y-5 pt-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="flex items-center gap-2 text-zinc-500 mb-2">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm font-medium">{t('meetingDay')}</span>
+              </div>
+              <Select value={form.meeting_day} onValueChange={v => set('meeting_day', v)}>
+                <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('meetingDayPlaceholder')} /></SelectTrigger>
                 <SelectContent>
                   {DAY_KEYS.map(d => <SelectItem key={d.value} value={d.value}>{tGroups(d.key)}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="meeting_time" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('meetingTime')}</FormLabel>
-              <FormControl><Input type="time" dir="ltr" {...field} /></FormControl>
-            </FormItem>
-          )} />
+            </div>
+            <div>
+              <Label className="text-sm text-zinc-500 mb-2 block">{t('meetingTime')}</Label>
+              <Input
+                type="time"
+                value={form.meeting_time}
+                onChange={e => set('meeting_time', e.target.value)}
+                dir="ltr"
+                className="min-h-[48px]"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('frequency')}</Label>
+            <Select value={form.meeting_frequency} onValueChange={v => set('meeting_frequency', v)}>
+              <SelectTrigger className="min-h-[48px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {FREQUENCY_KEYS.map(f => <SelectItem key={f.value} value={f.value}>{tGroups(f.key)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('meetingLocation')}</Label>
+            <Input
+              value={form.meeting_location}
+              onChange={e => set('meeting_location', e.target.value)}
+              placeholder={t('meetingLocationPlaceholder')}
+              className="min-h-[48px]"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-sm text-zinc-500 mb-1 block">{t('maxMembers')}</Label>
+              <Input
+                type="number"
+                value={form.max_members}
+                onChange={e => set('max_members', e.target.value)}
+                placeholder="12"
+                dir="ltr"
+                className="min-h-[48px]"
+              />
+            </div>
+            <div className="flex items-center gap-3 pt-6 p-3 rounded-lg bg-zinc-50">
+              <Switch checked={form.is_open} onCheckedChange={v => set('is_open', v)} />
+              <Label className="text-sm">{t('openForJoining')}</Label>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="meeting_location" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('meetingLocation')}</FormLabel>
-              <FormControl><Input placeholder={t('meetingLocationPlaceholder')} {...field} /></FormControl>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="meeting_frequency" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('frequency')}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                <SelectContent>
-                  {FREQUENCY_KEYS.map(f => <SelectItem key={f.value} value={f.value}>{tGroups(f.key)}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )} />
+      {/* Step 4: Review */}
+      {step === 3 && (
+        <div className="space-y-3 pt-4">
+          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameEn')} value={form.name} />
+          {form.name_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameAr')} value={form.name_ar} />}
+          <ReviewItem
+            icon={<Users className="h-4 w-4" />}
+            label={t('type')}
+            value={`${GROUP_TYPE_KEYS.find(g => g.value === form.type)?.icon || ''} ${tGroups(GROUP_TYPE_KEYS.find(g => g.value === form.type)?.key || 'typeOther')}`}
+          />
+          {form.leader_id && <ReviewItem icon={<UserCheck className="h-4 w-4" />} label={t('leader')} value={leaderName(form.leader_id)} />}
+          {form.meeting_day && <ReviewItem icon={<Calendar className="h-4 w-4" />} label={t('meetingDay')} value={tGroups(DAY_KEYS.find(d => d.value === form.meeting_day)?.key || '')} />}
+          {form.meeting_time && <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('meetingTime')} value={form.meeting_time} />}
+          <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('admissionStatus')} value={form.is_open ? t('openForJoining') : '🔒'} />
         </div>
+      )}
+    </Stepper>
+  )
+}
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="max_members" render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('maxMembers')}</FormLabel>
-              <FormControl><Input type="number" placeholder="12" dir="ltr" {...field} /></FormControl>
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="is_open" render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>{t('admissionStatus')}</FormLabel>
-              <div className="flex items-center gap-2 mt-2">
-                <input
-                  type="checkbox"
-                  id="is_open"
-                  checked={field.value}
-                  onChange={e => field.onChange(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="is_open" className="text-sm">{t('openForJoining')}</label>
-              </div>
-            </FormItem>
-          )} />
-        </div>
-
-        <div className="flex gap-2 justify-end pt-2">
-          <Button type="button" variant="outline" onClick={() => router.back()}>{t('cancelButton')}</Button>
-          <Button type="submit" disabled={loading}>{loading ? t('saving') : t('saveButton')}</Button>
-        </div>
-      </form>
-    </Form>
+function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
+      </div>
+    </div>
   )
 }

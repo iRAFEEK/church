@@ -8,7 +8,7 @@ export default async function EditServingAreaPage({ params }: { params: Promise<
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!isAdmin(user.profile)) redirect('/')
+  if (!isAdmin(user.profile)) redirect('/dashboard')
 
   const t = await getTranslations('serving')
   const supabase = await createClient()

@@ -24,15 +24,29 @@ import type {
   ApiBibleChapterContent, BibleHighlight, BibleBookmark,
 } from '@/types'
 
-const BIBLE_ID = 'ar-svd'
+interface BibleVersion {
+  id: string
+  name: string
+  name_local: string
+  abbreviation: string
+  abbreviation_local: string
+  language_id: string
+}
 
 interface BibleReaderProps {
   books: ApiBibleBook[]
   chaptersMap: Record<string, { id: string; number: string }[]>
+  initialBibleId: string
 }
 
-export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
+export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderProps) {
   const t = useTranslations('bible')
+
+  // Version state
+  const [bibleId, setBibleId] = useState(initialBibleId)
+  const [availableVersions, setAvailableVersions] = useState<BibleVersion[]>([])
+  const [currentBooks, setCurrentBooks] = useState(books)
+  const [currentChaptersMap, setCurrentChaptersMap] = useState(chaptersMap)
 
   // Core state
   const [chapterContent, setChapterContent] = useState<ApiBibleChapterContent | null>(null)
@@ -45,6 +59,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
 
   // UI state
   const [loading, setLoading] = useState(false)
+  const [versionLoading, setVersionLoading] = useState(false)
   const [showBookmarks, setShowBookmarks] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -56,12 +71,20 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
   const contentRef = useRef<HTMLDivElement>(null)
 
   // Chapters for the selected book — instant from pre-loaded map
-  const chapters = selectedBookId ? (chaptersMap[selectedBookId] || []) : []
+  const chapters = selectedBookId ? (currentChaptersMap[selectedBookId] || []) : []
 
   // Persist font size
   useEffect(() => {
     localStorage.setItem('ekklesia_bible_font_size', String(fontSize))
   }, [fontSize])
+
+  // Fetch available versions on mount
+  useEffect(() => {
+    fetch('/api/bible/bibles')
+      .then(r => r.json())
+      .then(d => setAvailableVersions(d.data || []))
+      .catch(() => {})
+  }, [])
 
   // Load bookmarks on mount
   useEffect(() => {
@@ -80,6 +103,36 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
       .catch(() => {})
   }, [chapterContent?.id])
 
+  // Handle version change
+  const handleVersionChange = useCallback(async (newBibleId: string) => {
+    if (newBibleId === bibleId) return
+    setBibleId(newBibleId)
+    setSelectedBookId('')
+    setSelectedChapterId('')
+    setChapterContent(null)
+    setVersionLoading(true)
+
+    try {
+      const [booksRes, chaptersRes] = await Promise.all([
+        fetch(`/api/bible/${newBibleId}/books`).then(r => r.json()),
+        fetch(`/api/bible/${newBibleId}/chapters-map`).then(r => r.json()),
+      ])
+      setCurrentBooks(booksRes.data || [])
+      setCurrentChaptersMap(chaptersRes.data || {})
+
+      // Save preference
+      fetch('/api/profile/bible-preference', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferred_bible_id: newBibleId }),
+      }).catch(() => {})
+    } catch {
+      // silently fail
+    } finally {
+      setVersionLoading(false)
+    }
+  }, [bibleId])
+
   // Handle book change — chapters are instant from the map
   const handleBookChange = useCallback((bookId: string) => {
     setSelectedBookId(bookId)
@@ -93,7 +146,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
     setLoading(true)
 
     try {
-      const res = await fetch(`/api/bible/${BIBLE_ID}/chapters/${chapterId}`)
+      const res = await fetch(`/api/bible/${bibleId}/chapters/${chapterId}`)
       const json = await res.json()
       setChapterContent(json.data?.chapter || json.data || null)
       contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -102,7 +155,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [bibleId])
 
   // Navigate between chapters
   const navigateChapter = useCallback((direction: 'prev' | 'next') => {
@@ -117,16 +170,16 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
   // Handle search navigation — opens presenter at the exact verse
   const handleSearchNavigate = useCallback((chapterId: string, verseNum?: number) => {
     const url = verseNum
-      ? `/presenter/bible/${BIBLE_ID}/${chapterId}?verse=${verseNum}`
-      : `/presenter/bible/${BIBLE_ID}/${chapterId}`
+      ? `/presenter/bible/${bibleId}/${chapterId}?verse=${verseNum}`
+      : `/presenter/bible/${bibleId}/${chapterId}`
     window.open(url, '_blank', 'noopener,noreferrer')
-  }, [])
+  }, [bibleId])
 
   // Open presenter
   const openPresenter = () => {
     if (!chapterContent) return
     window.open(
-      `/presenter/bible/${BIBLE_ID}/${chapterContent.id}`,
+      `/presenter/bible/${bibleId}/${chapterContent.id}`,
       '_blank',
       'noopener,noreferrer'
     )
@@ -155,16 +208,32 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
   const hasNext = currentChapterIdx >= 0 && currentChapterIdx < chapters.length - 1
 
   // Group books by section
-  const otBooks = books.filter(b => getBookSection(b.id) === 'ot')
-  const dcBooks = books.filter(b => getBookSection(b.id) === 'deuterocanonical')
-  const ntBooks = books.filter(b => getBookSection(b.id) === 'nt')
+  const otBooks = currentBooks.filter(b => getBookSection(b.id) === 'ot')
+  const dcBooks = currentBooks.filter(b => getBookSection(b.id) === 'deuterocanonical')
+  const ntBooks = currentBooks.filter(b => getBookSection(b.id) === 'nt')
 
   return (
     <div className="space-y-4">
       {/* Navigation Bar */}
       <div className="flex items-center gap-2 flex-wrap">
+        {/* Version dropdown */}
+        {availableVersions.length > 1 && (
+          <Select value={bibleId} onValueChange={handleVersionChange} disabled={versionLoading}>
+            <SelectTrigger className="w-auto min-w-[120px] h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableVersions.map(v => (
+                <SelectItem key={v.id} value={v.id}>
+                  {v.name_local || v.name} ({v.abbreviation})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
         {/* Book dropdown */}
-        <Select value={selectedBookId} onValueChange={handleBookChange}>
+        <Select value={selectedBookId} onValueChange={handleBookChange} disabled={versionLoading}>
           <SelectTrigger className="w-auto min-w-[140px] h-9 text-sm">
             <SelectValue placeholder={t('selectBook')} />
           </SelectTrigger>
@@ -212,7 +281,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
         <Select
           value={selectedChapterId}
           onValueChange={handleChapterChange}
-          disabled={chapters.length === 0}
+          disabled={chapters.length === 0 || versionLoading}
         >
           <SelectTrigger className="w-auto min-w-[100px] h-9 text-sm">
             <SelectValue placeholder={t('selectChapter')} />
@@ -228,7 +297,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
 
         <div className="flex items-center gap-1 ms-auto">
           {/* Search */}
-          <BibleSearch onNavigate={handleSearchNavigate} />
+          <BibleSearch bibleId={bibleId} onNavigate={handleSearchNavigate} />
 
           {/* Font size control */}
           <Popover>
@@ -283,14 +352,14 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
       </div>
 
       {/* Loading */}
-      {loading && (
+      {(loading || versionLoading) && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {/* Bookmarks panel */}
-      {showBookmarks && !loading && (
+      {showBookmarks && !loading && !versionLoading && (
         <div className="rounded-lg border">
           <div className="p-3 border-b">
             <h3 className="font-semibold text-sm">{t('bookmarks')}</h3>
@@ -307,10 +376,10 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
       )}
 
       {/* Chapter Content */}
-      {!loading && !showBookmarks && chapterContent && (
+      {!loading && !versionLoading && !showBookmarks && chapterContent && (
         <div ref={contentRef} className="rounded-lg border">
           <ChapterContent
-            bibleId={BIBLE_ID}
+            bibleId={bibleId}
             bookId={chapterContent.bookId}
             chapterId={chapterContent.id}
             chapterNumber={chapterContent.number}
@@ -353,7 +422,7 @@ export function BibleReader({ books, chaptersMap }: BibleReaderProps) {
       )}
 
       {/* Empty state */}
-      {!loading && !showBookmarks && !chapterContent && (
+      {!loading && !versionLoading && !showBookmarks && !chapterContent && (
         <div className="text-center py-20 text-muted-foreground">
           <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-20" />
           <p className="text-sm">

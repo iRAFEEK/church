@@ -4,13 +4,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Public routes that don't require authentication
 const PUBLIC_PATHS = [
   '/login',
+  '/welcome',     // Church landing page
   '/join',        // QR visitor form (Phase 2)
   '/api/webhooks', // Twilio/external webhooks
   '/api/visitors', // Public visitor submission (Phase 2)
   '/api/cron',     // Cron jobs (secured by CRON_SECRET)
+  '/api/churches/register', // Public church registration
 ]
 
 function isPublicPath(pathname: string): boolean {
+  if (pathname === '/') return true
   return PUBLIC_PATHS.some(path => pathname.startsWith(path))
 }
 
@@ -64,7 +67,7 @@ export async function middleware(request: NextRequest) {
   // If authenticated and visiting /login, redirect to home
   if (pathname === '/login') {
     const homeUrl = request.nextUrl.clone()
-    homeUrl.pathname = '/'
+    homeUrl.pathname = '/dashboard'
     return NextResponse.redirect(homeUrl)
   }
 

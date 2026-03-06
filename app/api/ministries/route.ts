@@ -25,9 +25,20 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
+  const row: Record<string, unknown> = {
+    church_id: profile.church_id,
+    name: body.name,
+    name_ar: body.name_ar || null,
+    description: body.description || null,
+    description_ar: body.description_ar || null,
+    leader_id: body.leader_id || null,
+    is_active: body.is_active ?? true,
+  }
+  if (body.photo_url) row.photo_url = body.photo_url
+
   const { data, error } = await supabase
     .from('ministries')
-    .insert({ ...body, church_id: profile.church_id })
+    .insert(row)
     .select()
     .single()
 

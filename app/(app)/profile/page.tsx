@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Pencil, Phone, Mail, Briefcase, Calendar, Star } from 'lucide-react'
+import { Pencil, Phone, Mail, Briefcase, Calendar, Star, Users, UserPlus, Heart, Music, Megaphone, Shield, ChevronRight, ChevronLeft } from 'lucide-react'
 import type { ProfileMilestone } from '@/types'
 import { AttendanceHistory } from '@/components/profile/AttendanceHistory'
 import { getTranslations, getLocale } from 'next-intl/server'
@@ -45,6 +45,31 @@ export default async function ProfilePage() {
     .eq('profile_id', profile.id)
     .order('marked_at', { ascending: false })
     .limit(40)
+
+  // Fetch admin quick-link counts for super_admin
+  let adminCounts: { members: number; visitors: number; groups: number; ministries: number; events: number; songs: number; announcements: number; serving: number } | null = null
+  if (profile.role === 'super_admin') {
+    const [members, visitors, groups, ministries, events, songs, announcements, serving] = await Promise.all([
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id),
+      supabase.from('visitors').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('status', 'new'),
+      supabase.from('groups').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
+      supabase.from('ministries').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
+      supabase.from('events').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id),
+      supabase.from('songs').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
+      supabase.from('announcements').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('status', 'published'),
+      supabase.from('serving_areas').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
+    ])
+    adminCounts = {
+      members: members.count ?? 0,
+      visitors: visitors.count ?? 0,
+      groups: groups.count ?? 0,
+      ministries: ministries.count ?? 0,
+      events: events.count ?? 0,
+      songs: songs.count ?? 0,
+      announcements: announcements.count ?? 0,
+      serving: serving.count ?? 0,
+    }
+  }
 
   const MILESTONE_LABELS: Record<string, string> = {
     baptism: t('milestoneBaptism'),
@@ -123,6 +148,41 @@ export default async function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Admin Quick Links */}
+      {adminCounts && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: t('qlMembers'), count: adminCounts.members, href: '/admin/members', icon: Users, color: 'text-blue-600 bg-blue-50' },
+            { label: t('qlVisitors'), count: adminCounts.visitors, href: '/admin/visitors', icon: UserPlus, color: 'text-green-600 bg-green-50' },
+            { label: t('qlMinistries'), count: adminCounts.ministries, href: '/admin/ministries', icon: Shield, color: 'text-amber-600 bg-amber-50' },
+            { label: t('qlGroups'), count: adminCounts.groups, href: '/admin/groups', icon: Heart, color: 'text-purple-600 bg-purple-50' },
+            { label: t('qlEvents'), count: adminCounts.events, href: '/events', icon: Calendar, color: 'text-rose-600 bg-rose-50' },
+            { label: t('qlSongs'), count: adminCounts.songs, href: '/admin/songs', icon: Music, color: 'text-indigo-600 bg-indigo-50' },
+            { label: t('qlAnnouncements'), count: adminCounts.announcements, href: '/admin/announcements', icon: Megaphone, color: 'text-orange-600 bg-orange-50' },
+            { label: t('qlServing'), count: adminCounts.serving, href: '/serving', icon: Heart, color: 'text-teal-600 bg-teal-50' },
+          ].map((item) => {
+            const Icon = item.icon
+            const Chevron = locale === 'ar' ? ChevronLeft : ChevronRight
+            return (
+              <Link key={item.href} href={item.href}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${item.color}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xl font-bold leading-none">{item.count}</p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{item.label}</p>
+                    </div>
+                    <Chevron className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs defaultValue="info" dir={locale === 'ar' ? 'rtl' : 'ltr'}>

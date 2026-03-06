@@ -61,7 +61,7 @@ export default async function GroupDetailPage({ params }: Params) {
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
   const isLeader = group.leader_id === user.profile.id || group.co_leader_id === user.profile.id
 
-  if (!isAdmin && !isLeader) redirect('/')
+  if (!isAdmin && !isLeader) redirect('/dashboard')
 
   // Get all church members for adding to group
   const { data: allMembers } = isAdmin || isLeader ? await supabase

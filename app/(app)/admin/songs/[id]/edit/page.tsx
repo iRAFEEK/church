@@ -8,7 +8,7 @@ export default async function EditSongPage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const user = await getCurrentUserWithRole()
   if (!user) redirect('/login')
-  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/')
+  if (!['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
 
   const t = await getTranslations('songs')
   const supabase = await createClient()

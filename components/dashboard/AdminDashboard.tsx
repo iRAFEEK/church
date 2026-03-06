@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { Users, UserPlus, CalendarCheck, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Users, UserPlus, CalendarCheck, Calendar, TrendingUp, TrendingDown, Minus, Megaphone, Heart } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
@@ -59,6 +59,28 @@ export function AdminDashboard({ data }: Props) {
           value={data.kpis.upcomingEvents.value}
           icon={Calendar}
         />
+      </div>
+
+      {/* Mobile: Quick actions row */}
+      <div className="flex gap-2 overflow-x-auto pb-1 md:hidden">
+        <Link
+          href="/admin/events/new"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+        >
+          <Calendar className="h-4 w-4" /> {isAr ? 'حدث جديد' : 'New Event'}
+        </Link>
+        <Link
+          href="/admin/announcements/new"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+        >
+          <Megaphone className="h-4 w-4" /> {isAr ? 'إعلان' : 'Announcement'}
+        </Link>
+        <Link
+          href="/admin/visitors"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+        >
+          <UserPlus className="h-4 w-4" /> {isAr ? 'الزوار' : 'Visitors'}
+        </Link>
       </div>
 
       {/* Row 2: Charts */}

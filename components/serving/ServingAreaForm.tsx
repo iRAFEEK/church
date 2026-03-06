@@ -3,19 +3,24 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Stepper } from '@/components/ui/stepper'
 import { toast } from 'sonner'
-import { Languages } from 'lucide-react'
+import { Heart, FileText, Settings } from 'lucide-react'
 import type { ServingArea, Ministry } from '@/types'
 
 interface ServingAreaFormProps {
   area?: ServingArea
 }
+
+const STEPS = [
+  { title: 'Name & Description', titleAr: 'الاسم والوصف' },
+  { title: 'Settings', titleAr: 'الإعدادات' },
+]
 
 export function ServingAreaForm({ area }: ServingAreaFormProps) {
   const router = useRouter()
@@ -24,7 +29,7 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [loading, setLoading] = useState(false)
-  const [showTranslation, setShowTranslation] = useState(false)
+  const [step, setStep] = useState(0)
   const [ministries, setMinistries] = useState<Ministry[]>([])
 
   const [form, setForm] = useState({
@@ -48,8 +53,7 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
       .catch(() => {})
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!form[nameField]) {
       toast.error(t('requiredName'))
       return
@@ -90,91 +94,99 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
     }
   }
 
+  const canProceed = step === 0 ? !!form[nameField] : true
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label>{tc('name')} *</Label>
-        <Input
-          value={form[nameField]}
-          onChange={(e) => setForm({ ...form, [nameField]: e.target.value })}
-          dir={isAr ? 'rtl' : 'ltr'}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>{tc('description')}</Label>
-        <Textarea
-          value={form[descField]}
-          onChange={(e) => setForm({ ...form, [descField]: e.target.value })}
-          rows={3}
-          dir={isAr ? 'rtl' : 'ltr'}
-        />
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setShowTranslation(!showTranslation)}
-        className="flex items-center gap-2 text-sm text-primary hover:underline"
-      >
-        <Languages className="h-4 w-4" />
-        {showTranslation ? tc('hideTranslation') : tc('addTranslation')}
-      </button>
-
-      {showTranslation && (
-        <div className="space-y-4 rounded-lg border p-4 bg-muted/30 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="space-y-2">
-            <Label>{tc('name')} ({isAr ? 'EN' : 'AR'})</Label>
+    <Stepper
+      steps={STEPS}
+      currentStep={step}
+      onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
+      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onSubmit={handleSubmit}
+      isSubmitting={loading}
+      submitLabel={area ? t('updateArea') : t('createArea')}
+      submitLabelAr={area ? t('updateArea') : t('createArea')}
+      canProceed={canProceed}
+    >
+      {/* Step 1: Name & Description */}
+      {step === 0 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Heart className="h-5 w-5" />
+              <span className="text-sm font-medium">{tc('name')} *</span>
+            </div>
+            <Input
+              value={form[nameField]}
+              onChange={(e) => setForm({ ...form, [nameField]: e.target.value })}
+              dir={isAr ? 'rtl' : 'ltr'}
+              className="text-lg min-h-[48px]"
+            />
+          </div>
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{tc('name')} ({isAr ? 'EN' : 'AR'})</Label>
             <Input
               value={form[nameAltField]}
               onChange={(e) => setForm({ ...form, [nameAltField]: e.target.value })}
               dir={isAr ? 'ltr' : 'rtl'}
+              className="min-h-[48px]"
             />
           </div>
-          <div className="space-y-2">
-            <Label>{tc('description')} ({isAr ? 'EN' : 'AR'})</Label>
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <FileText className="h-5 w-5" />
+              <span className="text-sm font-medium">{tc('description')}</span>
+            </div>
             <Textarea
-              value={form[descAltField]}
-              onChange={(e) => setForm({ ...form, [descAltField]: e.target.value })}
+              value={form[descField]}
+              onChange={(e) => setForm({ ...form, [descField]: e.target.value })}
               rows={3}
-              dir={isAr ? 'ltr' : 'rtl'}
+              dir={isAr ? 'rtl' : 'ltr'}
             />
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t('areaMinistry')}</Label>
-          <Select value={form.ministry_id} onValueChange={(v) => setForm({ ...form, ministry_id: v === 'none' ? '' : v })}>
-            <SelectTrigger>
-              <SelectValue placeholder={t('areaMinistryPlaceholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">—</SelectItem>
-              {ministries.map(m => (
-                <SelectItem key={m.id} value={m.id}>{isAr ? (m.name_ar || m.name) : m.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Step 2: Settings & Review */}
+      {step === 1 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Settings className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('areaMinistry')}</span>
+            </div>
+            <Select value={form.ministry_id} onValueChange={(v) => setForm({ ...form, ministry_id: v === 'none' ? '' : v })}>
+              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('areaMinistryPlaceholder')} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">--</SelectItem>
+                {ministries.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{isAr ? (m.name_ar || m.name) : m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
+            <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+            <Label>{tc('active')}</Label>
+          </div>
+          <div className="space-y-3 pt-2">
+            <ReviewItem icon={<Heart className="h-4 w-4" />} label={tc('name')} value={form[nameField]} />
+            {form[descField] && <ReviewItem icon={<FileText className="h-4 w-4" />} label={tc('description')} value={form[descField]} />}
+          </div>
         </div>
+      )}
+    </Stepper>
+  )
+}
 
-        <div className="flex items-center gap-3 pt-6">
-          <Switch
-            checked={form.is_active}
-            onCheckedChange={(v) => setForm({ ...form, is_active: v })}
-          />
-          <Label>{tc('active')}</Label>
-        </div>
+function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
       </div>
-
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? t('saving') : area ? t('updateArea') : t('createArea')}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          {t('cancel')}
-        </Button>
-      </div>
-    </form>
+    </div>
   )
 }
