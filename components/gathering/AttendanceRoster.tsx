@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -160,7 +161,7 @@ export function AttendanceRoster({
                 onClick={() => canManage && !isCompleted && cycleStatus(m.profile_id)}
               >
                 <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage src={m.photo_url || undefined} />
+                  <AvatarImage src={getAvatarUrl(m.photo_url, 36)} />
                   <AvatarFallback className="text-sm">{initials}</AvatarFallback>
                 </Avatar>
 

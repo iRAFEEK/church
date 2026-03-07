@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
     // Fire-and-forget: send welcome WhatsApp to visitor
     notifyWelcomeVisitor(data.id, resolvedChurchId).catch(console.error)
 
+    revalidateTag(`dashboard-${resolvedChurchId}`)
     return NextResponse.json({ data }, { status: 201 })
   } catch (e: unknown) {
     console.error('POST /api/visitors', e)

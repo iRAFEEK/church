@@ -46,8 +46,11 @@ export default async function DashboardPage() {
     </div>
   )
 
+  const churchId = profile.church_id
+  const slaHours = church.visitor_sla_hours ?? 48
+
   if (profile.role === 'super_admin') {
-    const data = await fetchAdminDashboard(supabase, id, profile.church_id, church.visitor_sla_hours ?? 48)
+    const data = await fetchAdminDashboard(supabase, id, churchId, slaHours)
     return (
       <div className="space-y-6">
         {header}
@@ -57,7 +60,7 @@ export default async function DashboardPage() {
   }
 
   if (profile.role === 'ministry_leader') {
-    const data = await fetchMinistryLeaderDashboard(supabase, id, profile.church_id, church.visitor_sla_hours ?? 48)
+    const data = await fetchMinistryLeaderDashboard(supabase, id, churchId, slaHours)
     return (
       <div className="space-y-6">
         {header}
@@ -67,7 +70,7 @@ export default async function DashboardPage() {
   }
 
   if (isLeader(profile)) {
-    const data = await fetchLeaderDashboard(supabase, id, profile.church_id)
+    const data = await fetchLeaderDashboard(supabase, id, churchId)
     return (
       <div className="space-y-6">
         {header}
@@ -86,7 +89,7 @@ export default async function DashboardPage() {
     .limit(1)
 
   if (coLeaderCheck && coLeaderCheck.length > 0) {
-    const data = await fetchLeaderDashboard(supabase, id, profile.church_id)
+    const data = await fetchLeaderDashboard(supabase, id, churchId)
     return (
       <div className="space-y-6">
         {header}
@@ -96,7 +99,7 @@ export default async function DashboardPage() {
   }
 
   // Member dashboard
-  const data = await fetchMemberDashboard(supabase, id, profile.church_id)
+  const data = await fetchMemberDashboard(supabase, id, churchId)
   return (
     <div className="space-y-6">
       {header}

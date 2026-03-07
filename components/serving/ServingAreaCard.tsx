@@ -21,8 +21,8 @@ export function ServingAreaCard({ area, admin }: ServingAreaCardProps) {
     ? (isAr ? (area.ministries.name_ar || area.ministries.name) : area.ministries.name)
     : null
 
-  return (
-    <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
+  const content = (
+    <div className="flex items-center gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="font-medium">{name}</p>
@@ -38,13 +38,32 @@ export function ServingAreaCard({ area, admin }: ServingAreaCardProps) {
         )}
       </div>
       {admin && (
-        <Link
-          href={`/admin/serving/areas/${area.id}/edit`}
-          className="text-sm text-primary hover:underline shrink-0"
+        <span
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0"
         >
-          {t('edit')}
-        </Link>
+          <Link
+            href={`/admin/serving/areas/${area.id}/edit`}
+            className="text-sm text-primary hover:underline"
+          >
+            {t('edit')}
+          </Link>
+        </span>
       )}
+    </div>
+  )
+
+  if (admin) {
+    return (
+      <Link href={`/admin/serving/areas/${area.id}`} className="block p-4 hover:bg-muted/50 transition-colors">
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div className="p-4">
+      {content}
     </div>
   )
 }

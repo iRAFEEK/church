@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/announcements/[id]
@@ -35,7 +36,7 @@ export async function PATCH(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, church_id')
     .eq('id', user.id)
     .single()
 
@@ -66,6 +67,7 @@ export async function PATCH(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }
 
@@ -81,7 +83,7 @@ export async function DELETE(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, church_id')
     .eq('id', user.id)
     .single()
 
@@ -95,5 +97,6 @@ export async function DELETE(
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ success: true })
 }

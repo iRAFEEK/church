@@ -3,9 +3,11 @@ import { getCurrentUserWithRole, isAdmin } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { EventCard } from '@/components/events/EventCard'
 import { getTranslations } from 'next-intl/server'
 import { Plus, Copy } from 'lucide-react'
+import { EventsPageClient } from '@/components/events/EventsPageClient'
+
+const PAGE_SIZE = 20
 
 export default async function EventsPage() {
   const user = await getCurrentUserWithRole()
@@ -15,22 +17,40 @@ export default async function EventsPage() {
   const supabase = await createClient()
   const admin = isAdmin(user.profile)
 
-  let query = supabase
+  // Fetch initial events, ministries, and groups in parallel
+  let eventsQuery = supabase
     .from('events')
     .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status')
     .eq('church_id', user.profile.church_id)
+    .limit(PAGE_SIZE)
 
   if (admin) {
-    query = query.order('starts_at', { ascending: false }).limit(50)
+    eventsQuery = eventsQuery.order('starts_at', { ascending: false })
   } else {
-    query = query
+    eventsQuery = eventsQuery
       .in('status', ['published'])
       .gte('starts_at', new Date().toISOString())
       .order('starts_at', { ascending: true })
-      .limit(30)
   }
 
-  const { data: events } = await query
+  const [eventsResult, ministriesResult, groupsResult] = await Promise.all([
+    eventsQuery,
+    supabase
+      .from('ministries')
+      .select('id, name, name_ar')
+      .eq('church_id', user.profile.church_id)
+      .eq('is_active', true)
+      .order('name'),
+    supabase
+      .from('groups')
+      .select('id, name, name_ar')
+      .eq('church_id', user.profile.church_id)
+      .eq('is_active', true)
+      .order('name'),
+  ])
+
+  const events = eventsResult.data || []
+  const nextCursor = events.length === PAGE_SIZE ? events[events.length - 1].starts_at : null
 
   return (
     <div className="space-y-6">
@@ -61,21 +81,14 @@ export default async function EventsPage() {
         )}
       </div>
 
-      {(!events || events.length === 0) ? (
-        <div className="text-center py-12 text-muted-foreground">
-          {admin ? t('noEvents') : t('noUpcomingEvents')}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {events.map(event => (
-            <EventCard
-              key={event.id}
-              event={event}
-              href={admin ? `/admin/events/${event.id}` : `/events/${event.id}`}
-            />
-          ))}
-        </div>
-      )}
+      <EventsPageClient
+        initialEvents={events as any}
+        initialCursor={nextCursor}
+        isAdmin={admin}
+        upcoming={!admin}
+        ministries={(ministriesResult.data || []) as any}
+        groups={(groupsResult.data || []) as any}
+      />
     </div>
   )
 }

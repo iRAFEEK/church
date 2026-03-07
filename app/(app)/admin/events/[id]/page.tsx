@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EventRegistrations } from '@/components/events/EventRegistrations'
-import { EventMinistryBreakdown } from '@/components/events/EventMinistryBreakdown'
+import { InlineStaffingManager } from '@/components/events/InlineStaffingManager'
 import { EventRunOfShow } from '@/components/events/EventRunOfShow'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
@@ -24,7 +24,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
 
   const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, status')
     .eq('id', id)
     .single()
 
@@ -106,10 +106,8 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">{t('ministryBreakdown')}</h2>
-        <Suspense fallback={<SectionSkeleton />}>
-          <EventMinistryBreakdown eventId={id} />
-        </Suspense>
+        <h2 className="text-lg font-semibold">{t('staffing')}</h2>
+        <InlineStaffingManager eventId={id} />
       </div>
 
       <div className="space-y-3">

@@ -477,7 +477,12 @@
     "detailDescription": "Description",
     "detailGroups": "Groups under this Ministry",
     "detailNoGroups": "No groups assigned",
-    "detailInactive": "Inactive"
+    "detailInactive": "Inactive",
+    "events": "Events",
+    "upcomingEvents": "Upcoming Events",
+    "recentEvents": "Recent Events",
+    "noEvents": "No events linked to this ministry",
+    "createEvent": "Create Event"
   },
   "ministryForm": {
     "nameEn": "Name (English)",
@@ -965,7 +970,15 @@
     "noAssignmentsYet": "No volunteers assigned yet",
     "eventAssignments": "Event Assignments",
     "fromTemplate": "From Template",
-    "runOfShow": "Run of Show"
+    "runOfShow": "Run of Show",
+    "searchPlaceholder": "Search events...",
+    "filterByMinistry": "Ministry",
+    "filterByGroup": "Group",
+    "allMinistries": "All Ministries",
+    "allGroups": "All Groups",
+    "noSearchResults": "No events match your search",
+    "staffing": "Staffing",
+    "rolePresetSelect": "Quick select role"
   },
 
   "templates": {
@@ -1010,7 +1023,37 @@
     "specialNotesAr": "Special Notes (Arabic)",
     "requiredFields": "Template name and default title are required",
     "errorGeneral": "Something went wrong",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "schedule": "Schedule",
+    "recurrence": "Recurrence",
+    "recurrenceNone": "None (one-time)",
+    "recurrenceWeekly": "Weekly",
+    "recurrenceBiweekly": "Every two weeks",
+    "recurrenceMonthly": "Monthly",
+    "recurrenceDay": "Day of week",
+    "defaultStartTime": "Default Start Time",
+    "defaultEndTime": "Default End Time",
+    "nextOccurrence": "Next: {date}",
+    "customFields": "Custom Fields",
+    "addCustomField": "Add Field",
+    "editCustomField": "Edit Field",
+    "fieldLabel": "Field Label",
+    "fieldLabelAr": "Field Label (Arabic)",
+    "fieldType": "Field Type",
+    "fieldTypeText": "Text",
+    "fieldTypeNumber": "Number",
+    "fieldTypeSelect": "Dropdown",
+    "fieldTypeBoolean": "Yes/No",
+    "fieldRequired": "Required",
+    "fieldOptions": "Options (comma-separated)",
+    "noCustomFields": "No custom fields defined",
+    "rolePresets": "Role Presets",
+    "addRolePreset": "Add Role",
+    "rolePresetName": "Role Name",
+    "rolePresetNameAr": "Role Name (Arabic)",
+    "rolePresetCount": "Count",
+    "noRolePresets": "No roles defined",
+    "totalRoles": "Total roles"
   },
 
   "songs": {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(req: NextRequest) {
@@ -13,7 +14,9 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('groups')
     .select(`
-      *,
+      id, name, name_ar, type, is_active, is_open,
+      meeting_day, meeting_frequency, max_members, church_id,
+      ministry_id, leader_id, co_leader_id,
       ministry:ministry_id(id,name,name_ar),
       leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
       co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar),
@@ -47,5 +50,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

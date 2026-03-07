@@ -9,10 +9,12 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Stepper } from '@/components/ui/stepper'
 import { toast } from 'sonner'
-import { Type, Settings, FileText, ListOrdered, Users, StickyNote } from 'lucide-react'
+import { Type, Settings, FileText, ListOrdered, Users, StickyNote, Calendar, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ServiceNeedsPicker, type ServiceNeedDraft } from './ServiceNeedsPicker'
 import { SegmentEditor, type SegmentDraft } from './SegmentEditor'
+import { CustomFieldsEditor } from './CustomFieldsEditor'
+import type { CustomFieldDefinition } from '@/types'
 
 interface TemplateFormProps {
   template?: {
@@ -30,14 +32,21 @@ interface TemplateFormProps {
     registration_required: boolean
     notes: string | null
     notes_ar: string | null
+    recurrence_type?: string | null
+    recurrence_day?: number | null
+    default_start_time?: string | null
+    default_end_time?: string | null
+    custom_fields?: CustomFieldDefinition[] | null
   }
 }
 
 const STEPS = [
   { title: 'Basics', titleAr: 'الأساسيات' },
+  { title: 'Schedule', titleAr: 'الجدول' },
   { title: 'Defaults', titleAr: 'الإعدادات الافتراضية' },
   { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
   { title: 'Run of Show', titleAr: 'ترتيب البرنامج' },
+  { title: 'Custom Fields', titleAr: 'حقول مخصصة' },
   { title: 'Notes', titleAr: 'ملاحظات' },
   { title: 'Review', titleAr: 'مراجعة' },
 ]
@@ -47,11 +56,14 @@ const EVENT_TYPE_ICONS: Record<string, string> = {
   social: '🎉', outreach: '🤝', other: '📌',
 }
 
+const DAY_KEYS = ['daySunday', 'dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday']
+
 export function TemplateForm({ template }: TemplateFormProps) {
   const router = useRouter()
   const t = useTranslations('templates')
   const te = useTranslations('events')
   const tc = useTranslations('common')
+  const tg = useTranslations('groups')
   const locale = useLocale()
   const isRTL = locale === 'ar'
   const [loading, setLoading] = useState(false)
@@ -71,10 +83,15 @@ export function TemplateForm({ template }: TemplateFormProps) {
     registration_required: template?.registration_required ?? false,
     notes: template?.notes || '',
     notes_ar: template?.notes_ar || '',
+    recurrence_type: template?.recurrence_type || 'none',
+    recurrence_day: template?.recurrence_day ?? 0,
+    default_start_time: template?.default_start_time || '',
+    default_end_time: template?.default_end_time || '',
   })
 
   const [serviceNeeds, setServiceNeeds] = useState<ServiceNeedDraft[]>([])
   const [segments, setSegments] = useState<SegmentDraft[]>([])
+  const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>(template?.custom_fields || [])
 
   // Load existing needs and segments when editing
   useEffect(() => {
@@ -90,6 +107,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
                 volunteers_needed: n.volunteers_needed,
                 notes: n.notes || '',
                 notes_ar: n.notes_ar || '',
+                role_presets: n.role_presets || [],
                 _name: n.ministry?.name || n.group?.name || '',
                 _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
                 _type: n.ministry_id ? 'ministry' as const : 'group' as const,
@@ -113,6 +131,18 @@ export function TemplateForm({ template }: TemplateFormProps) {
                   : undefined,
               }))
             )
+          }
+          if (d.data?.custom_fields) {
+            setCustomFields(d.data.custom_fields)
+          }
+          if (d.data?.recurrence_type) {
+            setForm(prev => ({
+              ...prev,
+              recurrence_type: d.data.recurrence_type || 'none',
+              recurrence_day: d.data.recurrence_day ?? 0,
+              default_start_time: d.data.default_start_time || '',
+              default_end_time: d.data.default_end_time || '',
+            }))
           }
         })
         .catch(() => {})
@@ -143,10 +173,14 @@ export function TemplateForm({ template }: TemplateFormProps) {
         registration_required: form.registration_required,
         notes: form.notes || null,
         notes_ar: form.notes_ar || null,
+        recurrence_type: form.recurrence_type,
+        recurrence_day: form.recurrence_type !== 'none' ? form.recurrence_day : null,
+        default_start_time: form.default_start_time || null,
+        default_end_time: form.default_end_time || null,
+        custom_fields: customFields.length > 0 ? customFields : [],
       }
 
       if (template) {
-        // Update template
         const res = await fetch(`/api/templates/${template.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -157,7 +191,6 @@ export function TemplateForm({ template }: TemplateFormProps) {
           throw new Error(errData.error || 'Failed to update template')
         }
 
-        // Update needs
         await fetch(`/api/templates/${template.id}/needs`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -168,11 +201,11 @@ export function TemplateForm({ template }: TemplateFormProps) {
               volunteers_needed: n.volunteers_needed,
               notes: n.notes || null,
               notes_ar: n.notes_ar || null,
+              role_presets: n.role_presets || [],
             })),
           }),
         })
 
-        // Update segments
         await fetch(`/api/templates/${template.id}/segments`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -191,7 +224,6 @@ export function TemplateForm({ template }: TemplateFormProps) {
 
         toast.success(t('templateUpdated'))
       } else {
-        // Create template with needs and segments
         const res = await fetch('/api/templates', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -203,6 +235,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
               volunteers_needed: n.volunteers_needed,
               notes: n.notes || null,
               notes_ar: n.notes_ar || null,
+              role_presets: n.role_presets || [],
             })),
             segments: segments.map(s => ({
               title: s.title,
@@ -235,6 +268,13 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const totalVolunteers = serviceNeeds.reduce((sum, n) => sum + n.volunteers_needed, 0)
   const totalDuration = segments.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)
 
+  const recurrenceOptions = [
+    { value: 'none', label: t('recurrenceNone') },
+    { value: 'weekly', label: t('recurrenceWeekly') },
+    { value: 'biweekly', label: t('recurrenceBiweekly') },
+    { value: 'monthly', label: t('recurrenceMonthly') },
+  ]
+
   return (
     <Stepper
       steps={STEPS}
@@ -247,7 +287,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
       submitLabelAr={template ? t('updateTemplate') : t('createTemplate')}
       canProceed={canProceed}
     >
-      {/* Step 1: Basics */}
+      {/* Step 0: Basics */}
       {step === 0 && (
         <div className="space-y-5 pt-4">
           <div>
@@ -318,8 +358,82 @@ export function TemplateForm({ template }: TemplateFormProps) {
         </div>
       )}
 
-      {/* Step 2: Defaults */}
+      {/* Step 1: Schedule */}
       {step === 1 && (
+        <div className="space-y-5 pt-4">
+          <div>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Calendar className="h-5 w-5" />
+              <span className="text-sm font-medium">{t('recurrence')}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {recurrenceOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, recurrence_type: opt.value })}
+                  className={cn(
+                    'py-2.5 px-3 rounded-xl text-sm font-medium border-2 transition-all',
+                    form.recurrence_type === opt.value
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-zinc-200 text-zinc-500 hover:border-zinc-300'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {form.recurrence_type !== 'none' && (
+            <div>
+              <Label className="text-sm text-zinc-500 mb-2 block">{t('recurrenceDay')}</Label>
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                {DAY_KEYS.map((dayKey, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setForm({ ...form, recurrence_day: i })}
+                    className={cn(
+                      'py-2 px-1 rounded-lg text-xs font-medium border-2 transition-all',
+                      form.recurrence_day === i
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-zinc-200 text-zinc-500 hover:border-zinc-300'
+                    )}
+                  >
+                    {tg(dayKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('defaultStartTime')}</Label>
+            <Input
+              type="time"
+              value={form.default_start_time}
+              onChange={e => setForm({ ...form, default_start_time: e.target.value })}
+              dir="ltr"
+              className="min-h-[48px]"
+            />
+          </div>
+
+          <div>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('defaultEndTime')}</Label>
+            <Input
+              type="time"
+              value={form.default_end_time}
+              onChange={e => setForm({ ...form, default_end_time: e.target.value })}
+              dir="ltr"
+              className="min-h-[48px]"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Defaults */}
+      {step === 2 && (
         <div className="space-y-5 pt-4">
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
@@ -380,7 +494,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
       )}
 
       {/* Step 3: Service Needs */}
-      {step === 2 && (
+      {step === 3 && (
         <ServiceNeedsPicker
           serviceNeeds={serviceNeeds}
           onChange={setServiceNeeds}
@@ -388,15 +502,23 @@ export function TemplateForm({ template }: TemplateFormProps) {
       )}
 
       {/* Step 4: Run of Show */}
-      {step === 3 && (
+      {step === 4 && (
         <SegmentEditor
           segments={segments}
           onChange={setSegments}
         />
       )}
 
-      {/* Step 5: Notes */}
-      {step === 4 && (
+      {/* Step 5: Custom Fields */}
+      {step === 5 && (
+        <CustomFieldsEditor
+          fields={customFields}
+          onChange={setCustomFields}
+        />
+      )}
+
+      {/* Step 6: Notes */}
+      {step === 6 && (
         <div className="space-y-5 pt-4">
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
@@ -423,12 +545,19 @@ export function TemplateForm({ template }: TemplateFormProps) {
         </div>
       )}
 
-      {/* Step 6: Review */}
-      {step === 5 && (
+      {/* Step 7: Review */}
+      {step === 7 && (
         <div className="space-y-3 pt-4">
           <ReviewItem icon={<Type className="h-4 w-4" />} label={t('templateName')} value={form.name} />
           <ReviewItem icon={<Type className="h-4 w-4" />} label={t('defaultTitle')} value={form.title} />
           <ReviewItem icon={<Settings className="h-4 w-4" />} label={te('eventType')} value={`${EVENT_TYPE_ICONS[form.event_type]} ${te(`type_${form.event_type}`)}`} />
+          {form.recurrence_type !== 'none' && (
+            <ReviewItem
+              icon={<Calendar className="h-4 w-4" />}
+              label={t('schedule')}
+              value={`${recurrenceOptions.find(o => o.value === form.recurrence_type)?.label} · ${tg(DAY_KEYS[form.recurrence_day])}${form.default_start_time ? ` · ${form.default_start_time}` : ''}`}
+            />
+          )}
           {form.location && <ReviewItem icon={<Settings className="h-4 w-4" />} label={te('location')} value={form.location} />}
           {serviceNeeds.length > 0 && (
             <ReviewItem
@@ -442,6 +571,13 @@ export function TemplateForm({ template }: TemplateFormProps) {
               icon={<ListOrdered className="h-4 w-4" />}
               label={t('runOfShow')}
               value={`${segments.length} ${t('segments')} · ${totalDuration} ${t('min')}`}
+            />
+          )}
+          {customFields.length > 0 && (
+            <ReviewItem
+              icon={<Layers className="h-4 w-4" />}
+              label={t('customFields')}
+              value={`${customFields.length} ${t('customFields').toLowerCase()}`}
             />
           )}
           {form.notes && (

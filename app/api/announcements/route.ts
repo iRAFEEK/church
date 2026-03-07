@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/announcements — list announcements
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('announcements')
-    .select('*', { count: 'exact' })
+    .select('id, title, title_ar, body, body_ar, status, is_pinned, expires_at, published_at, created_at, created_by', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('is_pinned', { ascending: false })
     .order('published_at', { ascending: false, nullsFirst: false })
@@ -85,5 +86,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

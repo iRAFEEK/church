@@ -10,7 +10,7 @@ export default async function BookmarksPage() {
 
   const { data: bookmarks } = await supabase
     .from('bible_bookmarks')
-    .select('*')
+    .select('id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note, created_at')
     .eq('profile_id', (profile as any).id)
     .eq('church_id', (church as any).id)
     .order('created_at', { ascending: false })
@@ -22,7 +22,7 @@ export default async function BookmarksPage() {
         <p className="text-muted-foreground text-sm">{t('viewBookmarks')}</p>
       </div>
 
-      <BookmarksPageClient initialBookmarks={bookmarks || []} />
+      <BookmarksPageClient initialBookmarks={(bookmarks || []) as any} />
     </div>
   )
 }

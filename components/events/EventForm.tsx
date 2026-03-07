@@ -161,12 +161,11 @@ export function EventForm({ event }: EventFormProps) {
           })
         } catch {
           // Service needs save failed — event itself is saved
-          console.error('Failed to save service needs')
         }
       }
 
       toast.success(event ? t('eventUpdated') : t('eventCreated'))
-      router.push('/admin/events')
+      router.push(event ? `/admin/events/${event.id}` : '/events')
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errorGeneral'))

@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { getNavForRole, getNavSections } from '@/lib/navigation'
 import type { Profile } from '@/types'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -135,7 +136,7 @@ export function Sidebar({ profile, churchName, churchNameAr }: SidebarProps) {
         {!collapsed && (
           <div className="flex items-center gap-3 px-2 py-1">
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src={profile.photo_url ?? undefined} alt={displayName} />
+              <AvatarImage src={getAvatarUrl(profile.photo_url, 32)} alt={displayName} />
               <AvatarFallback className="text-xs bg-sidebar-accent text-sidebar-accent-foreground">
                 {initials}
               </AvatarFallback>

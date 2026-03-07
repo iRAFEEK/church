@@ -115,10 +115,10 @@ export function RegistrationWizard() {
           password: state.password,
         })
         if (signInError) {
-          console.error('Auto sign-in failed:', signInError)
+          // Auto sign-in failed — user can sign in manually
         }
-      } catch (signInErr) {
-        console.error('Auto sign-in network error:', signInErr)
+      } catch {
+        // Auto sign-in network error — user can sign in manually
       }
 
       // Move to completion step
@@ -126,7 +126,6 @@ export function RegistrationWizard() {
       setStep(6)
     } catch (err: any) {
       toast.error(t('errorGeneric'))
-      console.error('Registration error:', err)
     } finally {
       setIsSubmitting(false)
     }
