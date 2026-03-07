@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { MinistryMemberManager } from '@/components/ministries/MinistryMemberManager'
+import { MinistryEventsList } from '@/components/ministries/MinistryEventsList'
 import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
@@ -153,6 +154,9 @@ export default async function MinistryDetailPage({ params }: Params) {
           )}
         </div>
       </div>
+
+      {/* Events */}
+      <MinistryEventsList ministryId={id} />
 
       {/* Member Roster */}
       <MinistryMemberManager

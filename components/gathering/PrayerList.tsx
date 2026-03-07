@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import { toast } from 'sonner'
 
 type Submitter = {
@@ -214,7 +215,7 @@ function PrayerCard({
     <div className={`px-4 py-3 ${isAnswered ? 'opacity-60' : ''}`}>
       <div className="flex gap-3">
         <Avatar className="h-8 w-8 shrink-0 mt-0.5">
-          <AvatarImage src={prayer.submitter?.photo_url || undefined} />
+          <AvatarImage src={getAvatarUrl(prayer.submitter?.photo_url, 32)} />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

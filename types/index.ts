@@ -434,6 +434,21 @@ export interface ApiBibleVerse {
 
 export type EventAssignmentStatus = 'assigned' | 'confirmed' | 'declined'
 
+export interface RolePreset {
+  role: string
+  role_ar: string
+  count: number
+}
+
+export interface CustomFieldDefinition {
+  id: string
+  label: string
+  label_ar: string
+  type: 'text' | 'number' | 'select' | 'boolean'
+  options?: string[]
+  required: boolean
+}
+
 export interface EventServiceNeed {
   id: string
   event_id: string
@@ -443,6 +458,7 @@ export interface EventServiceNeed {
   volunteers_needed: number
   notes: string | null
   notes_ar: string | null
+  role_presets: RolePreset[] | null
   created_at: string
   updated_at: string
 }
@@ -503,6 +519,11 @@ export interface EventTemplate {
   notes_ar: string | null
   is_active: boolean
   created_by: string | null
+  recurrence_type: 'none' | 'weekly' | 'biweekly' | 'monthly'
+  recurrence_day: number | null
+  default_start_time: string | null
+  default_end_time: string | null
+  custom_fields: CustomFieldDefinition[]
   created_at: string
   updated_at: string
 }
@@ -516,6 +537,7 @@ export interface EventTemplateNeed {
   volunteers_needed: number
   notes: string | null
   notes_ar: string | null
+  role_presets: RolePreset[] | null
 }
 
 export interface EventTemplateSegment {

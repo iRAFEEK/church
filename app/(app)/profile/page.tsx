@@ -43,7 +43,7 @@ export default async function ProfilePage() {
       .order('date', { ascending: false }),
     supabase
       .from('attendance')
-      .select('*, gathering:gathering_id(id, scheduled_at, topic, status, group:group_id(id, name, name_ar))')
+      .select('id, status, marked_at, gathering:gathering_id(id, scheduled_at, topic, group:group_id(id, name, name_ar))')
       .eq('profile_id', profile.id)
       .order('marked_at', { ascending: false })
       .limit(40),
@@ -295,7 +295,7 @@ export default async function ProfilePage() {
               <CardTitle className="text-base">{t('attendanceTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <AttendanceHistory records={(attendanceRecords || []) as Parameters<typeof AttendanceHistory>[0]['records']} />
+              <AttendanceHistory records={(attendanceRecords || []) as unknown as Parameters<typeof AttendanceHistory>[0]['records']} />
             </CardContent>
           </Card>
         </TabsContent>

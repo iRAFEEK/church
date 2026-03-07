@@ -14,7 +14,7 @@ export default async function LeaderVisitorsPage() {
 
   const { data: visitors } = await supabase
     .from('visitors')
-    .select('*')
+    .select('id, first_name, last_name, phone, email, age_range, occupation, visited_at, status, contact_notes, contacted_at')
     .eq('assigned_to', user.profile.id)
     .neq('status', 'converted')
     .order('visited_at', { ascending: false })

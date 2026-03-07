@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 type Params = { params: Promise<{ id: string }> }
@@ -39,10 +40,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .from('groups')
     .update(body)
     .eq('id', id)
-    .select()
+    .select('*, church_id')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${data.church_id}`)
   return NextResponse.json({ data })
 }
 
@@ -53,7 +55,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // Soft delete
-  const { error } = await supabase.from('groups').update({ is_active: false }).eq('id', id)
+  const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).select('church_id').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (data) revalidateTag(`dashboard-${data.church_id}`)
   return NextResponse.json({ success: true })
 }

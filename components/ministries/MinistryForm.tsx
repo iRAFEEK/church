@@ -90,7 +90,6 @@ export function MinistryForm({ ministry }: Props) {
       .upload(path, photoFile, { upsert: true })
 
     if (error) {
-      console.error('Upload error:', error)
       return null
     }
 

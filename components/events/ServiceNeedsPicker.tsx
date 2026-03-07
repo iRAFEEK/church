@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2, Users, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Ministry, Group } from '@/types'
+import type { Ministry, Group, RolePreset } from '@/types'
 
 export interface ServiceNeedDraft {
   ministry_id?: string
@@ -17,6 +17,7 @@ export interface ServiceNeedDraft {
   volunteers_needed: number
   notes: string
   notes_ar: string
+  role_presets?: RolePreset[]
   // For display only
   _name?: string
   _name_ar?: string
@@ -43,6 +44,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
   const [volunteersNeeded, setVolunteersNeeded] = useState(1)
   const [notes, setNotes] = useState('')
   const [notesAr, setNotesAr] = useState('')
+  const [rolePresets, setRolePresets] = useState<RolePreset[]>([])
 
   useEffect(() => {
     fetch('/api/ministries').then(r => r.json()).then(d => setMinistries(d.data || []))
@@ -56,6 +58,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
     setVolunteersNeeded(1)
     setNotes('')
     setNotesAr('')
+    setRolePresets([])
     setDialogOpen(true)
   }
 
@@ -67,6 +70,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
     setVolunteersNeeded(need.volunteers_needed)
     setNotes(need.notes)
     setNotesAr(need.notes_ar)
+    setRolePresets(need.role_presets || [])
     setDialogOpen(true)
   }
 
@@ -77,11 +81,16 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
       ? ministries.find(m => m.id === selectedId)
       : groups.find(g => g.id === selectedId)
 
+    // Auto-sum role preset counts if any exist
+    const totalFromPresets = rolePresets.reduce((sum, rp) => sum + rp.count, 0)
+    const finalVolunteers = totalFromPresets > 0 ? totalFromPresets : volunteersNeeded
+
     const need: ServiceNeedDraft = {
       ...(teamType === 'ministry' ? { ministry_id: selectedId } : { group_id: selectedId }),
-      volunteers_needed: volunteersNeeded,
+      volunteers_needed: finalVolunteers,
       notes,
       notes_ar: notesAr,
+      role_presets: rolePresets.length > 0 ? rolePresets : undefined,
       _name: team?.name || '',
       _name_ar: team?.name_ar || '',
       _type: teamType,
@@ -150,6 +159,9 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                   <p className="text-xs text-zinc-500">
                     {need._type === 'ministry' ? t('ministry') : t('group')} &middot;{' '}
                     {need.volunteers_needed} {t('volunteersNeeded').toLowerCase()}
+                    {need.role_presets && need.role_presets.length > 0 && (
+                      <> &middot; {need.role_presets.map(rp => `${isRTL ? (rp.role_ar || rp.role) : rp.role} ×${rp.count}`).join(', ')}</>
+                    )}
                   </p>
                   {(need.notes || need.notes_ar) && (
                     <p className="text-xs text-zinc-400 mt-0.5 truncate">
@@ -240,17 +252,87 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
               </select>
             </div>
 
+            {/* Role Presets */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm text-zinc-500">{t('rolePresets') || 'Role Presets'}</Label>
+                <button
+                  type="button"
+                  onClick={() => setRolePresets([...rolePresets, { role: '', role_ar: '', count: 1 }])}
+                  className="text-xs text-primary hover:underline"
+                >
+                  + {t('addRolePreset') || 'Add Role'}
+                </button>
+              </div>
+              {rolePresets.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {rolePresets.map((rp, rpIdx) => (
+                    <div key={rpIdx} className="flex items-center gap-2 p-2 rounded-lg bg-zinc-50 border border-zinc-100">
+                      <Input
+                        value={rp.role}
+                        onChange={e => {
+                          const updated = [...rolePresets]
+                          updated[rpIdx] = { ...rp, role: e.target.value }
+                          setRolePresets(updated)
+                        }}
+                        placeholder={t('rolePresetName') || 'Role name'}
+                        dir="ltr"
+                        className="h-8 text-xs flex-1"
+                      />
+                      <Input
+                        value={rp.role_ar}
+                        onChange={e => {
+                          const updated = [...rolePresets]
+                          updated[rpIdx] = { ...rp, role_ar: e.target.value }
+                          setRolePresets(updated)
+                        }}
+                        placeholder={t('rolePresetNameAr') || 'اسم الدور'}
+                        dir="rtl"
+                        className="h-8 text-xs flex-1"
+                      />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={rp.count}
+                        onChange={e => {
+                          const updated = [...rolePresets]
+                          updated[rpIdx] = { ...rp, count: Math.max(1, parseInt(e.target.value) || 1) }
+                          setRolePresets(updated)
+                        }}
+                        dir="ltr"
+                        className="h-8 text-xs w-16"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setRolePresets(rolePresets.filter((_, j) => j !== rpIdx))}
+                        className="p-1 text-zinc-400 hover:text-red-500"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <p className="text-xs text-zinc-400">
+                    {t('rolePresetCount') || 'Total'}: {rolePresets.reduce((s, rp) => s + rp.count, 0)}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Volunteers needed */}
             <div>
               <Label className="text-sm text-zinc-500 mb-1 block">{t('volunteersNeeded')}</Label>
               <Input
                 type="number"
                 min={1}
-                value={volunteersNeeded}
+                value={rolePresets.length > 0 ? rolePresets.reduce((s, rp) => s + rp.count, 0) : volunteersNeeded}
                 onChange={(e) => setVolunteersNeeded(Math.max(1, parseInt(e.target.value) || 1))}
+                disabled={rolePresets.length > 0}
                 dir="ltr"
                 className="min-h-[44px]"
               />
+              {rolePresets.length > 0 && (
+                <p className="text-xs text-zinc-400 mt-1">{t('volunteersNeeded')}: auto-calculated from roles</p>
+              )}
             </div>
 
             {/* Notes */}

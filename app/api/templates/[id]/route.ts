@@ -24,7 +24,7 @@ export async function GET(
     .select(`
       *,
       event_template_needs(
-        id, ministry_id, group_id, volunteers_needed, notes, notes_ar,
+        id, ministry_id, group_id, volunteers_needed, notes, notes_ar, role_presets,
         ministry:ministry_id(id, name, name_ar),
         group:group_id(id, name, name_ar)
       ),

@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Users, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import type { EventServiceNeedWithDetails } from '@/types'
 
 interface EventServiceFulfillmentProps {
@@ -135,7 +134,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                       return (
                         <div key={assignment.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-zinc-50">
                           {assignment.profile.photo_url ? (
-                            <Image src={assignment.profile.photo_url} alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
+                            <Image src={getAvatarUrl(assignment.profile.photo_url, 28)!} alt={pName.trim()} width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
                           ) : (
                             <div className="h-7 w-7 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                               {(assignment.profile.first_name || '?')[0]}
@@ -158,11 +157,6 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                   </div>
                 )}
 
-                <Link href={`/admin/events/${eventId}/staffing`}>
-                  <Button variant="outline" size="sm" className="w-full mt-2">
-                    {t('manageStaffing')}
-                  </Button>
-                </Link>
               </div>
             )}
           </div>

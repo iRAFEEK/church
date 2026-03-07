@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Users, ListOrdered, Calendar, Check, ArrowLeft, Loader2 } from 'lucide-react'
+import { Users, ListOrdered, Calendar, Check, ArrowLeft, Loader2, Repeat } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CustomFieldsRenderer } from '@/components/events/CustomFieldsRenderer'
+import type { CustomFieldDefinition } from '@/types'
 
 const EVENT_TYPE_ICONS: Record<string, string> = {
   service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
@@ -26,6 +28,59 @@ interface TemplateItem {
   location: string | null
   needs_count: number
   segments_count: number
+  recurrence_type?: string | null
+  recurrence_day?: number | null
+  default_start_time?: string | null
+  default_end_time?: string | null
+  custom_fields?: CustomFieldDefinition[] | null
+}
+
+function getNextOccurrence(recurrenceType: string, dayOfWeek: number, startTime?: string | null): string {
+  const now = new Date()
+  const target = new Date()
+
+  // Find next matching day
+  const currentDay = now.getDay()
+  let daysAhead = dayOfWeek - currentDay
+  if (daysAhead <= 0) daysAhead += 7
+
+  target.setDate(now.getDate() + daysAhead)
+
+  if (startTime) {
+    const [hours, minutes] = startTime.split(':').map(Number)
+    target.setHours(hours, minutes, 0, 0)
+  } else {
+    target.setHours(10, 0, 0, 0)
+  }
+
+  // Format as datetime-local value
+  const year = target.getFullYear()
+  const month = String(target.getMonth() + 1).padStart(2, '0')
+  const day = String(target.getDate()).padStart(2, '0')
+  const h = String(target.getHours()).padStart(2, '0')
+  const m = String(target.getMinutes()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T${h}:${m}`
+}
+
+function getEndTime(startsAt: string, defaultEndTime?: string | null, defaultStartTime?: string | null): string {
+  if (!defaultEndTime || !defaultStartTime || !startsAt) return ''
+
+  const [startH, startM] = defaultStartTime.split(':').map(Number)
+  const [endH, endM] = defaultEndTime.split(':').map(Number)
+  const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM)
+  if (durationMinutes <= 0) return ''
+
+  const start = new Date(startsAt)
+  start.setMinutes(start.getMinutes() + durationMinutes)
+
+  const year = start.getFullYear()
+  const month = String(start.getMonth() + 1).padStart(2, '0')
+  const day = String(start.getDate()).padStart(2, '0')
+  const h = String(start.getHours()).padStart(2, '0')
+  const m = String(start.getMinutes()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T${h}:${m}`
 }
 
 export default function CreateFromTemplatePage() {
@@ -42,18 +97,55 @@ export default function CreateFromTemplatePage() {
   const [step, setStep] = useState(preselectedId ? 1 : 0)
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     fetch('/api/templates')
       .then(r => r.json())
-      .then(d => setTemplates(d.data || []))
+      .then(d => {
+        setTemplates(d.data || [])
+        // Also fetch full details for templates to get schedule info
+        ;(d.data || []).forEach((tmpl: TemplateItem) => {
+          fetch(`/api/templates/${tmpl.id}`)
+            .then(r => r.json())
+            .then(detail => {
+              if (detail.data) {
+                setTemplates(prev => prev.map(t =>
+                  t.id === tmpl.id ? {
+                    ...t,
+                    recurrence_type: detail.data.recurrence_type,
+                    recurrence_day: detail.data.recurrence_day,
+                    default_start_time: detail.data.default_start_time,
+                    default_end_time: detail.data.default_end_time,
+                    custom_fields: detail.data.custom_fields,
+                  } : t
+                ))
+              }
+            })
+            .catch(() => {})
+        })
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
   const selectedTemplate = templates.find(t => t.id === selectedId)
+
+  // Auto-populate dates when template with recurrence is selected
+  useEffect(() => {
+    if (selectedTemplate?.recurrence_type && selectedTemplate.recurrence_type !== 'none' && selectedTemplate.recurrence_day !== null && selectedTemplate.recurrence_day !== undefined) {
+      const nextDate = getNextOccurrence(
+        selectedTemplate.recurrence_type,
+        selectedTemplate.recurrence_day,
+        selectedTemplate.default_start_time
+      )
+      setStartsAt(nextDate)
+      const end = getEndTime(nextDate, selectedTemplate.default_end_time, selectedTemplate.default_start_time)
+      if (end) setEndsAt(end)
+    }
+  }, [selectedTemplate?.id, selectedTemplate?.recurrence_type, selectedTemplate?.recurrence_day, selectedTemplate?.default_start_time, selectedTemplate?.default_end_time])
 
   const handleCreate = async () => {
     if (!selectedId || !startsAt) {
@@ -70,6 +162,7 @@ export default function CreateFromTemplatePage() {
           template_id: selectedId,
           starts_at: startsAt,
           ends_at: endsAt || null,
+          custom_field_values: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
         }),
       })
 
@@ -92,6 +185,8 @@ export default function CreateFromTemplatePage() {
       </div>
     )
   }
+
+  const customFields = selectedTemplate?.custom_fields || []
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
@@ -144,6 +239,11 @@ export default function CreateFromTemplatePage() {
                             <ListOrdered className="h-3 w-3" /> {tmpl.segments_count} {t('segments')}
                           </span>
                         )}
+                        {tmpl.recurrence_type && tmpl.recurrence_type !== 'none' && (
+                          <span className="flex items-center gap-1">
+                            <Repeat className="h-3 w-3" /> {t(`recurrence${tmpl.recurrence_type.charAt(0).toUpperCase() + tmpl.recurrence_type.slice(1)}` as any)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -154,7 +254,7 @@ export default function CreateFromTemplatePage() {
         </div>
       )}
 
-      {/* Step 1: Pick date/time */}
+      {/* Step 1: Pick date/time + custom fields */}
       {step === 1 && selectedTemplate && (
         <div className="space-y-5">
           <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center gap-3">
@@ -197,6 +297,18 @@ export default function CreateFromTemplatePage() {
               className="min-h-[48px]"
             />
           </div>
+
+          {/* Custom fields from template */}
+          {customFields.length > 0 && (
+            <div className="border-t border-zinc-200 pt-4">
+              <p className="text-sm font-medium text-zinc-500 mb-3">{t('customFields')}</p>
+              <CustomFieldsRenderer
+                fields={customFields}
+                values={customFieldValues}
+                onChange={setCustomFieldValues}
+              />
+            </div>
+          )}
 
           <div className="text-xs text-zinc-400 space-y-1">
             {selectedTemplate.location && <p>📍 {selectedTemplate.location}</p>}

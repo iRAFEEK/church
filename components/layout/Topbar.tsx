@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import type { Profile } from '@/types'
 
 interface TopbarProps {
@@ -64,7 +65,7 @@ export function Topbar({ profile, churchName, churchNameAr, onLangChange }: Topb
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={profile.photo_url ?? undefined} alt={displayName} />
+                  <AvatarImage src={getAvatarUrl(profile.photo_url, 32)} alt={displayName} />
                   <AvatarFallback className="text-xs">
                     {initials || '?'}
                   </AvatarFallback>

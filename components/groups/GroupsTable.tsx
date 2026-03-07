@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useTranslations } from 'next-intl'
 import { Search } from 'lucide-react'
+import { normalizeSearch, useDebounce } from '@/lib/utils/search'
 
 type Leader = {
   id: string
@@ -53,13 +54,6 @@ const DAY_KEYS: Record<string, string> = {
   sunday: 'daySunday',
 }
 
-function normalizeSearch(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[\u064B-\u065F\u0610-\u061A\u06D6-\u06DC\u06DF-\u06E4\u06E7-\u06E8\u06EA-\u06ED]/g, '')
-    .replace(/[ٱأإآ]/g, 'ا')
-    .trim()
-}
 
 export function GroupsTable({
   groups,
@@ -74,9 +68,10 @@ export function GroupsTable({
   const [filter, setFilter] = useState<string>('all')
   const [ministryFilter, setMinistryFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
 
   const filtered = useMemo(() => {
-    const q = normalizeSearch(search)
+    const q = normalizeSearch(debouncedSearch)
     return groups.filter(g => {
       if (filter !== 'all' && g.type !== filter) return false
       if (ministryFilter !== 'all' && g.ministry?.id !== ministryFilter) return false
@@ -94,7 +89,7 @@ export function GroupsTable({
       }
       return true
     })
-  }, [groups, filter, ministryFilter, search])
+  }, [groups, filter, ministryFilter, debouncedSearch])
 
   if (groups.length === 0) {
     return (

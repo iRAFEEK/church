@@ -24,7 +24,7 @@ export default async function AnnouncementsPage({
 
   let query = supabase
     .from('announcements')
-    .select('*')
+    .select('id, title, title_ar, body, body_ar, status, is_pinned, expires_at, published_at, created_at, created_by')
     .eq('church_id', user.profile.church_id)
     .order('is_pinned', { ascending: false })
 
@@ -99,7 +99,7 @@ export default async function AnnouncementsPage({
         </div>
       ) : (
         <div className="divide-y rounded-lg border">
-          {announcements.map((a: Announcement) => (
+          {(announcements as unknown as Announcement[]).map((a) => (
             <AnnouncementCard key={a.id} announcement={a} admin={admin} />
           ))}
         </div>

@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils'
 import { getNavForRole, getNavSections, getSecondaryNavItems } from '@/lib/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
+import { getAvatarUrl } from '@/lib/utils/storage'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
@@ -86,7 +87,7 @@ export function MoreSheet({
         {/* User card */}
         <div className="flex items-center gap-3 p-3 bg-muted rounded-lg mb-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={profile.photo_url ?? undefined} alt={displayName} />
+            <AvatarImage src={getAvatarUrl(profile.photo_url, 40)} alt={displayName} />
             <AvatarFallback className="text-sm">{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">

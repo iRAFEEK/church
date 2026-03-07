@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 type Params = { params: Promise<{ id: string }> }
@@ -43,5 +44,6 @@ export async function POST(req: NextRequest, { params }: Params) {
     .select()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${gathering.church_id}`)
   return NextResponse.json({ data })
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import { Undo2, Check, X, Clock, ShieldCheck } from 'lucide-react'
 
 type AttendanceStatus = 'present' | 'absent' | 'excused' | 'late'
@@ -261,7 +262,7 @@ export function SwipeAttendance({
           onTouchEnd={canManage && !isCompleted ? handleTouchEnd : undefined}
         >
           <Avatar className="h-24 w-24 mb-4">
-            <AvatarImage src={member.photo_url || undefined} />
+            <AvatarImage src={getAvatarUrl(member.photo_url, 96)} />
             <AvatarFallback className="text-2xl bg-primary/10 text-primary">{initials}</AvatarFallback>
           </Avatar>
           <h3 className="text-xl font-semibold text-zinc-900">{name}</h3>

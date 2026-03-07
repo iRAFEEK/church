@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { template_id, starts_at, ends_at, overrides } = await req.json()
+  const { template_id, starts_at, ends_at, overrides, custom_field_values } = await req.json()
 
   if (!template_id || !starts_at) {
     return NextResponse.json({ error: 'template_id and starts_at are required' }, { status: 400 })
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   // Fetch template with needs and segments
   const { data: template } = await supabase
     .from('event_templates')
-    .select('id, title, title_ar, description, description_ar, event_type, location, capacity, is_public, registration_required')
+    .select('id, title, title_ar, description, description_ar, event_type, location, capacity, is_public, registration_required, custom_fields')
     .eq('id', template_id)
     .eq('church_id', profile.church_id)
     .single()
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const [{ data: templateNeeds }, { data: templateSegments }] = await Promise.all([
     supabase
       .from('event_template_needs')
-      .select('ministry_id, group_id, volunteers_needed, notes, notes_ar')
+      .select('ministry_id, group_id, volunteers_needed, notes, notes_ar, role_presets')
       .eq('template_id', template_id),
     supabase
       .from('event_template_segments')
@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
       starts_at,
       ends_at: ends_at || null,
       status: 'draft',
+      custom_field_values: custom_field_values || {},
       ...overrides,
     })
     .select()
@@ -81,6 +82,7 @@ export async function POST(req: NextRequest) {
       volunteers_needed: n.volunteers_needed,
       notes: n.notes,
       notes_ar: n.notes_ar,
+      role_presets: n.role_presets || [],
     }))
     await supabase.from('event_service_needs').insert(needRows)
   }

@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
       volunteers_needed: n.volunteers_needed || 1,
       notes: n.notes || null,
       notes_ar: n.notes_ar || null,
+      role_presets: n.role_presets || [],
     }))
     await supabase.from('event_template_needs').insert(needRows)
   }

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from('profiles')
-    .select('*', { count: 'exact' })
+    .select('id, first_name, last_name, first_name_ar, last_name_ar, email, phone, role, status, gender, photo_url, joined_church_at, created_at', { count: 'exact' })
     .eq('church_id', currentProfile.church_id)
     .order('created_at', { ascending: false })
     .range(offset, offset + pageSize - 1)
@@ -63,5 +63,7 @@ export async function GET(request: NextRequest) {
     page,
     pageSize,
     totalPages: Math.ceil((count ?? 0) / pageSize),
+  }, {
+    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
 }

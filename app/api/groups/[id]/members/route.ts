@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 type Params = { params: Promise<{ id: string }> }
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }
 
@@ -41,6 +43,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const { profile_id } = await req.json()
   if (!profile_id) return NextResponse.json({ error: 'profile_id required' }, { status: 400 })
 
+  const { data: userProfile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
+
   // Soft remove
   const { error } = await supabase
     .from('group_members')
@@ -49,5 +53,6 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('profile_id', profile_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
   return NextResponse.json({ success: true })
 }

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('notifications_log')
-    .select('*', { count: 'exact' })
+    .select('id, type, channel, title, body, payload, status, read_at, reference_id, reference_type, sent_at, created_at', { count: 'exact' })
     .eq('profile_id', user.id)
     .eq('channel', 'in_app')
     .order('created_at', { ascending: false })
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   // Also get unread count
   const { count: unreadCount } = await supabase
     .from('notifications_log')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('profile_id', user.id)
     .eq('channel', 'in_app')
     .is('read_at', null)

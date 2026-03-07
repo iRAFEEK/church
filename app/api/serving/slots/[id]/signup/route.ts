@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 // POST /api/serving/slots/[id]/signup — sign up for a slot
@@ -60,6 +61,7 @@ export async function POST(
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    revalidateTag(`dashboard-${profile.church_id}`)
     return NextResponse.json({ data }, { status: 200 })
   }
 
@@ -74,6 +76,7 @@ export async function POST(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }
 
@@ -87,6 +90,8 @@ export async function DELETE(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { data: userProfile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
+
   const { data, error } = await supabase
     .from('serving_signups')
     .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
@@ -99,5 +104,6 @@ export async function DELETE(
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'No active signup found' }, { status: 404 })
 
+  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
   return NextResponse.json({ success: true })
 }

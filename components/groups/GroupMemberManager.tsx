@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { getAvatarUrl } from '@/lib/utils/storage'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -125,7 +126,7 @@ export function GroupMemberManager({
             return (
               <div key={m.id} className="flex items-center gap-3 px-4 py-3">
                 <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage src={p.photo_url || undefined} />
+                  <AvatarImage src={getAvatarUrl(p.photo_url, 36)} />
                   <AvatarFallback className="text-sm">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
@@ -188,7 +189,7 @@ export function GroupMemberManager({
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-right"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={p.photo_url || undefined} />
+                      <AvatarImage src={getAvatarUrl(p.photo_url, 32)} />
                       <AvatarFallback className="text-xs">
                         {(p.first_name_ar || p.first_name || '?')[0]}
                       </AvatarFallback>

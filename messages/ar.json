@@ -477,7 +477,12 @@
     "detailDescription": "الوصف",
     "detailGroups": "المجموعات التابعة",
     "detailNoGroups": "لا توجد مجموعات",
-    "detailInactive": "غير نشط"
+    "detailInactive": "غير نشط",
+    "events": "الأحداث",
+    "upcomingEvents": "الأحداث القادمة",
+    "recentEvents": "الأحداث الأخيرة",
+    "noEvents": "لا توجد أحداث مرتبطة بهذه الخدمة",
+    "createEvent": "إنشاء حدث"
   },
   "ministryForm": {
     "nameEn": "الاسم (إنجليزي)",
@@ -965,7 +970,15 @@
     "noAssignmentsYet": "لا يوجد متطوعون معيّنون بعد",
     "eventAssignments": "تعيينات الفعاليات",
     "fromTemplate": "من قالب",
-    "runOfShow": "ترتيب البرنامج"
+    "runOfShow": "ترتيب البرنامج",
+    "searchPlaceholder": "البحث عن أحداث...",
+    "filterByMinistry": "الخدمة",
+    "filterByGroup": "المجموعة",
+    "allMinistries": "جميع الخدمات",
+    "allGroups": "جميع المجموعات",
+    "noSearchResults": "لا توجد أحداث مطابقة للبحث",
+    "staffing": "التعيينات",
+    "rolePresetSelect": "اختيار سريع للدور"
   },
 
   "templates": {
@@ -1010,7 +1023,37 @@
     "specialNotesAr": "ملاحظات خاصة (عربي)",
     "requiredFields": "اسم القالب والعنوان الافتراضي مطلوبان",
     "errorGeneral": "حدث خطأ ما",
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "schedule": "الجدول",
+    "recurrence": "التكرار",
+    "recurrenceNone": "بدون (مرة واحدة)",
+    "recurrenceWeekly": "أسبوعياً",
+    "recurrenceBiweekly": "كل أسبوعين",
+    "recurrenceMonthly": "شهرياً",
+    "recurrenceDay": "يوم الأسبوع",
+    "defaultStartTime": "وقت البدء الافتراضي",
+    "defaultEndTime": "وقت الانتهاء الافتراضي",
+    "nextOccurrence": "التالي: {date}",
+    "customFields": "حقول مخصصة",
+    "addCustomField": "إضافة حقل",
+    "editCustomField": "تعديل حقل",
+    "fieldLabel": "اسم الحقل",
+    "fieldLabelAr": "اسم الحقل (عربي)",
+    "fieldType": "نوع الحقل",
+    "fieldTypeText": "نص",
+    "fieldTypeNumber": "رقم",
+    "fieldTypeSelect": "قائمة منسدلة",
+    "fieldTypeBoolean": "نعم/لا",
+    "fieldRequired": "مطلوب",
+    "fieldOptions": "الخيارات (مفصولة بفاصلة)",
+    "noCustomFields": "لا توجد حقول مخصصة",
+    "rolePresets": "أدوار محددة مسبقاً",
+    "addRolePreset": "إضافة دور",
+    "rolePresetName": "اسم الدور",
+    "rolePresetNameAr": "اسم الدور (عربي)",
+    "rolePresetCount": "العدد",
+    "noRolePresets": "لا توجد أدوار محددة",
+    "totalRoles": "إجمالي الأدوار"
   },
 
   "songs": {
