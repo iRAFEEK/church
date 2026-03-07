@@ -611,3 +611,95 @@ export interface NavItem {
   roles: UserRole[]
   badge?: number
 }
+
+// ============================================================
+// INVOLVEMENT TRACKING
+// ============================================================
+
+export interface InvolvementStats {
+  totalEventsServed: number
+  totalConfirmed: number
+  totalDeclined: number
+  totalServingSignups: number
+  activeGroups: number
+  activeMinistries: number
+  eventsRegistered: number
+}
+
+export interface InvolvementServiceAssignment {
+  id: string
+  status: EventAssignmentStatus
+  role: string | null
+  role_ar: string | null
+  created_at: string
+  status_changed_at: string | null
+  event_title: string
+  event_title_ar: string | null
+  event_starts_at: string
+  event_ends_at: string | null
+  event_location: string | null
+  event_status: string
+  event_id: string
+  ministry_name: string | null
+  ministry_name_ar: string | null
+  group_name: string | null
+  group_name_ar: string | null
+}
+
+export interface InvolvementServingSignup {
+  id: string
+  status: ServingSignupStatus
+  signed_up_at: string
+  cancelled_at: string | null
+  slot_title: string
+  slot_title_ar: string | null
+  slot_date: string
+  slot_start_time: string | null
+  slot_end_time: string | null
+  area_name: string | null
+  area_name_ar: string | null
+}
+
+export interface InvolvementGroupMembership {
+  id: string
+  role_in_group: GroupMemberRole
+  joined_at: string
+  is_active: boolean
+  group_id: string
+  group_name: string
+  group_name_ar: string | null
+  group_type: GroupType
+  ministry_name: string | null
+  ministry_name_ar: string | null
+}
+
+export interface InvolvementMinistryMembership {
+  id: string
+  role_in_ministry: GroupMemberRole
+  joined_at: string
+  is_active: boolean
+  ministry_id: string
+  ministry_name: string
+  ministry_name_ar: string | null
+}
+
+export interface InvolvementEventRegistration {
+  id: string
+  status: string
+  registered_at: string
+  check_in_at: string | null
+  event_id: string
+  event_title: string
+  event_title_ar: string | null
+  event_starts_at: string
+  event_location: string | null
+}
+
+export interface MemberInvolvementData {
+  stats: InvolvementStats
+  serviceAssignments: InvolvementServiceAssignment[]
+  servingSignups: InvolvementServingSignup[]
+  groupMemberships: InvolvementGroupMembership[]
+  ministryMemberships: InvolvementMinistryMembership[]
+  eventRegistrations: InvolvementEventRegistration[]
+}

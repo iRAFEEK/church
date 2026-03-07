@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield } from 'lucide-react'
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
+import { MemberInvolvementCard } from '@/components/profile/MemberInvolvementCard'
 import { getTranslations, getLocale } from 'next-intl/server'
 import type { Profile, ProfileMilestone } from '@/types'
 
@@ -26,7 +26,37 @@ export default async function MemberDetailPage({
   const { profile: currentUser } = await getCurrentUserWithRole()
   const { id } = await params
 
-  if (!isAdmin(currentUser)) redirect('/dashboard')
+  const admin = isAdmin(currentUser)
+
+  // Allow admins + group leaders (who lead groups containing this member)
+  if (!admin && currentUser.role !== 'group_leader') redirect('/dashboard')
+
+  if (currentUser.role === 'group_leader') {
+    const supabaseCheck = await createClient()
+    // Get groups this leader leads
+    const { data: leaderGroups } = await supabaseCheck
+      .from('group_members')
+      .select('group_id')
+      .eq('profile_id', currentUser.id)
+      .in('role_in_group', ['leader', 'co_leader'])
+      .eq('is_active', true)
+
+    const groupIds = (leaderGroups || []).map(g => g.group_id)
+
+    if (groupIds.length > 0) {
+      // Check if target member is in any of those groups
+      const { data: memberCheck } = await supabaseCheck
+        .from('group_members')
+        .select('id')
+        .eq('profile_id', id)
+        .in('group_id', groupIds)
+        .limit(1)
+
+      if (!memberCheck || memberCheck.length === 0) redirect('/dashboard')
+    } else {
+      redirect('/dashboard')
+    }
+  }
 
   const t = await getTranslations('memberDetail')
   const locale = await getLocale()
@@ -114,10 +144,11 @@ export default async function MemberDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="info" dir="rtl">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${admin ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
+          <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
           <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
-          <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>
+          {admin && <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>}
         </TabsList>
 
         {/* Info Tab */}
@@ -196,28 +227,39 @@ export default async function MemberDetailPage({
           </Card>
         </TabsContent>
 
-        {/* Admin Tab */}
-        <TabsContent value="admin">
+        {/* Involvement Tab */}
+        <TabsContent value="involvement">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                {t('adminCardTitle')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Role Change */}
-              <div>
-                <p className="text-sm font-medium mb-2">{t('adminChangeRole')}</p>
-                <MemberRoleEditor
-                  memberId={memberProfile.id}
-                  currentRole={memberProfile.role}
-                  currentUserRole={currentUser.role}
-                />
-              </div>
+            <CardContent className="pt-6">
+              <MemberInvolvementCard profileId={memberProfile.id} />
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Admin Tab */}
+        {admin && (
+          <TabsContent value="admin">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  {t('adminCardTitle')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Role Change */}
+                <div>
+                  <p className="text-sm font-medium mb-2">{t('adminChangeRole')}</p>
+                  <MemberRoleEditor
+                    memberId={memberProfile.id}
+                    currentRole={memberProfile.role}
+                    currentUserRole={currentUser.role}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

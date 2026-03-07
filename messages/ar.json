@@ -150,6 +150,7 @@
     "tabInfo": "المعلومات",
     "tabMilestones": "المراحل الروحية",
     "tabAttendance": "الحضور",
+    "tabInvolvement": "المشاركة",
     "infoTitle": "المعلومات الشخصية",
     "infoGender": "الجنس:",
     "infoMale": "ذكر",
@@ -250,6 +251,7 @@
     "joinedAt": "انضم",
     "tabInfo": "المعلومات",
     "tabMilestones": "المراحل الروحية",
+    "tabInvolvement": "المشاركة",
     "tabAdmin": "إدارة",
     "infoGender": "الجنس:",
     "infoMale": "ذكر",
@@ -1680,5 +1682,50 @@
       "tip3": "اطبع رمز QR للزوار",
       "tipsHeadline": "ما التالي؟"
     }
+  },
+
+  "involvement": {
+    "overview": "نظرة عامة",
+    "events": "خدمة الفعاليات",
+    "serving": "الخدمة",
+    "groupsAndMinistries": "المجموعات والخدمات",
+    "registrations": "التسجيلات",
+
+    "statEventsServed": "فعاليات خُدمت",
+    "statConfirmed": "مؤكد",
+    "statDeclined": "مرفوض",
+    "statServingSignups": "تسجيلات الخدمة",
+    "statActiveGroups": "مجموعات نشطة",
+    "statActiveMinistries": "خدمات نشطة",
+    "statEventsRegistered": "فعاليات مسجلة",
+
+    "upcoming": "القادمة",
+    "past": "السابقة",
+
+    "statusAssigned": "معيّن",
+    "statusConfirmed": "مؤكد",
+    "statusDeclined": "مرفوض",
+    "statusSignedUp": "مسجّل",
+    "statusCancelled": "ملغى",
+    "statusRegistered": "مسجّل",
+    "statusCheckedIn": "تم الحضور",
+
+    "roleInGroup": "الدور",
+    "roleMember": "عضو",
+    "roleLeader": "قائد",
+    "roleCoLeader": "قائد مساعد",
+    "joinedAt": "انضم",
+    "activeLabel": "نشط",
+    "inactiveLabel": "غير نشط",
+
+    "parentMinistry": "الخدمة",
+
+    "emptyAssignments": "لا توجد تعيينات خدمة بعد",
+    "emptyServing": "لا توجد تسجيلات خدمة بعد",
+    "emptyGroups": "ليس عضواً في أي مجموعة أو خدمة",
+    "emptyRegistrations": "لا توجد تسجيلات فعاليات بعد",
+    "emptyOverview": "لا توجد بيانات مشاركة بعد",
+
+    "loading": "جاري التحميل..."
   }
 }
