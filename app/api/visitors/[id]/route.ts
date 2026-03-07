@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     // Get visitor data
     const { data: visitor, error: vErr } = await adminSupabase
       .from('visitors')
-      .select('*')
+      .select('id, church_id, first_name, last_name, phone, email, occupation')
       .eq('id', id)
       .single()
     if (vErr || !visitor) return NextResponse.json({ error: 'Visitor not found' }, { status: 404 })

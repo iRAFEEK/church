@@ -27,7 +27,10 @@ export async function resolveAudience(
   const profileIdSet = new Set<string>()
   const visitorPhoneMap = new Map<string, string>() // phone → name
 
-  for (const target of targets) {
+  async function resolveTarget(target: AudienceTarget) {
+    const profileIds: string[] = []
+    const visitors: { phone: string; name: string }[] = []
+
     switch (target.type) {
       case 'all_church': {
         const { data } = await supabase
@@ -35,7 +38,7 @@ export async function resolveAudience(
           .select('id')
           .eq('church_id', churchId)
           .eq('onboarding_completed', true)
-        data?.forEach(p => profileIdSet.add(p.id))
+        data?.forEach(p => profileIds.push(p.id))
         break
       }
 
@@ -47,7 +50,7 @@ export async function resolveAudience(
           .eq('church_id', churchId)
           .eq('onboarding_completed', true)
           .in('role', target.roles)
-        data?.forEach(p => profileIdSet.add(p.id))
+        data?.forEach(p => profileIds.push(p.id))
         break
       }
 
@@ -59,13 +62,12 @@ export async function resolveAudience(
           .eq('church_id', churchId)
           .eq('is_active', true)
           .in('group_id', target.groupIds)
-        data?.forEach(gm => profileIdSet.add(gm.profile_id))
+        data?.forEach(gm => profileIds.push(gm.profile_id))
         break
       }
 
       case 'ministries': {
         if (!target.ministryIds?.length) break
-        // First get all groups in these ministries
         const { data: groups } = await supabase
           .from('groups')
           .select('id')
@@ -80,7 +82,7 @@ export async function resolveAudience(
           .eq('church_id', churchId)
           .eq('is_active', true)
           .in('group_id', groupIds)
-        data?.forEach(gm => profileIdSet.add(gm.profile_id))
+        data?.forEach(gm => profileIds.push(gm.profile_id))
         break
       }
 
@@ -92,7 +94,7 @@ export async function resolveAudience(
           .eq('church_id', churchId)
           .eq('onboarding_completed', true)
           .in('status', target.statuses)
-        data?.forEach(p => profileIdSet.add(p.id))
+        data?.forEach(p => profileIds.push(p.id))
         break
       }
 
@@ -106,7 +108,7 @@ export async function resolveAudience(
           .not('phone', 'is', null)
         data?.forEach(v => {
           if (v.phone) {
-            visitorPhoneMap.set(v.phone, `${v.first_name} ${v.last_name}`.trim())
+            visitors.push({ phone: v.phone, name: `${v.first_name} ${v.last_name}`.trim() })
           }
         })
         break
@@ -120,10 +122,18 @@ export async function resolveAudience(
           .eq('church_id', churchId)
           .eq('onboarding_completed', true)
           .eq('gender', target.gender)
-        data?.forEach(p => profileIdSet.add(p.id))
+        data?.forEach(p => profileIds.push(p.id))
         break
       }
     }
+
+    return { profileIds, visitors }
+  }
+
+  const results = await Promise.all(targets.map(resolveTarget))
+  for (const result of results) {
+    result.profileIds.forEach(id => profileIdSet.add(id))
+    result.visitors.forEach(v => visitorPhoneMap.set(v.phone, v.name))
   }
 
   return {

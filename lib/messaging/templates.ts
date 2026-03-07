@@ -83,10 +83,20 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     whatsappTemplate: 'event_service_assigned',
     titleEn: 'You\'ve Been Assigned to Serve',
     titleAr: 'تم تعيينك للخدمة',
-    bodyEn: 'You have been assigned to serve at {eventName} on {date} with {teamName}. Please confirm or decline.',
-    bodyAr: 'تم تعيينك للخدمة في {eventName} يوم {date} مع {teamName}. يرجى التأكيد أو الرفض.',
+    bodyEn: 'You have been assigned to serve at {eventName} on {date} with {teamName}{roleInfo}. Please confirm or decline.',
+    bodyAr: 'تم تعيينك للخدمة في {eventName} يوم {date} مع {teamName}{roleInfo}. يرجى التأكيد أو الرفض.',
     emailSubjectEn: 'Serving assignment: {eventName}',
     emailSubjectAr: 'تعيين خدمة: {eventName}',
+  },
+
+  event_service_response: {
+    whatsappTemplate: 'event_service_response',
+    titleEn: 'Service Assignment Response',
+    titleAr: 'رد على تعيين الخدمة',
+    bodyEn: '{memberName} has {action} serving at {eventName} with {teamName}{roleInfo}.',
+    bodyAr: '{memberName} {actionAr} الخدمة في {eventName} مع {teamName}{roleInfo}.',
+    emailSubjectEn: '{memberName} {action} serving at {eventName}',
+    emailSubjectAr: '{memberName} {actionAr} الخدمة في {eventName}',
   },
 
   event_reminder: {

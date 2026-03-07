@@ -278,7 +278,7 @@ export async function notifyEventServiceAssigned(assignmentId: string, churchId:
 
     const { data: assignment } = await supabase
       .from('event_service_assignments')
-      .select('profile_id, service_need_id')
+      .select('profile_id, service_need_id, role, role_ar')
       .eq('id', assignmentId)
       .single()
 
@@ -324,6 +324,8 @@ export async function notifyEventServiceAssigned(assignmentId: string, churchId:
       month: 'long',
       day: 'numeric',
     })
+    const roleInfo = assignment.role ? ` as ${assignment.role}` : ''
+    const roleInfoAr = assignment.role_ar || assignment.role ? ` بصفة ${assignment.role_ar || assignment.role}` : ''
     const template = TEMPLATES.event_service_assigned
 
     await sendNotification({
@@ -332,14 +334,97 @@ export async function notifyEventServiceAssigned(assignmentId: string, churchId:
       type: 'event_service_assigned',
       titleEn: template.titleEn,
       titleAr: template.titleAr,
-      bodyEn: interpolate(template.bodyEn, { eventName, date, teamName }),
-      bodyAr: interpolate(template.bodyAr, { eventName, date, teamName }),
+      bodyEn: interpolate(template.bodyEn, { eventName, date, teamName, roleInfo }),
+      bodyAr: interpolate(template.bodyAr, { eventName, date, teamName, roleInfo: roleInfoAr }),
       referenceId: need.event_id,
       referenceType: 'event',
-      data: { eventName, date, teamName },
+      data: { eventName, date, teamName, roleInfo },
     })
   } catch (error) {
     console.error('[Trigger] notifyEventServiceAssigned error:', error)
+  }
+}
+
+/**
+ * Notify assigner when a member confirms or declines their service assignment.
+ * Called from PATCH /api/events/[id]/service-needs/[needId]/assignments/[assignmentId]
+ */
+export async function notifyAssignmentResponse(assignmentId: string, churchId: string) {
+  try {
+    const supabase = await createClient()
+
+    const { data: assignment } = await supabase
+      .from('event_service_assignments')
+      .select('profile_id, service_need_id, assigned_by, status, role, role_ar')
+      .eq('id', assignmentId)
+      .single()
+
+    if (!assignment?.assigned_by) return
+
+    // Get member name
+    const { data: member } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, first_name_ar, last_name_ar')
+      .eq('id', assignment.profile_id)
+      .single()
+
+    if (!member) return
+
+    const { data: need } = await supabase
+      .from('event_service_needs')
+      .select('event_id, ministry_id, group_id')
+      .eq('id', assignment.service_need_id)
+      .single()
+
+    if (!need) return
+
+    const { data: event } = await supabase
+      .from('events')
+      .select('title, title_ar')
+      .eq('id', need.event_id)
+      .single()
+
+    if (!event) return
+
+    let teamName = ''
+    if (need.ministry_id) {
+      const { data: ministry } = await supabase
+        .from('ministries')
+        .select('name, name_ar')
+        .eq('id', need.ministry_id)
+        .single()
+      teamName = ministry?.name_ar || ministry?.name || ''
+    } else if (need.group_id) {
+      const { data: group } = await supabase
+        .from('groups')
+        .select('name, name_ar')
+        .eq('id', need.group_id)
+        .single()
+      teamName = group?.name_ar || group?.name || ''
+    }
+
+    const memberName = `${member.first_name_ar || member.first_name || ''} ${member.last_name_ar || member.last_name || ''}`.trim()
+    const eventName = event.title_ar || event.title
+    const action = assignment.status === 'confirmed' ? 'confirmed' : 'declined'
+    const actionAr = assignment.status === 'confirmed' ? 'أكّد' : 'رفض'
+    const roleInfo = assignment.role ? ` as ${assignment.role}` : ''
+    const roleInfoAr = assignment.role_ar || assignment.role ? ` بصفة ${assignment.role_ar || assignment.role}` : ''
+    const template = TEMPLATES.event_service_response
+
+    await sendNotification({
+      profileId: assignment.assigned_by,
+      churchId,
+      type: 'event_service_response',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { memberName, action, eventName, teamName, roleInfo }),
+      bodyAr: interpolate(template.bodyAr, { memberName, actionAr, eventName, teamName, roleInfo: roleInfoAr }),
+      referenceId: need.event_id,
+      referenceType: 'event',
+      data: { memberName, action, eventName, teamName },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyAssignmentResponse error:', error)
   }
 }
 

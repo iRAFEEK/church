@@ -75,7 +75,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json()
-  const { profile_id, notes } = body
+  const { profile_id, notes, role, role_ar } = body
 
   if (!profile_id) {
     return NextResponse.json({ error: 'profile_id is required' }, { status: 400 })
@@ -90,6 +90,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       assigned_by: user.id,
       status: 'assigned',
       notes: notes || null,
+      role: role || null,
+      role_ar: role_ar || null,
     }, { onConflict: 'service_need_id,profile_id' })
     .select()
     .single()

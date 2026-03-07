@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
@@ -5,7 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EventRegistrations } from '@/components/events/EventRegistrations'
-import { EventServiceFulfillment } from '@/components/events/EventServiceFulfillment'
+import { EventMinistryBreakdown } from '@/components/events/EventMinistryBreakdown'
+import { EventRunOfShow } from '@/components/events/EventRunOfShow'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 
@@ -97,14 +99,34 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold">{t('serviceNeeds')}</h2>
-        <EventServiceFulfillment eventId={id} />
+        <h2 className="text-lg font-semibold">{t('runOfShow')}</h2>
+        <Suspense fallback={<SectionSkeleton />}>
+          <EventRunOfShow eventId={id} />
+        </Suspense>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t('ministryBreakdown')}</h2>
+        <Suspense fallback={<SectionSkeleton />}>
+          <EventMinistryBreakdown eventId={id} />
+        </Suspense>
       </div>
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">{t('registrations')}</h2>
-        <EventRegistrations eventId={id} />
+        <Suspense fallback={<SectionSkeleton />}>
+          <EventRegistrations eventId={id} />
+        </Suspense>
       </div>
+    </div>
+  )
+}
+
+function SectionSkeleton() {
+  return (
+    <div className="animate-pulse space-y-3">
+      <div className="h-4 bg-zinc-200 rounded w-1/3" />
+      <div className="h-20 bg-zinc-100 rounded-lg" />
     </div>
   )
 }

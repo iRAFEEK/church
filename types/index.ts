@@ -456,6 +456,8 @@ export interface EventServiceAssignment {
   status: EventAssignmentStatus
   status_changed_at: string | null
   notes: string | null
+  role: string | null
+  role_ar: string | null
   created_at: string
   updated_at: string
 }
@@ -477,6 +479,73 @@ export interface EventServiceAssignmentWithProfile extends EventServiceAssignmen
     photo_url: string | null
     phone: string | null
   }
+}
+
+// ============================================================
+// EVENT TEMPLATES & SEGMENTS
+// ============================================================
+
+export interface EventTemplate {
+  id: string
+  church_id: string
+  name: string
+  name_ar: string | null
+  event_type: string
+  title: string
+  title_ar: string | null
+  description: string | null
+  description_ar: string | null
+  location: string | null
+  capacity: number | null
+  is_public: boolean
+  registration_required: boolean
+  notes: string | null
+  notes_ar: string | null
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventTemplateNeed {
+  id: string
+  template_id: string
+  church_id: string
+  ministry_id: string | null
+  group_id: string | null
+  volunteers_needed: number
+  notes: string | null
+  notes_ar: string | null
+}
+
+export interface EventTemplateSegment {
+  id: string
+  template_id: string
+  church_id: string
+  title: string
+  title_ar: string | null
+  duration_minutes: number | null
+  ministry_id: string | null
+  assigned_to: string | null
+  notes: string | null
+  notes_ar: string | null
+  sort_order: number
+}
+
+export interface EventSegment {
+  id: string
+  event_id: string
+  church_id: string
+  title: string
+  title_ar: string | null
+  duration_minutes: number | null
+  ministry_id: string | null
+  assigned_to: string | null
+  notes: string | null
+  notes_ar: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
 }
 
 // ============================================================

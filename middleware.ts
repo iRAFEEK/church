@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   '/api/visitors', // Public visitor submission (Phase 2)
   '/api/cron',     // Cron jobs (secured by CRON_SECRET)
   '/api/churches/register', // Public church registration
+  '/api/auth/dev-login',    // Dev-only passwordless login
 ]
 
 function isPublicPath(pathname: string): boolean {

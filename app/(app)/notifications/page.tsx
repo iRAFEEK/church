@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import {
   Bell, BellOff, CheckCheck, ChevronLeft, ChevronRight, Filter,
   Calendar, UserPlus, AlertTriangle, Clock, Info, Loader2,
-  Send, Users, Shield, Building2, Heart, X,
+  Send, Users, Shield, Building2, Heart, X, Image, Link as LinkIcon, ExternalLink,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
 
 // ── Types ────────────────────────────────────────────
@@ -145,8 +148,13 @@ export default function NotificationsPage() {
   const [ministries, setMinistries] = useState<MinistryOption[]>([])
   const [audienceCount, setAudienceCount] = useState<{ profileCount: number; visitorCount: number; total: number } | null>(null)
   const [loadingCount, setLoadingCount] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
+  const [linkUrl, setLinkUrl] = useState('')
   const [sending, setSending] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  // Detail dialog state
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
 
   const PAGE_SIZE = 20
 
@@ -238,12 +246,17 @@ export default function NotificationsPage() {
     setUnreadCount(0)
   }
 
-  const handleNavigate = (n: Notification) => {
+  const handleNotificationClick = (n: Notification) => {
     if (!n.read_at) markRead(n.id)
-    if (n.reference_type === 'visitor') router.push('/admin/visitors')
-    else if (n.reference_type === 'gathering') router.push('/groups')
-    else if (n.reference_type === 'profile' && n.reference_id) router.push(`/admin/members/${n.reference_id}`)
-    else if (n.reference_type === 'event' && n.reference_id) router.push(`/events/${n.reference_id}`)
+    setSelectedNotification(n)
+  }
+
+  const getNotificationLink = (n: Notification): string | null => {
+    if (n.reference_type === 'visitor') return '/admin/visitors'
+    if (n.reference_type === 'gathering') return '/groups'
+    if (n.reference_type === 'profile' && n.reference_id) return `/admin/members/${n.reference_id}`
+    if (n.reference_type === 'event' && n.reference_id) return `/events/${n.reference_id}`
+    return null
   }
 
   // ── Compose helpers ──────────────────────────────────
@@ -294,6 +307,8 @@ export default function NotificationsPage() {
           titleAr, titleEn: titleEn || undefined,
           bodyAr, bodyEn: bodyEn || undefined,
           targets: buildTargets(),
+          imageUrl: imageUrl.trim() || undefined,
+          linkUrl: linkUrl.trim() || undefined,
         }),
       })
       if (!res.ok) {
@@ -305,6 +320,7 @@ export default function NotificationsPage() {
       toast.success(tc('sendSuccess'), { description: tc('sentCount', { count: json.sent }) })
       // Reset compose form
       setTitleAr(''); setTitleEn(''); setBodyAr(''); setBodyEn('')
+      setImageUrl(''); setLinkUrl('')
       setAllChurch(false); setSelectedRoles([]); setSelectedGroups([])
       setSelectedMinistries([]); setSelectedStatuses([]); setSelectedVisitorStatuses([])
       setSelectedGender(''); setShowCompose(false)
@@ -548,6 +564,19 @@ export default function NotificationsPage() {
                 <label className="text-sm font-medium text-muted-foreground">{tc('bodyEn')}</label>
                 <Textarea dir="ltr" value={bodyEn} onChange={e => setBodyEn(e.target.value)} placeholder={tc('bodyEnPlaceholder')} rows={2} />
               </div>
+              <Separator />
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <Image className="h-3.5 w-3.5" /> {tc('imageUrl')}
+                </label>
+                <Input dir="ltr" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder={tc('imageUrlPlaceholder')} type="url" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <LinkIcon className="h-3.5 w-3.5" /> {tc('linkUrl')}
+                </label>
+                <Input dir="ltr" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder={tc('linkUrlPlaceholder')} type="url" />
+              </div>
             </CardContent>
           </Card>
 
@@ -606,7 +635,7 @@ export default function NotificationsPage() {
               const colorClass = typeColors[n.type] || typeColors.general
 
               return (
-                <button key={n.id} onClick={() => handleNavigate(n)}
+                <button key={n.id} onClick={() => handleNotificationClick(n)}
                   className={`w-full text-start p-4 hover:bg-muted/50 transition-colors flex gap-4 ${isUnread ? 'bg-primary/5' : ''}`}>
                   <div className={`mt-0.5 rounded-lg p-2 shrink-0 ${colorClass}`}>
                     <Icon className="h-4 w-4" />
@@ -615,9 +644,13 @@ export default function NotificationsPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className={`text-sm ${isUnread ? 'font-semibold' : 'font-medium text-muted-foreground'}`}>{n.title}</p>
-                        <p className="text-sm text-muted-foreground mt-0.5">{n.body}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                       </div>
-                      {isUnread && <div className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 mt-1.5" />}
+                      <div className="flex items-center gap-1.5 shrink-0 mt-1.5">
+                        {n.payload?.imageUrl && <Image className="h-3.5 w-3.5 text-muted-foreground" />}
+                        {n.payload?.linkUrl && <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />}
+                        {isUnread && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`types.${n.type}`)}</Badge>
@@ -645,6 +678,86 @@ export default function NotificationsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Notification Detail Dialog ────────────────── */}
+      <Dialog open={!!selectedNotification} onOpenChange={(open) => { if (!open) setSelectedNotification(null) }}>
+        <DialogContent>
+          {selectedNotification && (() => {
+            const sn = selectedNotification
+            const DetailIcon = typeIcons[sn.type] || Info
+            const detailColor = typeColors[sn.type] || typeColors.general
+
+            return (
+              <>
+                <DialogHeader>
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-lg p-2 ${detailColor}`}>
+                      <DetailIcon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <DialogTitle className="text-base">{sn.title}</DialogTitle>
+                      <DialogDescription asChild>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`types.${sn.type}`)}</Badge>
+                          <span>{formatDate(sn.created_at, locale)}</span>
+                        </div>
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                <div className="space-y-4 mt-2">
+                  {/* Image */}
+                  {sn.payload?.imageUrl && (
+                    <div className="rounded-lg overflow-hidden border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={sn.payload.imageUrl}
+                        alt={sn.title}
+                        className="w-full max-h-64 object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Body */}
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{sn.body}</p>
+
+                  {/* Link */}
+                  {sn.payload?.linkUrl && (
+                    <a
+                      href={sn.payload.linkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline p-3 rounded-lg bg-muted/50 border"
+                    >
+                      <ExternalLink className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{sn.payload.linkUrl}</span>
+                    </a>
+                  )}
+
+                  {/* Navigate to related entity */}
+                  {getNotificationLink(sn) && (
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        const link = getNotificationLink(sn)
+                        if (link) {
+                          setSelectedNotification(null)
+                          router.push(link)
+                        }
+                      }}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      {t('viewRelated')}
+                    </Button>
+                  )}
+                </div>
+              </>
+            )
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Confirm Dialog ───────────────────────────── */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>

@@ -25,12 +25,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { titleEn, titleAr, bodyEn, bodyAr, targets } = body as {
+  const { titleEn, titleAr, bodyEn, bodyAr, targets, imageUrl, linkUrl } = body as {
     titleEn?: string
     titleAr: string
     bodyEn?: string
     bodyAr: string
     targets: AudienceTarget[]
+    imageUrl?: string
+    linkUrl?: string
   }
 
   if (!titleAr || !bodyAr) {
@@ -69,6 +71,10 @@ export async function POST(req: NextRequest) {
           bodyEn: bodyEn || bodyAr,
           bodyAr,
           referenceType: 'broadcast',
+          data: {
+            ...(imageUrl ? { imageUrl } : {}),
+            ...(linkUrl ? { linkUrl } : {}),
+          },
         })
       )
     )

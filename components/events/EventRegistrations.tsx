@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,7 +29,7 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       const res = await fetch(`/api/events/${eventId}/registrations`)
       if (!res.ok) return
@@ -40,11 +40,11 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [eventId])
 
   useEffect(() => {
     fetchRegistrations()
-  }, [eventId])
+  }, [fetchRegistrations])
 
   const handleAction = async (registrationId: string, action: 'check_in' | 'cancel') => {
     try {
@@ -63,23 +63,24 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
     }
   }
 
-  const filtered = registrations.filter(r =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.phone?.includes(search) ||
-    r.email?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = useMemo(() =>
+    registrations.filter(r =>
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.phone?.includes(search) ||
+      r.email?.toLowerCase().includes(search.toLowerCase())
+    ), [registrations, search])
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: registrations.length,
     checkedIn: registrations.filter(r => r.status === 'checked_in').length,
     registered: registrations.filter(r => r.status === 'registered').length,
-  }
+  }), [registrations])
 
-  const statusColors: Record<string, string> = {
+  const statusColors: Record<string, string> = useMemo(() => ({
     registered: 'bg-blue-100 text-blue-800',
     checked_in: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
-  }
+  }), [])
 
   if (loading) {
     return <div className="text-center py-8 text-muted-foreground">{t('loading')}</div>

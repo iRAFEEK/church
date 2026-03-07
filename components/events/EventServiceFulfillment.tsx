@@ -6,6 +6,7 @@ import { Users, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp } from 'luc
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import type { EventServiceNeedWithDetails } from '@/types'
 
@@ -134,13 +135,20 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                       return (
                         <div key={assignment.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-zinc-50">
                           {assignment.profile.photo_url ? (
-                            <img src={assignment.profile.photo_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+                            <Image src={assignment.profile.photo_url} alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
                           ) : (
                             <div className="h-7 w-7 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                               {(assignment.profile.first_name || '?')[0]}
                             </div>
                           )}
-                          <span className="text-sm text-zinc-700 flex-1 truncate">{pName.trim()}</span>
+                          <span className="text-sm text-zinc-700 flex-1 truncate">
+                            {pName.trim()}
+                            {(assignment as any).role && (
+                              <span className="text-zinc-400 ms-1.5">
+                                ({isRTL ? ((assignment as any).role_ar || (assignment as any).role) : (assignment as any).role})
+                              </span>
+                            )}
+                          </span>
                           <Badge variant="outline" className={cn('text-[10px]', statusBadge[assignment.status])}>
                             {t(`${assignment.status}Status`)}
                           </Badge>
