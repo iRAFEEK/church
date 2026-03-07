@@ -150,6 +150,7 @@
     "tabInfo": "Info",
     "tabMilestones": "Spiritual Milestones",
     "tabAttendance": "Attendance",
+    "tabInvolvement": "Involvement",
     "infoTitle": "Personal Information",
     "infoGender": "Gender:",
     "infoMale": "Male",
@@ -250,6 +251,7 @@
     "joinedAt": "Joined",
     "tabInfo": "Info",
     "tabMilestones": "Spiritual Milestones",
+    "tabInvolvement": "Involvement",
     "tabAdmin": "Manage",
     "infoGender": "Gender:",
     "infoMale": "Male",
@@ -1680,5 +1682,50 @@
       "tip3": "Print your visitor QR code",
       "tipsHeadline": "What's next?"
     }
+  },
+
+  "involvement": {
+    "overview": "Overview",
+    "events": "Event Service",
+    "serving": "Serving",
+    "groupsAndMinistries": "Groups & Ministries",
+    "registrations": "Registrations",
+
+    "statEventsServed": "Events Served",
+    "statConfirmed": "Confirmed",
+    "statDeclined": "Declined",
+    "statServingSignups": "Serving Signups",
+    "statActiveGroups": "Active Groups",
+    "statActiveMinistries": "Active Ministries",
+    "statEventsRegistered": "Events Registered",
+
+    "upcoming": "Upcoming",
+    "past": "Past",
+
+    "statusAssigned": "Assigned",
+    "statusConfirmed": "Confirmed",
+    "statusDeclined": "Declined",
+    "statusSignedUp": "Signed Up",
+    "statusCancelled": "Cancelled",
+    "statusRegistered": "Registered",
+    "statusCheckedIn": "Checked In",
+
+    "roleInGroup": "Role",
+    "roleMember": "Member",
+    "roleLeader": "Leader",
+    "roleCoLeader": "Co-Leader",
+    "joinedAt": "Joined",
+    "activeLabel": "Active",
+    "inactiveLabel": "Inactive",
+
+    "parentMinistry": "Ministry",
+
+    "emptyAssignments": "No event service assignments yet",
+    "emptyServing": "No serving signups yet",
+    "emptyGroups": "Not a member of any groups or ministries",
+    "emptyRegistrations": "No event registrations yet",
+    "emptyOverview": "No involvement data yet",
+
+    "loading": "Loading..."
   }
 }

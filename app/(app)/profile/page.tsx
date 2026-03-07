@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Pencil, Phone, Mail, Briefcase, Calendar, Star, Users, UserPlus, Heart, Music, Megaphone, Shield, ChevronRight, ChevronLeft } from 'lucide-react'
 import { AttendanceHistory } from '@/components/profile/AttendanceHistory'
+import { MemberInvolvementCard } from '@/components/profile/MemberInvolvementCard'
 import { getTranslations, getLocale } from 'next-intl/server'
 
 const MILESTONE_ICONS: Record<string, string> = {
@@ -192,8 +193,9 @@ export default async function ProfilePage() {
 
       {/* Tabs */}
       <Tabs defaultValue="info" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
+          <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
           <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
           <TabsTrigger value="attendance">{t('tabAttendance')}</TabsTrigger>
         </TabsList>
@@ -244,6 +246,15 @@ export default async function ProfilePage() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Involvement Tab */}
+        <TabsContent value="involvement">
+          <Card>
+            <CardContent className="pt-6">
+              <MemberInvolvementCard profileId={profile.id} />
             </CardContent>
           </Card>
         </TabsContent>
