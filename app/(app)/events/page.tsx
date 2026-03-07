@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { EventCard } from '@/components/events/EventCard'
 import { getTranslations } from 'next-intl/server'
-import { Plus } from 'lucide-react'
+import { Plus, Copy } from 'lucide-react'
 
 export default async function EventsPage() {
   const user = await getCurrentUserWithRole()
@@ -17,18 +17,17 @@ export default async function EventsPage() {
 
   let query = supabase
     .from('events')
-    .select('*')
+    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status')
     .eq('church_id', user.profile.church_id)
 
   if (admin) {
-    // Admins see all events, newest first
-    query = query.order('starts_at', { ascending: false })
+    query = query.order('starts_at', { ascending: false }).limit(50)
   } else {
-    // Members see only published upcoming events
     query = query
       .in('status', ['published'])
       .gte('starts_at', new Date().toISOString())
       .order('starts_at', { ascending: true })
+      .limit(30)
   }
 
   const { data: events } = await query
@@ -45,12 +44,20 @@ export default async function EventsPage() {
           </p>
         </div>
         {admin && (
-          <Link href="/admin/events/new">
-            <Button>
-              <Plus className="h-4 w-4 me-1" />
-              {t('newEvent')}
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/events/from-template">
+              <Button variant="outline">
+                <Copy className="h-4 w-4 me-1" />
+                {t('fromTemplate')}
+              </Button>
+            </Link>
+            <Link href="/admin/events/new">
+              <Button>
+                <Plus className="h-4 w-4 me-1" />
+                {t('newEvent')}
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
 

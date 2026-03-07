@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ServingAreaCard } from '@/components/serving/ServingAreaCard'
 import { ServingSlotCard } from '@/components/serving/ServingSlotCard'
 import { ServingMemberView } from '@/components/serving/ServingMemberView'
+import { MyServiceAssignments } from '@/components/events/MyServiceAssignments'
 import { Plus } from 'lucide-react'
 
 export default async function ServingPage({
@@ -20,7 +21,9 @@ export default async function ServingPage({
   const t = await getTranslations('serving')
   const admin = isAdmin(user.profile)
 
-  // Non-admin: render client-side member signup view
+  const te = await getTranslations('events')
+
+  // Non-admin: render client-side member signup view + event assignments
   if (!admin) {
     return (
       <div className="space-y-6">
@@ -29,6 +32,11 @@ export default async function ServingPage({
           <p className="text-sm text-zinc-500 mt-1">{t('memberPageSubtitle')}</p>
         </div>
         <ServingMemberView />
+
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">{te('eventAssignments')}</h2>
+          <MyServiceAssignments fullPage />
+        </div>
       </div>
     )
   }

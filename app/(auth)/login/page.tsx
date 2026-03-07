@@ -28,9 +28,20 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
+const TEST_ACCOUNTS = [
+  { email: 'pastor@gracechurch.test', label: 'Super Admin (Pastor)', role: 'super_admin' },
+  { email: 'admin@gracechurch.test', label: 'Super Admin (Associate)', role: 'super_admin' },
+  { email: 'worship@gracechurch.test', label: 'Ministry Leader (Worship)', role: 'ministry_leader' },
+  { email: 'leader1@gracechurch.test', label: 'Group Leader', role: 'group_leader' },
+  { email: 'member@gracechurch.test', label: 'Member', role: 'member' },
+]
+
+const isDev = process.env.NODE_ENV === 'development'
+
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [devLoading, setDevLoading] = useState<string | null>(null)
   const t = useTranslations('auth')
 
   const loginSchema = z.object({
@@ -75,6 +86,27 @@ export default function LoginPage() {
         router.push('/')
       }
       router.refresh()
+    }
+  }
+
+  async function devLogin(email: string) {
+    setDevLoading(email)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'password123',
+      })
+
+      if (error) throw error
+
+      router.push('/')
+      router.refresh()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Dev login failed'
+      toast.error('Dev login failed', { description: message })
+    } finally {
+      setDevLoading(null)
     }
   }
 
@@ -145,6 +177,33 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+
+        {isDev && (
+          <div className="mt-6 border-t pt-4">
+            <p className="text-sm text-muted-foreground mb-3 font-medium">
+              Dev Quick Login
+            </p>
+            <div className="grid gap-2">
+              {TEST_ACCOUNTS.map((account) => (
+                <Button
+                  key={account.email}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-between text-xs"
+                  disabled={devLoading !== null}
+                  onClick={() => devLogin(account.email)}
+                >
+                  <span>{account.label}</span>
+                  {devLoading === account.email ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <span className="text-muted-foreground">{account.role}</span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Globe } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface LandingNavProps {
   churchName: string
@@ -32,7 +33,7 @@ export function LandingNav({ churchName, logoUrl }: LandingNavProps) {
         {/* Church name / logo */}
         <a href="#" className="flex items-center gap-3">
           {logoUrl ? (
-            <img src={logoUrl} alt={churchName} className="h-8 w-8 rounded-lg object-cover" />
+            <Image src={logoUrl} alt={churchName} width={32} height={32} className="h-8 w-8 rounded-lg object-cover" />
           ) : (
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground text-sm font-bold">

@@ -9,6 +9,7 @@ export type NotificationType =
   | 'event_reminder'
   | 'event_service_request'
   | 'event_service_assigned'
+  | 'event_service_response'
   | 'general'
 
 export interface MessagePayload {

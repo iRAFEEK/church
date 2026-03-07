@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Pencil, Phone, Mail, Briefcase, Calendar, Star, Users, UserPlus, Heart, Music, Megaphone, Shield, ChevronRight, ChevronLeft } from 'lucide-react'
-import type { ProfileMilestone } from '@/types'
 import { AttendanceHistory } from '@/components/profile/AttendanceHistory'
 import { getTranslations, getLocale } from 'next-intl/server'
 
@@ -33,23 +32,22 @@ export default async function ProfilePage() {
   const t = await getTranslations('profile')
   const locale = await getLocale()
 
-  const { data: milestones } = await supabase
-    .from('profile_milestones')
-    .select('*')
-    .eq('profile_id', profile.id)
-    .order('date', { ascending: false })
+  // Run all queries in parallel — milestones, attendance, and admin counts together
+  const isAdmin = profile.role === 'super_admin'
 
-  const { data: attendanceRecords } = await supabase
-    .from('attendance')
-    .select('*, gathering:gathering_id(id, scheduled_at, topic, status, group:group_id(id, name, name_ar))')
-    .eq('profile_id', profile.id)
-    .order('marked_at', { ascending: false })
-    .limit(40)
-
-  // Fetch admin quick-link counts for super_admin
-  let adminCounts: { members: number; visitors: number; groups: number; ministries: number; events: number; songs: number; announcements: number; serving: number } | null = null
-  if (profile.role === 'super_admin') {
-    const [members, visitors, groups, ministries, events, songs, announcements, serving] = await Promise.all([
+  const [milestonesRes, attendanceRes, ...adminResults] = await Promise.all([
+    supabase
+      .from('profile_milestones')
+      .select('id, type, title, date, notes')
+      .eq('profile_id', profile.id)
+      .order('date', { ascending: false }),
+    supabase
+      .from('attendance')
+      .select('*, gathering:gathering_id(id, scheduled_at, topic, status, group:group_id(id, name, name_ar))')
+      .eq('profile_id', profile.id)
+      .order('marked_at', { ascending: false })
+      .limit(40),
+    ...(isAdmin ? [
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id),
       supabase.from('visitors').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('status', 'new'),
       supabase.from('groups').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
@@ -58,7 +56,15 @@ export default async function ProfilePage() {
       supabase.from('songs').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
       supabase.from('announcements').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('status', 'published'),
       supabase.from('serving_areas').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('is_active', true),
-    ])
+    ] : []),
+  ])
+
+  const milestones = milestonesRes.data
+  const attendanceRecords = attendanceRes.data
+
+  let adminCounts: { members: number; visitors: number; groups: number; ministries: number; events: number; songs: number; announcements: number; serving: number } | null = null
+  if (isAdmin && adminResults.length === 8) {
+    const [members, visitors, groups, ministries, events, songs, announcements, serving] = adminResults
     adminCounts = {
       members: members.count ?? 0,
       visitors: visitors.count ?? 0,
@@ -252,7 +258,7 @@ export default async function ProfilePage() {
             <CardContent>
               {milestones && milestones.length > 0 ? (
                 <div className="space-y-4">
-                  {milestones.map((milestone: ProfileMilestone) => (
+                  {milestones.map((milestone) => (
                     <div key={milestone.id} className="flex items-start gap-3">
                       <span className="text-2xl">{MILESTONE_ICONS[milestone.type] ?? '\u2B50'}</span>
                       <div className="flex-1 min-w-0">

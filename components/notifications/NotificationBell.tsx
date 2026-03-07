@@ -96,15 +96,9 @@ export function NotificationBell() {
     }
   }
 
-  const handleNavigate = (notification: Notification) => {
+  const handleNavigate = () => {
     setOpen(false)
-    if (notification.reference_type === 'visitor' && notification.reference_id) {
-      router.push('/admin/visitors')
-    } else if (notification.reference_type === 'gathering' && notification.reference_id) {
-      router.push('/groups')
-    } else if (notification.reference_type === 'profile' && notification.reference_id) {
-      router.push(`/admin/members/${notification.reference_id}`)
-    }
+    router.push('/notifications')
   }
 
   // On mobile, tap navigates to /notifications page instead of opening popover

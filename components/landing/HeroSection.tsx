@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
+import Image from 'next/image'
 
 interface HeroSectionProps {
   churchName: string
@@ -28,9 +29,12 @@ export function HeroSection({ churchName, logoUrl, primaryColor, churchId }: Her
       <div className="relative z-10 text-center max-w-2xl mx-auto space-y-8">
         {/* Logo */}
         {logoUrl ? (
-          <img
+          <Image
             src={logoUrl}
             alt={churchName}
+            width={96}
+            height={96}
+            priority
             className="h-24 w-24 rounded-3xl object-cover mx-auto shadow-lg"
           />
         ) : (

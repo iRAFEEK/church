@@ -333,47 +333,38 @@ export async function fetchAdminDashboard(
   const groups = (groupsRes.data || []) as any[]
   const groupHealth: GroupHealthRow[] = []
 
-  // Fetch attendance data per group for last 4 weeks
+  // Fetch all group attendance for last 8 weeks in a single query, then split into current/prev
   const groupIds = groups.map((g: any) => g.id)
   let groupAttendanceMap = new Map<string, { present: number; total: number }>()
-
-  if (groupIds.length > 0) {
-    const { data: groupAttendance } = await supabase
-      .from('attendance')
-      .select('group_id, status, gatherings!inner(status, scheduled_at)')
-      .eq('church_id', churchId)
-      .in('group_id', groupIds)
-      .gte('gatherings.scheduled_at', weeksAgo(4))
-
-    for (const rec of (groupAttendance || []) as any[]) {
-      if (rec.gatherings?.status !== 'completed') continue
-      if (!groupAttendanceMap.has(rec.group_id)) {
-        groupAttendanceMap.set(rec.group_id, { present: 0, total: 0 })
-      }
-      const entry = groupAttendanceMap.get(rec.group_id)!
-      entry.total++
-      if (rec.status === 'present' || rec.status === 'late') entry.present++
-    }
-  }
-
-  // Also get previous 4 weeks for trend comparison
   let prevGroupAttendanceMap = new Map<string, number>()
+
   if (groupIds.length > 0) {
-    const { data: prevAttendance } = await supabase
+    const fourWeeksAgo = weeksAgo(4)
+    const { data: allGroupAttendance } = await supabase
       .from('attendance')
       .select('group_id, status, gatherings!inner(status, scheduled_at)')
       .eq('church_id', churchId)
       .in('group_id', groupIds)
       .gte('gatherings.scheduled_at', weeksAgo(8))
-      .lte('gatherings.scheduled_at', weeksAgo(4))
 
     const prevMap = new Map<string, { present: number; total: number }>()
-    for (const rec of (prevAttendance || []) as any[]) {
+    for (const rec of (allGroupAttendance || []) as any[]) {
       if (rec.gatherings?.status !== 'completed') continue
-      if (!prevMap.has(rec.group_id)) prevMap.set(rec.group_id, { present: 0, total: 0 })
-      const entry = prevMap.get(rec.group_id)!
-      entry.total++
-      if (rec.status === 'present' || rec.status === 'late') entry.present++
+      const isRecent = rec.gatherings.scheduled_at >= fourWeeksAgo
+
+      if (isRecent) {
+        if (!groupAttendanceMap.has(rec.group_id)) {
+          groupAttendanceMap.set(rec.group_id, { present: 0, total: 0 })
+        }
+        const entry = groupAttendanceMap.get(rec.group_id)!
+        entry.total++
+        if (rec.status === 'present' || rec.status === 'late') entry.present++
+      } else {
+        if (!prevMap.has(rec.group_id)) prevMap.set(rec.group_id, { present: 0, total: 0 })
+        const entry = prevMap.get(rec.group_id)!
+        entry.total++
+        if (rec.status === 'present' || rec.status === 'late') entry.present++
+      }
     }
     for (const [gId, data] of prevMap) {
       prevGroupAttendanceMap.set(gId, data.total > 0 ? (data.present / data.total) * 100 : 0)
@@ -1045,38 +1036,45 @@ export async function fetchLeaderDashboard(
     }
   })
 
-  // Process at-risk members
+  // Process at-risk members — batch fetch last attendance for all at once
   const seenIds = new Set<string>()
-  const atRiskMembers: AtRiskMember[] = []
+  const uniqueAtRisk: any[] = []
   for (const m of (atRiskRes.data || []) as any[]) {
     const p = m.profiles
     if (!p || seenIds.has(p.id)) continue
     seenIds.add(p.id)
+    uniqueAtRisk.push(p)
+  }
 
-    // Get last attendance for this member
-    const { data: lastAtt } = await supabase
-      .from('attendance')
-      .select('marked_at, gatherings!inner(scheduled_at)')
-      .eq('profile_id', p.id)
-      .in('status', ['present', 'late'])
-      .order('marked_at', { ascending: false })
-      .limit(1)
+  // Fetch last attendance for all at-risk members in parallel
+  const lastAttResults = await Promise.all(
+    uniqueAtRisk.map(p =>
+      supabase
+        .from('attendance')
+        .select('marked_at, gatherings!inner(scheduled_at)')
+        .eq('profile_id', p.id)
+        .in('status', ['present', 'late'])
+        .order('marked_at', { ascending: false })
+        .limit(1)
+    )
+  )
 
-    const row = lastAtt?.[0] as any
+  const atRiskMembers: AtRiskMember[] = uniqueAtRisk.map((p, i) => {
+    const row = lastAttResults[i].data?.[0] as any
     const lastSeen = row?.gatherings?.scheduled_at || null
     const daysAbsent = lastSeen
       ? Math.floor((Date.now() - new Date(lastSeen).getTime()) / (1000 * 60 * 60 * 24))
       : 999
 
-    atRiskMembers.push({
+    return {
       id: p.id,
       name: `${p.first_name || ''} ${p.last_name || ''}`.trim(),
       nameAr: `${p.first_name_ar || ''} ${p.last_name_ar || ''}`.trim() || null,
       photoUrl: p.photo_url,
       lastSeen,
       daysAbsent,
-    })
-  }
+    }
+  })
 
   // Process prayers
   const recentPrayers: RecentPrayer[] = ((prayersRes.data || []) as any[]).map(p => ({

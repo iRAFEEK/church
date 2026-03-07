@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
       service_need_id,
       status,
       notes,
+      role,
+      role_ar,
       created_at,
       service_need:service_need_id(
         id,
@@ -46,6 +48,8 @@ export async function GET(req: NextRequest) {
         id: a.id,
         service_need_id: a.service_need_id,
         status: a.status,
+        role: a.role,
+        role_ar: a.role_ar,
         event: need.event,
         ministry: need.ministry,
         group: need.group,

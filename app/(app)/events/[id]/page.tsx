@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 import { toast } from 'sonner'
+import { EventRunOfShow } from '@/components/events/EventRunOfShow'
 
 interface Event {
   id: string
@@ -139,6 +140,8 @@ export default function EventDetailPage() {
           <p className="text-sm leading-relaxed">{description}</p>
         )}
       </div>
+
+      <EventRunOfShow eventId={id} />
 
       {event.registration_required && (
         <div className="flex justify-center">

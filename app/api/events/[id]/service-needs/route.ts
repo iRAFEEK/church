@@ -27,7 +27,7 @@ export async function GET(
       ministry:ministry_id(id, name, name_ar, leader_id),
       group:group_id(id, name, name_ar, leader_id, co_leader_id),
       event_service_assignments(
-        id, profile_id, status, assigned_by, notes, created_at,
+        id, profile_id, status, assigned_by, notes, role, role_ar, created_at,
         profile:profile_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url, phone)
       )
     `)
