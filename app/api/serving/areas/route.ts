@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { resolveApiPermissions } from '@/lib/auth'
 
 // GET /api/serving/areas — list serving areas
 export async function GET(req: NextRequest) {
@@ -9,13 +10,14 @@ export async function GET(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(profile.role)
+  const perms = await resolveApiPermissions(supabase, profile)
+  const isAdmin = perms.can_manage_serving
 
   let query = supabase
     .from('serving_areas')
@@ -41,12 +43,13 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  if (!['super_admin', 'ministry_leader'].includes(profile.role)) {
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_serving) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

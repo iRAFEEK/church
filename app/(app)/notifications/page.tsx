@@ -61,7 +61,9 @@ interface MinistryOption { id: string; name: string; name_ar: string | null }
 
 const NOTIFICATION_TYPES = [
   'all', 'gathering_reminder', 'visitor_assigned', 'visitor_welcome',
-  'at_risk_alert', 'visitor_sla_warning', 'event_reminder', 'general',
+  'at_risk_alert', 'visitor_sla_warning', 'event_reminder',
+  'event_service_request', 'event_service_assigned', 'event_service_response',
+  'general',
 ] as const
 
 const typeIcons: Record<string, React.ElementType> = {

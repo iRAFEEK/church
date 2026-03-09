@@ -12,8 +12,8 @@ import {
 import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
-import { getNavForRole, getNavSections } from '@/lib/navigation'
-import type { Profile } from '@/types'
+import { getNavForUser, getNavSections } from '@/lib/navigation'
+import type { Profile, PermissionKey } from '@/types'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getAvatarUrl } from '@/lib/utils/storage'
 import { Button } from '@/components/ui/button'
@@ -30,9 +30,10 @@ interface SidebarProps {
   profile: Profile
   churchName: string
   churchNameAr: string
+  resolvedPermissions: Record<PermissionKey, boolean>
 }
 
-export function Sidebar({ profile, churchName, churchNameAr }: SidebarProps) {
+export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
@@ -40,7 +41,7 @@ export function Sidebar({ profile, churchName, churchNameAr }: SidebarProps) {
   const t = useTranslations('sidebar')
   const isRTL = locale === 'ar'
 
-  const navItems = getNavForRole(profile.role)
+  const navItems = getNavForUser(profile.role, resolvedPermissions)
   const sections = getNavSections(navItems, locale as 'ar' | 'en')
 
   const displayName = isRTL

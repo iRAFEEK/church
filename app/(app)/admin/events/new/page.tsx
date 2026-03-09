@@ -1,12 +1,9 @@
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { redirect } from 'next/navigation'
+import { requirePermission } from '@/lib/auth'
 import { EventForm } from '@/components/events/EventForm'
 import { getTranslations } from 'next-intl/server'
 
 export default async function NewEventPage() {
-  const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  await requirePermission('can_manage_events')
 
   const t = await getTranslations('events')
 

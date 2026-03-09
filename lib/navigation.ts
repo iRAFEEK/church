@@ -1,4 +1,4 @@
-import type { UserRole } from '@/types'
+import type { UserRole, PermissionKey } from '@/types'
 
 export interface NavItem {
   label: string
@@ -6,6 +6,7 @@ export interface NavItem {
   href: string
   iconName: string
   roles: UserRole[]
+  permission?: PermissionKey
   section?: string
   section_ar?: string
 }
@@ -37,7 +38,7 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'المجموعات',
     href: '/admin/groups',
     iconName: 'Users',
-    roles: ['group_leader', 'ministry_leader', 'super_admin'],
+    roles: ['group_leader', 'super_admin'],
     section: 'Groups',
     section_ar: 'المجموعات',
   },
@@ -57,7 +58,8 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'الأعضاء',
     href: '/admin/members',
     iconName: 'UserCheck',
-    roles: ['ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_view_members',
     section: 'People',
     section_ar: 'الأشخاص',
   },
@@ -66,7 +68,8 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'قائمة الزوار',
     href: '/admin/visitors',
     iconName: 'UserPlus',
-    roles: ['ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_view_visitors',
     section: 'People',
     section_ar: 'الأشخاص',
   },
@@ -95,7 +98,8 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'القوالب',
     href: '/admin/templates',
     iconName: 'LayoutTemplate',
-    roles: ['ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_manage_templates',
     section: 'Ministry',
     section_ar: 'الخدمة',
   },
@@ -117,6 +121,15 @@ export const NAV_ITEMS: NavItem[] = [
     section: 'Ministry',
     section_ar: 'الخدمة',
   },
+  {
+    label: 'Prayer Requests',
+    label_ar: 'طلبات الصلاة',
+    href: '/prayer',
+    iconName: 'HandHeart',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    section: 'Ministry',
+    section_ar: 'الخدمة',
+  },
   // ─── Notifications ─────────────────────────────────
   {
     label: 'Notifications',
@@ -134,7 +147,8 @@ export const NAV_ITEMS: NavItem[] = [
     label_ar: 'الترانيم',
     href: '/admin/songs',
     iconName: 'Music',
-    roles: ['group_leader', 'ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_manage_songs',
     section: 'Resources',
     section_ar: 'الموارد',
   },
@@ -150,11 +164,32 @@ export const NAV_ITEMS: NavItem[] = [
 
   // ─── Admin ──────────────────────────────────────────────
   {
+    label: 'Prayer Management',
+    label_ar: 'إدارة الصلوات',
+    href: '/admin/prayers',
+    iconName: 'HeartHandshake',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_view_prayers',
+    section: 'Admin',
+    section_ar: 'الإدارة',
+  },
+  {
+    label: 'Outreach',
+    label_ar: 'التواصل',
+    href: '/admin/outreach',
+    iconName: 'MapPin',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_manage_outreach',
+    section: 'People',
+    section_ar: 'الأشخاص',
+  },
+  {
     label: 'Reports',
     label_ar: 'التقارير',
     href: '/admin/reports',
     iconName: 'BarChart3',
-    roles: ['ministry_leader', 'super_admin'],
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_view_reports',
     section: 'Admin',
     section_ar: 'الإدارة',
   },
@@ -164,6 +199,24 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/admin/settings/qr',
     iconName: 'QrCode',
     roles: ['ministry_leader', 'super_admin'],
+    section: 'Admin',
+    section_ar: 'الإدارة',
+  },
+  {
+    label: 'Role Permissions',
+    label_ar: 'صلاحيات الأدوار',
+    href: '/admin/settings/roles',
+    iconName: 'ShieldCheck',
+    roles: ['super_admin'],
+    section: 'Admin',
+    section_ar: 'الإدارة',
+  },
+  {
+    label: 'Permissions',
+    label_ar: 'الصلاحيات',
+    href: '/admin/permissions',
+    iconName: 'Lock',
+    roles: ['super_admin'],
     section: 'Admin',
     section_ar: 'الإدارة',
   },
@@ -181,8 +234,21 @@ export const NAV_ITEMS: NavItem[] = [
 /** Paths that appear in the mobile bottom tab bar */
 export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/ministries', '/events', '/bible']
 
+/** @deprecated Use getNavForUser() instead for permission-aware filtering */
 export function getNavForRole(role: UserRole): NavItem[] {
   return NAV_ITEMS.filter(item => item.roles.includes(role))
+}
+
+/** Permission-aware navigation filter */
+export function getNavForUser(
+  role: UserRole,
+  resolvedPermissions: Record<PermissionKey, boolean>
+): NavItem[] {
+  return NAV_ITEMS.filter(item => {
+    if (!item.roles.includes(role)) return false
+    if (item.permission && !resolvedPermissions[item.permission]) return false
+    return true
+  })
 }
 
 /** Items NOT shown in the bottom tab bar — displayed in the "More" sheet */

@@ -14,8 +14,7 @@ const EVENT_TYPE_ICONS: Record<string, string> = {
 
 export default async function TemplatesPage() {
   const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  if (!user.resolvedPermissions.can_manage_templates) redirect('/dashboard')
 
   const t = await getTranslations('templates')
   const te = await getTranslations('events')

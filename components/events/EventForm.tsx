@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { Calendar, MapPin, FileText, Settings, Type, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ServiceNeedsPicker, type ServiceNeedDraft } from './ServiceNeedsPicker'
+import { EventAudienceSelector, type AudienceConfig } from './EventAudienceSelector'
 
 interface EventFormProps {
   event?: {
@@ -37,6 +38,7 @@ const STEPS = [
   { title: 'When?', titleAr: 'متى؟' },
   { title: 'Where?', titleAr: 'أين؟' },
   { title: 'Details', titleAr: 'التفاصيل' },
+  { title: 'Audience', titleAr: 'الجمهور' },
   { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
   { title: 'Review', titleAr: 'مراجعة' },
 ]
@@ -71,6 +73,33 @@ export function EventForm({ event }: EventFormProps) {
   })
 
   const [serviceNeeds, setServiceNeeds] = useState<ServiceNeedDraft[]>([])
+  const [audience, setAudience] = useState<AudienceConfig>({
+    visibility: 'all',
+    hide_from_non_invited: false,
+    ministry_ids: [],
+    group_ids: [],
+  })
+
+  // Load existing audience config when editing
+  useEffect(() => {
+    if (event?.id) {
+      fetch(`/api/events/${event.id}`)
+        .then(r => r.json())
+        .then(d => {
+          const evt = d.data
+          if (evt?.visibility === 'restricted') {
+            const targets = evt.event_visibility_targets || []
+            setAudience({
+              visibility: 'restricted',
+              hide_from_non_invited: evt.hide_from_non_invited ?? false,
+              ministry_ids: targets.filter((t: any) => t.target_type === 'ministry').map((t: any) => t.target_id),
+              group_ids: targets.filter((t: any) => t.target_type === 'group').map((t: any) => t.target_id),
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [event?.id])
 
   // Load existing service needs when editing
   useEffect(() => {
@@ -120,6 +149,14 @@ export function EventForm({ event }: EventFormProps) {
         is_public: form.is_public,
         registration_required: form.registration_required,
         registration_closes_at: form.registration_closes_at || null,
+        visibility: audience.visibility,
+        hide_from_non_invited: audience.hide_from_non_invited,
+        visibility_targets: audience.visibility === 'restricted'
+          ? [
+              ...audience.ministry_ids.map(id => ({ target_type: 'ministry', target_id: id })),
+              ...audience.group_ids.map(id => ({ target_type: 'group', target_id: id })),
+            ]
+          : [],
       }
 
       const url = event ? `/api/events/${event.id}` : '/api/events'
@@ -341,16 +378,23 @@ export function EventForm({ event }: EventFormProps) {
         </div>
       )}
 
-      {/* Step 5: Service Needs */}
+      {/* Step 5: Audience */}
       {step === 4 && (
+        <div className="pt-4">
+          <EventAudienceSelector value={audience} onChange={setAudience} />
+        </div>
+      )}
+
+      {/* Step 6: Service Needs */}
+      {step === 5 && (
         <ServiceNeedsPicker
           serviceNeeds={serviceNeeds}
           onChange={setServiceNeeds}
         />
       )}
 
-      {/* Step 6: Review */}
-      {step === 5 && (
+      {/* Step 7: Review */}
+      {step === 6 && (
         <div className="space-y-3 pt-4">
           <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleEn')} value={form.title} />
           {form.title_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleAr')} value={form.title_ar} />}

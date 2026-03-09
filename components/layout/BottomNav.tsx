@@ -8,13 +8,14 @@ import Link from 'next/link'
 import { LayoutDashboard, Users, Calendar, BookOpen, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MoreSheet } from './MoreSheet'
-import type { Profile } from '@/types'
+import type { Profile, PermissionKey } from '@/types'
 
 interface BottomNavProps {
   profile: Profile
   churchName: string
   churchNameAr: string
   onLangChange: (lang: 'ar' | 'en') => void
+  resolvedPermissions: Record<PermissionKey, boolean>
 }
 
 const TABS = [
@@ -25,7 +26,7 @@ const TABS = [
   { key: 'more', href: '#', icon: Menu },
 ] as const
 
-export function BottomNav({ profile, churchName, churchNameAr, onLangChange }: BottomNavProps) {
+export function BottomNav({ profile, churchName, churchNameAr, onLangChange, resolvedPermissions }: BottomNavProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
@@ -93,6 +94,7 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange }: B
         churchName={churchName}
         churchNameAr={churchNameAr}
         onLangChange={onLangChange}
+        resolvedPermissions={resolvedPermissions}
       />
     </>
   )

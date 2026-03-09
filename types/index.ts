@@ -4,6 +4,26 @@
 // ============================================================
 
 export type UserRole = 'member' | 'group_leader' | 'ministry_leader' | 'super_admin'
+
+// ============================================================
+// PERMISSIONS
+// ============================================================
+
+export type PermissionKey =
+  | 'can_view_members'
+  | 'can_manage_members'
+  | 'can_view_visitors'
+  | 'can_manage_visitors'
+  | 'can_manage_events'
+  | 'can_manage_templates'
+  | 'can_manage_serving'
+  | 'can_manage_announcements'
+  | 'can_view_reports'
+  | 'can_manage_songs'
+  | 'can_view_prayers'
+  | 'can_manage_outreach'
+
+export type PermissionMap = Partial<Record<PermissionKey, boolean>>
 export type UserStatus = 'active' | 'inactive' | 'at_risk' | 'visitor'
 export type NotificationPref = 'whatsapp' | 'sms' | 'email' | 'all' | 'none'
 export type GenderType = 'male' | 'female'
@@ -54,11 +74,12 @@ export interface Attendance {
 export interface PrayerRequest {
   id: string
   gathering_id: string | null
-  group_id: string
+  group_id: string | null
   church_id: string
   submitted_by: string
   content: string
   is_private: boolean
+  is_anonymous: boolean
   status: PrayerStatus
   resolved_at: string | null
   resolved_notes: string | null
@@ -142,6 +163,13 @@ export interface Profile {
   joined_church_at: string | null
   invited_by: string | null
 
+  // Address
+  address: string | null
+  address_ar: string | null
+  city: string | null
+  city_ar: string | null
+  address_notes: string | null
+
   // Preferences
   notification_pref: NotificationPref
   preferred_language: string
@@ -149,6 +177,9 @@ export interface Profile {
 
   // Onboarding
   onboarding_completed: boolean
+
+  // Permissions (JSONB — null means use role defaults)
+  permissions: PermissionMap | null
 
   // Timestamps
   created_at: string
@@ -597,6 +628,7 @@ export interface AuthUser {
   email: string
   profile: Profile
   church: Church
+  resolvedPermissions: Record<PermissionKey, boolean>
 }
 
 // ============================================================
@@ -702,4 +734,79 @@ export interface MemberInvolvementData {
   groupMemberships: InvolvementGroupMembership[]
   ministryMemberships: InvolvementMinistryMembership[]
   eventRegistrations: InvolvementEventRegistration[]
+}
+
+// ============================================================
+// PERMISSION MANAGEMENT
+// ============================================================
+
+export interface RolePermissionDefaults {
+  id: string
+  church_id: string
+  role: UserRole
+  permissions: PermissionMap
+  updated_at: string
+  updated_by: string | null
+}
+
+export interface PermissionAuditLog {
+  id: string
+  church_id: string
+  changed_by: string
+  target_id: string | null
+  target_role: UserRole | null
+  change_type: 'user_override' | 'role_default'
+  old_value: PermissionMap | null
+  new_value: PermissionMap
+  created_at: string
+}
+
+export interface ServingAreaLeader {
+  id: string
+  serving_area_id: string
+  profile_id: string
+  church_id: string
+  created_at: string
+}
+
+export interface EventVisibilityTarget {
+  id: string
+  event_id: string
+  target_type: 'ministry' | 'group'
+  target_id: string
+}
+
+// ============================================================
+// OUTREACH
+// ============================================================
+
+export interface OutreachVisit {
+  id: string
+  church_id: string
+  profile_id: string
+  visited_by: string
+  visit_date: string
+  notes: string | null
+  needs_followup: boolean
+  followup_date: string | null
+  followup_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OutreachMemberSummary {
+  profile_id: string
+  first_name: string | null
+  last_name: string | null
+  first_name_ar: string | null
+  last_name_ar: string | null
+  phone: string | null
+  address: string | null
+  address_ar: string | null
+  city: string | null
+  city_ar: string | null
+  photo_url: string | null
+  last_visit_date: string | null
+  needs_followup: boolean
+  total_visits: number
 }

@@ -14,8 +14,7 @@ import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 export default async function AdminEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const user = await getCurrentUserWithRole()
-  if (!user) redirect('/login')
-  if (!['ministry_leader', 'super_admin'].includes(user.profile.role)) redirect('/dashboard')
+  if (!user.resolvedPermissions.can_manage_events) redirect('/dashboard')
 
   const t = await getTranslations('events')
   const locale = await getLocale()

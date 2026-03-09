@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyEventServiceAssigned } from '@/lib/messaging/triggers'
+import { resolveApiPermissions } from '@/lib/auth'
 
 type Params = { params: Promise<{ id: string; needId: string }> }
 
@@ -33,14 +34,15 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-  // Verify the user is an admin or leader of the relevant ministry/group
-  const isAdmin = ['super_admin', 'ministry_leader'].includes(profile.role)
+  // Verify the user has event management permission or is leader of the relevant ministry/group
+  const perms = await resolveApiPermissions(supabase, profile)
+  const isAdmin = perms.can_manage_events
 
   if (!isAdmin) {
     const { data: need } = await supabase

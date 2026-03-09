@@ -11,7 +11,7 @@ export interface VisitorPipelineItem {
 }
 
 export interface AttentionItem {
-  type: 'visitor_sla' | 'at_risk_member' | 'unfilled_slot'
+  type: 'visitor_sla' | 'at_risk_member' | 'unfilled_slot' | 'active_prayer' | 'outreach_followup'
   id: string
   label: string
   sublabel: string
@@ -91,6 +91,7 @@ export interface LeaderDashboardData {
   atRiskMembers: AtRiskMember[]
   recentPrayers: RecentPrayer[]
   assignedVisitorCount: number
+  attendanceTrend: WeeklyAttendancePoint[]
   recentGatherings: Array<{
     id: string
     groupId: string
@@ -102,6 +103,32 @@ export interface LeaderDashboardData {
     presentCount: number
     totalCount: number
   }>
+}
+
+// ─── Ministry Leader Dashboard ───────────────────
+
+export interface MinistryLeaderDashboardData {
+  ministryName: string
+  ministryNameAr: string | null
+  memberCount: number
+  groupCount: number
+  attendanceRate: number
+  attendanceTrend: WeeklyAttendancePoint[]
+  upcomingEvents: Array<{
+    id: string
+    title: string
+    titleAr: string | null
+    startsAt: string
+  }>
+  serviceAssignments: Array<{
+    eventTitle: string
+    eventTitleAr: string | null
+    role: string
+    roleAr: string | null
+    startsAt: string
+  }>
+  attentionItems: AttentionItem[]
+  groupHealth: GroupHealthRow[]
 }
 
 // ─── Member Dashboard ─────────────────────────────

@@ -5,16 +5,17 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { BottomNav } from './BottomNav'
 import { FAB } from '@/components/ui/fab'
-import type { Profile, Church } from '@/types'
+import type { Profile, Church, PermissionKey } from '@/types'
 
 interface AppShellProps {
   profile: Profile
   church: Church
+  resolvedPermissions: Record<PermissionKey, boolean>
   children: React.ReactNode
   initialLang?: string
 }
 
-export function AppShell({ profile, church, children }: AppShellProps) {
+export function AppShell({ profile, church, resolvedPermissions, children }: AppShellProps) {
   const locale = useLocale()
 
   function handleLangChange(newLang: 'ar' | 'en') {
@@ -31,6 +32,7 @@ export function AppShell({ profile, church, children }: AppShellProps) {
             profile={profile}
             churchName={church.name}
             churchNameAr={church.name_ar ?? church.name}
+            resolvedPermissions={resolvedPermissions}
           />
         </div>
 
@@ -58,6 +60,7 @@ export function AppShell({ profile, church, children }: AppShellProps) {
         churchName={church.name}
         churchNameAr={church.name_ar ?? church.name}
         onLangChange={handleLangChange}
+        resolvedPermissions={resolvedPermissions}
       />
     </>
   )

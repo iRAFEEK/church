@@ -19,9 +19,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import { getNavForRole, getNavSections, getSecondaryNavItems } from '@/lib/navigation'
+import { getNavForUser, getNavSections, getSecondaryNavItems } from '@/lib/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/types'
+import type { Profile, PermissionKey } from '@/types'
 import { getAvatarUrl } from '@/lib/utils/storage'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -37,6 +37,7 @@ interface MoreSheetProps {
   churchName: string
   churchNameAr: string
   onLangChange: (lang: 'ar' | 'en') => void
+  resolvedPermissions: Record<PermissionKey, boolean>
 }
 
 export function MoreSheet({
@@ -46,6 +47,7 @@ export function MoreSheet({
   churchName,
   churchNameAr,
   onLangChange,
+  resolvedPermissions,
 }: MoreSheetProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -60,7 +62,7 @@ export function MoreSheet({
 
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
-  const allItems = getNavForRole(profile.role)
+  const allItems = getNavForUser(profile.role, resolvedPermissions)
   const secondaryItems = getSecondaryNavItems(allItems)
   const sections = getNavSections(secondaryItems, locale as 'ar' | 'en')
 
