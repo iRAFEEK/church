@@ -1,4 +1,4 @@
-import { requireRole } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +24,7 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { profile } = await requireRole('ministry_leader', 'super_admin')
+  const { profile } = await requirePermission('can_view_members')
   const params = await searchParams
 
   const t = await getTranslations('members')

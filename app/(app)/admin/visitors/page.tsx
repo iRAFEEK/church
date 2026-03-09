@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireRole } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { VisitorQueue } from '@/components/visitors/VisitorQueue'
 import { getTranslations } from 'next-intl/server'
 
 export default async function AdminVisitorsPage() {
-  const user = await requireRole('ministry_leader', 'super_admin')
+  const user = await requirePermission('can_view_visitors')
 
   const t = await getTranslations('visitors')
   const supabase = await createClient()

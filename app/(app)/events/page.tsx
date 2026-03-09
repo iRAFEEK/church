@@ -16,15 +16,16 @@ export default async function EventsPage() {
   const t = await getTranslations('events')
   const supabase = await createClient()
   const admin = isAdmin(user.profile)
+  const canManageEvents = user.resolvedPermissions.can_manage_events
 
-  // Fetch initial events, ministries, and groups in parallel
+  // Fetch initial events (include visibility for filtering), ministries, and groups in parallel
   let eventsQuery = supabase
     .from('events')
-    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status')
+    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status, visibility, hide_from_non_invited')
     .eq('church_id', user.profile.church_id)
-    .limit(PAGE_SIZE)
+    .limit(PAGE_SIZE + 10) // fetch extra to account for filtered restricted events
 
-  if (admin) {
+  if (canManageEvents) {
     eventsQuery = eventsQuery.order('starts_at', { ascending: false })
   } else {
     eventsQuery = eventsQuery
@@ -49,7 +50,61 @@ export default async function EventsPage() {
       .order('name'),
   ])
 
-  const events = eventsResult.data || []
+  let events = eventsResult.data || []
+
+  // Filter restricted events for non-admin users
+  if (!canManageEvents) {
+    const restrictedEventIds = events
+      .filter((e: any) => e.visibility === 'restricted')
+      .map((e: any) => e.id)
+
+    if (restrictedEventIds.length > 0) {
+      // Fetch visibility targets for restricted events
+      const { data: targets } = await supabase
+        .from('event_visibility_targets')
+        .select('event_id, target_type, target_id')
+        .in('event_id', restrictedEventIds)
+
+      // Get user's ministry and group memberships
+      const [ministryMemberships, groupMemberships] = await Promise.all([
+        supabase
+          .from('ministry_members')
+          .select('ministry_id')
+          .eq('profile_id', user.id)
+          .eq('is_active', true),
+        supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('profile_id', user.id)
+          .eq('is_active', true),
+      ])
+
+      const userMinistryIds = new Set((ministryMemberships.data || []).map(m => m.ministry_id))
+      const userGroupIds = new Set((groupMemberships.data || []).map(g => g.group_id))
+
+      // Build set of events user is targeted for
+      const targetsByEvent = new Map<string, { target_type: string; target_id: string }[]>()
+      for (const t of targets || []) {
+        if (!targetsByEvent.has(t.event_id)) targetsByEvent.set(t.event_id, [])
+        targetsByEvent.get(t.event_id)!.push(t)
+      }
+
+      events = events.filter((e: any) => {
+        if (e.visibility !== 'restricted') return true
+        const eventTargets = targetsByEvent.get(e.id) || []
+        const userIsTargeted = eventTargets.some(t =>
+          (t.target_type === 'ministry' && userMinistryIds.has(t.target_id)) ||
+          (t.target_type === 'group' && userGroupIds.has(t.target_id))
+        )
+        // If hide_from_non_invited, completely remove; otherwise keep but user won't be able to register
+        if (e.hide_from_non_invited && !userIsTargeted) return false
+        return true
+      })
+    }
+  }
+
+  // Trim to page size
+  events = events.slice(0, PAGE_SIZE)
   const nextCursor = events.length === PAGE_SIZE ? events[events.length - 1].starts_at : null
 
   return (
@@ -57,13 +112,13 @@ export default async function EventsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">
-            {admin ? t('adminPageTitle') : t('upcomingEvents')}
+            {canManageEvents ? t('adminPageTitle') : t('upcomingEvents')}
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {admin ? t('adminPageSubtitle') : t('upcomingEventsSubtitle')}
+            {canManageEvents ? t('adminPageSubtitle') : t('upcomingEventsSubtitle')}
           </p>
         </div>
-        {admin && (
+        {canManageEvents && (
           <div className="flex gap-2">
             <Link href="/admin/events/from-template">
               <Button variant="outline">
@@ -84,8 +139,8 @@ export default async function EventsPage() {
       <EventsPageClient
         initialEvents={events as any}
         initialCursor={nextCursor}
-        isAdmin={admin}
-        upcoming={!admin}
+        isAdmin={canManageEvents}
+        upcoming={!canManageEvents}
         ministries={(ministriesResult.data || []) as any}
         groups={(groupsResult.data || []) as any}
       />

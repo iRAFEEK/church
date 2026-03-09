@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { resolveApiPermissions } from '@/lib/auth'
 
 // GET /api/events — list events for user's church
 export async function GET(req: NextRequest) {
@@ -96,20 +97,23 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  if (!['super_admin', 'ministry_leader'].includes(profile.role)) {
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_events) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const body = await req.json()
+  const { visibility_targets, ...eventData } = body
+
   const { data, error } = await supabase
     .from('events')
     .insert({
-      ...body,
+      ...eventData,
       church_id: profile.church_id,
       created_by: user.id,
     })
@@ -117,6 +121,18 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Save visibility targets if restricted
+  if (data && visibility_targets && visibility_targets.length > 0) {
+    await supabase.from('event_visibility_targets').insert(
+      visibility_targets.map((t: { target_type: string; target_id: string }) => ({
+        event_id: data.id,
+        target_type: t.target_type,
+        target_id: t.target_id,
+      }))
+    )
+  }
+
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

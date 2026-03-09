@@ -3,13 +3,15 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { AlertTriangle, UserX, Users, CheckCircle2 } from 'lucide-react'
+import { AlertTriangle, UserX, Users, CheckCircle2, HandHeart, MapPin } from 'lucide-react'
 import type { AttentionItem } from '@/types/dashboard'
 
-const typeConfig = {
+const typeConfig: Record<AttentionItem['type'], { icon: typeof AlertTriangle; color: string; iconColor: string }> = {
   visitor_sla: { icon: AlertTriangle, color: 'border-l-red-500', iconColor: 'text-red-500' },
   at_risk_member: { icon: UserX, color: 'border-l-orange-500', iconColor: 'text-orange-500' },
   unfilled_slot: { icon: Users, color: 'border-l-yellow-500', iconColor: 'text-yellow-500' },
+  active_prayer: { icon: HandHeart, color: 'border-l-blue-500', iconColor: 'text-blue-500' },
+  outreach_followup: { icon: MapPin, color: 'border-l-purple-500', iconColor: 'text-purple-500' },
 }
 
 export function AttentionList({ items }: { items: AttentionItem[] }) {

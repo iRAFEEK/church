@@ -252,6 +252,7 @@
     "tabInfo": "Info",
     "tabMilestones": "Spiritual Milestones",
     "tabInvolvement": "Involvement",
+    "tabOutreach": "Outreach",
     "tabAdmin": "Manage",
     "infoGender": "Gender:",
     "infoMale": "Male",
@@ -260,6 +261,7 @@
     "milestonesEmpty": "No spiritual milestones recorded",
     "adminCardTitle": "Account Management",
     "adminChangeRole": "Change Role",
+    "adminPermissions": "Permission Overrides",
     "statusActive": "Active",
     "statusAtRisk": "Needs Follow-up",
     "statusInactive": "Inactive",
@@ -769,7 +771,14 @@
     "leaderNoGatherings": "No recent gatherings",
 
     "viewAll": "View All",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+
+    "sectionGroupHealth": "Group Health",
+    "mlGroups": "Groups",
+    "mlUpcomingEvents": "Ministry Events",
+    "mlNoEvents": "No upcoming events for your ministry",
+    "mlMyAssignments": "My Service Assignments",
+    "mlNoAssignments": "No active service assignments"
   },
 
   "authLayout": {
@@ -843,6 +852,8 @@
       "event_reminder": "Event Reminder",
       "event_service_request": "Service Request",
       "event_service_assigned": "Service Assignment",
+      "event_service_response": "Service Response",
+      "assignment": "Assignment",
       "general": "General"
     },
     "viewRelated": "View Details"
@@ -1727,5 +1738,92 @@
     "emptyOverview": "No involvement data yet",
 
     "loading": "Loading..."
+  },
+
+  "eventVisibility": {
+    "audienceLabel": "Who can see this event?",
+    "allMembers": "All Members",
+    "allMembersDesc": "Visible to everyone",
+    "specific": "Specific Groups",
+    "specificDesc": "Only selected groups/ministries",
+    "ministries": "Ministries",
+    "groups": "Groups",
+    "hideToggle": "Hide from non-invited",
+    "hideToggleDesc": "Completely hide this event from members who are not in the selected groups/ministries"
+  },
+
+  "permissions": {
+    "roleDefaultsTitle": "Role Permission Defaults",
+    "roleDefaultsSubtitle": "Configure the default permissions for each role. Changes apply to all users with that role (unless they have individual overrides).",
+    "summaryTitle": "Permission Overrides",
+    "summarySubtitle": "Members with custom permission overrides beyond their role defaults.",
+    "noOverrides": "No custom overrides for this role",
+    "saved": "Permissions saved",
+    "saveError": "Failed to save permissions",
+    "savePermissions": "Save Permissions",
+    "superAdminNote": "Super admins always have full permissions."
+  },
+
+  "churchPrayer": {
+    "pageTitle": "Prayer Requests",
+    "submitTitle": "Submit a Prayer Request",
+    "contentLabel": "Your prayer request",
+    "contentPlaceholder": "Share your prayer request here...",
+    "anonymousLabel": "Submit anonymously",
+    "anonymousHint": "Your name will be hidden from prayer viewers",
+    "submitButton": "Submit Prayer",
+    "submitted": "Your prayer has been submitted",
+    "adminTitle": "Prayer Management",
+    "filterActive": "Active",
+    "filterAnswered": "Answered",
+    "filterArchived": "Archived",
+    "markAnswered": "Answered",
+    "archive": "Archive",
+    "delete": "Delete",
+    "resolveDialogTitle": "Log Prayer Answer",
+    "resolveDialogNotes": "Notes (optional)",
+    "anonymous": "Anonymous",
+    "empty": "No prayer requests",
+    "myPrayers": "My Prayers"
+  },
+
+  "outreach": {
+    "pageTitle": "Outreach",
+    "subtitle": "Track congregation visits and follow-ups",
+    "memberName": "Name",
+    "address": "Address",
+    "city": "City / Area",
+    "phone": "Phone",
+    "lastVisit": "Last Visit",
+    "neverVisited": "Never visited",
+    "needsFollowup": "Needs follow-up",
+    "daysAgo": "{count} days ago",
+    "logVisit": "Log Visit",
+    "logNewVisit": "Log New Visit",
+    "visitDate": "Visit Date",
+    "visitNotes": "Notes",
+    "followupNeeded": "Follow-up needed",
+    "followupDate": "Follow-up date",
+    "followupNotes": "Follow-up notes",
+    "filterCity": "Filter by city",
+    "filterFollowup": "Needs follow-up",
+    "filterNotVisited": "Not visited recently",
+    "visitHistory": "Visit History",
+    "noVisits": "No visits recorded",
+    "saved": "Visit saved",
+    "deleted": "Visit deleted",
+    "error": "Something went wrong",
+    "addressLabel": "Address",
+    "addressArLabel": "Address (Arabic)",
+    "cityLabel": "City / Area",
+    "cityArLabel": "City / Area (Arabic)",
+    "addressNotesLabel": "Address Notes",
+    "tabAll": "All Members",
+    "tabNeedsVisit": "Needs Visit",
+    "tabNeedsFollowup": "Needs Follow-up",
+    "visitedBy": "Visited by",
+    "memberDetail": "Member Details",
+    "totalVisits": "Total Visits",
+    "selectMember": "Select member"
   }
 }

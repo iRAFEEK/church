@@ -252,6 +252,7 @@
     "tabInfo": "المعلومات",
     "tabMilestones": "المراحل الروحية",
     "tabInvolvement": "المشاركة",
+    "tabOutreach": "التواصل",
     "tabAdmin": "إدارة",
     "infoGender": "الجنس:",
     "infoMale": "ذكر",
@@ -260,6 +261,7 @@
     "milestonesEmpty": "لا توجد مراحل روحية مسجلة",
     "adminCardTitle": "إدارة الحساب",
     "adminChangeRole": "تغيير الدور",
+    "adminPermissions": "تخصيص الصلاحيات",
     "statusActive": "نشط",
     "statusAtRisk": "يحتاج متابعة",
     "statusInactive": "غير نشط",
@@ -769,7 +771,14 @@
     "leaderNoGatherings": "لا اجتماعات حديثة",
 
     "viewAll": "عرض الكل",
-    "viewDetails": "عرض التفاصيل"
+    "viewDetails": "عرض التفاصيل",
+
+    "sectionGroupHealth": "صحة المجموعات",
+    "mlGroups": "المجموعات",
+    "mlUpcomingEvents": "فعاليات الخدمة",
+    "mlNoEvents": "لا توجد فعاليات قادمة لخدمتك",
+    "mlMyAssignments": "تعييناتي في الخدمة",
+    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة"
   },
 
   "authLayout": {
@@ -843,6 +852,8 @@
       "event_reminder": "تذكير فعالية",
       "event_service_request": "طلب خدمة",
       "event_service_assigned": "تعيين خدمة",
+      "event_service_response": "رد الخدمة",
+      "assignment": "تعيين",
       "general": "عام"
     },
     "viewRelated": "عرض التفاصيل"
@@ -1727,5 +1738,92 @@
     "emptyOverview": "لا توجد بيانات مشاركة بعد",
 
     "loading": "جاري التحميل..."
+  },
+
+  "eventVisibility": {
+    "audienceLabel": "من يمكنه رؤية هذه الفعالية؟",
+    "allMembers": "جميع الأعضاء",
+    "allMembersDesc": "مرئية للجميع",
+    "specific": "مجموعات محددة",
+    "specificDesc": "فقط المجموعات/الخدمات المحددة",
+    "ministries": "الخدمات",
+    "groups": "المجموعات",
+    "hideToggle": "إخفاء عن غير المدعوين",
+    "hideToggleDesc": "إخفاء هذه الفعالية تماماً عن الأعضاء غير المنتمين للمجموعات/الخدمات المحددة"
+  },
+
+  "permissions": {
+    "roleDefaultsTitle": "صلاحيات الأدوار الافتراضية",
+    "roleDefaultsSubtitle": "تكوين الصلاحيات الافتراضية لكل دور. التغييرات تُطبق على جميع المستخدمين بهذا الدور (ما لم يكن لديهم تخصيصات فردية).",
+    "summaryTitle": "تخصيصات الصلاحيات",
+    "summarySubtitle": "الأعضاء الذين لديهم تخصيصات صلاحيات مخصصة تتجاوز إعدادات أدوارهم.",
+    "noOverrides": "لا توجد تخصيصات لهذا الدور",
+    "saved": "تم حفظ الصلاحيات",
+    "saveError": "فشل حفظ الصلاحيات",
+    "savePermissions": "حفظ الصلاحيات",
+    "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً."
+  },
+
+  "churchPrayer": {
+    "pageTitle": "طلبات الصلاة",
+    "submitTitle": "تقديم طلب صلاة",
+    "contentLabel": "طلب الصلاة",
+    "contentPlaceholder": "شارك طلب صلاتك هنا...",
+    "anonymousLabel": "تقديم بشكل مجهول",
+    "anonymousHint": "سيتم إخفاء اسمك عن القراء",
+    "submitButton": "إرسال الطلب",
+    "submitted": "تم إرسال طلب الصلاة",
+    "adminTitle": "إدارة الصلوات",
+    "filterActive": "نشطة",
+    "filterAnswered": "مُستجابة",
+    "filterArchived": "مؤرشفة",
+    "markAnswered": "مُستجابة",
+    "archive": "أرشفة",
+    "delete": "حذف",
+    "resolveDialogTitle": "تسجيل استجابة الصلاة",
+    "resolveDialogNotes": "ملاحظات (اختياري)",
+    "anonymous": "مجهول",
+    "empty": "لا توجد طلبات صلاة",
+    "myPrayers": "طلباتي"
+  },
+
+  "outreach": {
+    "pageTitle": "التواصل",
+    "subtitle": "تتبع زيارات أعضاء الكنيسة والمتابعات",
+    "memberName": "الاسم",
+    "address": "العنوان",
+    "city": "المدينة / المنطقة",
+    "phone": "الهاتف",
+    "lastVisit": "آخر زيارة",
+    "neverVisited": "لم تتم زيارته",
+    "needsFollowup": "يحتاج متابعة",
+    "daysAgo": "منذ {count} يوم",
+    "logVisit": "تسجيل زيارة",
+    "logNewVisit": "تسجيل زيارة جديدة",
+    "visitDate": "تاريخ الزيارة",
+    "visitNotes": "ملاحظات",
+    "followupNeeded": "يحتاج متابعة",
+    "followupDate": "تاريخ المتابعة",
+    "followupNotes": "ملاحظات المتابعة",
+    "filterCity": "تصفية حسب المدينة",
+    "filterFollowup": "يحتاج متابعة",
+    "filterNotVisited": "لم تتم زيارته مؤخراً",
+    "visitHistory": "سجل الزيارات",
+    "noVisits": "لا توجد زيارات مسجلة",
+    "saved": "تم حفظ الزيارة",
+    "deleted": "تم حذف الزيارة",
+    "error": "حدث خطأ",
+    "addressLabel": "العنوان",
+    "addressArLabel": "العنوان (بالعربية)",
+    "cityLabel": "المدينة / المنطقة",
+    "cityArLabel": "المدينة / المنطقة (بالعربية)",
+    "addressNotesLabel": "ملاحظات العنوان",
+    "tabAll": "جميع الأعضاء",
+    "tabNeedsVisit": "يحتاج زيارة",
+    "tabNeedsFollowup": "يحتاج متابعة",
+    "visitedBy": "زار بواسطة",
+    "memberDetail": "تفاصيل العضو",
+    "totalVisits": "إجمالي الزيارات",
+    "selectMember": "اختر عضواً"
   }
 }

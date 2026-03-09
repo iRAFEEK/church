@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { resolveApiPermissions } from '@/lib/auth'
 
 // GET /api/serving/areas/[id]
 export async function GET(
@@ -35,11 +36,13 @@ export async function PATCH(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, church_id, permissions')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'ministry_leader'].includes(profile.role)) {
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_serving) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -67,11 +70,13 @@ export async function DELETE(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, church_id, permissions')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'ministry_leader'].includes(profile.role)) {
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_serving) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

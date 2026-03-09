@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { Users, CalendarCheck, HandHeart, Calendar, UserRound, Plus, Eye } from 'lucide-react'
+import { Users, CalendarCheck, HandHeart, Calendar, UserRound, Plus, Eye, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -98,6 +98,31 @@ export function LeaderDashboard({ data }: Props) {
           icon={Calendar}
         />
       </div>
+
+      {/* Attendance Trend Chart */}
+      {data.attendanceTrend && data.attendanceTrend.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              {t('chartAttendanceTrend')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-1 h-32">
+              {data.attendanceTrend.map((point, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    className="w-full bg-primary/20 rounded-t-sm min-h-[4px]"
+                    style={{ height: `${Math.max(point.rate, 4)}%` }}
+                  />
+                  <span className="text-[9px] text-muted-foreground">{point.weekLabel}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Row 2: At-Risk + Prayers */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">

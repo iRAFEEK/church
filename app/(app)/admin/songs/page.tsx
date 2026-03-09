@@ -1,11 +1,11 @@
-import { requireRole } from '@/lib/auth'
+import { requirePermission } from '@/lib/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SongsTable } from '@/components/songs/SongsTable'
 import { getTranslations } from 'next-intl/server'
 
 export default async function AdminSongsPage() {
-  const user = await requireRole('group_leader', 'ministry_leader', 'super_admin')
+  const user = await requirePermission('can_manage_songs')
 
   const t = await getTranslations('songs')
 

@@ -4,14 +4,18 @@ import Link from 'next/link'
 import { GroupsTable } from '@/components/groups/GroupsTable'
 import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
+import { resolveUserScope } from '@/lib/scope'
 
 export default async function GroupsPage() {
-  const user = await requireRole('group_leader', 'ministry_leader', 'super_admin')
+  const user = await requireRole('group_leader', 'super_admin')
 
   const t = await getTranslations('groups')
   const supabase = await createClient()
 
-  const { data: groups } = await supabase
+  const isSuperAdmin = user.profile.role === 'super_admin'
+
+  // Scope: group leaders see only their groups, super admins see all
+  let groupsQuery = supabase
     .from('groups')
     .select(`
       *,
@@ -21,13 +25,23 @@ export default async function GroupsPage() {
     `)
     .order('name')
 
+  if (!isSuperAdmin) {
+    const scope = await resolveUserScope(supabase, user.id, user.profile.church_id)
+    if (scope.groupIds.length > 0) {
+      groupsQuery = groupsQuery.in('id', scope.groupIds)
+    } else {
+      // No groups — show empty
+      groupsQuery = groupsQuery.eq('id', '00000000-0000-0000-0000-000000000000')
+    }
+  }
+
+  const { data: groups } = await groupsQuery
+
   const { data: ministries } = await supabase
     .from('ministries')
     .select('id,name,name_ar')
     .eq('is_active', true)
     .order('name')
-
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
 
   return (
     <div className="space-y-6">
@@ -37,7 +51,7 @@ export default async function GroupsPage() {
           <p className="text-sm text-zinc-500 mt-1">{t('adminPageSubtitle')}</p>
         </div>
         <div className="flex gap-2">
-          {isAdmin && (
+          {isSuperAdmin && (
             <Link href="/admin/groups/new">
               <Button>{t('newGroupButton')}</Button>
             </Link>
@@ -48,7 +62,7 @@ export default async function GroupsPage() {
       <GroupsTable
         groups={groups || []}
         ministries={ministries || []}
-        isAdmin={isAdmin}
+        isAdmin={isSuperAdmin}
       />
     </div>
   )

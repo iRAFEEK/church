@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { resolveUserScope } from '@/lib/scope'
 
 export default async function MinistriesPage() {
   const user = await requireRole('ministry_leader', 'super_admin')
@@ -12,10 +13,23 @@ export default async function MinistriesPage() {
   const t = await getTranslations('ministries')
   const supabase = await createClient()
 
-  const { data: ministries } = await supabase
+  const isSuperAdmin = user.profile.role === 'super_admin'
+
+  let ministriesQuery = supabase
     .from('ministries')
     .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url), ministry_members(count)')
     .order('name')
+
+  if (!isSuperAdmin) {
+    const scope = await resolveUserScope(supabase, user.id, user.profile.church_id)
+    if (scope.ministryIds.length > 0) {
+      ministriesQuery = ministriesQuery.in('id', scope.ministryIds)
+    } else {
+      ministriesQuery = ministriesQuery.eq('id', '00000000-0000-0000-0000-000000000000')
+    }
+  }
+
+  const { data: ministries } = await ministriesQuery
 
   return (
     <div className="space-y-6">
@@ -24,9 +38,11 @@ export default async function MinistriesPage() {
           <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
           <p className="text-sm text-zinc-500 mt-1">{t('pageSubtitle')}</p>
         </div>
-        <Link href="/admin/ministries/new">
-          <Button>{t('newButton')}</Button>
-        </Link>
+        {isSuperAdmin && (
+          <Link href="/admin/ministries/new">
+            <Button>{t('newButton')}</Button>
+          </Link>
+        )}
       </div>
 
       {!ministries || ministries.length === 0 ? (

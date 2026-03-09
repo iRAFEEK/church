@@ -2,8 +2,9 @@ import { getCurrentUserWithRole, isLeader } from '@/lib/auth'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
-import { fetchAdminDashboard, fetchMinistryLeaderDashboard, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
+import { fetchAdminDashboard, fetchMinistryLeaderDashboardV2, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
+import { MinistryLeaderDashboard } from '@/components/dashboard/MinistryLeaderDashboard'
 import { LeaderDashboard } from '@/components/dashboard/LeaderDashboard'
 import { MemberDashboard } from '@/components/dashboard/MemberDashboard'
 
@@ -60,11 +61,11 @@ export default async function DashboardPage() {
   }
 
   if (profile.role === 'ministry_leader') {
-    const data = await fetchMinistryLeaderDashboard(supabase, id, churchId, slaHours)
+    const data = await fetchMinistryLeaderDashboardV2(supabase, id, churchId)
     return (
       <div className="space-y-6">
         {header}
-        <AdminDashboard data={data} />
+        <MinistryLeaderDashboard data={data} />
       </div>
     )
   }

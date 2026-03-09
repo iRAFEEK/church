@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { resolveApiPermissions } from '@/lib/auth'
 
 // GET /api/announcements — list announcements
 export async function GET(req: NextRequest) {
@@ -10,11 +11,13 @@ export async function GET(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+
+  const perms = await resolveApiPermissions(supabase, profile)
 
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
@@ -23,7 +26,7 @@ export async function GET(req: NextRequest) {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(profile.role)
+  const isAdmin = perms.can_manage_announcements
 
   let query = supabase
     .from('announcements')
@@ -62,12 +65,13 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('church_id, role')
+    .select('church_id, role, permissions')
     .eq('id', user.id)
     .single()
 
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  if (!['super_admin', 'ministry_leader'].includes(profile.role)) {
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_announcements) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

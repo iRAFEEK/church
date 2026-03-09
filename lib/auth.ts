@@ -1,7 +1,8 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import type { Profile, Church, AuthUser } from '@/types'
+import type { Profile, Church, AuthUser, PermissionKey } from '@/types'
+import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 
 /**
  * Get the current authenticated user with their profile and church.
@@ -34,11 +35,28 @@ export const getCurrentUserWithRole = cache(async (): Promise<AuthUser> => {
     redirect('/login')
   }
 
+  const profile = profileData as Profile
+
+  // Fetch church-level role permission defaults (if configured)
+  const { data: roleDefaults } = await supabase
+    .from('role_permission_defaults')
+    .select('permissions')
+    .eq('church_id', profile.church_id)
+    .eq('role', profile.role)
+    .single()
+
+  const resolvedPermissions = resolvePermissions(
+    profile.role,
+    roleDefaults?.permissions ?? null,
+    profile.permissions ?? null
+  )
+
   return {
     id: user.id,
     email: user.email!,
-    profile: profileData as Profile,
+    profile,
     church: churchData as unknown as Church,
+    resolvedPermissions,
   }
 })
 
@@ -64,11 +82,27 @@ export async function getCurrentUserSafe(): Promise<AuthUser | null> {
     const { church: churchData, ...profileData } = profileWithChurch
     if (!churchData) return null
 
+    const profile = profileData as Profile
+
+    const { data: roleDefaults } = await supabase
+      .from('role_permission_defaults')
+      .select('permissions')
+      .eq('church_id', profile.church_id)
+      .eq('role', profile.role)
+      .single()
+
+    const resolved = resolvePermissions(
+      profile.role,
+      roleDefaults?.permissions ?? null,
+      profile.permissions ?? null
+    )
+
     return {
       id: user.id,
       email: user.email!,
-      profile: profileData as Profile,
+      profile,
       church: churchData as unknown as Church,
+      resolvedPermissions: resolved,
     }
   } catch {
     return null
@@ -117,4 +151,41 @@ export async function requireRole(...allowedRoles: Profile['role'][]): Promise<A
     redirect('/dashboard')
   }
   return user
+}
+
+/**
+ * Server-side permission guard. Redirects to /dashboard if user lacks ALL specified permissions.
+ * Uses the additive permission model: role defaults + church defaults + user overrides.
+ */
+export async function requirePermission(...permissions: PermissionKey[]): Promise<AuthUser> {
+  const user = await getCurrentUserWithRole()
+  for (const perm of permissions) {
+    if (!user.resolvedPermissions[perm]) {
+      redirect('/dashboard')
+    }
+  }
+  return user
+}
+
+/**
+ * Resolve permissions for an API route profile query.
+ * Use when you have a lightweight profile object from an API route (not the full AuthUser).
+ * Fetches role defaults and resolves permissions.
+ */
+export async function resolveApiPermissions(
+  supabase: any,
+  profile: { role: string; church_id: string; permissions?: any }
+): Promise<Record<PermissionKey, boolean>> {
+  const { data: roleDefaults } = await supabase
+    .from('role_permission_defaults')
+    .select('permissions')
+    .eq('church_id', profile.church_id)
+    .eq('role', profile.role)
+    .single()
+
+  return resolvePermissions(
+    profile.role as Profile['role'],
+    roleDefaults?.permissions ?? null,
+    profile.permissions ?? null
+  )
 }

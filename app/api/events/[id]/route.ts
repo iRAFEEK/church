@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { resolveApiPermissions } from '@/lib/auth'
 
 // GET /api/events/[id] — get event detail
 export async function GET(
@@ -14,7 +15,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select('*, event_visibility_targets(*)')
     .eq('id', id)
     .single()
 
@@ -36,23 +37,42 @@ export async function PATCH(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, church_id')
+    .select('role, church_id, permissions')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'ministry_leader'].includes(profile.role)) {
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_events) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const body = await req.json()
+  const { visibility_targets, ...eventData } = body
+
   const { data, error } = await supabase
     .from('events')
-    .update(body)
+    .update(eventData)
     .eq('id', id)
     .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Update visibility targets
+  if (visibility_targets !== undefined) {
+    await supabase.from('event_visibility_targets').delete().eq('event_id', id)
+    if (visibility_targets.length > 0) {
+      await supabase.from('event_visibility_targets').insert(
+        visibility_targets.map((t: { target_type: string; target_id: string }) => ({
+          event_id: id,
+          target_type: t.target_type,
+          target_id: t.target_id,
+        }))
+      )
+    }
+  }
+
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }
@@ -69,11 +89,13 @@ export async function DELETE(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, church_id')
+    .select('role, church_id, permissions')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'ministry_leader'].includes(profile.role)) {
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_events) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield } from 'lucide-react'
+import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield, MapPin, Home } from 'lucide-react'
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
 import { MemberInvolvementCard } from '@/components/profile/MemberInvolvementCard'
+import { MemberPermissionEditor } from '@/components/permissions/MemberPermissionEditor'
 import { getTranslations, getLocale } from 'next-intl/server'
 import type { Profile, ProfileMilestone } from '@/types'
 
@@ -23,10 +24,13 @@ export default async function MemberDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { profile: currentUser } = await getCurrentUserWithRole()
+  const authUser = await getCurrentUserWithRole()
+  const currentUser = authUser.profile
   const { id } = await params
 
   const admin = isAdmin(currentUser)
+  const isSuperAdmin = currentUser.role === 'super_admin'
+  const canManageOutreach = authUser.resolvedPermissions.can_manage_outreach
 
   // Allow admins + group leaders (who lead groups containing this member)
   if (!admin && currentUser.role !== 'group_leader') redirect('/dashboard')
@@ -144,10 +148,11 @@ export default async function MemberDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="info" dir="rtl">
-        <TabsList className={`grid w-full ${admin ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <TabsList className={`grid w-full ${admin && canManageOutreach ? 'grid-cols-5' : admin || canManageOutreach ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
           <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
           <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
+          {canManageOutreach && <TabsTrigger value="outreach">{t('tabOutreach')}</TabsTrigger>}
           {admin && <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>}
         </TabsList>
 
@@ -183,6 +188,19 @@ export default async function MemberDetailPage({
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">{t('infoGender')}</span>
                   <span>{memberProfile.gender === 'male' ? t('infoMale') : t('infoFemale')}</span>
+                </div>
+              )}
+
+              {(memberProfile.address || memberProfile.address_ar) && (
+                <div className="flex items-center gap-3">
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                  <span>{locale === 'ar' ? (memberProfile.address_ar || memberProfile.address) : (memberProfile.address || memberProfile.address_ar)}</span>
+                </div>
+              )}
+              {(memberProfile.city || memberProfile.city_ar) && (
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{locale === 'ar' ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
                 </div>
               )}
 
@@ -236,6 +254,50 @@ export default async function MemberDetailPage({
           </Card>
         </TabsContent>
 
+        {/* Outreach Tab */}
+        {canManageOutreach && (
+          <TabsContent value="outreach">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {t('tabOutreach')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Address Info */}
+                <div className="space-y-2">
+                  {(memberProfile.address || memberProfile.address_ar) && (
+                    <div className="flex items-start gap-3">
+                      <Home className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        {memberProfile.address_ar && <p className="text-sm">{memberProfile.address_ar}</p>}
+                        {memberProfile.address && <p className="text-sm text-muted-foreground" dir="ltr">{memberProfile.address}</p>}
+                      </div>
+                    </div>
+                  )}
+                  {(memberProfile.city || memberProfile.city_ar) && (
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{locale === 'ar' ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
+                    </div>
+                  )}
+                  {memberProfile.address_notes && (
+                    <p className="text-xs text-muted-foreground ms-7">{memberProfile.address_notes}</p>
+                  )}
+                </div>
+
+                {/* Link to full outreach page */}
+                <Button variant="outline" asChild className="w-full">
+                  <Link href={`/admin/outreach/${memberProfile.id}`}>
+                    {t('tabOutreach')} →
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
         {/* Admin Tab */}
         {admin && (
           <TabsContent value="admin">
@@ -256,6 +318,17 @@ export default async function MemberDetailPage({
                     currentUserRole={currentUser.role}
                   />
                 </div>
+
+                {/* Permission Overrides — super_admin only */}
+                {isSuperAdmin && (
+                  <div>
+                    <p className="text-sm font-medium mb-2">{t('adminPermissions')}</p>
+                    <MemberPermissionEditor
+                      memberId={memberProfile.id}
+                      memberRole={memberProfile.role}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

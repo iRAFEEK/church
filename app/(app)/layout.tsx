@@ -18,6 +18,7 @@ export default async function AppLayout({
     <AppShell
       profile={authUser.profile}
       church={authUser.church}
+      resolvedPermissions={authUser.resolvedPermissions}
     >
       {children}
     </AppShell>
