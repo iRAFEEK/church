@@ -4,7 +4,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Check, Archive, Trash2, EyeOff } from 'lucide-react'
+import { Check, Archive, Trash2, EyeOff, X } from 'lucide-react'
+import { PrayerAssignDialog } from './PrayerAssignDialog'
 
 interface Submitter {
   id: string
@@ -15,7 +16,16 @@ interface Submitter {
   photo_url: string | null
 }
 
-interface Prayer {
+interface Assignee {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  first_name_ar: string | null
+  last_name_ar: string | null
+  photo_url: string | null
+}
+
+export interface Prayer {
   id: string
   content: string
   is_anonymous: boolean
@@ -23,7 +33,9 @@ interface Prayer {
   resolved_at: string | null
   resolved_notes: string | null
   created_at: string
+  assigned_to: string | null
   submitter: Submitter | null
+  assignee: Assignee | null
 }
 
 interface Props {
@@ -31,10 +43,12 @@ interface Props {
   onMarkAnswered?: (id: string) => void
   onArchive?: (id: string) => void
   onDelete?: (id: string) => void
+  onAssigned?: () => void
+  onUnassign?: (id: string) => void
   showActions?: boolean
 }
 
-export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, showActions = true }: Props) {
+export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, onAssigned, onUnassign, showActions = true }: Props) {
   const t = useTranslations('churchPrayer')
   const locale = useLocale()
   const isAr = locale === 'ar'
@@ -80,10 +94,26 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
               {t('filterAnswered')}
             </Badge>
           )}
+          {prayer.assignee && (
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] flex items-center gap-1">
+              {t('assignedTo')}: {isAr
+                ? `${prayer.assignee.first_name_ar || prayer.assignee.first_name || ''} ${prayer.assignee.last_name_ar || prayer.assignee.last_name || ''}`.trim()
+                : `${prayer.assignee.first_name || ''} ${prayer.assignee.last_name || ''}`.trim()
+              }
+              {onUnassign && (
+                <button type="button" onClick={() => onUnassign(prayer.id)} className="ms-1 hover:text-blue-900">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </Badge>
+          )}
         </div>
 
         {showActions && (
           <div className="flex items-center gap-1">
+            {prayer.status === 'active' && !prayer.assigned_to && onAssigned && (
+              <PrayerAssignDialog prayerId={prayer.id} onAssigned={onAssigned} />
+            )}
             {prayer.status === 'active' && onMarkAnswered && (
               <Button
                 variant="ghost"

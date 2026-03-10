@@ -230,6 +230,7 @@
     "tablePhone": "Phone",
     "tableJoinedAt": "Join Date",
     "tableViewButton": "View",
+    "tablePermissions": "Edit Permissions",
     "paginationPage": "Page {current} of {total}",
     "paginationPrevious": "Previous",
     "paginationNext": "Next",
@@ -1761,7 +1762,10 @@
     "saved": "Permissions saved",
     "saveError": "Failed to save permissions",
     "savePermissions": "Save Permissions",
-    "superAdminNote": "Super admins always have full permissions."
+    "superAdminNote": "Super admins always have full permissions.",
+    "userPermissionsTitle": "Permission Overrides",
+    "userPermissionsDesc": "Toggle permissions on or off. Highlighted toggles differ from the role default.",
+    "memberNotFound": "Member not found."
   },
 
   "churchPrayer": {
@@ -1784,7 +1788,16 @@
     "resolveDialogNotes": "Notes (optional)",
     "anonymous": "Anonymous",
     "empty": "No prayer requests",
-    "myPrayers": "My Prayers"
+    "myPrayers": "My Prayers",
+    "assign": "Assign",
+    "unassign": "Unassign",
+    "assignDialogTitle": "Assign Prayer Request",
+    "searchMembers": "Search members...",
+    "assignedTo": "Assigned to",
+    "assignSuccess": "Prayer assigned successfully",
+    "unassignSuccess": "Prayer unassigned",
+    "noMembersFound": "No members found",
+    "assignedToMe": "Assigned to Me"
   },
 
   "outreach": {

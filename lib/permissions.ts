@@ -72,7 +72,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_outreach: false,
   },
   ministry_leader: {
-    can_view_members: true,
+    can_view_members: false,
     can_manage_members: false,
     can_view_visitors: true,
     can_manage_visitors: true,

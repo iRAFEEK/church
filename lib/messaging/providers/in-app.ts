@@ -1,5 +1,5 @@
 import type { MessagePayload, MessageResult, MessageProvider } from '../types'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 /**
  * In-app notification provider.
@@ -12,7 +12,12 @@ class InAppProvider implements MessageProvider {
 
   async send(payload: MessagePayload): Promise<MessageResult> {
     try {
-      const supabase = await createClient()
+      let supabase: any
+      try {
+        supabase = await createAdminClient()
+      } catch {
+        supabase = await createClient()
+      }
 
       const { data, error } = await supabase
         .from('notifications_log')

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
+import { sendNotification } from '@/lib/messaging/dispatcher'
 
 type Params = { params: Promise<{ id: string }> }
 
-// PATCH /api/church-prayers/[id] — update prayer status
-export async function PATCH(req: NextRequest, { params }: Params) {
+// POST — Assign prayer to a member
+export async function POST(req: NextRequest, { params }: Params) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,18 +25,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await req.json()
-  const updates: Record<string, any> = {}
-
-  if (body.status) {
-    updates.status = body.status
-    if (body.status === 'answered') {
-      updates.resolved_at = new Date().toISOString()
-    }
+  const { assigned_to } = await req.json()
+  if (!assigned_to) {
+    return NextResponse.json({ error: 'assigned_to is required' }, { status: 400 })
   }
-  if (body.resolved_notes !== undefined) updates.resolved_notes = body.resolved_notes
 
-  // Use admin client to bypass RLS
   let dbClient: any
   try {
     dbClient = await createAdminClient()
@@ -43,20 +37,40 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     dbClient = supabase
   }
 
+  // Update prayer request
   const { data, error } = await dbClient
     .from('prayer_requests')
-    .update(updates)
+    .update({ assigned_to })
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .is('group_id', null)
-    .select()
+    .select('id, content, assigned_to, is_anonymous, submitted_by')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Notify the assigned member
+  try {
+    await sendNotification({
+      profileId: assigned_to,
+      churchId: profile.church_id,
+      type: 'general',
+      titleEn: 'Prayer Request Assigned',
+      titleAr: 'تم تعيين طلب صلاة لك',
+      bodyEn: 'A prayer request has been assigned to you for follow-up.',
+      bodyAr: 'تم تعيين طلب صلاة لك للمتابعة.',
+      referenceId: id,
+      referenceType: 'prayer_request',
+    })
+  } catch {
+    // Don't fail the request if notification fails
+  }
+
   return NextResponse.json({ data })
 }
 
-// DELETE /api/church-prayers/[id] — delete a prayer request
+// DELETE — Unassign prayer
 export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params
   const supabase = await createClient()
@@ -72,8 +86,10 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
   const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_view_prayers) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
-  // Use admin client to bypass RLS
   let dbClient: any
   try {
     dbClient = await createAdminClient()
@@ -81,24 +97,9 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     dbClient = supabase
   }
 
-  // Check if user is the submitter
-  const { data: prayer } = await dbClient
-    .from('prayer_requests')
-    .select('submitted_by')
-    .eq('id', id)
-    .eq('church_id', profile.church_id)
-    .is('group_id', null)
-    .single()
-
-  if (!prayer) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  if (prayer.submitted_by !== user.id && !perms.can_view_prayers) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const { error } = await dbClient
     .from('prayer_requests')
-    .delete()
+    .update({ assigned_to: null })
     .eq('id', id)
     .eq('church_id', profile.church_id)
 

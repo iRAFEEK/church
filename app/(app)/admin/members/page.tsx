@@ -25,6 +25,7 @@ export default async function MembersPage({
   searchParams: Promise<SearchParams>
 }) {
   const { profile } = await requirePermission('can_view_members')
+  const isSuperAdmin = profile.role === 'super_admin'
   const params = await searchParams
 
   const t = await getTranslations('members')
@@ -165,7 +166,13 @@ export default async function MembersPage({
                             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">{displayName}</p>
+                            {isSuperAdmin ? (
+                              <Link href={`/admin/permissions/${member.id}`} className="font-medium text-sm truncate block hover:underline">
+                                {displayName}
+                              </Link>
+                            ) : (
+                              <p className="font-medium text-sm truncate">{displayName}</p>
+                            )}
                             <p className="text-xs text-muted-foreground truncate" dir="ltr">
                               {member.email}
                             </p>
