@@ -34,11 +34,20 @@ export const NAV_ITEMS: NavItem[] = [
 
   // ─── Groups ─────────────────────────────────────────────
   {
+    label: 'My Group',
+    label_ar: 'مجموعتي',
+    href: '/my-group',
+    iconName: 'Users',
+    roles: ['group_leader'],
+    section: 'Groups',
+    section_ar: 'المجموعات',
+  },
+  {
     label: 'Groups',
     label_ar: 'المجموعات',
     href: '/admin/groups',
     iconName: 'Users',
-    roles: ['group_leader', 'super_admin'],
+    roles: ['super_admin'],
     section: 'Groups',
     section_ar: 'المجموعات',
   },

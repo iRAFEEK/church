@@ -32,35 +32,8 @@ export default async function MemberDetailPage({
   const isSuperAdmin = currentUser.role === 'super_admin'
   const canManageOutreach = authUser.resolvedPermissions.can_manage_outreach
 
-  // Allow admins + group leaders (who lead groups containing this member)
-  if (!admin && currentUser.role !== 'group_leader') redirect('/dashboard')
-
-  if (currentUser.role === 'group_leader') {
-    const supabaseCheck = await createClient()
-    // Get groups this leader leads
-    const { data: leaderGroups } = await supabaseCheck
-      .from('group_members')
-      .select('group_id')
-      .eq('profile_id', currentUser.id)
-      .in('role_in_group', ['leader', 'co_leader'])
-      .eq('is_active', true)
-
-    const groupIds = (leaderGroups || []).map(g => g.group_id)
-
-    if (groupIds.length > 0) {
-      // Check if target member is in any of those groups
-      const { data: memberCheck } = await supabaseCheck
-        .from('group_members')
-        .select('id')
-        .eq('profile_id', id)
-        .in('group_id', groupIds)
-        .limit(1)
-
-      if (!memberCheck || memberCheck.length === 0) redirect('/dashboard')
-    } else {
-      redirect('/dashboard')
-    }
-  }
+  // Only users with can_view_members permission can access member profiles
+  if (!authUser.resolvedPermissions.can_view_members) redirect('/dashboard')
 
   const t = await getTranslations('memberDetail')
   const locale = await getLocale()

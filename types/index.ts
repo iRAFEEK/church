@@ -83,6 +83,7 @@ export interface PrayerRequest {
   status: PrayerStatus
   resolved_at: string | null
   resolved_notes: string | null
+  assigned_to: string | null
   created_at: string
   updated_at: string
 }

@@ -3,28 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChurchPrayerCard } from './ChurchPrayerCard'
+import { ChurchPrayerCard, type Prayer } from './ChurchPrayerCard'
 import { Loader2 } from 'lucide-react'
-
-interface Submitter {
-  id: string
-  first_name: string | null
-  last_name: string | null
-  first_name_ar: string | null
-  last_name_ar: string | null
-  photo_url: string | null
-}
-
-interface Prayer {
-  id: string
-  content: string
-  is_anonymous: boolean
-  status: string
-  resolved_at: string | null
-  resolved_notes: string | null
-  created_at: string
-  submitter: Submitter | null
-}
+import { toast } from 'sonner'
 
 export function ChurchPrayerList() {
   const t = useTranslations('churchPrayer')
@@ -74,6 +55,16 @@ export function ChurchPrayerList() {
     if (res.ok) fetchPrayers(tab)
   }
 
+  const handleUnassign = async (id: string) => {
+    const res = await fetch(`/api/church-prayers/${id}/assign`, {
+      method: 'DELETE',
+    })
+    if (res.ok) {
+      toast.success(t('unassignSuccess'))
+      fetchPrayers(tab)
+    }
+  }
+
   return (
     <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
@@ -98,6 +89,8 @@ export function ChurchPrayerList() {
                 onMarkAnswered={tab === 'active' ? handleMarkAnswered : undefined}
                 onArchive={tab === 'active' ? handleArchive : undefined}
                 onDelete={handleDelete}
+                onAssigned={() => fetchPrayers(tab)}
+                onUnassign={handleUnassign}
               />
             ))}
           </div>

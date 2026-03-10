@@ -230,6 +230,7 @@
     "tablePhone": "الهاتف",
     "tableJoinedAt": "تاريخ الانضمام",
     "tableViewButton": "عرض",
+    "tablePermissions": "تعديل الصلاحيات",
     "paginationPage": "صفحة {current} من {total}",
     "paginationPrevious": "السابق",
     "paginationNext": "التالي",
@@ -1761,7 +1762,10 @@
     "saved": "تم حفظ الصلاحيات",
     "saveError": "فشل حفظ الصلاحيات",
     "savePermissions": "حفظ الصلاحيات",
-    "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً."
+    "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً.",
+    "userPermissionsTitle": "تخصيصات الصلاحيات",
+    "userPermissionsDesc": "تبديل الصلاحيات. الأزرار المميزة تختلف عن الإعداد الافتراضي للدور.",
+    "memberNotFound": "العضو غير موجود."
   },
 
   "churchPrayer": {
@@ -1784,7 +1788,16 @@
     "resolveDialogNotes": "ملاحظات (اختياري)",
     "anonymous": "مجهول",
     "empty": "لا توجد طلبات صلاة",
-    "myPrayers": "طلباتي"
+    "myPrayers": "طلباتي",
+    "assign": "تعيين",
+    "unassign": "إلغاء التعيين",
+    "assignDialogTitle": "تعيين طلب صلاة",
+    "searchMembers": "بحث عن عضو...",
+    "assignedTo": "مُعيَّن إلى",
+    "assignSuccess": "تم تعيين طلب الصلاة بنجاح",
+    "unassignSuccess": "تم إلغاء تعيين الصلاة",
+    "noMembersFound": "لم يتم العثور على أعضاء",
+    "assignedToMe": "مُعيَّنة لي"
   },
 
   "outreach": {
