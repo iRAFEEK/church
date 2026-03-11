@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { whatsappProvider } from './providers/whatsapp'
 import { emailProvider } from './providers/email'
 import { inAppProvider } from './providers/in-app'
+import { pushProvider } from './providers/push'
 import { TEMPLATES, interpolate } from './templates'
 import type { NotificationRequest, MessageChannel, MessageResult } from './types'
 
@@ -83,6 +84,27 @@ export async function sendNotification(request: NotificationRequest): Promise<{
     await logNotification(request, 'email', results.email)
   }
 
+
+  // 4. Push (if in channels and Firebase is configured)
+  if (channels.includes('push') && pushProvider.isConfigured()) {
+    results.push = await pushProvider.send({
+      to: request.profileId,
+      template: request.type,
+      params: {
+        ...request.data || {},
+        _churchId: request.churchId,
+        _title: title,
+        _body: body,
+        _referenceId: request.referenceId || '',
+        _referenceType: request.referenceType || '',
+      },
+      channel: 'push',
+      locale,
+    })
+
+    await logNotification(request, 'push', results.push)
+  }
+
   return { results: results as Record<MessageChannel, MessageResult> }
 }
 
@@ -103,7 +125,8 @@ async function resolveChannels(profileId: string): Promise<MessageChannel[]> {
       case 'whatsapp': return ['whatsapp', 'in_app']
       case 'sms': return ['whatsapp', 'in_app'] // SMS falls back to WhatsApp
       case 'email': return ['email', 'in_app']
-      case 'all': return ['whatsapp', 'email', 'in_app']
+      case 'push': return ['push', 'in_app']
+      case 'all': return ['whatsapp', 'email', 'push', 'in_app']
       case 'none': return ['in_app'] // Always at least in-app
       default: return ['whatsapp', 'in_app']
     }

@@ -22,6 +22,16 @@ export type PermissionKey =
   | 'can_manage_songs'
   | 'can_view_prayers'
   | 'can_manage_outreach'
+  // ─── Finance ────────────────────────────────────────────
+  | 'can_view_finances'
+  | 'can_manage_finances'
+  | 'can_manage_donations'
+  | 'can_view_own_giving'
+  | 'can_manage_budgets'
+  | 'can_approve_expenses'
+  | 'can_submit_expenses'
+  | 'can_manage_campaigns'
+  | 'can_reconcile_bank'
 
 export type PermissionMap = Partial<Record<PermissionKey, boolean>>
 export type UserStatus = 'active' | 'inactive' | 'at_risk' | 'visitor'
@@ -810,4 +820,185 @@ export interface OutreachMemberSummary {
   last_visit_date: string | null
   needs_followup: boolean
   total_visits: number
+}
+
+// ============================================================
+// FINANCIAL MANAGEMENT SYSTEM
+// ============================================================
+
+export type AccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense'
+export type AccountSubType =
+  | 'cash' | 'bank' | 'receivable' | 'prepaid' | 'fixed_asset' | 'other_asset'
+  | 'payable' | 'accrued' | 'loan' | 'other_liability'
+  | 'retained_earnings' | 'net_assets' | 'other_equity'
+  | 'tithe' | 'offering' | 'donation' | 'grant' | 'event_income' | 'interest' | 'other_income'
+  | 'salary' | 'rent' | 'utilities' | 'supplies' | 'missions' | 'benevolence'
+  | 'maintenance' | 'insurance' | 'depreciation' | 'other_expense'
+
+export type FinancialTransactionStatus = 'draft' | 'pending' | 'approved' | 'posted' | 'void'
+export type PaymentMethod = 'cash' | 'check' | 'bank_transfer' | 'credit_card' | 'online' | 'mobile_payment' | 'in_kind' | 'other'
+export type GivingFrequency = 'one_time' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annually'
+export type ExpenseRequestStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid' | 'cancelled'
+export type PledgeStatus = 'active' | 'completed' | 'cancelled' | 'defaulted'
+export type CampaignStatus = 'planning' | 'active' | 'paused' | 'completed' | 'cancelled'
+export type ReconciliationStatus = 'in_progress' | 'completed' | 'discrepancy'
+export type BudgetPeriodType = 'annual' | 'quarterly' | 'monthly' | 'custom'
+export type FiscalYearStatus = 'planning' | 'active' | 'closed'
+export type AssetStatus = 'active' | 'disposed' | 'donated' | 'damaged' | 'lost'
+export type BatchStatus = 'open' | 'closed' | 'posted'
+
+export interface FiscalYear {
+  id: string; church_id: string; name: string; name_ar: string | null
+  start_date: string; end_date: string; status: FiscalYearStatus
+  is_current: boolean; closed_at: string | null; closed_by: string | null
+  opening_balances: Record<string, number> | null; created_at: string; updated_at: string
+}
+
+export interface Account {
+  id: string; church_id: string; parent_id: string | null; code: string
+  name: string; name_ar: string | null; description: string | null; description_ar: string | null
+  account_type: AccountType; account_sub_type: AccountSubType | null
+  is_header: boolean; is_system: boolean; is_active: boolean
+  currency: string; normal_balance: 'debit' | 'credit'; current_balance: number
+  tags: string[]; display_order: number; depth: number; path: string | null
+  created_at: string; updated_at: string
+}
+
+export interface Fund {
+  id: string; church_id: string; name: string; name_ar: string | null
+  description: string | null; description_ar: string | null; code: string | null
+  is_restricted: boolean; restriction_notes: string | null; restriction_notes_ar: string | null
+  target_amount: number | null; current_balance: number
+  is_default: boolean; is_active: boolean; color: string | null; icon: string | null
+  display_order: number; created_at: string; updated_at: string
+}
+
+export interface BankAccount {
+  id: string; church_id: string; account_id: string | null; name: string; name_ar: string | null
+  bank_name: string | null; bank_name_ar: string | null; account_number_last4: string | null
+  routing_number: string | null; currency: string; current_balance: number
+  is_primary: boolean; is_active: boolean; notes: string | null
+  created_at: string; updated_at: string
+}
+
+export interface DepositBatch {
+  id: string; church_id: string; batch_number: string | null; batch_date: string
+  description: string | null; description_ar: string | null
+  bank_account_id: string | null; fund_id: string | null
+  expected_count: number; actual_count: number; expected_total: number; actual_total: number
+  status: BatchStatus; currency: string
+  opened_by: string | null; closed_by: string | null; closed_at: string | null
+  posted_by: string | null; posted_at: string | null; notes: string | null
+  created_at: string; updated_at: string
+}
+
+export interface FinancialTransaction {
+  id: string; church_id: string; fiscal_year_id: string | null
+  transaction_number: string | null; transaction_date: string
+  description: string; description_ar: string | null; reference: string | null
+  status: FinancialTransactionStatus; total_amount: number; currency: string
+  fund_id: string | null; bank_account_id: string | null; ministry_id: string | null
+  event_id: string | null; batch_id: string | null; donor_id: string | null
+  payment_method: PaymentMethod | null; check_number: string | null
+  submitted_by: string | null; approved_by: string | null; approved_at: string | null
+  posted_by: string | null; posted_at: string | null
+  voided_by: string | null; voided_at: string | null; void_reason: string | null
+  is_recurring: boolean; recurring_rule_id: string | null
+  attachments: string[] | null; tags: string[]; notes: string | null; notes_ar: string | null
+  metadata: Record<string, unknown>; created_by: string | null
+  created_at: string; updated_at: string
+}
+
+export interface TransactionLineItem {
+  id: string; transaction_id: string; church_id: string; account_id: string; fund_id: string | null
+  description: string | null; description_ar: string | null
+  debit_amount: number; credit_amount: number; currency: string
+  exchange_rate: number; base_debit: number; base_credit: number
+  sort_order: number; created_at: string
+}
+
+export interface Donation {
+  id: string; church_id: string; transaction_id: string | null
+  donor_id: string | null; fund_id: string; campaign_id: string | null; pledge_id: string | null
+  amount: number; currency: string; exchange_rate: number; base_amount: number
+  donation_date: string; payment_method: PaymentMethod; check_number: string | null
+  receipt_number: string | null; is_tithe: boolean; is_anonymous: boolean
+  is_tax_deductible: boolean; is_in_kind: boolean
+  in_kind_description: string | null; in_kind_description_ar: string | null; in_kind_fair_value: number | null
+  is_recurring: boolean; frequency: GivingFrequency; recurring_rule_id: string | null
+  stripe_payment_id: string | null; stripe_customer_id: string | null
+  batch_id: string | null; notes: string | null; notes_ar: string | null; tags: string[]
+  created_by: string | null; created_at: string; updated_at: string
+}
+
+export interface DonationWithDonor extends Donation {
+  donor?: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null
+  fund?: { id: string; name: string; name_ar: string | null } | null
+  campaign?: { id: string; name: string; name_ar: string | null } | null
+}
+
+export interface Campaign {
+  id: string; church_id: string; fund_id: string | null; name: string; name_ar: string | null
+  description: string | null; description_ar: string | null
+  goal_amount: number; raised_amount: number; pledged_amount: number; currency: string
+  start_date: string; end_date: string | null; status: CampaignStatus
+  image_url: string | null; is_public: boolean; allow_pledges: boolean; allow_online: boolean
+  created_by: string | null; created_at: string; updated_at: string
+}
+
+export interface Pledge {
+  id: string; church_id: string; donor_id: string; fund_id: string | null; campaign_id: string | null
+  total_amount: number; fulfilled_amount: number; currency: string
+  frequency: GivingFrequency; installment_amount: number | null
+  start_date: string; end_date: string | null; next_due_date: string | null
+  status: PledgeStatus; notes: string | null; notes_ar: string | null; is_anonymous: boolean
+  created_by: string | null; created_at: string; updated_at: string
+}
+
+export interface Budget {
+  id: string; church_id: string; fiscal_year_id: string; name: string; name_ar: string | null
+  description: string | null; description_ar: string | null
+  period_type: BudgetPeriodType; start_date: string; end_date: string
+  fund_id: string | null; ministry_id: string | null
+  total_income: number; total_expense: number
+  is_approved: boolean; approved_by: string | null; approved_at: string | null
+  is_active: boolean; created_by: string | null; created_at: string; updated_at: string
+}
+
+export interface BudgetLineItem {
+  id: string; budget_id: string; church_id: string; account_id: string; fund_id: string | null
+  description: string | null; description_ar: string | null
+  jan_amount: number; feb_amount: number; mar_amount: number; apr_amount: number
+  may_amount: number; jun_amount: number; jul_amount: number; aug_amount: number
+  sep_amount: number; oct_amount: number; nov_amount: number; dec_amount: number
+  annual_amount: number; notes: string | null; sort_order: number
+  created_at: string; updated_at: string
+}
+
+export interface ExpenseRequest {
+  id: string; church_id: string; request_number: string | null; requested_by: string
+  ministry_id: string | null; event_id: string | null; fund_id: string | null; account_id: string | null
+  description: string; description_ar: string | null; amount: number; currency: string
+  vendor_name: string | null; vendor_name_ar: string | null; status: ExpenseRequestStatus
+  approved_by: string | null; approved_at: string | null; rejection_reason: string | null
+  paid_at: string | null; paid_by: string | null; payment_method: PaymentMethod | null
+  transaction_id: string | null; check_number: string | null
+  is_reimbursement: boolean; reimburse_to: string | null
+  attachments: string[] | null; notes: string | null; notes_ar: string | null
+  created_at: string; updated_at: string
+}
+
+export interface ExpenseRequestWithDetails extends ExpenseRequest {
+  requester?: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null
+  ministry?: { id: string; name: string; name_ar: string | null } | null
+  fund?: { id: string; name: string; name_ar: string | null } | null
+}
+
+export interface FinancialDashboardData {
+  totalIncomeThisMonth: number; totalExpenseThisMonth: number
+  totalIncomeThisYear: number; totalExpenseThisYear: number
+  netThisMonth: number; netThisYear: number
+  pendingExpenseRequests: number; pendingExpenseAmount: number
+  activeCampaigns: Campaign[]; fundBalances: Fund[]
+  recentDonations: DonationWithDonor[]; currency: string
 }
