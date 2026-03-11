@@ -63,7 +63,7 @@ export function FAB({ profile }: FABProps) {
         ref={containerRef}
         className={cn(
           'fixed z-50',
-          isRTL ? 'left-4' : 'right-4',
+          'end-4',
         )}
         style={{
           bottom: 'calc(var(--bottom-nav-height, 0px) + 1rem)',
@@ -89,7 +89,7 @@ export function FAB({ profile }: FABProps) {
                   'flex items-center gap-3 px-4 py-3 rounded-xl bg-white shadow-lg border border-zinc-100',
                   'hover:bg-zinc-50 active:scale-95 transition-all duration-150',
                   'min-w-[180px]',
-                  isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                  'text-start'
                 )}
                 style={{
                   transitionDelay: open ? `${i * 50}ms` : '0ms',
@@ -113,7 +113,7 @@ export function FAB({ profile }: FABProps) {
             'w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl',
             'flex items-center justify-center',
             'hover:bg-primary/90 active:scale-90 transition-all duration-200',
-            isRTL ? 'ml-auto' : 'ml-auto'
+            'ms-auto'
           )}
           aria-label={open ? 'Close' : 'Quick actions'}
         >

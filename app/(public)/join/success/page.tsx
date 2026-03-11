@@ -17,7 +17,7 @@ export default async function JoinSuccessPage() {
           {t('description')}
         </p>
 
-        <div className="bg-zinc-50 rounded-xl p-4 text-right space-y-2 mb-6">
+        <div className="bg-zinc-50 rounded-xl p-4 text-end space-y-2 mb-6">
           <p className="text-sm font-medium text-zinc-700">{t('whatToExpect')}</p>
           <p className="text-sm text-zinc-500">{'\u2713'} {t('bulletWelcomeCall')}</p>
           <p className="text-sm text-zinc-500">{'\u2713'} {t('bulletSmallGroup')}</p>

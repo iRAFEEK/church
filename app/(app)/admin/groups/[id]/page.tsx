@@ -41,34 +41,36 @@ export default async function GroupDetailPage({ params }: Params) {
 
   const supabase = await createClient()
 
-  const { data: group } = await supabase
-    .from('groups')
-    .select(`
-      *,
-      ministry:ministry_id(id,name,name_ar),
-      leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,email),
-      co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
-      group_members(
-        id, role_in_group, joined_at, is_active,
-        profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
-      )
-    `)
-    .eq('id', id)
-    .single()
+  const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
+
+  // Parallelize group + allMembers queries (allMembers always needed for admin/leader)
+  const [{ data: group }, { data: allMembers }] = await Promise.all([
+    supabase
+      .from('groups')
+      .select(`
+        *,
+        ministry:ministry_id(id,name,name_ar),
+        leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,email),
+        co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
+        group_members(
+          id, role_in_group, joined_at, is_active,
+          profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
+        )
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
+      .eq('status', 'active')
+      .order('first_name'),
+  ])
 
   if (!group) notFound()
 
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
   const isLeader = group.leader_id === user.profile.id || group.co_leader_id === user.profile.id
 
   if (!isAdmin && !isLeader) redirect('/dashboard')
-
-  // Get all church members for adding to group
-  const { data: allMembers } = isAdmin || isLeader ? await supabase
-    .from('profiles')
-    .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
-    .eq('status', 'active')
-    .order('first_name') : { data: [] }
 
   const activeMembers = (group.group_members || []).filter((m: { is_active: boolean }) => m.is_active)
 

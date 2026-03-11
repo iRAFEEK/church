@@ -123,3 +123,31 @@ html {
     user-select: none;
   }
 }
+
+/* ─── Touch Optimization ──────────────────────────── */
+
+/* Eliminate 300ms tap delay on all elements */
+* {
+  touch-action: manipulation;
+}
+
+/* Minimum 44px touch targets on touch devices */
+@media (pointer: coarse) {
+  button:not([data-compact]),
+  [role="button"]:not([data-compact]),
+  a:not([data-compact]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Remove tap highlight flash (Android) */
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth momentum scrolling */
+.scroll-smooth-mobile {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}

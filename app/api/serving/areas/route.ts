@@ -1,23 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateServingAreaSchema } from '@/lib/schemas/serving'
 
 // GET /api/serving/areas — list serving areas
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  const isAdmin = perms.can_manage_serving
+export const GET = apiHandler(async ({ supabase, profile, resolvedPermissions }) => {
+  const isAdmin = resolvedPermissions.can_manage_serving
 
   let query = supabase
     .from('serving_areas')
@@ -30,39 +17,21 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return { data }
+})
 
 // POST /api/serving/areas — create area (admin only)
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_serving) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const body = await req.json()
+  const validated = validate(CreateServingAreaSchema, body)
+
   const { data, error } = await supabase
     .from('serving_areas')
-    .insert({
-      ...body,
-      church_id: profile.church_id,
-    })
+    .insert({ ...validated, church_id: profile.church_id })
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data }, { status: 201 })
-}
+  if (error) throw error
+  return { data }
+}, { requirePermissions: ['can_manage_serving'] })

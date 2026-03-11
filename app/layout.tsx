@@ -31,7 +31,7 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale()
   const messages = await getMessages()
-  const dir = locale === 'ar' ? 'rtl' : 'ltr'
+  const dir = locale.startsWith('ar') ? 'rtl' : 'ltr'
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>

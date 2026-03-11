@@ -1,0 +1,26 @@
+import { z } from 'zod'
+
+export const UpdateProfileSchema = z.object({
+  first_name: z.string().max(100).optional().nullable(),
+  last_name: z.string().max(100).optional().nullable(),
+  first_name_ar: z.string().max(100).optional().nullable(),
+  last_name_ar: z.string().max(100).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  date_of_birth: z.string().optional().nullable(),
+  gender: z.enum(['male', 'female']).optional().nullable(),
+  occupation: z.string().max(100).optional().nullable(),
+  occupation_ar: z.string().max(100).optional().nullable(),
+  photo_url: z.string().url().optional().nullable(),
+  status: z.enum(['active', 'inactive', 'at_risk', 'visitor']).optional(),
+  role: z.enum(['member', 'group_leader', 'ministry_leader', 'super_admin']).optional(),
+  address: z.string().max(500).optional().nullable(),
+  address_ar: z.string().max(500).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  city_ar: z.string().max(100).optional().nullable(),
+  address_notes: z.string().max(500).optional().nullable(),
+  notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']).optional(),
+  preferred_language: z.string().max(10).optional(),
+  preferred_bible_id: z.string().max(50).optional().nullable(),
+  joined_church_at: z.string().optional().nullable(),
+})

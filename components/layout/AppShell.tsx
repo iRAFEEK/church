@@ -5,6 +5,8 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { BottomNav } from './BottomNav'
 import { FAB } from '@/components/ui/fab'
+import { TeachMeButton } from '@/components/help/TeachMeButton'
+import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import type { Profile, Church, PermissionKey } from '@/types'
 
 interface AppShellProps {
@@ -25,6 +27,7 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
 
   return (
     <>
+      <OfflineBanner />
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar: desktop only */}
         <div className="hidden md:block">
@@ -53,6 +56,9 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
 
       {/* FAB: context-aware quick actions */}
       <FAB profile={profile} />
+
+      {/* TeachMe: contextual help button */}
+      <TeachMeButton role={profile.role} />
 
       {/* Bottom nav: mobile only — outside overflow-hidden container */}
       <BottomNav

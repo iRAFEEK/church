@@ -40,20 +40,21 @@ export default async function MemberDetailPage({
 
   const supabase = await createClient()
 
-  const { data: member } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', id)
-    .eq('church_id', currentUser.church_id)
-    .single()
+  const [{ data: member }, { data: milestones }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .eq('church_id', currentUser.church_id)
+      .single(),
+    supabase
+      .from('profile_milestones')
+      .select('*')
+      .eq('profile_id', id)
+      .order('date', { ascending: false }),
+  ])
 
   if (!member) notFound()
-
-  const { data: milestones } = await supabase
-    .from('profile_milestones')
-    .select('*')
-    .eq('profile_id', id)
-    .order('date', { ascending: false })
 
   const memberProfile = member as Profile
   const nameAr = `${memberProfile.first_name_ar ?? ''} ${memberProfile.last_name_ar ?? ''}`.trim()

@@ -163,7 +163,7 @@ export function MinistryMemberManager({
           {canManage && (
             <>
               <Button size="sm" variant="outline" onClick={() => setNotifyOpen(true)}>
-                <Bell className="h-4 w-4 mr-1" />
+                <Bell className="h-4 w-4 me-1" />
                 {t('sendNotification')}
               </Button>
               <Button size="sm" onClick={() => setAddOpen(true)}>{t('addButton')}</Button>
@@ -260,7 +260,7 @@ export function MinistryMemberManager({
                     key={p.id}
                     onClick={() => addMember(p)}
                     disabled={loading}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-right"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-end"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={p.photo_url || undefined} />

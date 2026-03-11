@@ -8,8 +8,23 @@ import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
 import { AttentionList } from './AttentionList'
 import { UpcomingList } from './UpcomingList'
-import { AttendanceTrendChart } from './charts/AttendanceTrendChart'
-import { VisitorPipelineChart } from './charts/VisitorPipelineChart'
+import dynamic from 'next/dynamic'
+
+const AttendanceTrendChart = dynamic(
+  () => import('./charts/AttendanceTrendChart').then(m => ({ default: m.AttendanceTrendChart })),
+  {
+    ssr: false,
+    loading: () => <div className="h-[280px] w-full rounded-lg bg-zinc-100 animate-pulse" />,
+  }
+)
+
+const VisitorPipelineChart = dynamic(
+  () => import('./charts/VisitorPipelineChart').then(m => ({ default: m.VisitorPipelineChart })),
+  {
+    ssr: false,
+    loading: () => <div className="h-[280px] w-full rounded-lg bg-zinc-100 animate-pulse" />,
+  }
+)
 import type { AdminDashboardData } from '@/types/dashboard'
 
 interface Props {

@@ -23,6 +23,28 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  // Auto-detect language on first visit (no lang cookie yet)
+  if (!request.cookies.has('lang')) {
+    const country = request.headers.get('x-vercel-ip-country') ?? ''
+    let defaultLang = 'ar'
+    if (country === 'EG') {
+      defaultLang = 'ar-eg'
+    } else if (!['SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'IQ', 'JO', 'LB', 'SY', 'PS', 'YE', 'LY', 'TN', 'DZ', 'MA', 'SD', 'EG'].includes(country)) {
+      // Non-Arabic-speaking country — check Accept-Language
+      const acceptLang = request.headers.get('accept-language') ?? ''
+      if (!acceptLang.match(/\bar/i)) {
+        defaultLang = 'en'
+      }
+    }
+    request.cookies.set('lang', defaultLang)
+    supabaseResponse = NextResponse.next({ request })
+    supabaseResponse.cookies.set('lang', defaultLang, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    })
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
