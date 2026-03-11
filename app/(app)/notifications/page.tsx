@@ -219,7 +219,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Bell className="h-6 w-6" />
@@ -263,11 +263,11 @@ export default function NotificationsPage() {
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
           <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setPage(1) }}>
-            <SelectTrigger className="w-auto min-w-[160px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px] h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -278,7 +278,7 @@ export default function NotificationsPage() {
           </Select>
         </div>
         <Button variant={showUnreadOnly ? 'default' : 'outline'} size="sm"
-          onClick={() => { setShowUnreadOnly(!showUnreadOnly); setPage(1) }} className="gap-1.5">
+          onClick={() => { setShowUnreadOnly(!showUnreadOnly); setPage(1) }} className="gap-1.5 w-full sm:w-auto">
           {showUnreadOnly ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
           {t('unreadOnly')}
         </Button>
@@ -340,10 +340,10 @@ export default function NotificationsPage() {
           <p className="text-sm text-muted-foreground">{t('page', { current: page, total: totalPages })}</p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </Button>
             <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>
         </div>

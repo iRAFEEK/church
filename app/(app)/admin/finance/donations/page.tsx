@@ -91,13 +91,13 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href="/admin/finance/donations/batch">
-              <Users className="w-4 h-4 mr-2" />
+              <Users className="w-4 h-4 me-2" />
               {isAr ? 'دفعة جماعية' : 'Batch Entry'}
             </Link>
           </Button>
           <Button size="sm" asChild>
             <Link href="/admin/finance/donations/new">
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 me-2" />
               {isAr ? 'تبرع جديد' : 'New Donation'}
             </Link>
           </Button>
@@ -137,7 +137,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
             <input type="date" name="date_from" defaultValue={params.date_from || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
             <input type="date" name="date_to" defaultValue={params.date_to || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
             <Button type="submit" variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-1" />
+              <Filter className="w-4 h-4 me-1" />
               {isAr ? 'تطبيق' : 'Filter'}
             </Button>
           </form>
@@ -147,7 +147,43 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
       {/* Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Mobile card list */}
+          <div className="md:hidden divide-y">
+            {(donations as DonationWithDonor[] || []).map((d) => {
+              const donorName = d.is_anonymous
+                ? (isAr ? 'مجهول' : 'Anonymous')
+                : d.donor
+                  ? `${isAr ? d.donor.first_name_ar || d.donor.first_name : d.donor.first_name} ${isAr ? d.donor.last_name_ar || d.donor.last_name : d.donor.last_name}`
+                  : '—'
+              return (
+                <div key={d.id} className="px-4 py-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-medium text-sm truncate">{donorName}</p>
+                      {d.is_tithe && <Badge variant="outline" className="text-xs shrink-0">{isAr ? 'عشور' : 'Tithe'}</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {d.fund ? (isAr ? d.fund.name_ar || d.fund.name : d.fund.name) : '—'} · {d.donation_date}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <p className="font-bold text-sm text-green-700" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
+                    <Badge variant="secondary" className="text-xs">
+                      {isAr ? METHOD_LABELS[d.payment_method]?.ar : METHOD_LABELS[d.payment_method]?.en}
+                    </Badge>
+                  </div>
+                </div>
+              )
+            })}
+            {(donations || []).length === 0 && (
+              <p className="px-4 py-8 text-center text-muted-foreground text-sm">
+                {isAr ? 'لا توجد تبرعات' : 'No donations found'}
+              </p>
+            )}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">

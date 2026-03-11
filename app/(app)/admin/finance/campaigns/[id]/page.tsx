@@ -92,7 +92,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
               <p className="text-3xl font-bold">{fmt(raised, currency)}</p>
               <p className="text-sm text-muted-foreground">raised of {fmt(goal, currency)} goal</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-2xl font-bold">{pct.toFixed(0)}%</p>
               {campaign.pledged_amount > 0 && (
                 <p className="text-sm text-muted-foreground">{fmt(campaign.pledged_amount, currency)} pledged</p>

@@ -42,7 +42,7 @@ export default async function BudgetsPage() {
         {perms.can_manage_budgets && (
           <Button asChild>
             <Link href="/admin/finance/budgets/new">
-              <Plus className="w-4 h-4 mr-2" />New Budget
+              <Plus className="w-4 h-4 me-2" />New Budget
             </Link>
           </Button>
         )}
@@ -93,7 +93,7 @@ export default async function BudgetsPage() {
                           style={{ width: `${Math.min(100, usedPct)}%` }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground text-right">{usedPct.toFixed(0)}% used</p>
+                      <p className="text-xs text-muted-foreground text-end">{usedPct.toFixed(0)}% used</p>
                     </div>
                   </CardContent>
                 </Card>

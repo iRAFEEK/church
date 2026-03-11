@@ -135,25 +135,25 @@ export default function NewTransactionPage() {
                 Journal Lines / بنود القيد
               </h2>
               <Button type="button" variant="outline" size="sm" onClick={addLine}>
-                <Plus className="w-3 h-3 mr-1" />Add Line
+                <Plus className="w-3 h-3 me-1" />Add Line
               </Button>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-muted-foreground border-b">
+                  <tr className="text-start text-muted-foreground border-b">
                     <th className="pb-2 font-medium w-48">Account</th>
                     <th className="pb-2 font-medium">Description</th>
-                    <th className="pb-2 font-medium w-28 text-right">Debit</th>
-                    <th className="pb-2 font-medium w-28 text-right">Credit</th>
+                    <th className="pb-2 font-medium w-28 text-end">Debit</th>
+                    <th className="pb-2 font-medium w-28 text-end">Credit</th>
                     <th className="pb-2 w-8"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {lines.map((line, i) => (
                     <tr key={i}>
-                      <td className="py-1.5 pr-2">
+                      <td className="py-1.5 pe-2">
                         <select
                           value={line.account_id}
                           onChange={e => updateLine(i, 'account_id', e.target.value)}
@@ -165,7 +165,7 @@ export default function NewTransactionPage() {
                           ))}
                         </select>
                       </td>
-                      <td className="py-1.5 pr-2">
+                      <td className="py-1.5 pe-2">
                         <Input
                           value={line.description}
                           onChange={e => updateLine(i, 'description', e.target.value)}
@@ -173,22 +173,22 @@ export default function NewTransactionPage() {
                           className="text-sm h-8"
                         />
                       </td>
-                      <td className="py-1.5 pr-2">
+                      <td className="py-1.5 pe-2">
                         <Input
                           type="number" min="0" step="0.01"
                           value={line.debit_amount}
                           onChange={e => updateLine(i, 'debit_amount', e.target.value)}
                           placeholder="0"
-                          className="text-sm h-8 text-right font-mono"
+                          className="text-sm h-8 text-end font-mono"
                         />
                       </td>
-                      <td className="py-1.5 pr-2">
+                      <td className="py-1.5 pe-2">
                         <Input
                           type="number" min="0" step="0.01"
                           value={line.credit_amount}
                           onChange={e => updateLine(i, 'credit_amount', e.target.value)}
                           placeholder="0"
-                          className="text-sm h-8 text-right font-mono"
+                          className="text-sm h-8 text-end font-mono"
                         />
                       </td>
                       <td className="py-1.5">
@@ -204,11 +204,11 @@ export default function NewTransactionPage() {
                 </tbody>
                 <tfoot>
                   <tr className="border-t font-mono text-sm">
-                    <td colSpan={2} className="pt-2 text-right pr-2 text-muted-foreground">Totals:</td>
-                    <td className={`pt-2 pr-2 text-right font-semibold ${isBalanced ? 'text-green-600' : 'text-foreground'}`}>
+                    <td colSpan={2} className="pt-2 text-end pe-2 text-muted-foreground">Totals:</td>
+                    <td className={`pt-2 pe-2 text-end font-semibold ${isBalanced ? 'text-green-600' : 'text-foreground'}`}>
                       {totalDebits.toFixed(2)}
                     </td>
-                    <td className={`pt-2 pr-2 text-right font-semibold ${isBalanced ? 'text-green-600' : 'text-foreground'}`}>
+                    <td className={`pt-2 pe-2 text-end font-semibold ${isBalanced ? 'text-green-600' : 'text-foreground'}`}>
                       {totalCredits.toFixed(2)}
                     </td>
                     <td />
