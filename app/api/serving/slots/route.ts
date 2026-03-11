@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     serving_signups: undefined,
   }))
 
-  return NextResponse.json({ data: enriched })
+  return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'private, max-age=15, stale-while-revalidate=60' } })
 }
 
 // POST /api/serving/slots — create slot (admin only)

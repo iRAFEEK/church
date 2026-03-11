@@ -1,11 +1,60 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslations } from 'next-intl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChurchPrayerCard, type Prayer } from './ChurchPrayerCard'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+
+function VirtualPrayerList({
+  prayers, tab, onMarkAnswered, onArchive, onDelete, onAssigned, onUnassign,
+}: {
+  prayers: Prayer[]
+  tab: string
+  onMarkAnswered: (id: string) => void
+  onArchive: (id: string) => void
+  onDelete: (id: string) => void
+  onAssigned: () => void
+  onUnassign: (id: string) => void
+}) {
+  const parentRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: prayers.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 120,
+    overscan: 3,
+  })
+
+  return (
+    <div ref={parentRef} className="overflow-auto max-h-[70vh]">
+      <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+        {virtualizer.getVirtualItems().map((virtualRow) => {
+          const prayer = prayers[virtualRow.index]
+          return (
+            <div
+              key={prayer.id}
+              data-index={virtualRow.index}
+              ref={virtualizer.measureElement}
+              className="absolute w-full pb-3"
+              style={{ top: `${virtualRow.start}px` }}
+            >
+              <ChurchPrayerCard
+                prayer={prayer}
+                onMarkAnswered={tab === 'active' ? onMarkAnswered : undefined}
+                onArchive={tab === 'active' ? onArchive : undefined}
+                onDelete={onDelete}
+                onAssigned={onAssigned}
+                onUnassign={onUnassign}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 export function ChurchPrayerList() {
   const t = useTranslations('churchPrayer')
@@ -31,37 +80,46 @@ export function ChurchPrayerList() {
   }, [tab, fetchPrayers])
 
   const handleMarkAnswered = async (id: string) => {
+    const prev = prayers
+    setPrayers(p => p.filter(x => x.id !== id))
     const res = await fetch(`/api/church-prayers/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'answered' }),
     })
-    if (res.ok) fetchPrayers(tab)
+    if (!res.ok) { setPrayers(prev); toast.error(t('error')) }
   }
 
   const handleArchive = async (id: string) => {
+    const prev = prayers
+    setPrayers(p => p.filter(x => x.id !== id))
     const res = await fetch(`/api/church-prayers/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'archived' }),
     })
-    if (res.ok) fetchPrayers(tab)
+    if (!res.ok) { setPrayers(prev); toast.error(t('error')) }
   }
 
   const handleDelete = async (id: string) => {
+    const prev = prayers
+    setPrayers(p => p.filter(x => x.id !== id))
     const res = await fetch(`/api/church-prayers/${id}`, {
       method: 'DELETE',
     })
-    if (res.ok) fetchPrayers(tab)
+    if (!res.ok) { setPrayers(prev); toast.error(t('error')) }
   }
 
   const handleUnassign = async (id: string) => {
+    const prev = prayers
+    setPrayers(p => p.map(x => x.id === id ? { ...x, assigned_to: null, assigned_name: undefined } : x))
     const res = await fetch(`/api/church-prayers/${id}/assign`, {
       method: 'DELETE',
     })
     if (res.ok) {
       toast.success(t('unassignSuccess'))
-      fetchPrayers(tab)
+    } else {
+      setPrayers(prev); toast.error(t('error'))
     }
   }
 
@@ -81,19 +139,15 @@ export function ChurchPrayerList() {
         ) : prayers.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-12">{t('empty')}</p>
         ) : (
-          <div className="space-y-3">
-            {prayers.map(prayer => (
-              <ChurchPrayerCard
-                key={prayer.id}
-                prayer={prayer}
-                onMarkAnswered={tab === 'active' ? handleMarkAnswered : undefined}
-                onArchive={tab === 'active' ? handleArchive : undefined}
-                onDelete={handleDelete}
-                onAssigned={() => fetchPrayers(tab)}
-                onUnassign={handleUnassign}
-              />
-            ))}
-          </div>
+          <VirtualPrayerList
+            prayers={prayers}
+            tab={tab}
+            onMarkAnswered={handleMarkAnswered}
+            onArchive={handleArchive}
+            onDelete={handleDelete}
+            onAssigned={() => fetchPrayers(tab)}
+            onUnassign={handleUnassign}
+          />
         )}
       </TabsContent>
     </Tabs>

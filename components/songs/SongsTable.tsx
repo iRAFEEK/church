@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
@@ -50,6 +51,14 @@ export function SongsTable() {
     return lyrics.split(/\n\s*\n/).filter(s => s.trim()).length
   }
 
+  const parentRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 5,
+  })
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -69,38 +78,44 @@ export function SongsTable() {
           {search ? t('noSearchResults') : t('noSongs')}
         </div>
       ) : (
-        <div className="divide-y rounded-lg border">
-          {filtered.map((song) => {
-            const title = isAr ? (song.title_ar || song.title) : song.title
-            const artist = isAr ? (song.artist_ar || song.artist) : song.artist
-            const slideCount = getSlideCount(isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics)
+        <div ref={parentRef} className="rounded-lg border overflow-auto max-h-[70vh]">
+          <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const song = filtered[virtualRow.index]
+              const title = isAr ? (song.title_ar || song.title) : song.title
+              const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+              const slideCount = getSlideCount(isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics)
 
-            return (
-              <Link
-                key={song.id}
-                href={`/admin/songs/${song.id}`}
-                className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Music className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{title}</p>
-                  {artist && (
-                    <p className="text-sm text-muted-foreground truncate">{artist}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {slideCount > 0 && (
-                    <Badge variant="secondary">{slideCount} {t('slides')}</Badge>
-                  )}
-                  {song.tags?.map(tag => (
-                    <Badge key={tag} variant="outline">{tag}</Badge>
-                  ))}
-                </div>
-              </Link>
-            )
-          })}
+              return (
+                <Link
+                  key={song.id}
+                  href={`/admin/songs/${song.id}`}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors absolute w-full border-b last:border-b-0"
+                  style={{ top: `${virtualRow.start}px` }}
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Music className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{title}</p>
+                    {artist && (
+                      <p className="text-sm text-muted-foreground truncate">{artist}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {slideCount > 0 && (
+                      <Badge variant="secondary">{slideCount} {t('slides')}</Badge>
+                    )}
+                    {song.tags?.map(tag => (
+                      <Badge key={tag} variant="outline">{tag}</Badge>
+                    ))}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

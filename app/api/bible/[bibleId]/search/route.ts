@@ -20,7 +20,7 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10')
 
     const data = await searchBible(bibleId, query, limit)
-    return NextResponse.json({ data })
+    return NextResponse.json({ data }, { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' } })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

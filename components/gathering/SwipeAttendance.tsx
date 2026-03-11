@@ -55,6 +55,7 @@ export function SwipeAttendance({
   const [history, setHistory] = useState<{ index: number; status: AttendanceStatus }[]>([])
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [showSummary, setShowSummary] = useState(false)
+  const [isSwiping, setIsSwiping] = useState(false)
 
   // Touch tracking
   const startX = useRef(0)
@@ -95,6 +96,7 @@ export function SwipeAttendance({
   // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX
+    setIsSwiping(true)
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -108,6 +110,7 @@ export function SwipeAttendance({
 
   const handleTouchEnd = () => {
     const diff = currentX.current - startX.current
+    setIsSwiping(false)
     if (cardRef.current) {
       cardRef.current.style.transform = ''
       cardRef.current.style.opacity = ''
@@ -257,6 +260,7 @@ export function SwipeAttendance({
             swipeDirection === 'right' && 'translate-x-[120%] opacity-0',
             swipeDirection === 'left' && '-translate-x-[120%] opacity-0',
           )}
+          style={{ touchAction: 'pan-y', willChange: isSwiping ? 'transform' : 'auto' }}
           onTouchStart={canManage && !isCompleted ? handleTouchStart : undefined}
           onTouchMove={canManage && !isCompleted ? handleTouchMove : undefined}
           onTouchEnd={canManage && !isCompleted ? handleTouchEnd : undefined}

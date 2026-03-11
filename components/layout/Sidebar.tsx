@@ -109,6 +109,7 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
                   <Link
                     key={item.href}
                     href={item.href}
+                    onTouchStart={() => router.prefetch(item.href)}
                     className={cn(
                       'flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors',
                       'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',

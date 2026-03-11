@@ -151,3 +151,12 @@ a, button, [role="button"] {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
 }
+
+/* Prevent iOS auto-zoom on input focus (triggered when font-size < 16px) */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

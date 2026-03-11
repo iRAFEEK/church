@@ -134,7 +134,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                       return (
                         <div key={assignment.id} className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-zinc-50">
                           {assignment.profile.photo_url ? (
-                            <Image src={getAvatarUrl(assignment.profile.photo_url, 28)!} alt={pName.trim()} width={28} height={28} className="h-7 w-7 rounded-full object-cover" />
+                            <Image src={getAvatarUrl(assignment.profile.photo_url, 28)!} alt={pName.trim()} width={28} height={28} sizes="28px" className="h-7 w-7 rounded-full object-cover" />
                           ) : (
                             <div className="h-7 w-7 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                               {(assignment.profile.first_name || '?')[0]}

@@ -184,15 +184,21 @@ export default function NotificationsPage() {
   }, [fetchNotifications])
 
   const markRead = async (id: string) => {
-    await fetch(`/api/notifications/${id}`, { method: 'PATCH' })
+    const prevNotifications = notifications
+    const prevCount = unreadCount
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString(), status: 'read' } : n))
     setUnreadCount(prev => Math.max(0, prev - 1))
+    const res = await fetch(`/api/notifications/${id}`, { method: 'PATCH' })
+    if (!res.ok) { setNotifications(prevNotifications); setUnreadCount(prevCount) }
   }
 
   const markAllRead = async () => {
-    await fetch('/api/notifications/read-all', { method: 'PATCH' })
+    const prevNotifications = notifications
+    const prevCount = unreadCount
     setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString(), status: 'read' })))
     setUnreadCount(0)
+    const res = await fetch('/api/notifications/read-all', { method: 'PATCH' })
+    if (!res.ok) { setNotifications(prevNotifications); setUnreadCount(prevCount) }
   }
 
   const handleNotificationClick = (n: Notification) => {
@@ -372,12 +378,12 @@ export default function NotificationsPage() {
 
                 <div className="space-y-4 mt-2">
                   {sn.payload?.imageUrl && (
-                    <div className="rounded-lg overflow-hidden border">
+                    <div className="rounded-lg overflow-hidden border aspect-video bg-muted">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={sn.payload.imageUrl}
                         alt={sn.title}
-                        className="w-full max-h-64 object-cover"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}

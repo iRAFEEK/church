@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { cookies } from 'next/headers'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 import { Toaster } from 'sonner'
@@ -13,6 +12,10 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Ekklesia',
+    startupImage: '/apple-touch-icon.png',
+  },
+  icons: {
+    apple: '/apple-touch-icon.png',
   },
 }
 
