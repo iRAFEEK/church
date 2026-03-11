@@ -309,6 +309,7 @@
     "searchPlaceholder": "Search by visitor name or phone..."
   },
   "groups": {
+    "backToGroups": "Groups",
     "adminPageTitle": "Groups",
     "adminPageSubtitle": "All church groups",
     "ministriesButton": "Ministries",

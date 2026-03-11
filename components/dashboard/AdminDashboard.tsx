@@ -125,7 +125,38 @@ export function AdminDashboard({ data }: Props) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            {/* Mobile card list */}
+            <div className="md:hidden divide-y">
+              {data.groupHealth.map(group => (
+                <Link key={group.id} href={`/admin/groups/${group.id}`} className="block py-3 hover:bg-muted/30 active:bg-muted/30 transition-colors -mx-6 px-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{isAr ? (group.nameAr || group.name) : group.name}</p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{isAr ? (group.leaderNameAr || group.leaderName) : group.leaderName}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {group.attendanceRate !== null ? (
+                        <Badge
+                          variant={group.attendanceRate >= 70 ? 'default' : group.attendanceRate >= 50 ? 'secondary' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {group.attendanceRate}%
+                        </Badge>
+                      ) : null}
+                      {group.atRiskCount > 0 && (
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
+                          {group.atRiskCount}
+                        </Badge>
+                      )}
+                      {trendIcons[group.trend]}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">

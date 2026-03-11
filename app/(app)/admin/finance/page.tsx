@@ -75,13 +75,13 @@ export default async function FinanceDashboardPage() {
         <div className="flex gap-2">
           <Button variant="outline" asChild size="sm">
             <Link href="/admin/finance/donations/new">
-              <HandCoins className="w-4 h-4 mr-2" />
+              <HandCoins className="w-4 h-4 me-2" />
               {isAr ? 'تسجيل تبرع' : 'Record Donation'}
             </Link>
           </Button>
           <Button asChild size="sm">
             <Link href="/admin/finance/expenses/new">
-              <Receipt className="w-4 h-4 mr-2" />
+              <Receipt className="w-4 h-4 me-2" />
               {isAr ? 'طلب مصروف' : 'Expense Request'}
             </Link>
           </Button>

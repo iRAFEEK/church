@@ -121,7 +121,7 @@ export default function NewFundPage() {
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={loading} className="flex-1">
-                <Wallet className="w-4 h-4 mr-2" />
+                <Wallet className="w-4 h-4 me-2" />
                 {loading ? 'Creating...' : 'Create Fund / إنشاء الصندوق'}
               </Button>
               <Button type="button" variant="outline" asChild>

@@ -54,7 +54,7 @@ function AccountRow({ account, depth = 0 }: { account: Account & { children?: Ac
             {account.account_type}
           </span>
         </td>
-        <td className="px-4 py-2 text-right font-mono tabular-nums text-sm">
+        <td className="px-4 py-2 text-end font-mono tabular-nums text-sm">
           {!account.is_header ? fmt(account.current_balance || 0, account.currency || 'USD') : '—'}
         </td>
         <td className="px-4 py-2 text-center">
@@ -114,20 +114,52 @@ export default async function AccountsPage() {
         {perms.can_manage_finances && (
           <Button asChild>
             <Link href="/admin/finance/accounts/new">
-              <Plus className="w-4 h-4 mr-2" />New Account
+              <Plus className="w-4 h-4 me-2" />New Account
             </Link>
           </Button>
         )}
       </div>
 
-      <div className="border rounded-lg overflow-hidden">
+      {/* Mobile card list */}
+      <div className="md:hidden border rounded-lg overflow-hidden divide-y">
+        {(!accounts || accounts.length === 0) && (
+          <p className="px-4 py-8 text-center text-muted-foreground text-sm">No accounts found.</p>
+        )}
+        {typeGroups.map(type => {
+          const groupAccts = (accounts || []).filter(a => a.account_type === type)
+          if (groupAccts.length === 0) return null
+          return (
+            <div key={type}>
+              <div className="px-4 py-2 bg-muted/40">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide ${TYPE_COLOR[type]}`}>{type}</span>
+              </div>
+              {groupAccts.map(a => (
+                <div key={a.id} className={`px-4 py-3 flex items-start justify-between gap-3 ${a.is_header ? 'bg-muted/10' : ''}`}>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm truncate ${a.is_header ? 'font-semibold' : ''}`}>{a.name}</p>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{a.code}</p>
+                  </div>
+                  {!a.is_header && (
+                    <p className="text-sm font-mono font-semibold shrink-0" dir="ltr">
+                      {fmt(a.current_balance || 0, a.currency || 'USD')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-left px-4 py-2 font-medium">Code</th>
-              <th className="text-left px-4 py-2 font-medium">Name</th>
-              <th className="text-left px-4 py-2 font-medium">Type</th>
-              <th className="text-right px-4 py-2 font-medium">Balance</th>
+              <th className="text-start px-4 py-2 font-medium">Code</th>
+              <th className="text-start px-4 py-2 font-medium">Name</th>
+              <th className="text-start px-4 py-2 font-medium">Type</th>
+              <th className="text-end px-4 py-2 font-medium">Balance</th>
               <th className="text-center px-4 py-2 font-medium">Active</th>
             </tr>
           </thead>

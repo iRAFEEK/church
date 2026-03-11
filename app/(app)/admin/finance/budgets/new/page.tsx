@@ -136,7 +136,7 @@ export default function NewBudgetPage() {
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={loading} className="flex-1">
-                <BarChart3 className="w-4 h-4 mr-2" />
+                <BarChart3 className="w-4 h-4 me-2" />
                 {loading ? 'Creating...' : 'Create Budget / إنشاء الميزانية'}
               </Button>
               <Button type="button" variant="outline" asChild>
