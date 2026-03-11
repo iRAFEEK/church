@@ -1002,3 +1002,29 @@ export interface FinancialDashboardData {
   activeCampaigns: Campaign[]; fundBalances: Fund[]
   recentDonations: DonationWithDonor[]; currency: string
 }
+
+// ============================================================
+// MULTI-CHURCH MEMBERSHIP
+// ============================================================
+
+export interface UserChurchMembership {
+  id: string
+  user_id: string
+  church_id: string
+  role: UserRole
+  joined_at: string
+}
+
+export interface UserChurchWithDetails extends UserChurchMembership {
+  church: Pick<Church, 'id' | 'name' | 'name_ar' | 'logo_url' | 'country'>
+  is_active: boolean  // true when church_id === profiles.church_id
+}
+
+export interface ChurchSearchResult {
+  id: string
+  name: string
+  name_ar: string | null
+  country: string
+  logo_url: string | null
+  denomination: string | null
+}

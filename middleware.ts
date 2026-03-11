@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Public routes that don't require authentication
 const PUBLIC_PATHS = [
   '/login',
+  '/signup',      // Self-service account creation
+  '/select-church', // Church picker (authenticated but not in app layout)
   '/welcome',     // Church landing page
   '/join',        // QR visitor form (Phase 2)
   '/api/webhooks', // Twilio/external webhooks

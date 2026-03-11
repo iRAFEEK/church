@@ -89,7 +89,7 @@ export default function SelectChurchPage() {
                       )}
                     </div>
 
-                    <div className="flex-1 text-start min-w-0">
+                    <div className="flex-1 text-left min-w-0">
                       <p className="font-medium truncate">{church.name}</p>
                       {church.name_ar && (
                         <p className="text-sm text-muted-foreground truncate" dir="rtl">

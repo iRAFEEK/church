@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search, Building2, Check, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import type { ChurchSearchResult } from '@/types'
 
 // ─── Step 1: Church Search ────────────────────────────────────────────────────
 
@@ -91,16 +93,16 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
     <div className="space-y-6">
       {/* Search input */}
       <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="ps-9"
+          className="pl-9"
           placeholder="Search by church name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
         />
         {searching && (
-          <Loader2 className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
 
@@ -252,18 +254,203 @@ function ProfileStep() {
 
     if (error) {
       setIsLoading(false)
-      toast.error(t('toastError'), {
-        description: error.message,
-      })
+      toast.error(t('toastError'), { description: error.message })
       return
     }
 
-    toast.success(t('toastSuccess'), {
-      description: t('toastSuccessDesc'),
-    })
+    toast.success(t('toastSuccess'), { description: t('toastSuccessDesc') })
     router.push('/')
     router.refresh()
   }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Arabic Name (required) */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            {t('arabicNameSection')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('firstNameAr')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('firstNameArPlaceholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('lastNameAr')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('lastNameArPlaceholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* English Name (optional) */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            {t('englishNameSection')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('firstNameEn')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('lastNameEn')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('phone')}</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder={t('phonePlaceholder')} dir="ltr" {...field} />
+              </FormControl>
+              <FormDescription>{t('phoneDescription')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Gender */}
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('gender')}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('genderPlaceholder')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="male">{t('genderMale')}</SelectItem>
+                  <SelectItem value="female">{t('genderFemale')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Date of Birth */}
+        <FormField
+          control={form.control}
+          name="date_of_birth"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('dateOfBirth')}</FormLabel>
+              <FormControl>
+                <Input type="date" dir="ltr" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Occupation */}
+        <FormField
+          control={form.control}
+          name="occupation_ar"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occupation')}</FormLabel>
+              <FormControl>
+                <Input placeholder={t('occupationPlaceholder')} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Notification Preference */}
+        <FormField
+          control={form.control}
+          name="notification_pref"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('notificationPref')}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
+                  <SelectItem value="sms">{t('notifSms')}</SelectItem>
+                  <SelectItem value="email">{t('notifEmail')}</SelectItem>
+                  <SelectItem value="all">{t('notifAll')}</SelectItem>
+                  <SelectItem value="none">{t('notifNone')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {t('submitting')}
+            </>
+          ) : (
+            t('submitButton')
+          )}
+        </Button>
+      </form>
+    </Form>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function OnboardingPage() {
+  const t = useTranslations('onboarding')
+  const [step, setStep] = useState<'church' | 'profile'>('church')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
@@ -273,206 +460,36 @@ function ProfileStep() {
           <p className="text-sm text-zinc-500 mt-1">{t('welcomeSubtitle')}</p>
         </div>
 
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 mb-6">
+          <div className={`h-2 w-8 rounded-full transition-colors ${step === 'church' ? 'bg-primary' : 'bg-primary/30'}`} />
+          <div className={`h-2 w-8 rounded-full transition-colors ${step === 'profile' ? 'bg-primary' : 'bg-muted'}`} />
+        </div>
+
         <Card>
-          <CardHeader>
-            <CardTitle>{t('cardTitle')}</CardTitle>
-            <CardDescription>
-              {t('cardDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Arabic Name (required) */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    {t('arabicNameSection')}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="first_name_ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('firstNameAr')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('firstNameArPlaceholder')} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="last_name_ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('lastNameAr')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('lastNameArPlaceholder')} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* English Name (optional) */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    {t('englishNameSection')}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="first_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('firstNameEn')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="last_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('lastNameEn')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('phone')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          placeholder={t('phonePlaceholder')}
-                          dir="ltr"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t('phoneDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Gender */}
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('gender')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('genderPlaceholder')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="male">{t('genderMale')}</SelectItem>
-                          <SelectItem value="female">{t('genderFemale')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Date of Birth */}
-                <FormField
-                  control={form.control}
-                  name="date_of_birth"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('dateOfBirth')}</FormLabel>
-                      <FormControl>
-                        <Input type="date" dir="ltr" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Occupation */}
-                <FormField
-                  control={form.control}
-                  name="occupation_ar"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('occupation')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('occupationPlaceholder')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Notification Preference */}
-                <FormField
-                  control={form.control}
-                  name="notification_pref"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('notificationPref')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
-                          <SelectItem value="sms">{t('notifSms')}</SelectItem>
-                          <SelectItem value="email">{t('notifEmail')}</SelectItem>
-                          <SelectItem value="all">{t('notifAll')}</SelectItem>
-                          <SelectItem value="none">{t('notifNone')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {t('submitting')}
-                    </>
-                  ) : (
-                    t('submitButton')
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
+          {step === 'church' ? (
+            <>
+              <CardHeader>
+                <CardTitle>Find your church</CardTitle>
+                <CardDescription>
+                  Search for your church to join it on Ekklesia. You can join multiple churches.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChurchSearchStep onJoined={() => setStep('profile')} />
+              </CardContent>
+            </>
+          ) : (
+            <>
+              <CardHeader>
+                <CardTitle>{t('cardTitle')}</CardTitle>
+                <CardDescription>{t('cardDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileStep />
+              </CardContent>
+            </>
+          )}
         </Card>
       </div>
     </div>
