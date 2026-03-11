@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Shared search utilities used across the application.
  * Extracted from GroupsTable for reuse in events, staffing, etc.
@@ -5,17 +7,8 @@
 
 import { useState, useEffect } from 'react'
 
-/**
- * Normalize text for search: lowercases, strips Arabic diacritics,
- * unifies alef variants, and trims whitespace.
- */
-export function normalizeSearch(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[\u064B-\u065F\u0610-\u061A\u06D6-\u06DC\u06DF-\u06E4\u06E7-\u06E8\u06EA-\u06ED]/g, '')
-    .replace(/[ٱأإآ]/g, 'ا')
-    .trim()
-}
+// Re-export server-safe normalization so client components can import from here
+export { normalizeSearch } from './normalize'
 
 /**
  * Debounce hook — delays updating a value until after `delay` ms of inactivity.

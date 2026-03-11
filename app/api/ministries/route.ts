@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { normalizeSearch } from '@/lib/utils/search'
+import { normalizeSearch } from '@/lib/utils/normalize'
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()

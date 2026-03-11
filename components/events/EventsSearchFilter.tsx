@@ -52,7 +52,7 @@ export function EventsSearchFilter({ ministries, groups, isAdmin, onFilterChange
         value={search}
         onChange={setSearch}
         placeholder={t('searchPlaceholder')}
-        noResultsText={t('noResults')}
+        noResultsText={t('noSearchResults')}
         className="flex-1"
         fetchResults={async (q) => {
           const res = await fetch(`/api/events?search=${encodeURIComponent(q)}&pageSize=6`)

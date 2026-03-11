@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { UserCheck, Search } from 'lucide-react'
+import { UserCheck } from 'lucide-react'
 import { getTranslations, getLocale } from 'next-intl/server'
+import { MembersSearchInput } from './MembersSearchInput'
 import type { Profile } from '@/types'
 
 interface SearchParams {
@@ -97,15 +97,7 @@ export default async function MembersPage({
       <Card>
         <CardContent className="pt-4">
           <form className="flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-48">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                name="q"
-                defaultValue={search}
-                placeholder={t('searchPlaceholder')}
-                className="ps-9"
-              />
-            </div>
+            <MembersSearchInput defaultValue={search} />
 
             <select
               name="role"

@@ -305,7 +305,8 @@
     "statusAssigned": "مُسنَد",
     "statusContacted": "تم التواصل",
     "statusConverted": "أصبح عضواً",
-    "statusLost": "فقدنا التواصل"
+    "statusLost": "فقدنا التواصل",
+    "searchPlaceholder": "ابحث بالاسم أو الهاتف..."
   },
   "groups": {
     "adminPageTitle": "المجموعات",
@@ -470,7 +471,8 @@
     "upcomingEvents": "الأحداث القادمة",
     "recentEvents": "الأحداث الأخيرة",
     "noEvents": "لا توجد أحداث مرتبطة بهذه الخدمة",
-    "createEvent": "إنشاء حدث"
+    "createEvent": "إنشاء حدث",
+    "searchPlaceholder": "ابحث في الخدمات..."
   },
   "ministryForm": {
     "nameEn": "الاسم (إنجليزي)",
