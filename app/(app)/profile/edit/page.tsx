@@ -37,7 +37,7 @@ function createEditSchema(t: (key: string) => string) {
     gender: z.enum(['male', 'female']).optional(),
     occupation_ar: z.string().optional(),
     occupation: z.string().optional(),
-    notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']),
+    notification_pref: z.enum(['whatsapp', 'sms', 'email', 'push', 'all', 'none']),
     preferred_language: z.enum(['ar', 'en']),
   })
 }
@@ -286,6 +286,7 @@ export default function ProfileEditPage() {
                       <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
                       <SelectItem value="sms">{t('notifSms')}</SelectItem>
                       <SelectItem value="email">{t('notifEmail')}</SelectItem>
+                      <SelectItem value="push">Push Notifications</SelectItem>
                       <SelectItem value="all">{t('notifAll')}</SelectItem>
                       <SelectItem value="none">{t('notifNone')}</SelectItem>
                     </SelectContent>

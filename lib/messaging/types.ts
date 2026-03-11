@@ -1,4 +1,4 @@
-export type MessageChannel = 'whatsapp' | 'email' | 'in_app'
+export type MessageChannel = 'whatsapp' | 'email' | 'in_app' | 'push'
 
 export type NotificationType =
   | 'gathering_reminder'

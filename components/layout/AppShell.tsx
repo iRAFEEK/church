@@ -7,6 +7,7 @@ import { BottomNav } from './BottomNav'
 import { FAB } from '@/components/ui/fab'
 import { TeachMeButton } from '@/components/help/TeachMeButton'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
+import { PushPermissionPrompt } from '@/components/notifications/PushPermissionPrompt'
 import type { Profile, Church, PermissionKey } from '@/types'
 
 interface AppShellProps {
@@ -59,6 +60,9 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
 
       {/* TeachMe: contextual help button */}
       <TeachMeButton role={profile.role} />
+
+      {/* Push notification permission prompt */}
+      <PushPermissionPrompt />
 
       {/* Bottom nav: mobile only — outside overflow-hidden container */}
       <BottomNav
