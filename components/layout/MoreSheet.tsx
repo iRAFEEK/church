@@ -80,7 +80,7 @@ export function MoreSheet({
       <SheetContent
         side="bottom"
         className="max-h-[85vh] rounded-t-2xl overflow-y-auto"
-        style={{ paddingBottom: 'calc(var(--safe-area-bottom) + 1rem)' }}
+        style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
       >
         <SheetHeader className="pb-2">
           <SheetTitle className="text-start">{t('title')}</SheetTitle>
