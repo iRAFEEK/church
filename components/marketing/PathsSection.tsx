@@ -3,43 +3,46 @@
 import { useTranslations } from 'next-intl'
 import { Church, Users, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SectionHeading } from './shared/SectionHeading'
 import { AnimatedSection } from './shared/AnimatedSection'
+import { SectionHeading } from './shared/SectionHeading'
 import Link from 'next/link'
 
-export function TestimonialsSection() {
+export function PathsSection() {
   const t = useTranslations('marketing')
 
   const paths = [
     {
       icon: Church,
-      title: t('whoItsFor.leadersTitle'),
-      desc: t('whoItsFor.leadersDesc'),
-      features: [1, 2, 3, 4].map((n) => t(`whoItsFor.leadersFeature${n}`)),
-      cta: t('whoItsFor.leadersCta'),
+      title: t('paths.leadersTitle'),
+      desc: t('paths.leadersDesc'),
+      features: [1, 2, 3, 4].map((n) => t(`paths.leadersFeature${n}`)),
+      cta: t('paths.leadersCta'),
       href: '/welcome',
       variant: 'default' as const,
     },
     {
       icon: Users,
-      title: t('whoItsFor.membersTitle'),
-      desc: t('whoItsFor.membersDesc'),
-      features: [1, 2, 3, 4].map((n) => t(`whoItsFor.membersFeature${n}`)),
-      cta: t('whoItsFor.membersCta'),
+      title: t('paths.membersTitle'),
+      desc: t('paths.membersDesc'),
+      features: [1, 2, 3, 4].map((n) => t(`paths.membersFeature${n}`)),
+      cta: t('paths.membersCta'),
       href: '/login',
       variant: 'outline' as const,
     },
   ]
 
   return (
-    <section id="who-its-for" className="py-20 sm:py-28 px-4 bg-muted/20">
+    <section id="paths" className="py-20 sm:py-28 px-4 bg-muted/20">
       <div className="max-w-5xl mx-auto">
-        <SectionHeading title={t('whoItsFor.title')} />
+        <SectionHeading title={t('paths.title')} />
 
         <AnimatedSection>
-          <p className="text-center text-muted-foreground italic text-base sm:text-lg mb-12 max-w-md mx-auto">
-            {t('whoItsFor.verse')}
-          </p>
+          <div className="text-center mb-12 space-y-1">
+            <p className="text-base sm:text-lg font-serif italic text-muted-foreground max-w-lg mx-auto">
+              {t('paths.verse')}
+            </p>
+            <p className="text-sm text-muted-foreground/70">{t('paths.verseRef')}</p>
+          </div>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -21,21 +21,28 @@ export default async function MinistryDetailPage({ params }: Params) {
   const t = await getTranslations('ministries')
   const supabase = await createClient()
 
-  // Try with ministry_members, fall back if table doesn't exist yet
+  // Fire ministry query and allMembers query in parallel
   let ministry: any = null
-  const result = await supabase
-    .from('ministries')
-    .select(`
-      *,
-      leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
-      ministry_members(
-        id, role_in_ministry, joined_at, is_active,
-        profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
-      ),
-      groups(id,name,name_ar,type,is_active)
-    `)
-    .eq('id', id)
-    .single()
+  const [result, { data: allMembers }] = await Promise.all([
+    supabase
+      .from('ministries')
+      .select(`
+        *,
+        leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
+        ministry_members(
+          id, role_in_ministry, joined_at, is_active,
+          profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
+        ),
+        groups(id,name,name_ar,type,is_active)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
+      .eq('status', 'active')
+      .order('first_name'),
+  ])
 
   if (result.error?.message?.includes('ministry_members')) {
     const fallback = await supabase
@@ -49,13 +56,6 @@ export default async function MinistryDetailPage({ params }: Params) {
   }
 
   if (!ministry) notFound()
-
-  // Get all church members for adding
-  const { data: allMembers } = await supabase
-    .from('profiles')
-    .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
-    .eq('status', 'active')
-    .order('first_name')
 
   const activeMembers = (ministry.ministry_members || []).filter(
     (m: { is_active: boolean }) => m.is_active

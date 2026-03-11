@@ -35,19 +35,16 @@
     "lyrics": "Lyrics",
     "lyricsHint": "Separate slides with a blank line"
   },
-
   "sidebar": {
     "signOut": "Sign out",
     "signedOut": "Signed out",
     "fallbackUser": "User"
   },
-
   "topbar": {
     "myProfile": "My Profile",
     "editProfile": "Edit Profile",
     "langToggle": "عر"
   },
-
   "nav": {
     "sections": {
       "main": "Main",
@@ -75,7 +72,6 @@
     "qrCode": "QR Code",
     "settings": "Settings"
   },
-
   "auth": {
     "signInTitle": "Sign In",
     "signInDescription": "Enter your email and password to sign in",
@@ -89,7 +85,6 @@
     "validationEmail": "Please enter a valid email",
     "validationPassword": "Password must be at least 6 characters"
   },
-
   "onboarding": {
     "welcome": "Welcome",
     "welcomeSubtitle": "Welcome to the family",
@@ -130,20 +125,17 @@
     "toastSuccess": "Welcome!",
     "toastSuccessDesc": "Your profile has been created successfully"
   },
-
   "error": {
     "title": "An Error Occurred",
     "description": "An unexpected error occurred. Please try again.",
     "retry": "Try Again",
     "goHome": "Home"
   },
-
   "notFound": {
     "title": "Page Not Found",
     "description": "The page you are looking for does not exist or has been removed.",
     "goHome": "Go Back Home"
   },
-
   "profile": {
     "editButton": "Edit",
     "joinedAt": "Joined",
@@ -183,7 +175,6 @@
     "qlAnnouncements": "Announcements",
     "qlServing": "Serving Areas"
   },
-
   "profileEdit": {
     "pageTitle": "Edit Profile",
     "photoTitle": "Profile Photo",
@@ -216,7 +207,6 @@
     "validationFirstName": "First name is required",
     "validationLastName": "Last name is required"
   },
-
   "members": {
     "pageTitle": "Members",
     "pageSubtitle": "{count} members in the church",
@@ -246,7 +236,6 @@
     "statusAtRisk": "Needs Follow-up",
     "statusVisitor": "Visitor"
   },
-
   "memberDetail": {
     "pageTitle": "Member Profile",
     "joinedAt": "Joined",
@@ -268,7 +257,6 @@
     "statusInactive": "Inactive",
     "statusVisitor": "Visitor"
   },
-
   "visitors": {
     "adminPageTitle": "Visitors List",
     "adminPageSubtitle": "Manage and follow up with new visitors",
@@ -319,7 +307,6 @@
     "statusConverted": "Became a Member",
     "statusLost": "Lost Contact"
   },
-
   "groups": {
     "adminPageTitle": "Groups",
     "adminPageSubtitle": "All church groups",
@@ -372,7 +359,6 @@
     "daySaturday": "Saturday",
     "daySunday": "Sunday"
   },
-
   "groupForm": {
     "nameEn": "Name (English) *",
     "nameEnPlaceholder": "Youth Group",
@@ -404,7 +390,6 @@
     "registerNewLeader": "Register New Leader",
     "noLeadersHint": "No leaders found. Register a new leader to get started."
   },
-
   "leaderRegistration": {
     "title": "Register New Leader",
     "subtitle": "Create an account for a new group leader",
@@ -426,7 +411,6 @@
     "toastPromoted": "Existing member promoted to group leader",
     "toastExisting": "This person is already a leader"
   },
-
   "groupMembers": {
     "sectionTitle": "Members",
     "addButton": "Add Member",
@@ -446,7 +430,6 @@
     "toastRemoved": "Member removed",
     "toastError": "An error occurred"
   },
-
   "ministries": {
     "pageTitle": "Ministries",
     "pageSubtitle": "Manage church ministries and services",
@@ -545,7 +528,6 @@
     "notifySent": "Notification sent to {count} members",
     "notifyError": "Failed to send notification"
   },
-
   "gathering": {
     "newPageTitle": "New Gathering",
     "formDateTime": "Date and Time *",
@@ -570,7 +552,6 @@
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled"
   },
-
   "attendance": {
     "sectionTitle": "Attendance",
     "presentCount": "{present} present out of {total}",
@@ -597,7 +578,6 @@
     "listView": "List",
     "undo": "Undo"
   },
-
   "prayer": {
     "sectionTitle": "Prayer Requests",
     "activeCount": "{count} active",
@@ -621,7 +601,6 @@
     "toastResolved": "Answer logged",
     "toastError": "An error occurred"
   },
-
   "qr": {
     "pageTitle": "Visitor QR Code",
     "pageSubtitle": "Print this code and place it at the church entrance. Visitors can scan it to register their visit.",
@@ -634,7 +613,6 @@
     "toastDownloaded": "QR code downloaded",
     "toastLinkCopied": "Link copied"
   },
-
   "join": {
     "pageTitle": "Welcome",
     "pageSubtitle": "We're glad you're here. Register your details and one of our team members will contact you soon.",
@@ -672,7 +650,6 @@
     "errorGeneric": "An error occurred",
     "errorUnexpected": "An unexpected error occurred"
   },
-
   "joinSuccess": {
     "title": "Welcome to our family!",
     "description": "Your visit has been registered. One of our team members will contact you within 48 hours to help you connect with the church.",
@@ -682,7 +659,6 @@
     "bulletChurch": "Getting to know the church family",
     "questions": "If you have any questions, feel free to contact us directly."
   },
-
   "dashboard": {
     "welcome": "Welcome, {name}",
     "fallbackUser": "User",
@@ -690,7 +666,6 @@
     "roleGroupLeader": "Group Leader",
     "roleMinistryLeader": "Ministry Leader",
     "roleSuperAdmin": "Super Admin",
-
     "kpiActiveMembers": "Active Members",
     "kpiNewVisitors": "New Visitors",
     "kpiAttendanceRate": "Attendance Rate",
@@ -702,7 +677,6 @@
     "kpiGroupMembers": "Members",
     "kpiActivePrayers": "Active Prayers",
     "kpiNextGathering": "Next Gathering",
-
     "trendUp": "+{count} this month",
     "needAttention": "{count} need attention",
     "unread": "unread",
@@ -710,28 +684,23 @@
     "today": "Today",
     "tomorrow": "Tomorrow",
     "inDays": "In {count} days",
-
     "chartAttendanceTrend": "Attendance Trend",
     "chartAttendanceTrendDesc": "Weekly attendance rate — last 12 weeks",
     "chartVisitorPipeline": "Visitor Pipeline",
     "chartVisitorPipelineDesc": "Current visitor status breakdown",
-
     "pipeline_new": "New",
     "pipeline_assigned": "Assigned",
     "pipeline_contacted": "Contacted",
     "pipeline_converted": "Converted",
-
     "attentionTitle": "Needs Attention",
     "attentionDesc": "Items requiring follow-up",
     "attentionEmpty": "Everything looks good!",
-
     "upcomingTitle": "Upcoming This Week",
     "upcomingDesc": "Gatherings, events, and serving",
     "upcomingGathering": "Gathering",
     "upcomingEvent": "Event",
     "upcomingServing": "Serving",
     "upcomingEmpty": "Nothing scheduled this week",
-
     "groupHealthTitle": "Group Health",
     "groupHealthDesc": "Overview of all active groups",
     "groupHealthName": "Group",
@@ -740,40 +709,31 @@
     "groupHealthAttendance": "Attendance",
     "groupHealthAtRisk": "At Risk",
     "groupHealthTrend": "Trend",
-
     "myGroupsTitle": "My Groups",
     "myGroupsEmpty": "You are not in any groups yet",
     "myGroupsNextGathering": "Next: {date}",
     "myGroupsLeader": "Leader: {name}",
-
     "upcomingEventsTitle": "Upcoming Events",
     "upcomingEventsEmpty": "No upcoming events",
     "upcomingEventsRegistered": "Registered",
-
     "myServingTitle": "My Serving",
     "myServingEmpty": "No upcoming serving slots",
-
     "recentAnnouncementsTitle": "Recent Announcements",
     "recentAnnouncementsEmpty": "No announcements",
-
     "leaderAtRiskTitle": "At-Risk Members",
     "leaderAtRiskEmpty": "No at-risk members",
     "leaderAtRiskLastSeen": "Last seen {days} days ago",
     "leaderAtRiskNeverSeen": "Never attended",
-
     "leaderPrayersTitle": "Active Prayer Requests",
     "leaderPrayersEmpty": "No active prayer requests",
     "leaderPrayersPrivate": "Private",
-
     "leaderQuickActions": "Quick Actions",
     "leaderStartGathering": "Start Gathering",
     "leaderViewVisitors": "View My Visitors",
     "leaderRecentGatherings": "Recent Gatherings",
     "leaderNoGatherings": "No recent gatherings",
-
     "viewAll": "View All",
     "viewDetails": "View Details",
-
     "sectionGroupHealth": "Group Health",
     "mlGroups": "Groups",
     "mlUpcomingEvents": "Ministry Events",
@@ -781,11 +741,9 @@
     "mlMyAssignments": "My Service Assignments",
     "mlNoAssignments": "No active service assignments"
   },
-
   "authLayout": {
     "subtitle": "Ekklesia"
   },
-
   "milestone": {
     "addButton": "Add Milestone",
     "dialogTitle": "Add Spiritual Milestone",
@@ -808,7 +766,6 @@
     "typeMarriage": "Marriage",
     "typeOther": "Other"
   },
-
   "roleEditor": {
     "roleMember": "Member",
     "roleGroupLeader": "Group Leader",
@@ -818,7 +775,6 @@
     "toastError": "Failed to change role",
     "toastSuccess": "Role changed successfully"
   },
-
   "photoUpload": {
     "invalidImage": "Please select a valid image",
     "tooLarge": "Image too large (max 5MB)",
@@ -828,14 +784,12 @@
     "addPhoto": "Add Photo",
     "altText": "Profile photo"
   },
-
   "notifications": {
     "title": "Notifications",
     "empty": "No notifications yet",
     "markAllRead": "Mark all read",
     "loading": "Loading..."
   },
-
   "notificationsPage": {
     "title": "Notifications",
     "subtitle": "{count} notifications, {unread} unread",
@@ -859,7 +813,6 @@
     },
     "viewRelated": "View Details"
   },
-
   "events": {
     "adminPageTitle": "Events",
     "adminPageSubtitle": "Manage church events and activities",
@@ -994,7 +947,6 @@
     "staffing": "Staffing",
     "rolePresetSelect": "Quick select role"
   },
-
   "templates": {
     "pageTitle": "Event Templates",
     "pageSubtitle": "Reusable blueprints for recurring events",
@@ -1069,7 +1021,6 @@
     "noRolePresets": "No roles defined",
     "totalRoles": "Total roles"
   },
-
   "songs": {
     "pageTitle": "Songs",
     "pageSubtitle": "Worship song library",
@@ -1124,7 +1075,6 @@
     "shortcutFullscreen": "Toggle fullscreen",
     "shortcutClose": "Close settings"
   },
-
   "announcements": {
     "adminPageTitle": "Announcements",
     "adminPageSubtitle": "Manage church announcements",
@@ -1182,7 +1132,6 @@
     "create": "Create",
     "update": "Update"
   },
-
   "serving": {
     "adminPageTitle": "Serving",
     "adminPageSubtitle": "Manage serving areas and volunteer slots",
@@ -1225,7 +1174,7 @@
     "areaActivated": "Serving area activated",
     "slotCreated": "Serving slot created",
     "slotUpdated": "Serving slot updated",
-    "slotDeleted": "Serving slot deleted",
+    "slotDeleted": "Slot deleted",
     "errorGeneral": "An error occurred",
     "requiredName": "Name is required",
     "requiredTitle": "Title is required",
@@ -1269,11 +1218,9 @@
     "noMinistry": "None",
     "selectArea": "Select an area",
     "ministry": "Ministry",
-    "slotDeleted": "Slot deleted",
     "unknownMember": "Unknown member",
     "unknownArea": "Other"
   },
-
   "timeAgo": {
     "now": "Just now",
     "minutes": "{count} minutes ago",
@@ -1286,7 +1233,6 @@
     "month": "{count} month ago",
     "months": "{count} months ago"
   },
-
   "bible": {
     "pageTitle": "Bible",
     "pageSubtitle": "Read, bookmark, and highlight Scripture",
@@ -1353,7 +1299,6 @@
     "goTo": "Go To",
     "searchBook": "Search books..."
   },
-
   "notificationComposer": {
     "pageTitle": "Send Notifications",
     "pageSubtitle": "Compose and send targeted notifications to church members",
@@ -1439,168 +1384,84 @@
   },
   "marketing": {
     "nav": {
-      "features": "Features",
-      "howItWorks": "How It Works",
-      "whoItsFor": "Who It's For",
-      "support": "Support",
-      "login": "Login",
-      "getStarted": "Get Started"
+      "login": "Sign In",
+      "getStarted": "Register Your Church"
     },
     "hero": {
-      "badge": "100% Free — Built for His Glory",
-      "headline": "Shepherd Your Church with Clarity",
-      "subheadline": "A free platform that helps pastors and leaders manage their congregation, track visitors, coordinate volunteers, and grow their church — built to serve the Lord Jesus Christ, not for profit.",
+      "verse": "\"Feed my sheep.\"",
+      "verseRef": "— John 21:17",
+      "headline": "A tool built for His church",
+      "subheadline": "Helping pastors and leaders shepherd their flock with care — welcoming visitors, nurturing groups, and serving together as one body.",
       "ctaPrimary": "Register Your Church",
       "ctaSecondary": "Join Your Church"
     },
-    "mission": {
-      "headline": "Built to Serve the Kingdom",
-      "text": "Ekklesia is completely free. We believe church tools should serve the Kingdom of God, not shareholders. This project is not built for profit — it's built for His glory.",
-      "pillar1Title": "Free Forever",
-      "pillar1Desc": "No hidden fees, no paywalls, no premium tiers. Every feature is available to every church.",
-      "pillar2Title": "For Every Church",
-      "pillar2Desc": "Whether you have 10 members or 10,000, Ekklesia is designed to grow with your ministry.",
-      "pillar3Title": "Arabic-First",
-      "pillar3Desc": "Built from the ground up for Arabic-speaking churches, with full English support."
+    "capabilities": {
+      "title": "What Ekklesia Offers",
+      "subtitle": "Ministry outcomes, not just features.",
+      "card1Title": "Welcome every visitor",
+      "card1Desc": "QR-powered registration and follow-up pipeline so no guest is forgotten.",
+      "card2Title": "Know your flock",
+      "card2Desc": "Member profiles, attendance tracking, and at-risk alerts for proactive care.",
+      "card3Title": "Gather in fellowship",
+      "card3Desc": "Small groups, gatherings, and prayer requests that keep the body connected.",
+      "card4Title": "Serve together",
+      "card4Desc": "Event planning, volunteer scheduling, and service coordination in one place.",
+      "card5Title": "Worship & study",
+      "card5Desc": "Song library with presenter mode and a Bible reader with bookmarks.",
+      "card6Title": "Stay connected",
+      "card6Desc": "Announcements and notifications that reach your congregation — no scattered messages."
     },
-    "features": {
-      "title": "Everything Your Church Needs",
-      "subtitle": "From welcoming visitors to worship night — one platform for your entire ministry.",
-      "visitors": {
-        "title": "Visitor Pipeline",
-        "desc": "Never lose track of a visitor again. QR-powered registration captures guest info instantly and assigns follow-up to your team.",
-        "bullet1": "QR code visitor registration at the door",
-        "bullet2": "Automatic follow-up SLA with alerts",
-        "bullet3": "Visitor-to-member conversion tracking",
-        "bullet4": "Assign visitors to group leaders"
-      },
-      "groups": {
-        "title": "Groups & Attendance",
-        "desc": "Manage small groups, track attendance patterns, and identify members who might need extra care.",
-        "bullet1": "Create and manage small groups",
-        "bullet2": "Digital attendance with one tap",
-        "bullet3": "At-risk member detection alerts",
-        "bullet4": "Group health dashboards"
-      },
-      "events": {
-        "title": "Events & Serving",
-        "desc": "Organize church events and coordinate volunteers effortlessly with self-service sign-up.",
-        "bullet1": "Event creation with RSVP tracking",
-        "bullet2": "Volunteer serving areas and time slots",
-        "bullet3": "Self-service sign-up for members",
-        "bullet4": "Attendance tracking per event"
-      },
-      "worship": {
-        "title": "Worship & Bible",
-        "desc": "A built-in song library with lyrics presenter mode and a Bible reader with bookmarks and highlights.",
-        "bullet1": "Song library with lyrics and chords",
-        "bullet2": "Full-screen presenter mode for projection",
-        "bullet3": "Bible reader with chapter navigation",
-        "bullet4": "Bookmark and highlight your favorite verses"
-      },
-      "communication": {
-        "title": "Communication",
-        "desc": "Reach your congregation with targeted announcements and notifications — no scattered WhatsApp groups.",
-        "bullet1": "Church-wide announcements with publish/draft",
-        "bullet2": "Targeted notifications by role or group",
-        "bullet3": "In-app notification center",
-        "bullet4": "Email and messaging integration ready"
-      },
-      "dashboards": {
-        "title": "Dashboards & Reports",
-        "desc": "Role-based dashboards give every leader the insights they need — from high-level KPIs to group-level trends.",
-        "bullet1": "Admin dashboard with church-wide KPIs",
-        "bullet2": "Group leader view with member trends",
-        "bullet3": "Attendance analytics and charts",
-        "bullet4": "Visitor pipeline reports"
-      }
-    },
-    "story": {
-      "title": "A Day with Ekklesia",
-      "subtitle": "See how pastors and leaders use Ekklesia throughout a typical day.",
-      "step1": {
-        "time": "7:00 AM",
-        "text": "Pastor opens the dashboard and sees 3 new visitors from Sunday's service and 2 members flagged as at-risk."
-      },
-      "step2": {
-        "time": "9:00 AM",
-        "text": "A group leader opens the app and marks attendance for the morning prayer meeting — 12 of 14 members present."
-      },
-      "step3": {
-        "time": "12:00 PM",
-        "text": "The admin team publishes an announcement about Friday's retreat, instantly reaching 200+ members."
-      },
-      "step4": {
-        "time": "3:00 PM",
-        "text": "The worship leader prepares Sunday's setlist, arranging songs and loading lyrics into presenter mode."
-      },
-      "step5": {
-        "time": "6:00 PM",
-        "text": "A volunteer signs up for Sunday ushering through the serving module — no phone calls needed."
-      }
-    },
-    "comparison": {
-      "title": "Before & After Ekklesia",
-      "without": "Without Ekklesia",
-      "with": "With Ekklesia",
-      "pain1": "Visitors fall through the cracks — no follow-up system",
-      "pain2": "Attendance tracked on paper or scattered spreadsheets",
-      "pain3": "No way to identify disengaged or at-risk members",
-      "pain4": "Announcements via scattered WhatsApp groups",
-      "pain5": "Volunteer coordination relies on phone calls and memory",
-      "solution1": "QR visitor pipeline with automatic follow-up alerts",
-      "solution2": "Digital attendance with trends and analytics",
-      "solution3": "Automatic at-risk detection with leader notifications",
-      "solution4": "Targeted, bilingual announcements from one place",
-      "solution5": "Self-service volunteer sign-up with slot management"
-    },
-    "whoItsFor": {
-      "title": "Who Is Ekklesia For?",
-      "verse": "\"Feed my sheep.\" — John 21:17",
-      "leadersTitle": "For Pastors & Church Leaders",
-      "leadersDesc": "Register your church and get a complete management platform — visitors, members, groups, events, serving, and more.",
-      "leadersFeature1": "Register and set up your church in minutes",
-      "leadersFeature2": "Manage members and track visitors with QR codes",
-      "leadersFeature3": "Coordinate events, groups, and volunteer serving",
-      "leadersFeature4": "Dashboards and analytics to shepherd wisely",
+    "paths": {
+      "title": "Built for Everyone in the Church",
+      "verse": "\"Where two or three gather in my name, there am I with them.\"",
+      "verseRef": "— Matthew 18:20",
+      "leadersTitle": "For Pastors & Leaders",
+      "leadersDesc": "Register your church and get a complete management platform built for shepherding.",
+      "leadersFeature1": "Dashboard with church-wide health metrics",
+      "leadersFeature2": "Visitor pipeline with automatic follow-up",
+      "leadersFeature3": "Group health tracking and at-risk alerts",
+      "leadersFeature4": "Reports and analytics for wise stewardship",
       "leadersCta": "Register Your Church",
-      "membersTitle": "For Church Members",
-      "membersDesc": "Find your church, stay connected, and never miss what's happening in your community.",
-      "membersFeature1": "Find and join your church",
-      "membersFeature2": "View upcoming events and announcements",
-      "membersFeature3": "Join groups and track your involvement",
-      "membersFeature4": "Read the Bible with bookmarks and highlights",
+      "membersTitle": "For Members",
+      "membersDesc": "Find your church, stay connected, and never miss what matters.",
+      "membersFeature1": "Join your church and connect with your group",
+      "membersFeature2": "View events, sign up to serve, and RSVP",
+      "membersFeature3": "Read the Bible and submit prayer requests",
+      "membersFeature4": "Receive announcements and stay in the loop",
       "membersCta": "Join Your Church"
     },
-    "support": {
-      "title": "Always Free. All Features.",
-      "subtitle": "Ekklesia is free for every church, forever. No tiers, no limits, no paywalls.",
-      "feature1": "Unlimited members and admins",
-      "feature2": "Full visitor pipeline with follow-up SLA",
-      "feature3": "Groups, gatherings, and attendance tracking",
-      "feature4": "Events with RSVP and volunteer serving",
-      "feature5": "Bible reader with multiple Arabic translations",
-      "feature6": "Song library with presenter mode",
-      "feature7": "Announcements and notifications",
-      "feature8": "Dashboards and analytics",
-      "donateTitle": "Support the Mission",
-      "donateText": "Ekklesia costs money to run — servers, databases, and development. If this tool blesses your church, consider supporting the mission so we can keep serving churches across the Middle East.",
-      "donateCta": "Support Ekklesia",
-      "getStartedCta": "Get Started — It's Free"
+    "mission": {
+      "title": "Why Ekklesia Exists",
+      "subtitle": "\"Whatever you do, do it all for the glory of God.\" — 1 Corinthians 10:31",
+      "pillar1Title": "Free forever",
+      "pillar1Desc": "No fees, no tiers, no paywalls. Every feature is available to every church — always.",
+      "pillar2Title": "Arabic-first",
+      "pillar2Desc": "Built from the ground up for Arabic-speaking churches, with full English support.",
+      "pillar3Title": "For His glory",
+      "pillar3Desc": "Not for profit. Built to serve the Kingdom and equip the saints for ministry."
     },
     "footer": {
-      "description": "Free church management for the Middle East. Built to serve the Lord Jesus Christ.",
-      "product": "Product",
-      "ministry": "Ministry",
-      "legal": "Legal",
-      "features": "Features",
-      "support": "Support the Mission",
-      "demo": "Demo",
-      "contact": "Contact",
-      "faq": "FAQ",
-      "privacy": "Privacy Policy",
-      "terms": "Terms of Service",
-      "copyright": "© 2026 Ekklesia. Built for His glory."
+      "tagline": "Built for His glory.",
+      "copyright": "© 2026 Ekklesia",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "carry": {
+      "title": "Carry Together",
+      "verse": "\"Bear one another's burdens, and so fulfill the law of Christ.\"",
+      "verseRef": "— Galatians 6:2",
+      "intro": "Ekklesia is 100% free for every church. But servers, databases, and development cost real money. We're not a company — we don't have investors or revenue. We built this for His glory, and we need the body of Christ to help carry it forward.",
+      "tier1Title": "Pray",
+      "tier1Desc": "Pray for this ministry and the churches it serves.",
+      "tier1Label": "Free",
+      "tier2Title": "Partner",
+      "tier2Desc": "Help cover hosting for your church and others.",
+      "tier2Label": "$10–25/mo",
+      "tier3Title": "Sponsor",
+      "tier3Desc": "Your support covers dozens of churches who can't afford tools like this.",
+      "tier3Label": "$50–500/mo",
+      "transparency": "Every dollar goes to servers, databases, and keeping Ekklesia free. No salaries, no profit.",
+      "cta": "Support Ekklesia"
     }
   },
   "registration": {
@@ -1695,14 +1556,12 @@
       "tipsHeadline": "What's next?"
     }
   },
-
   "involvement": {
     "overview": "Overview",
     "events": "Event Service",
     "serving": "Serving",
     "groupsAndMinistries": "Groups & Ministries",
     "registrations": "Registrations",
-
     "statEventsServed": "Events Served",
     "statConfirmed": "Confirmed",
     "statDeclined": "Declined",
@@ -1710,10 +1569,8 @@
     "statActiveGroups": "Active Groups",
     "statActiveMinistries": "Active Ministries",
     "statEventsRegistered": "Events Registered",
-
     "upcoming": "Upcoming",
     "past": "Past",
-
     "statusAssigned": "Assigned",
     "statusConfirmed": "Confirmed",
     "statusDeclined": "Declined",
@@ -1721,7 +1578,6 @@
     "statusCancelled": "Cancelled",
     "statusRegistered": "Registered",
     "statusCheckedIn": "Checked In",
-
     "roleInGroup": "Role",
     "roleMember": "Member",
     "roleLeader": "Leader",
@@ -1729,18 +1585,14 @@
     "joinedAt": "Joined",
     "activeLabel": "Active",
     "inactiveLabel": "Inactive",
-
     "parentMinistry": "Ministry",
-
     "emptyAssignments": "No event service assignments yet",
     "emptyServing": "No serving signups yet",
     "emptyGroups": "Not a member of any groups or ministries",
     "emptyRegistrations": "No event registrations yet",
     "emptyOverview": "No involvement data yet",
-
     "loading": "Loading..."
   },
-
   "eventVisibility": {
     "audienceLabel": "Who can see this event?",
     "allMembers": "All Members",
@@ -1752,7 +1604,6 @@
     "hideToggle": "Hide from non-invited",
     "hideToggleDesc": "Completely hide this event from members who are not in the selected groups/ministries"
   },
-
   "permissions": {
     "roleDefaultsTitle": "Role Permission Defaults",
     "roleDefaultsSubtitle": "Configure the default permissions for each role. Changes apply to all users with that role (unless they have individual overrides).",
@@ -1767,7 +1618,6 @@
     "userPermissionsDesc": "Toggle permissions on or off. Highlighted toggles differ from the role default.",
     "memberNotFound": "Member not found."
   },
-
   "churchPrayer": {
     "pageTitle": "Prayer Requests",
     "submitTitle": "Submit a Prayer Request",
@@ -1799,7 +1649,6 @@
     "noMembersFound": "No members found",
     "assignedToMe": "Assigned to Me"
   },
-
   "outreach": {
     "pageTitle": "Outreach",
     "subtitle": "Track congregation visits and follow-ups",

@@ -237,7 +237,7 @@ export function MinistryForm({ ministry }: Props) {
                 type="button"
                 size="sm"
                 variant="destructive"
-                className="absolute top-2 right-2 h-8 w-8 p-0"
+                className="absolute top-2 end-2 h-8 w-8 p-0"
                 onClick={removePhoto}
               >
                 <X className="h-4 w-4" />

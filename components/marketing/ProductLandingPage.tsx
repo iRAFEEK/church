@@ -2,12 +2,9 @@
 
 import { MarketingNav } from './MarketingNav'
 import { HeroSection } from './HeroSection'
-import { SocialProofBar } from './SocialProofBar'
-import { FeatureShowcase } from './FeatureShowcase'
-import { PastorStorySection } from './PastorStorySection'
-import { ComparisonSection } from './ComparisonSection'
-import { TestimonialsSection } from './TestimonialsSection'
-import { PricingSection } from './PricingSection'
+import { CapabilitiesSection } from './CapabilitiesSection'
+import { PathsSection } from './PathsSection'
+import { MissionSection } from './MissionSection'
 import { MarketingFooter } from './MarketingFooter'
 
 export function ProductLandingPage() {
@@ -15,12 +12,9 @@ export function ProductLandingPage() {
     <main className="scroll-smooth">
       <MarketingNav />
       <HeroSection />
-      <SocialProofBar />
-      <FeatureShowcase />
-      <PastorStorySection />
-      <ComparisonSection />
-      <TestimonialsSection />
-      <PricingSection />
+      <CapabilitiesSection />
+      <PathsSection />
+      <MissionSection />
       <MarketingFooter />
     </main>
   )

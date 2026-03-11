@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { Globe, Menu, X } from 'lucide-react'
+import { Globe, Menu } from 'lucide-react'
 import Link from 'next/link'
 import {
   Sheet,
@@ -11,7 +11,28 @@ import {
   SheetTrigger,
   SheetTitle,
 } from '@/components/ui/sheet'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'ar-eg', label: 'مصري' },
+] as const
+
+function switchLanguage(code: string) {
+  document.cookie = `lang=${code}; path=/; max-age=${60 * 60 * 24 * 365}`
+  window.location.reload()
+}
+
+function currentLabel(locale: string) {
+  return LANGUAGES.find(l => l.code === locale)?.label ?? 'EN'
+}
 
 export function MarketingNav() {
   const t = useTranslations('marketing')
@@ -25,19 +46,6 @@ export function MarketingNav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  function toggleLanguage() {
-    const next = locale === 'ar' ? 'en' : 'ar'
-    document.cookie = `lang=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
-    window.location.reload()
-  }
-
-  const navLinks = [
-    { id: 'features', label: t('nav.features') },
-    { id: 'how-it-works', label: t('nav.howItWorks') },
-    { id: 'who-its-for', label: t('nav.whoItsFor') },
-    { id: 'support', label: t('nav.support') },
-  ]
-
   return (
     <nav
       className={cn(
@@ -47,7 +55,7 @@ export function MarketingNav() {
           : 'bg-transparent'
       )}
     >
-      <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto h-full flex items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <a href="#" className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -56,30 +64,27 @@ export function MarketingNav() {
           <span className="font-bold text-lg tracking-tight">Ekklesia</span>
         </a>
 
-        {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.id}
-              href={`#${link.id}`}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-
         {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLanguage}
-            className="gap-1.5 text-muted-foreground"
-          >
-            <Globe className="h-4 w-4" />
-            {locale === 'ar' ? 'EN' : 'عربي'}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                <Globe className="h-4 w-4" />
+                {currentLabel(locale)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {LANGUAGES.map(lang => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => switchLanguage(lang.code)}
+                  className={cn(locale === lang.code && 'font-semibold')}
+                >
+                  {lang.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/login">{t('nav.login')}</Link>
           </Button>
@@ -90,14 +95,24 @@ export function MarketingNav() {
 
         {/* Mobile menu */}
         <div className="flex md:hidden items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleLanguage}
-            className="text-muted-foreground"
-          >
-            <Globe className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Globe className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {LANGUAGES.map(lang => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => switchLanguage(lang.code)}
+                  className={cn(locale === lang.code && 'font-semibold')}
+                >
+                  {lang.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -106,18 +121,7 @@ export function MarketingNav() {
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <SheetTitle className="sr-only">Menu</SheetTitle>
-              <div className="flex flex-col gap-6 mt-8">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={`#${link.id}`}
-                    onClick={() => setMobileOpen(false)}
-                    className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-                <div className="h-px bg-border" />
+              <div className="flex flex-col gap-4 mt-8">
                 <Button variant="outline" asChild>
                   <Link href="/login">{t('nav.login')}</Link>
                 </Button>

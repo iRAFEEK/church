@@ -1,32 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateAnnouncementSchema } from '@/lib/schemas/announcement'
 
 // GET /api/announcements — list announcements
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-
+export const GET = apiHandler(async ({ req, supabase, profile, resolvedPermissions }) => {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const page = parseInt(searchParams.get('page') || '1')
-  const pageSize = parseInt(searchParams.get('pageSize') || '50')
+  const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 100)
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  const isAdmin = perms.can_manage_announcements
+  const isAdmin = resolvedPermissions.can_manage_announcements
 
   let query = supabase
     .from('announcements')
@@ -40,56 +26,34 @@ export async function GET(req: NextRequest) {
   if (status) {
     query = query.eq('status', status)
   } else if (!isAdmin) {
-    // Members only see published + not expired
     query = query.eq('status', 'published')
     query = query.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
   }
 
   const { data, error, count } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
-  return NextResponse.json({
-    data,
-    count,
-    page,
-    pageSize,
-    totalPages: Math.ceil((count || 0) / pageSize),
-  })
-}
+  return { data, count, page, pageSize, totalPages: Math.ceil((count || 0) / pageSize) }
+})
 
 // POST /api/announcements — create announcement (admin only)
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_announcements) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
+  const validated = validate(CreateAnnouncementSchema, body)
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
     .from('announcements')
     .insert({
-      ...body,
+      ...validated,
       church_id: profile.church_id,
       created_by: user.id,
-      published_at: body.status === 'published' ? now : null,
+      published_at: validated.status === 'published' ? now : null,
     })
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_announcements'] })

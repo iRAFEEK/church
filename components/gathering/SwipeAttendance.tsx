@@ -182,7 +182,7 @@ export function SwipeAttendance({
             onClick={undo}
             disabled={history.length === 0}
           >
-            <Undo2 className="h-4 w-4 mr-2" />
+            <Undo2 className="h-4 w-4 me-2" />
             {t('undo') || 'Undo'}
           </Button>
           <Button
@@ -237,14 +237,14 @@ export function SwipeAttendance({
         {/* Swipe hints */}
         <div className={cn(
           'absolute top-1/2 -translate-y-1/2 text-xs font-semibold transition-opacity',
-          isRTL ? 'right-2' : 'left-2',
+          'start-2',
           swipeDirection === 'left' ? 'opacity-100' : 'opacity-30'
         )}>
           <span className="text-zinc-400">{isRTL ? t('statusPresent') : t('statusAbsent')}</span>
         </div>
         <div className={cn(
           'absolute top-1/2 -translate-y-1/2 text-xs font-semibold transition-opacity',
-          isRTL ? 'left-2' : 'right-2',
+          'end-2',
           swipeDirection === 'right' ? 'opacity-100' : 'opacity-30'
         )}>
           <span className="text-green-500">{isRTL ? t('statusAbsent') : t('statusPresent')}</span>
