@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search, Building2, Check, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -35,8 +36,163 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import type { ChurchSearchResult } from '@/types'
 
-export default function OnboardingPage() {
+// ─── Step 1: Church Search ────────────────────────────────────────────────────
+
+function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<ChurchSearchResult[]>([])
+  const [searching, setSearching] = useState(false)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
+  const [joinedId, setJoinedId] = useState<string | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const res = await fetch(`/api/churches/search?q=${encodeURIComponent(query)}`)
+        if (res.ok) setResults(await res.json())
+      } finally {
+        setSearching(false)
+      }
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [query])
+
+  async function handleJoin(church: ChurchSearchResult) {
+    setJoiningId(church.id)
+    try {
+      const res = await fetch('/api/churches/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ church_id: church.id }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        toast.error('Could not join church', { description: data.error })
+        return
+      }
+
+      setJoinedId(church.id)
+      toast.success(`Joined ${church.name}!`)
+      setTimeout(onJoined, 800)
+    } finally {
+      setJoiningId(null)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Search input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Search by church name…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+        {searching && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+      </div>
+
+      {/* Results */}
+      {results.length > 0 && (
+        <ul className="space-y-2">
+          {results.map((church) => (
+            <li
+              key={church.id}
+              className="flex items-center gap-3 rounded-lg border p-3"
+            >
+              {/* Logo / fallback icon */}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
+                {church.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={church.logo_url}
+                    alt={church.name}
+                    className="h-8 w-8 rounded object-cover"
+                  />
+                ) : (
+                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{church.name}</p>
+                {church.name_ar && (
+                  <p className="text-sm text-muted-foreground truncate" dir="rtl">
+                    {church.name_ar}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">{church.country}</p>
+              </div>
+
+              <Button
+                size="sm"
+                variant={joinedId === church.id ? 'secondary' : 'default'}
+                disabled={joiningId !== null || joinedId === church.id}
+                onClick={() => handleJoin(church)}
+                className="shrink-0"
+              >
+                {joiningId === church.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : joinedId === church.id ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Joined
+                  </>
+                ) : (
+                  'Join'
+                )}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {results.length === 0 && query.length > 0 && !searching && (
+        <p className="text-sm text-center text-muted-foreground py-4">
+          No churches found for &ldquo;{query}&rdquo;.{' '}
+          <Link href="/welcome" className="underline underline-offset-4">
+            Register a new church
+          </Link>
+        </p>
+      )}
+
+      {results.length === 0 && query.length === 0 && !searching && (
+        <p className="text-sm text-center text-muted-foreground py-4">
+          Type your church name to search
+        </p>
+      )}
+
+      {/* Skip */}
+      <div className="flex justify-between items-center pt-2 border-t">
+        <Link href="/welcome" className="text-sm text-muted-foreground underline underline-offset-4">
+          Register a new church
+        </Link>
+        <Button variant="ghost" size="sm" onClick={onJoined} className="gap-1">
+          Skip for now
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Step 2: Profile Form (existing) ─────────────────────────────────────────
+
+function ProfileStep() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const t = useTranslations('onboarding')
@@ -98,18 +254,203 @@ export default function OnboardingPage() {
 
     if (error) {
       setIsLoading(false)
-      toast.error(t('toastError'), {
-        description: error.message,
-      })
+      toast.error(t('toastError'), { description: error.message })
       return
     }
 
-    toast.success(t('toastSuccess'), {
-      description: t('toastSuccessDesc'),
-    })
+    toast.success(t('toastSuccess'), { description: t('toastSuccessDesc') })
     router.push('/')
     router.refresh()
   }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Arabic Name (required) */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            {t('arabicNameSection')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('firstNameAr')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('firstNameArPlaceholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name_ar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('lastNameAr')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('lastNameArPlaceholder')} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* English Name (optional) */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            {t('englishNameSection')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('firstNameEn')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('lastNameEn')}</FormLabel>
+                  <FormControl>
+                    <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('phone')}</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder={t('phonePlaceholder')} dir="ltr" {...field} />
+              </FormControl>
+              <FormDescription>{t('phoneDescription')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Gender */}
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('gender')}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('genderPlaceholder')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="male">{t('genderMale')}</SelectItem>
+                  <SelectItem value="female">{t('genderFemale')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Date of Birth */}
+        <FormField
+          control={form.control}
+          name="date_of_birth"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('dateOfBirth')}</FormLabel>
+              <FormControl>
+                <Input type="date" dir="ltr" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Occupation */}
+        <FormField
+          control={form.control}
+          name="occupation_ar"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('occupation')}</FormLabel>
+              <FormControl>
+                <Input placeholder={t('occupationPlaceholder')} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Notification Preference */}
+        <FormField
+          control={form.control}
+          name="notification_pref"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('notificationPref')}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
+                  <SelectItem value="sms">{t('notifSms')}</SelectItem>
+                  <SelectItem value="email">{t('notifEmail')}</SelectItem>
+                  <SelectItem value="all">{t('notifAll')}</SelectItem>
+                  <SelectItem value="none">{t('notifNone')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {t('submitting')}
+            </>
+          ) : (
+            t('submitButton')
+          )}
+        </Button>
+      </form>
+    </Form>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function OnboardingPage() {
+  const t = useTranslations('onboarding')
+  const [step, setStep] = useState<'church' | 'profile'>('church')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
@@ -119,206 +460,36 @@ export default function OnboardingPage() {
           <p className="text-sm text-zinc-500 mt-1">{t('welcomeSubtitle')}</p>
         </div>
 
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 mb-6">
+          <div className={`h-2 w-8 rounded-full transition-colors ${step === 'church' ? 'bg-primary' : 'bg-primary/30'}`} />
+          <div className={`h-2 w-8 rounded-full transition-colors ${step === 'profile' ? 'bg-primary' : 'bg-muted'}`} />
+        </div>
+
         <Card>
-          <CardHeader>
-            <CardTitle>{t('cardTitle')}</CardTitle>
-            <CardDescription>
-              {t('cardDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Arabic Name (required) */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    {t('arabicNameSection')}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="first_name_ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('firstNameAr')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('firstNameArPlaceholder')} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="last_name_ar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('lastNameAr')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('lastNameArPlaceholder')} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* English Name (optional) */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    {t('englishNameSection')}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="first_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('firstNameEn')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="last_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('lastNameEn')}</FormLabel>
-                          <FormControl>
-                            <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('phone')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          placeholder={t('phonePlaceholder')}
-                          dir="ltr"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t('phoneDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Gender */}
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('gender')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('genderPlaceholder')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="male">{t('genderMale')}</SelectItem>
-                          <SelectItem value="female">{t('genderFemale')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Date of Birth */}
-                <FormField
-                  control={form.control}
-                  name="date_of_birth"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('dateOfBirth')}</FormLabel>
-                      <FormControl>
-                        <Input type="date" dir="ltr" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Occupation */}
-                <FormField
-                  control={form.control}
-                  name="occupation_ar"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('occupation')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('occupationPlaceholder')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Notification Preference */}
-                <FormField
-                  control={form.control}
-                  name="notification_pref"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('notificationPref')}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
-                          <SelectItem value="sms">{t('notifSms')}</SelectItem>
-                          <SelectItem value="email">{t('notifEmail')}</SelectItem>
-                          <SelectItem value="all">{t('notifAll')}</SelectItem>
-                          <SelectItem value="none">{t('notifNone')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {t('submitting')}
-                    </>
-                  ) : (
-                    t('submitButton')
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
+          {step === 'church' ? (
+            <>
+              <CardHeader>
+                <CardTitle>Find your church</CardTitle>
+                <CardDescription>
+                  Search for your church to join it on Ekklesia. You can join multiple churches.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChurchSearchStep onJoined={() => setStep('profile')} />
+              </CardContent>
+            </>
+          ) : (
+            <>
+              <CardHeader>
+                <CardTitle>{t('cardTitle')}</CardTitle>
+                <CardDescription>{t('cardDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProfileStep />
+              </CardContent>
+            </>
+          )}
         </Card>
       </div>
     </div>
