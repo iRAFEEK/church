@@ -1,6 +1,7 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useTransition } from 'react'
+import { usePathname } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { BottomNav } from './BottomNav'
@@ -8,6 +9,7 @@ import { FAB } from '@/components/ui/fab'
 import { TeachMeButton } from '@/components/help/TeachMeButton'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { PushPermissionPrompt } from '@/components/notifications/PushPermissionPrompt'
+import { setLanguage } from '@/app/actions/lang'
 import type { Profile, Church, PermissionKey } from '@/types'
 
 interface AppShellProps {
@@ -19,11 +21,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ profile, church, resolvedPermissions, children }: AppShellProps) {
-  const locale = useLocale()
+  const pathname = usePathname()
+  const [, startTransition] = useTransition()
 
   function handleLangChange(newLang: 'ar' | 'en') {
-    document.cookie = `lang=${newLang};path=/;max-age=31536000;samesite=lax`
-    window.location.reload()
+    startTransition(() => {
+      setLanguage(newLang, pathname)
+    })
   }
 
   return (

@@ -45,6 +45,9 @@ export async function middleware(request: NextRequest) {
     })
   }
 
+  // Capture lang value before Supabase may overwrite supabaseResponse
+  const langToPreserve = request.cookies.get('lang')?.value
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -64,6 +67,14 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
+          // Re-apply lang cookie if Supabase overwrote supabaseResponse
+          if (langToPreserve) {
+            supabaseResponse.cookies.set('lang', langToPreserve, {
+              path: '/',
+              maxAge: 60 * 60 * 24 * 365,
+              sameSite: 'lax',
+            })
+          }
         },
       },
     }
