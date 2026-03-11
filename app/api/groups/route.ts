@@ -6,7 +6,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateGroupSchema } from '@/lib/schemas/group'
-import { normalizeSearch } from '@/lib/utils/search'
+import { normalizeSearch } from '@/lib/utils/normalize'
 
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)

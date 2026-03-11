@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   if (status) query = query.eq('status', status)
   if (upcoming) query = query.gte('starts_at', new Date().toISOString())
   if (search) {
-    const { normalizeSearch } = await import('@/lib/utils/search')
+    const { normalizeSearch } = await import('@/lib/utils/normalize')
     const normalized = normalizeSearch(search)
     const parts = [`title.ilike.%${search}%`, `title_ar.ilike.%${search}%`]
     if (normalized !== search) {

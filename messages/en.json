@@ -305,7 +305,8 @@
     "statusAssigned": "Assigned",
     "statusContacted": "Contacted",
     "statusConverted": "Became a Member",
-    "statusLost": "Lost Contact"
+    "statusLost": "Lost Contact",
+    "searchPlaceholder": "Search by visitor name or phone..."
   },
   "groups": {
     "adminPageTitle": "Groups",
@@ -470,7 +471,8 @@
     "upcomingEvents": "Upcoming Events",
     "recentEvents": "Recent Events",
     "noEvents": "No events linked to this ministry",
-    "createEvent": "Create Event"
+    "createEvent": "Create Event",
+    "searchPlaceholder": "Search ministries..."
   },
   "ministryForm": {
     "nameEn": "Name (English)",

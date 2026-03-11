@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     .range(offset, offset + pageSize - 1)
 
   if (search) {
-    const { normalizeSearch } = await import('@/lib/utils/search')
+    const { normalizeSearch } = await import('@/lib/utils/normalize')
     const normalized = normalizeSearch(search)
     const base = `first_name_ar.ilike.%${search}%,last_name_ar.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
     const extra = normalized !== search
