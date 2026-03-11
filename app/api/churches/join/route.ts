@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
     const { error: insertError } = await supabase
       .from('user_churches')
       .insert({ user_id: user.id, church_id, role: 'member' })
-      .throwOnError()
 
     if (insertError && !insertError.message.includes('duplicate')) {
       return NextResponse.json({ error: insertError.message }, { status: 500 })
