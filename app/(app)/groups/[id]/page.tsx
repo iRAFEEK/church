@@ -8,6 +8,7 @@ import { GroupMemberManager } from '@/components/groups/GroupMemberManager'
 import { GatheringHistory } from '@/components/gathering/GatheringHistory'
 import { PrayerList } from '@/components/gathering/PrayerList'
 import { getTranslations, getLocale } from 'next-intl/server'
+import { ChevronLeft } from 'lucide-react'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -93,12 +94,24 @@ export default async function GroupLeaderPage({ params }: Params) {
 
   const dateLocale = locale === 'ar' ? 'ar-LB' : 'en-US'
 
+  const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
+  const backHref = isAdmin ? '/admin/groups' : '/my-group'
+
   return (
     <div className="space-y-6">
+      {/* Back navigation */}
+      <Link
+        href={backHref}
+        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 active:text-zinc-900 transition-colors -ms-1"
+      >
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+        {t('backToGroups')}
+      </Link>
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{group.name_ar || group.name}</h1>
+          <h1 className="text-xl font-bold text-zinc-900">{group.name_ar || group.name}</h1>
           <p className="text-sm text-zinc-500 mt-1">
             {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as any) : group.meeting_day}
             {group.meeting_time && ` · ${group.meeting_time}`}
@@ -116,15 +129,15 @@ export default async function GroupLeaderPage({ params }: Params) {
       {isLeaderOrAdmin && (
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
-            <p className="text-2xl font-bold text-zinc-900">{activeMembers.length}</p>
+            <p className="text-xl font-bold text-zinc-900">{activeMembers.length}</p>
             <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsMembers')}</p>
           </div>
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
-            <p className="text-2xl font-bold text-zinc-900">{completed.length}</p>
+            <p className="text-xl font-bold text-zinc-900">{completed.length}</p>
             <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsGatherings')}</p>
           </div>
           <div className="rounded-xl bg-zinc-50 border border-zinc-200 p-3 text-center">
-            <p className="text-2xl font-bold text-zinc-900">
+            <p className="text-xl font-bold text-zinc-900">
               {avgAttendance !== null ? `${avgAttendance}%` : '—'}
             </p>
             <p className="text-xs text-zinc-500 mt-0.5">{t('leaderStatsAttendanceRate')}</p>

@@ -45,7 +45,7 @@ export default async function FundsPage() {
         {canManage && (
           <Button asChild>
             <Link href="/admin/finance/funds/new">
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 me-2" />
               {isAr ? 'صندوق جديد' : 'New Fund'}
             </Link>
           </Button>

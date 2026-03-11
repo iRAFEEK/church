@@ -309,6 +309,7 @@
     "searchPlaceholder": "ابحث بالاسم أو الهاتف..."
   },
   "groups": {
+    "backToGroups": "المجموعات",
     "adminPageTitle": "المجموعات",
     "adminPageSubtitle": "جميع مجموعات الكنيسة",
     "ministriesButton": "الخدمات",

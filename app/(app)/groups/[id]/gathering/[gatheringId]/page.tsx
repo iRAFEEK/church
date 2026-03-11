@@ -5,6 +5,8 @@ import { AttendanceSection } from '@/components/gathering/AttendanceSection'
 import { PrayerList } from '@/components/gathering/PrayerList'
 import { formatGatheringDate, formatGatheringTime } from '@/lib/gatherings'
 import { getTranslations } from 'next-intl/server'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
 
 type Params = { params: Promise<{ id: string; gatheringId: string }> }
 
@@ -85,9 +87,17 @@ export default async function GatheringPage({ params }: Params) {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Back navigation */}
+      <Link
+        href={`/groups/${group_id}`}
+        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 active:text-zinc-900 transition-colors -ms-1"
+      >
+        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+        {group.name_ar || group.name}
+      </Link>
+
       {/* Header */}
       <div>
-        <p className="text-sm text-zinc-500">{group.name_ar || group.name}</p>
         <h1 className="text-2xl font-bold text-zinc-900 mt-0.5">
           {gathering.topic || t('defaultTopic')}
         </h1>

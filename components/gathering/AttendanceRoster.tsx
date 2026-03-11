@@ -168,15 +168,15 @@ export function AttendanceRoster({
                 <span className="flex-1 text-sm font-medium text-zinc-900">{name}</span>
 
                 {canManage && !isCompleted ? (
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1 justify-end">
                     {STATUS_ORDER.map(s => (
                       <button
                         key={s}
                         onClick={e => { e.stopPropagation(); setStatus(m.profile_id, s) }}
-                        className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
+                        className={`text-xs px-2 py-1 rounded-md font-medium transition-colors active:scale-95 ${
                           status === s
                             ? `${STATUS_STYLE[s].bg} ${STATUS_STYLE[s].color}`
-                            : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100'
+                            : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 active:bg-zinc-200'
                         }`}
                       >
                         {t(STATUS_KEYS[s])}
