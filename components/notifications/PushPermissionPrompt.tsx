@@ -52,7 +52,7 @@ export function PushPermissionPrompt() {
   }
 
   return (
-    <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50">
+    <div className="fixed bottom-20 md:bottom-4 start-4 end-4 md:start-auto md:end-4 md:w-96 z-50">
       <div className="bg-card border rounded-xl shadow-lg p-4 flex items-start gap-3">
         <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
           <Bell className="h-4 w-4 text-primary" />

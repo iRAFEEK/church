@@ -96,13 +96,13 @@ export default async function MembersPage({
       {/* Search & Filters */}
       <Card>
         <CardContent className="pt-4">
-          <form className="flex flex-wrap gap-3">
+          <form className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
             <MembersSearchInput defaultValue={search} />
 
             <select
               name="role"
               defaultValue={roleFilter ?? ''}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllRoles')}</option>
               <option value="member">{t('roleMember')}</option>
@@ -114,7 +114,7 @@ export default async function MembersPage({
             <select
               name="status"
               defaultValue={statusFilter ?? ''}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllStatuses')}</option>
               <option value="active">{t('statusActive')}</option>
@@ -122,15 +122,60 @@ export default async function MembersPage({
               <option value="at_risk">{t('statusAtRisk')}</option>
             </select>
 
-            <Button type="submit" variant="outline">{t('searchButton')}</Button>
+            <Button type="submit" variant="outline" className="w-full sm:w-auto">{t('searchButton')}</Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Members Table */}
+      {/* Members List */}
       {members && members.length > 0 ? (
         <Card>
-          <div className="overflow-x-auto">
+          {/* Mobile card list — hidden on md+ */}
+          <div className="md:hidden divide-y">
+            {members.map((member: Profile) => {
+              const nameAr = `${member.first_name_ar ?? ''} ${member.last_name_ar ?? ''}`.trim()
+              const nameEn = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
+              const displayName = nameAr || nameEn || member.email || '—'
+              const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+              const cardContent = (
+                <div className="flex items-center gap-3 px-4 py-3 active:bg-muted/30 transition-colors">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={member.photo_url ?? undefined} />
+                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground truncate" dir="ltr">{member.email}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <Badge variant="secondary" className="text-xs">
+                      {ROLE_LABELS[member.role]?.label ?? member.role}
+                    </Badge>
+                    <Badge
+                      variant={STATUS_COLORS[member.status] as 'default' | 'secondary' | 'destructive' | 'outline' ?? 'default'}
+                      className="text-xs"
+                    >
+                      {STATUS_LABELS[member.status] ?? member.status}
+                    </Badge>
+                  </div>
+                </div>
+              )
+
+              return isSuperAdmin ? (
+                <Link key={member.id} href={`/admin/permissions/${member.id}`} className="block hover:bg-muted/30">
+                  {cardContent}
+                </Link>
+              ) : (
+                <Link key={member.id} href={`/admin/members/${member.id}`} className="block hover:bg-muted/30">
+                  {cardContent}
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* Desktop table — hidden on mobile */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">

@@ -78,7 +78,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           <h1 className="text-2xl font-bold">
             {isAr ? 'طلبات المصروفات' : 'Expense Requests'}
             {canApprove && pendingSubmitted > 0 && (
-              <Badge variant="destructive" className="ml-2 text-xs">{pendingSubmitted}</Badge>
+              <Badge variant="destructive" className="ms-2 text-xs">{pendingSubmitted}</Badge>
             )}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
@@ -87,7 +87,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
         </div>
         <Button asChild>
           <Link href="/admin/finance/expenses/new">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 me-2" />
             {isAr ? 'طلب جديد' : 'New Request'}
           </Link>
         </Button>
@@ -187,7 +187,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                   </div>
                 </div>
                 {e.rejection_reason && (
-                  <p className="text-xs text-red-600 mt-2 ml-12">{isAr ? 'سبب الرفض: ' : 'Rejection reason: '}{e.rejection_reason}</p>
+                  <p className="text-xs text-red-600 mt-2 ms-12">{isAr ? 'سبب الرفض: ' : 'Rejection reason: '}{e.rejection_reason}</p>
                 )}
               </CardContent>
             </Card>

@@ -57,7 +57,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         {perms.can_manage_finances && (
           <Button asChild>
             <Link href="/admin/finance/transactions/new">
-              <Plus className="w-4 h-4 mr-2" />New Journal Entry
+              <Plus className="w-4 h-4 me-2" />New Journal Entry
             </Link>
           </Button>
         )}
@@ -89,14 +89,39 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       </form>
 
       <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
+        {/* Mobile card list */}
+        <div className="md:hidden divide-y">
+          {(transactions || []).map(txn => (
+            <Link key={txn.id} href={`/admin/finance/transactions/${txn.id}`}
+              className="block px-4 py-3 hover:bg-muted/30 active:bg-muted/30 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">{txn.description || '—'}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 font-mono">{txn.reference_number || txn.id.slice(0, 8)} · {txn.transaction_date}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <p className="font-mono text-sm font-semibold" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD')}</p>
+                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
+                    {txn.status}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+          {(!transactions || transactions.length === 0) && (
+            <p className="px-4 py-8 text-center text-muted-foreground text-sm">No transactions found</p>
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <table className="w-full text-sm hidden md:table">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-left px-4 py-2 font-medium">Ref #</th>
-              <th className="text-left px-4 py-2 font-medium">Date</th>
-              <th className="text-left px-4 py-2 font-medium">Description</th>
-              <th className="text-left px-4 py-2 font-medium">Status</th>
-              <th className="text-right px-4 py-2 font-medium">Amount</th>
+              <th className="text-start px-4 py-2 font-medium">Ref #</th>
+              <th className="text-start px-4 py-2 font-medium">Date</th>
+              <th className="text-start px-4 py-2 font-medium">Description</th>
+              <th className="text-start px-4 py-2 font-medium">Status</th>
+              <th className="text-end px-4 py-2 font-medium">Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -114,7 +139,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                     {txn.status}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-right font-mono tabular-nums">
+                <td className="px-4 py-2 text-end font-mono tabular-nums">
                   {fmt(txn.total_amount || 0, txn.currency || 'USD')}
                 </td>
               </tr>

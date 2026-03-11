@@ -57,7 +57,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
         </div>
         <Button asChild>
           <Link href="/admin/finance/campaigns/new">
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 me-2" />
             {isAr ? 'حملة جديدة' : 'New Campaign'}
           </Link>
         </Button>

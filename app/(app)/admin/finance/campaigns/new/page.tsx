@@ -138,7 +138,7 @@ export default function NewCampaignPage() {
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={loading} className="flex-1">
-                <Target className="w-4 h-4 mr-2" />
+                <Target className="w-4 h-4 me-2" />
                 {loading ? 'Creating...' : 'Create Campaign / إنشاء الحملة'}
               </Button>
               <Button type="button" variant="outline" asChild>

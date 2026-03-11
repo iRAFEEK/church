@@ -163,7 +163,53 @@ export default async function PermissionsSummaryPage({
               <Badge variant="secondary" className="ms-2 text-[10px]">{members.length}</Badge>
             </CardTitle>
           </CardHeader>
-          <div className="overflow-x-auto">
+          {/* Mobile card list */}
+          <div className="md:hidden divide-y">
+            {members.map((m: any) => {
+              const nameAr = `${m.first_name_ar ?? ''} ${m.last_name_ar ?? ''}`.trim()
+              const nameEn = `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim()
+              const name = isRTL ? (nameAr || nameEn) : (nameEn || nameAr)
+              const initials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
+              const overrides = m.permissions as Record<string, boolean> | null
+              const overrideKeys = overrides ? Object.keys(overrides) : []
+              const meta = ROLE_META[m.role]
+              const roleLabel = meta ? (isRTL ? meta.ar : meta.en) : m.role
+              return (
+                <div key={m.id} className="px-4 py-3 flex items-center gap-3">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarImage src={m.photo_url ?? undefined} />
+                    <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium truncate">{name || m.email || '—'}</p>
+                      <Badge variant="secondary" className="text-[10px] shrink-0">{roleLabel}</Badge>
+                    </div>
+                    {overrideKeys.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {overrideKeys.slice(0, 2).map(key => (
+                          <Badge key={key} variant="outline" className={`text-[9px] ${overrides![key] ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                            {isRTL ? PERMISSION_LABELS[key as PermissionKey]?.ar : PERMISSION_LABELS[key as PermissionKey]?.en}
+                          </Badge>
+                        ))}
+                        {overrideKeys.length > 2 && <Badge variant="outline" className="text-[9px]">+{overrideKeys.length - 2}</Badge>}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-0.5">{isRTL ? 'افتراضي' : 'Default'}</p>
+                    )}
+                  </div>
+                  <Button variant="ghost" size="sm" asChild className="shrink-0">
+                    <Link href={`/admin/permissions/${m.id}`}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
