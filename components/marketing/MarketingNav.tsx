@@ -25,9 +25,9 @@ const LANGUAGES = [
   { code: 'ar-eg', label: 'مصري' },
 ] as const
 
-function switchLanguage(code: string) {
-  document.cookie = `lang=${code}; path=/; max-age=${60 * 60 * 24 * 365}`
-  window.location.reload()
+async function switchLanguage(code: string) {
+  const { setLanguage } = await import('@/app/actions/lang')
+  await setLanguage(code, window.location.pathname)
 }
 
 function currentLabel(locale: string) {
@@ -62,6 +62,9 @@ export function MarketingNav() {
             <span className="text-primary-foreground text-sm font-bold">E</span>
           </div>
           <span className="font-bold text-lg tracking-tight">Ekklesia</span>
+          <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-500 font-medium">
+            Testing
+          </span>
         </a>
 
         {/* Desktop actions */}
