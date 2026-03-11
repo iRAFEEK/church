@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
-import { Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import { SearchInput } from '@/components/ui/search-input'
 import { useDebounce } from '@/lib/utils/search'
 
 interface Ministry {
@@ -18,14 +18,25 @@ interface Group {
   name_ar: string | null
 }
 
+interface EventResult {
+  id: string
+  title: string
+  title_ar: string | null
+  starts_at: string
+}
+
 interface EventsSearchFilterProps {
   ministries: Ministry[]
   groups: Group[]
+  isAdmin: boolean
   onFilterChange: (filters: { search: string; ministryId: string; groupId: string }) => void
 }
 
-export function EventsSearchFilter({ ministries, groups, onFilterChange }: EventsSearchFilterProps) {
+export function EventsSearchFilter({ ministries, groups, isAdmin, onFilterChange }: EventsSearchFilterProps) {
   const t = useTranslations('events')
+  const locale = useLocale()
+  const isAr = locale === 'ar'
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [ministryId, setMinistryId] = useState('')
   const [groupId, setGroupId] = useState('')
@@ -37,23 +48,31 @@ export function EventsSearchFilter({ ministries, groups, onFilterChange }: Event
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative flex-1">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-        <Input
-          placeholder={t('searchPlaceholder')}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="ps-9 pe-9"
-        />
-        {search && (
-          <button
-            onClick={() => setSearch('')}
-            className="absolute end-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      <SearchInput<EventResult>
+        value={search}
+        onChange={setSearch}
+        placeholder={t('searchPlaceholder')}
+        noResultsText={t('noResults')}
+        className="flex-1"
+        fetchResults={async (q) => {
+          const res = await fetch(`/api/events?search=${encodeURIComponent(q)}&pageSize=6`)
+          if (!res.ok) return []
+          const json = await res.json()
+          return json.data || []
+        }}
+        getKey={(e) => e.id}
+        renderResult={(e) => {
+          const title = isAr ? (e.title_ar || e.title) : e.title
+          const date = new Date(e.starts_at).toLocaleDateString(locale)
+          return (
+            <div>
+              <p className="font-medium truncate">{title}</p>
+              <p className="text-xs text-muted-foreground">{date}</p>
+            </div>
+          )
+        }}
+        onSelect={(e) => router.push(isAdmin ? `/admin/events/${e.id}` : `/events/${e.id}`)}
+      />
 
       <select
         value={ministryId}

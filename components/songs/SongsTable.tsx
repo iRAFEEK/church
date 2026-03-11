@@ -4,16 +4,19 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { Badge } from '@/components/ui/badge'
-import { Search, Music } from 'lucide-react'
+import { Music } from 'lucide-react'
 import { ListShimmer } from '@/components/ui/list-shimmer'
+import { normalizeSearch } from '@/lib/utils/search'
+import { useRouter } from 'next/navigation'
 import type { Song } from '@/types'
 
 export function SongsTable() {
   const t = useTranslations('songs')
   const locale = useLocale()
   const isAr = locale === 'ar'
+  const router = useRouter()
 
   const [allSongs, setAllSongs] = useState<Song[]>([])
   const [search, setSearch] = useState('')
@@ -31,18 +34,18 @@ export function SongsTable() {
     })()
   }, [])
 
-  // Instant client-side filtering
+  // Instant client-side filtering with Arabic normalization
   const filtered = useMemo(() => {
     if (!search.trim()) return allSongs
-    const q = search.toLowerCase()
+    const q = normalizeSearch(search)
     return allSongs.filter(song =>
-      song.title.toLowerCase().includes(q) ||
-      (song.title_ar && song.title_ar.includes(search)) ||
-      (song.artist && song.artist.toLowerCase().includes(q)) ||
-      (song.artist_ar && song.artist_ar.includes(search)) ||
-      (song.lyrics && song.lyrics.toLowerCase().includes(q)) ||
-      (song.lyrics_ar && song.lyrics_ar.includes(search)) ||
-      (song.tags && song.tags.some(tag => tag.toLowerCase().includes(q)))
+      normalizeSearch(song.title).includes(q) ||
+      normalizeSearch(song.title_ar || '').includes(q) ||
+      normalizeSearch(song.artist || '').includes(q) ||
+      normalizeSearch(song.artist_ar || '').includes(q) ||
+      normalizeSearch(song.lyrics || '').includes(q) ||
+      normalizeSearch(song.lyrics_ar || '').includes(q) ||
+      (song.tags?.some(tag => normalizeSearch(tag).includes(q)))
     )
   }, [allSongs, search])
 
@@ -61,15 +64,36 @@ export function SongsTable() {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t('searchPlaceholder')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ps-10"
-        />
-      </div>
+      <SearchInput<Song>
+        value={search}
+        onChange={setSearch}
+        placeholder={t('searchPlaceholder')}
+        noResultsText={t('noSearchResults')}
+        fetchResults={async (q) => {
+          const normalized = normalizeSearch(q)
+          return allSongs.filter(song =>
+            normalizeSearch(song.title).includes(normalized) ||
+            normalizeSearch(song.title_ar || '').includes(normalized) ||
+            normalizeSearch(song.artist || '').includes(normalized) ||
+            normalizeSearch(song.artist_ar || '').includes(normalized)
+          ).slice(0, 8)
+        }}
+        getKey={(song) => song.id}
+        renderResult={(song) => {
+          const title = isAr ? (song.title_ar || song.title) : song.title
+          const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+          return (
+            <div className="flex items-center gap-2">
+              <Music className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium truncate">{title}</p>
+                {artist && <p className="text-xs text-muted-foreground truncate">{artist}</p>}
+              </div>
+            </div>
+          )
+        }}
+        onSelect={(song) => router.push(`/admin/songs/${song.id}`)}
+      />
 
       {loading ? (
         <ListShimmer count={6} />
