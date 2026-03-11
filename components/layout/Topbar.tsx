@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { getAvatarUrl } from '@/lib/utils/storage'
+import { ChurchSwitcher } from '@/components/layout/ChurchSwitcher'
 import type { Profile } from '@/types'
 
 interface TopbarProps {
@@ -37,11 +38,9 @@ export function Topbar({ profile, churchName, churchNameAr, onLangChange }: Topb
       className="h-14 border-b bg-background flex items-center justify-between px-4 gap-4"
       style={{ paddingTop: 'var(--safe-area-top)' }}
     >
-      {/* Church name */}
+      {/* Church name / switcher */}
       <div className="flex-1 min-w-0">
-        <h2 className="font-semibold text-xs md:text-sm text-foreground truncate">
-          {isRTL ? churchNameAr : churchName}
-        </h2>
+        <ChurchSwitcher churchName={churchName} churchNameAr={churchNameAr} />
       </div>
 
       {/* Right side actions */}
