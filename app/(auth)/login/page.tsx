@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -82,7 +83,17 @@ export default function LoginPage() {
       if (profile && !profile.onboarding_completed) {
         router.push('/onboarding')
       } else {
-        router.push('/')
+        // Check if user belongs to multiple churches
+        const { data: memberships } = await supabase
+          .from('user_churches')
+          .select('church_id')
+          .eq('user_id', data.user.id)
+
+        if (memberships && memberships.length > 1) {
+          router.push('/select-church')
+        } else {
+          router.push('/')
+        }
       }
       router.refresh()
     }
@@ -176,6 +187,13 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          New to Ekklesia?{' '}
+          <Link href="/signup" className="font-medium underline underline-offset-4">
+            Create an account
+          </Link>
+        </p>
 
         <div className="mt-6 border-t pt-4">
           <p className="text-sm font-medium mb-3">Test Accounts</p>
