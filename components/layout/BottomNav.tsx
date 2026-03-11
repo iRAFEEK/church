@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { LayoutDashboard, Users, Calendar, BookOpen, Menu } from 'lucide-react'
@@ -30,6 +30,7 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
   const [moreOpen, setMoreOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const t = useTranslations('bottomNav')
   const locale = useLocale()
 
@@ -75,6 +76,7 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
             <Link
               key={tab.key}
               href={href}
+              onTouchStart={() => router.prefetch(href)}
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] text-xs font-medium transition-colors',
                 isActive ? 'text-primary' : 'text-muted-foreground'

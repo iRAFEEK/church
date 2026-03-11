@@ -7,11 +7,11 @@ import { AlertTriangle, UserX, Users, CheckCircle2, HandHeart, MapPin } from 'lu
 import type { AttentionItem } from '@/types/dashboard'
 
 const typeConfig: Record<AttentionItem['type'], { icon: typeof AlertTriangle; color: string; iconColor: string }> = {
-  visitor_sla: { icon: AlertTriangle, color: 'border-l-red-500', iconColor: 'text-red-500' },
-  at_risk_member: { icon: UserX, color: 'border-l-orange-500', iconColor: 'text-orange-500' },
-  unfilled_slot: { icon: Users, color: 'border-l-yellow-500', iconColor: 'text-yellow-500' },
-  active_prayer: { icon: HandHeart, color: 'border-l-blue-500', iconColor: 'text-blue-500' },
-  outreach_followup: { icon: MapPin, color: 'border-l-purple-500', iconColor: 'text-purple-500' },
+  visitor_sla: { icon: AlertTriangle, color: 'border-s-red-500', iconColor: 'text-red-500' },
+  at_risk_member: { icon: UserX, color: 'border-s-orange-500', iconColor: 'text-orange-500' },
+  unfilled_slot: { icon: Users, color: 'border-s-yellow-500', iconColor: 'text-yellow-500' },
+  active_prayer: { icon: HandHeart, color: 'border-s-blue-500', iconColor: 'text-blue-500' },
+  outreach_followup: { icon: MapPin, color: 'border-s-purple-500', iconColor: 'text-purple-500' },
 }
 
 export function AttentionList({ items }: { items: AttentionItem[] }) {
@@ -38,7 +38,7 @@ export function AttentionList({ items }: { items: AttentionItem[] }) {
                 <Link
                   key={`${item.type}-${item.id}`}
                   href={item.href}
-                  className={`flex items-center gap-3 p-2.5 rounded-md border-l-4 ${config.color} bg-muted/30 hover:bg-muted/60 transition-colors`}
+                  className={`flex items-center gap-3 p-2.5 rounded-md border-s-4 ${config.color} bg-muted/30 hover:bg-muted/60 transition-colors`}
                 >
                   <Icon className={`h-4 w-4 shrink-0 ${config.iconColor}`} />
                   <div className="min-w-0 flex-1">

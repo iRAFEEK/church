@@ -32,7 +32,7 @@ export async function GET(
 
     if (hlError) return NextResponse.json({ error: hlError.message }, { status: 500 })
 
-    return NextResponse.json({ data: { chapter, highlights } })
+    return NextResponse.json({ data: { chapter, highlights } }, { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=300' } })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

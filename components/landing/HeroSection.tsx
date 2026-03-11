@@ -34,6 +34,7 @@ export function HeroSection({ churchName, logoUrl, primaryColor, churchId }: Her
             alt={churchName}
             width={96}
             height={96}
+            sizes="96px"
             priority
             className="h-24 w-24 rounded-3xl object-cover mx-auto shadow-lg"
           />

@@ -185,7 +185,7 @@ export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps)
                       return (
                         <div key={assignment.id} className="flex items-center gap-3 py-3">
                           {assignment.profile.photo_url ? (
-                            <Image src={getAvatarUrl(assignment.profile.photo_url, 32)!} alt={pName} width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                            <Image src={getAvatarUrl(assignment.profile.photo_url, 32)!} alt={pName} width={32} height={32} sizes="32px" className="h-8 w-8 rounded-full object-cover" />
                           ) : (
                             <div className="h-8 w-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                               {(assignment.profile.first_name || '?')[0]}

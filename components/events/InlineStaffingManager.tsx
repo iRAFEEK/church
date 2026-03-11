@@ -355,7 +355,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                       return (
                         <div key={assignment.id} className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
                           {assignment.profile.photo_url ? (
-                            <Image src={getAvatarUrl(assignment.profile.photo_url, 32)!} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                            <Image src={getAvatarUrl(assignment.profile.photo_url, 32)!} alt="" width={32} height={32} sizes="32px" className="h-8 w-8 rounded-full object-cover" />
                           ) : (
                             <div className="h-8 w-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                               {(assignment.profile.first_name || '?')[0]}
@@ -441,7 +441,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                         )}
                       >
                         {member.photo_url ? (
-                          <Image src={getAvatarUrl(member.photo_url, 32)!} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                          <Image src={getAvatarUrl(member.photo_url, 32)!} alt="" width={32} height={32} sizes="32px" className="h-8 w-8 rounded-full object-cover" />
                         ) : (
                           <div className="h-8 w-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-500">
                             {(member.first_name || '?')[0]}
@@ -461,7 +461,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-200">
                 {selectedMember.photo_url ? (
-                  <Image src={getAvatarUrl(selectedMember.photo_url, 40)!} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                  <Image src={getAvatarUrl(selectedMember.photo_url, 40)!} alt="" width={40} height={40} sizes="40px" className="h-10 w-10 rounded-full object-cover" />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-zinc-200 flex items-center justify-center text-sm font-medium text-zinc-500">
                     {(selectedMember.first_name || '?')[0]}

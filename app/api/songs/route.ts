@@ -26,7 +26,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (error) throw error
 
   return { data, count, page, pageSize, totalPages: Math.ceil((count || 0) / pageSize) }
-})
+}, { cache: 'private, max-age=60, stale-while-revalidate=300' })
 
 // POST /api/songs — create new song
 export const POST = apiHandler(async ({ req, supabase, user, profile }) => {

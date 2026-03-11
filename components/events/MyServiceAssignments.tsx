@@ -72,7 +72,13 @@ export function MyServiceAssignments({ fullPage = false }: MyServiceAssignmentsP
     return a.role || null
   }
 
-  if (loading) return null
+  if (loading) return (
+    <div className="space-y-2">
+      {[1, 2].map(i => (
+        <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+      ))}
+    </div>
+  )
   if (assignments.length === 0) {
     if (fullPage) {
       return (

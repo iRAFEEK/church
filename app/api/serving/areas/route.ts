@@ -19,7 +19,7 @@ export const GET = apiHandler(async ({ supabase, profile, resolvedPermissions })
   const { data, error } = await query
   if (error) throw error
   return { data }
-})
+}, { cache: 'private, max-age=120, stale-while-revalidate=600' })
 
 // POST /api/serving/areas — create area (admin only)
 export const POST = apiHandler(async ({ req, supabase, profile }) => {

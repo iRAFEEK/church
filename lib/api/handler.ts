@@ -22,6 +22,7 @@ type HandlerOptions = {
   requireAuth?: boolean
   requireRoles?: UserRole[]
   requirePermissions?: PermissionKey[]
+  cache?: string
 }
 
 // ARCH: Return type uses `any` for the second parameter to satisfy Next.js 15's strict
@@ -103,6 +104,7 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
         const res = NextResponse.json(result)
         const duration = Math.round(performance.now() - start)
         res.headers.set('Server-Timing', `handler;dur=${duration};desc="${routeName}"`)
+        if (options.cache) res.headers.set('Cache-Control', options.cache)
         return res
       }
 

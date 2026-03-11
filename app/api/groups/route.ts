@@ -32,7 +32,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { data, error } = await query
   if (error) throw error
   return { data }
-})
+}, { cache: 'private, max-age=60, stale-while-revalidate=300' })
 
 export const POST = apiHandler(async ({ supabase, profile, req }) => {
   const body = await req.json()
