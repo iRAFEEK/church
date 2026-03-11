@@ -44,3 +44,10 @@ next-env.d.ts
 
 # large bible seed data
 data/bible/
+
+# Firebase service account keys (contain private keys - NEVER commit)
+*-firebase-adminsdk-*.json
+firebase-adminsdk*.json
+
+# Generated Firebase service worker (built from env vars at dev/build time)
+public/firebase-messaging-sw.js

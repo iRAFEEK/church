@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { SearchInput } from '@/components/ui/search-input'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from '@/lib/utils'
 
@@ -53,6 +54,7 @@ export function VisitorQueue({
 }) {
   const t = useTranslations('visitors')
   const [filter, setFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Visitor | null>(null)
   const [mode, setMode] = useState<'assign' | 'contact' | 'convert' | null>(null)
   const [assignTo, setAssignTo] = useState('')
@@ -71,9 +73,17 @@ export function VisitorQueue({
   const slaMs = slaHours * 60 * 60 * 1000
   const now = Date.now()
 
-  const filtered = filter === 'all'
-    ? localVisitors
-    : localVisitors.filter(v => v.status === filter)
+  const filtered = useMemo(() => {
+    let list = filter === 'all' ? localVisitors : localVisitors.filter(v => v.status === filter)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(v =>
+        `${v.first_name} ${v.last_name}`.toLowerCase().includes(q) ||
+        (v.phone && v.phone.includes(q))
+      )
+    }
+    return list
+  }, [localVisitors, filter, search])
 
   function isOverdue(v: Visitor) {
     return ['new', 'assigned'].includes(v.status) && now - new Date(v.visited_at).getTime() > slaMs
@@ -119,6 +129,37 @@ export function VisitorQueue({
 
   return (
     <div>
+      {/* Search */}
+      <div className="mb-4">
+        <SearchInput<Visitor>
+          value={search}
+          onChange={setSearch}
+          placeholder={t('searchPlaceholder')}
+          noResultsText={t('queueEmpty')}
+          fetchResults={async (q) => {
+            const res = await fetch(`/api/visitors?q=${encodeURIComponent(q)}&pageSize=6`)
+            if (!res.ok) return []
+            const json = await res.json()
+            return json.data || []
+          }}
+          getKey={(v) => v.id}
+          renderResult={(v) => (
+            <div>
+              <p className="font-medium">{v.first_name} {v.last_name}</p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {v.phone && <span>{v.phone}</span>}
+                <span className={`px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[v.status]}`}>
+                  {STATUS_LABELS[v.status]}
+                </span>
+              </div>
+            </div>
+          )}
+          onSelect={(v) => {
+            setSearch(`${v.first_name} ${v.last_name}`)
+          }}
+        />
+      </div>
+
       {/* Filter tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {['all', 'new', 'assigned', 'contacted'].map(f => (

@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
+  const q = searchParams.get('q')?.trim()
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = parseInt(searchParams.get('pageSize') || '20')
   const from = (page - 1) * pageSize
@@ -82,6 +83,11 @@ export async function GET(req: NextRequest) {
     .range(from, to)
 
   if (status) query = query.eq('status', status)
+  if (q) {
+    query = query.or(
+      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,phone.ilike.%${q}%`
+    )
+  }
 
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

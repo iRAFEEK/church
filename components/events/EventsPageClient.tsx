@@ -44,6 +44,7 @@ export function EventsPageClient({
       <EventsSearchFilter
         ministries={ministries}
         groups={groups}
+        isAdmin={isAdmin}
         onFilterChange={handleFilterChange}
       />
       <EventsInfiniteList

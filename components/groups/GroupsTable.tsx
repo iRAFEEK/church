@@ -3,10 +3,10 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import { useTranslations } from 'next-intl'
-import { Search } from 'lucide-react'
 import { normalizeSearch, useDebounce } from '@/lib/utils/search'
+import { useRouter } from 'next/navigation'
 
 type Leader = {
   id: string
@@ -65,6 +65,7 @@ export function GroupsTable({
   isAdmin: boolean
 }) {
   const t = useTranslations('groups')
+  const router = useRouter()
   const [filter, setFilter] = useState<string>('all')
   const [ministryFilter, setMinistryFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -104,15 +105,31 @@ export function GroupsTable({
     <div>
       {/* Search + Filters */}
       <div className="space-y-3 mb-4">
-        <div className="relative">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="ps-9"
-          />
-        </div>
+        <SearchInput<Group>
+          value={search}
+          onChange={setSearch}
+          placeholder={t('searchPlaceholder')}
+          noResultsText={t('noSearchResults')}
+          fetchResults={async (q) => {
+            const normalized = normalizeSearch(q)
+            return groups.filter(g => {
+              const name = normalizeSearch(`${g.name} ${g.name_ar || ''}`)
+              const leader = g.leader
+                ? normalizeSearch(`${g.leader.first_name || ''} ${g.leader.last_name || ''} ${g.leader.first_name_ar || ''} ${g.leader.last_name_ar || ''}`)
+                : ''
+              const ministry = g.ministry ? normalizeSearch(`${g.ministry.name} ${g.ministry.name_ar || ''}`) : ''
+              return name.includes(normalized) || leader.includes(normalized) || ministry.includes(normalized)
+            }).slice(0, 8)
+          }}
+          getKey={(g) => g.id}
+          renderResult={(g) => (
+            <div>
+              <p className="font-medium">{g.name_ar || g.name}</p>
+              {g.ministry && <p className="text-xs text-muted-foreground">{g.ministry.name_ar || g.ministry.name}</p>}
+            </div>
+          )}
+          onSelect={(g) => router.push(isAdmin ? `/admin/groups/${g.id}` : `/groups/${g.id}`)}
+        />
         <div className="flex gap-2 overflow-x-auto pb-1 flex-wrap">
           <select
             className="text-sm border border-zinc-200 rounded-lg px-2 py-1.5 bg-white"

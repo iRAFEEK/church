@@ -6,11 +6,13 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateGroupSchema } from '@/lib/schemas/group'
+import { normalizeSearch } from '@/lib/utils/search'
 
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const ministry_id = searchParams.get('ministry_id')
   const type = searchParams.get('type')
+  const q = searchParams.get('q')?.trim()
 
   let query = supabase
     .from('groups')
@@ -28,6 +30,14 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   if (ministry_id) query = query.eq('ministry_id', ministry_id)
   if (type) query = query.eq('type', type)
+  if (q) {
+    const normalized = normalizeSearch(q)
+    const parts = [`name.ilike.%${q}%`, `name_ar.ilike.%${q}%`]
+    if (normalized !== q) {
+      parts.push(`name.ilike.%${normalized}%`, `name_ar.ilike.%${normalized}%`)
+    }
+    query = query.or(parts.join(','))
+  }
 
   const { data, error } = await query
   if (error) throw error

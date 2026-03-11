@@ -52,7 +52,15 @@ export async function GET(req: NextRequest) {
 
   if (status) query = query.eq('status', status)
   if (upcoming) query = query.gte('starts_at', new Date().toISOString())
-  if (search) query = query.or(`title.ilike.%${search}%,title_ar.ilike.%${search}%`)
+  if (search) {
+    const { normalizeSearch } = await import('@/lib/utils/search')
+    const normalized = normalizeSearch(search)
+    const parts = [`title.ilike.%${search}%`, `title_ar.ilike.%${search}%`]
+    if (normalized !== search) {
+      parts.push(`title.ilike.%${normalized}%`, `title_ar.ilike.%${normalized}%`)
+    }
+    query = query.or(parts.join(','))
+  }
   if (eventIdFilter) query = query.in('id', eventIdFilter)
 
   if (cursor) {

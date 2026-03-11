@@ -44,9 +44,13 @@ export async function GET(request: NextRequest) {
     .range(offset, offset + pageSize - 1)
 
   if (search) {
-    query = query.or(
-      `first_name_ar.ilike.%${search}%,last_name_ar.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
-    )
+    const { normalizeSearch } = await import('@/lib/utils/search')
+    const normalized = normalizeSearch(search)
+    const base = `first_name_ar.ilike.%${search}%,last_name_ar.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
+    const extra = normalized !== search
+      ? `,first_name_ar.ilike.%${normalized}%,last_name_ar.ilike.%${normalized}%,first_name.ilike.%${normalized}%,last_name.ilike.%${normalized}%`
+      : ''
+    query = query.or(base + extra)
   }
   if (role) query = query.eq('role', role)
   if (status) query = query.eq('status', status)
