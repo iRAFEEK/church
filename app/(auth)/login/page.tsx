@@ -29,14 +29,13 @@ import {
 } from '@/components/ui/card'
 
 const TEST_ACCOUNTS = [
-  { email: 'pastor@gracechurch.test', label: 'Super Admin (Pastor)', role: 'super_admin' },
-  { email: 'admin@gracechurch.test', label: 'Super Admin (Associate)', role: 'super_admin' },
-  { email: 'worship@gracechurch.test', label: 'Ministry Leader (Worship)', role: 'ministry_leader' },
-  { email: 'leader1@gracechurch.test', label: 'Group Leader', role: 'group_leader' },
-  { email: 'member@gracechurch.test', label: 'Member', role: 'member' },
+  { email: 'pastor@gracechurch.test', password: 'password123', label: 'Super Admin (Pastor)', role: 'super_admin' },
+  { email: 'admin@gracechurch.test', password: 'password123', label: 'Super Admin (Associate)', role: 'super_admin' },
+  { email: 'worship@gracechurch.test', password: 'password123', label: 'Ministry Leader (Worship)', role: 'ministry_leader' },
+  { email: 'leader1@gracechurch.test', password: 'password123', label: 'Group Leader', role: 'group_leader' },
+  { email: 'member@gracechurch.test', password: 'password123', label: 'Member', role: 'member' },
 ]
 
-const isDev = process.env.NODE_ENV === 'development'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -178,32 +177,33 @@ export default function LoginPage() {
           </form>
         </Form>
 
-        {isDev && (
-          <div className="mt-6 border-t pt-4">
-            <p className="text-sm text-muted-foreground mb-3 font-medium">
-              Dev Quick Login
-            </p>
-            <div className="grid gap-2">
-              {TEST_ACCOUNTS.map((account) => (
+        <div className="mt-6 border-t pt-4">
+          <p className="text-sm font-medium mb-3">Test Accounts</p>
+          <div className="grid gap-2">
+            {TEST_ACCOUNTS.map((account) => (
+              <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{account.label}</p>
+                  <p className="text-muted-foreground font-mono truncate">{account.email}</p>
+                  <p className="text-muted-foreground font-mono">pw: {account.password}</p>
+                </div>
                 <Button
-                  key={account.email}
                   variant="outline"
                   size="sm"
-                  className="w-full justify-between text-xs"
+                  className="shrink-0 text-xs h-7 px-2"
                   disabled={devLoading !== null}
                   onClick={() => devLogin(account.email)}
                 >
-                  <span>{account.label}</span>
                   {devLoading === account.email ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    <span className="text-muted-foreground">{account.role}</span>
+                    'Login'
                   )}
                 </Button>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   )
