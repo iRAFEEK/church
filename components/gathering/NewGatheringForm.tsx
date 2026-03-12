@@ -30,7 +30,7 @@ export function NewGatheringForm({ group }: { group: Group }) {
   const t = useTranslations('gathering')
   const tc = useTranslations('common')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)

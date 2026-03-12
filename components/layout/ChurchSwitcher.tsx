@@ -24,7 +24,7 @@ interface ChurchSwitcherProps {
 export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps) {
   const router = useRouter()
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
   const [loaded, setLoaded] = useState(false)

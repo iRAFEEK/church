@@ -21,7 +21,7 @@ export function ChurchNameStep({
 }: ChurchNameStepProps) {
   const t = useTranslations('registration.step2')
   const locale = useLocale()
-  const displayName = locale === 'ar'
+  const displayName = locale.startsWith('ar')
     ? churchNameAr || t('previewPlaceholder')
     : churchNameEn || churchNameAr || t('previewPlaceholder')
 

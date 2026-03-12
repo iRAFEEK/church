@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -42,6 +43,8 @@ export async function GET(req: NextRequest) {
     page,
     pageSize,
     totalPages: Math.ceil((count || 0) / pageSize),
+  }, {
+    headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
 }
 
@@ -69,5 +72,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

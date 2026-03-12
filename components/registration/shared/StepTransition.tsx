@@ -11,7 +11,7 @@ interface StepTransitionProps {
 
 export function StepTransition({ children, direction, stepKey }: StepTransitionProps) {
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   // In RTL, "forward" slides from left; in LTR, from right
   const xOffset = isRTL ? -direction * 200 : direction * 200
 

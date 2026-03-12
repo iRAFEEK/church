@@ -28,7 +28,7 @@ export function ChurchDetailsStep({
 }: ChurchDetailsStepProps) {
   const t = useTranslations('registration.step3')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   function selectCountry(c: Country) {
     onUpdate({ country: c.code, timezone: c.timezone })
@@ -123,9 +123,9 @@ export function ChurchDetailsStep({
                   : 'border-border hover:border-primary/40'
               )}
             >
-              <p className="text-lg font-semibold">{lang === 'ar' ? 'عربي' : 'English'}</p>
+              <p className="text-lg font-semibold">{lang.startsWith('ar') ? 'عربي' : 'English'}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {t(lang === 'ar' ? 'languageAr' : 'languageEn')}
+                {t(lang.startsWith('ar') ? 'languageAr' : 'languageEn')}
               </p>
             </button>
           ))}

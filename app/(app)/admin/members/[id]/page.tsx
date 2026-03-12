@@ -168,13 +168,13 @@ export default async function MemberDetailPage({
               {(memberProfile.address || memberProfile.address_ar) && (
                 <div className="flex items-center gap-3">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <span>{locale === 'ar' ? (memberProfile.address_ar || memberProfile.address) : (memberProfile.address || memberProfile.address_ar)}</span>
+                  <span>{locale.startsWith('ar') ? (memberProfile.address_ar || memberProfile.address) : (memberProfile.address || memberProfile.address_ar)}</span>
                 </div>
               )}
               {(memberProfile.city || memberProfile.city_ar) && (
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{locale === 'ar' ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
+                  <span>{locale.startsWith('ar') ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
                 </div>
               )}
 
@@ -253,7 +253,7 @@ export default async function MemberDetailPage({
                   {(memberProfile.city || memberProfile.city_ar) && (
                     <div className="flex items-center gap-3">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{locale === 'ar' ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
+                      <span className="text-sm">{locale.startsWith('ar') ? (memberProfile.city_ar || memberProfile.city) : (memberProfile.city || memberProfile.city_ar)}</span>
                     </div>
                   )}
                   {memberProfile.address_notes && (

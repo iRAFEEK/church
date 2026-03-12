@@ -22,11 +22,11 @@ export function WizardLayout({
 }: WizardLayoutProps) {
   const locale = useLocale()
   const t = useTranslations('registration')
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const BackIcon = isRTL ? ChevronRight : ChevronLeft
 
   function toggleLanguage() {
-    const next = locale === 'ar' ? 'en' : 'ar'
+    const next = locale.startsWith('ar') ? 'en' : 'ar'
     document.cookie = `lang=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
     window.location.reload()
   }
@@ -63,7 +63,7 @@ export function WizardLayout({
             className="gap-1.5 text-muted-foreground"
           >
             <Globe className="h-4 w-4" />
-            {locale === 'ar' ? 'EN' : 'عربي'}
+            {locale.startsWith('ar') ? 'EN' : 'عربي'}
           </Button>
         </div>
       </div>

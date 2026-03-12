@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     supabase
       .from('pledges')
       .select('*, campaign:campaigns(name, name_ar)')
-      .eq('pledger_id', user.id)
+      .eq('donor_id', user.id)
       .eq('church_id', profile.church_id)
       .eq('status', 'active'),
   ])
@@ -47,5 +47,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     data: { donations, pledges, summary: { thisMonth, thisYear, allTime } },
+  }, {
+    headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
 }

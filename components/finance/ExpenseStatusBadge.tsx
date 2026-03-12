@@ -20,7 +20,7 @@ export function ExpenseStatusBadge({ status, locale = 'en' }: ExpenseStatusBadge
   const config = STATUS_CONFIG[status] ?? { label: status, label_ar: status, className: 'bg-gray-100 text-gray-700' }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${config.className}`}>
-      {locale === 'ar' ? config.label_ar : config.label}
+      {locale.startsWith('ar') ? config.label_ar : config.label}
     </span>
   )
 }

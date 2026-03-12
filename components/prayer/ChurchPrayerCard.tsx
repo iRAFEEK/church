@@ -51,7 +51,7 @@ interface Props {
 export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, onAssigned, onUnassign, showActions = true }: Props) {
   const t = useTranslations('churchPrayer')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const submitterName = prayer.submitter
     ? isAr

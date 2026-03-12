@@ -39,7 +39,7 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
   const router = useRouter()
   const locale = useLocale()
   const t = useTranslations('sidebar')
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const navItems = getNavForUser(profile.role, resolvedPermissions)
   const sections = getNavSections(navItems, locale as 'ar' | 'en')

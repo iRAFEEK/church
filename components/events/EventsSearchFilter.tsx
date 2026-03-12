@@ -35,7 +35,7 @@ interface EventsSearchFilterProps {
 export function EventsSearchFilter({ ministries, groups, isAdmin, onFilterChange }: EventsSearchFilterProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [ministryId, setMinistryId] = useState('')

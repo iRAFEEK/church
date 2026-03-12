@@ -16,7 +16,7 @@ const typeConfig = {
 export function UpcomingList({ items }: { items: UpcomingItem[] }) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   return (
     <Card>

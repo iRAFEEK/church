@@ -5,5 +5,5 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 DROP INDEX IF EXISTS idx_bible_verses_text_plain;
 
 -- Create trigram GIN index — makes ILIKE '%word%' instant
-CREATE INDEX idx_bible_verses_text_plain_trgm
+CREATE INDEX IF NOT EXISTS idx_bible_verses_text_plain_trgm
   ON bible_verses USING GIN (text_plain gin_trgm_ops);

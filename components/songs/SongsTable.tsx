@@ -15,7 +15,7 @@ import type { Song } from '@/types'
 export function SongsTable() {
   const t = useTranslations('songs')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const router = useRouter()
 
   const [allSongs, setAllSongs] = useState<Song[]>([])

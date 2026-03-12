@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('financial_transactions')
-    .select('*, created_by_profile:profiles!created_by(full_name)', { count: 'exact' })
+    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at, created_by_profile:profiles!created_by(full_name)', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('transaction_date', { ascending: false })
     .order('created_at', { ascending: false })
@@ -37,7 +38,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data, count, page, limit })
+  return NextResponse.json({ data, count, page, limit }, {
+    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -81,5 +84,6 @@ export async function POST(req: NextRequest) {
     if (lineError) return NextResponse.json({ error: lineError.message }, { status: 500 })
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data: txn }, { status: 201 })
 }

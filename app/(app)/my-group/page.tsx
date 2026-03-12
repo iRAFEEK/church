@@ -30,7 +30,7 @@ export default async function MyGroupPage() {
   // Multiple groups — show a list
   const t = await getTranslations('groups')
   const locale = await getLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const { data: groups } = await supabase
     .from('groups')

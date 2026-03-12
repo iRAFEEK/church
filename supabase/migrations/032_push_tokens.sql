@@ -19,12 +19,16 @@ CREATE INDEX IF NOT EXISTS idx_push_tokens_church  ON push_tokens(church_id);
 ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Users can manage their own tokens
-CREATE POLICY "Users manage own push tokens" ON push_tokens
-  FOR ALL
-  USING (profile_id = auth.uid())
-  WITH CHECK (profile_id = auth.uid());
+DO $$ BEGIN
+  CREATE POLICY "Users manage own push tokens" ON push_tokens
+    FOR ALL
+    USING (profile_id = auth.uid())
+    WITH CHECK (profile_id = auth.uid());
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Service role can read all tokens (for server-side FCM sends)
-CREATE POLICY "Service role read push tokens" ON push_tokens
-  FOR SELECT
-  USING (true);
+DO $$ BEGIN
+  CREATE POLICY "Service role read push tokens" ON push_tokens
+    FOR SELECT
+    USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

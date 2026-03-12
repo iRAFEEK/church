@@ -205,7 +205,12 @@
     "toastSaveFailed": "فشل الحفظ",
     "toastSaveSuccess": "تم حفظ التغييرات",
     "validationFirstName": "الاسم الأول مطلوب",
-    "validationLastName": "اسم العائلة مطلوب"
+    "validationLastName": "اسم العائلة مطلوب",
+    "languageSection": "لغة التطبيق",
+    "languageLabel": "لغة العرض",
+    "languageAr": "العربية",
+    "languageEn": "English",
+    "languageNote": "يغيّر لغة التطبيق بالكامل"
   },
   "members": {
     "pageTitle": "الأعضاء",
@@ -1690,5 +1695,17 @@
     "memberDetail": "تفاصيل العضو",
     "totalVisits": "إجمالي الزيارات",
     "selectMember": "اختر عضواً"
+  },
+  "settings": {
+    "pageTitle": "الإعدادات",
+    "pageSubtitle": "إدارة إعدادات التطبيق",
+    "languageTitle": "لغة التطبيق",
+    "languageSubtitle": "اختر لغة عرض التطبيق بالكامل",
+    "languageAr": "العربية",
+    "languageArDesc": "Arabic",
+    "languageEn": "English",
+    "languageEnDesc": "الإنجليزية",
+    "languageCurrent": "الحالية",
+    "languageSaved": "تم تحديث اللغة"
   }
 }

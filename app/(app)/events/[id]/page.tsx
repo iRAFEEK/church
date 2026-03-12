@@ -29,7 +29,7 @@ export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [event, setEvent] = useState<Event | null>(null)
   const [registered, setRegistered] = useState(false)
   const [loading, setLoading] = useState(true)

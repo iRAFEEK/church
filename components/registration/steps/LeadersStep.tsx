@@ -27,7 +27,7 @@ const emptyLeader: LeaderEntry = { name: '', nameAr: '', title: '', titleAr: '' 
 export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepProps) {
   const t = useTranslations('registration.step5leaders')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [showForm, setShowForm] = useState(false)
   const [current, setCurrent] = useState<LeaderEntry>({ ...emptyLeader })
 

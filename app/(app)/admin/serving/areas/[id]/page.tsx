@@ -16,7 +16,7 @@ export default async function ServingAreaDetailPage({ params }: { params: Promis
 
   const t = await getTranslations('serving')
   const locale = await getLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const supabase = await createClient()
 

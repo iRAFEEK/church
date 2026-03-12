@@ -80,7 +80,7 @@ function formatDate(dateStr: string, locale: string): string {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (locale === 'ar') {
+  if (locale.startsWith('ar')) {
     if (diffMins < 1) return 'الآن'
     if (diffMins < 60) return `منذ ${diffMins} دقيقة`
     if (diffHours < 24) return `منذ ${diffHours} ساعة`

@@ -9,15 +9,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowLeft, Wallet } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function NewFundPage() {
   const router = useRouter()
+  const t = useTranslations('finance')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
     name: '', name_ar: '', description: '', description_ar: '',
-    currency: 'USD', target_amount: '',
-    fund_type: 'general',
+    target_amount: '',
     is_restricted: false, is_default: false, is_active: true,
   })
 
@@ -53,7 +54,7 @@ export default function NewFundPage() {
         <Button variant="ghost" size="sm" asChild>
           <Link href="/admin/finance/funds"><ArrowLeft className="w-4 h-4" /></Link>
         </Button>
-        <h1 className="text-xl font-bold">New Fund / صندوق جديد</h1>
+        <h1 className="text-xl font-bold">{t('newFund')}</h1>
       </div>
 
       <Card>
@@ -61,31 +62,17 @@ export default function NewFundPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Name (English) *</Label>
+                <Label>{t('nameEn')} *</Label>
                 <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder="General Fund" />
               </div>
               <div className="space-y-1">
-                <Label>الاسم بالعربية</Label>
+                <Label>{t('nameAr')}</Label>
                 <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="الصندوق العام" dir="rtl" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Fund Type / النوع</Label>
-              <select value={form.fund_type} onChange={e => set('fund_type', e.target.value)}
-                className="w-full text-sm border rounded px-3 py-2 bg-background">
-                <option value="general">General / عام</option>
-                <option value="building">Building / مبنى</option>
-                <option value="missions">Missions / مهام</option>
-                <option value="benevolence">Benevolence / رعاية</option>
-                <option value="youth">Youth / شباب</option>
-                <option value="children">Children / أطفال</option>
-                <option value="other">Other / أخرى</option>
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <Label>Description</Label>
+              <Label>{t('description')}</Label>
               <textarea value={form.description} onChange={e => set('description', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none"
                 placeholder="Fund description..." />
@@ -95,25 +82,19 @@ export default function NewFundPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Target Amount / الهدف (optional)</Label>
-              <div className="flex gap-2">
-                <Input type="number" min="0" step="1" value={form.target_amount}
-                  onChange={e => set('target_amount', e.target.value)} placeholder="0" />
-                <select value={form.currency} onChange={e => set('currency', e.target.value)}
-                  className="text-sm border rounded px-2 bg-background w-24">
-                  {['USD', 'LBP', 'EGP', 'JOD', 'EUR'].map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
+              <Label>{t('targetAmount')}</Label>
+              <Input type="number" min="0" step="1" value={form.target_amount}
+                onChange={e => set('target_amount', e.target.value)} placeholder="0" />
             </div>
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Checkbox id="restricted" checked={form.is_restricted} onCheckedChange={v => set('is_restricted', !!v)} />
-                <Label htmlFor="restricted">Restricted fund / صندوق مقيد</Label>
+                <Label htmlFor="restricted">{t('restrictedFund')}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="default" checked={form.is_default} onCheckedChange={v => set('is_default', !!v)} />
-                <Label htmlFor="default">Set as default fund / صندوق افتراضي</Label>
+                <Label htmlFor="default">{t('defaultFund')}</Label>
               </div>
             </div>
 
@@ -122,7 +103,7 @@ export default function NewFundPage() {
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={loading} className="flex-1">
                 <Wallet className="w-4 h-4 me-2" />
-                {loading ? 'Creating...' : 'Create Fund / إنشاء الصندوق'}
+                {loading ? t('creating') : t('createFund')}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link href="/admin/finance/funds">Cancel</Link>

@@ -25,7 +25,7 @@ const ROLE_LABELS: Record<string, { en: string; ar: string }> = {
 export default function RoleDefaultsPage() {
   const t = useTranslations('permissions')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)

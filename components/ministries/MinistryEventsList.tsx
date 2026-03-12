@@ -26,7 +26,7 @@ export function MinistryEventsList({ ministryId }: MinistryEventsListProps) {
   const t = useTranslations('ministries')
   const te = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [upcoming, setUpcoming] = useState<MinistryEvent[]>([])
   const [recent, setRecent] = useState<MinistryEvent[]>([])

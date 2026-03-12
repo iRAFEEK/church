@@ -35,7 +35,7 @@ interface MemberData {
 export default function UserPermissionPage() {
   const t = useTranslations('permissions')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const params = useParams()
   const userId = params.userId as string
 

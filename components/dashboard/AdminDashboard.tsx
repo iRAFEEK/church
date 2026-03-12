@@ -34,7 +34,7 @@ interface Props {
 export function AdminDashboard({ data }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const trendIcons = {
     up: <TrendingUp className="h-3.5 w-3.5 text-green-600" />,
