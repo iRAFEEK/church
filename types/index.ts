@@ -22,6 +22,9 @@ export type PermissionKey =
   | 'can_manage_songs'
   | 'can_view_prayers'
   | 'can_manage_outreach'
+  // ─── Church Needs ──────────────────────────────────────
+  | 'can_view_church_needs'
+  | 'can_manage_church_needs'
   // ─── Finance ────────────────────────────────────────────
   | 'can_view_finances'
   | 'can_manage_finances'
@@ -1037,4 +1040,58 @@ export interface ChurchSearchResult {
   country: string
   logo_url: string | null
   denomination: string | null
+}
+
+// ============================================================
+// CHURCH NEEDS MARKETPLACE
+// ============================================================
+
+export type NeedUrgency = 'low' | 'medium' | 'high' | 'critical'
+export type NeedStatus = 'open' | 'in_progress' | 'fulfilled' | 'closed'
+export type NeedCategory =
+  | 'furniture' | 'electronics' | 'supplies' | 'food' | 'clothing'
+  | 'building' | 'vehicle' | 'educational' | 'medical' | 'financial'
+  | 'volunteer' | 'other'
+export type NeedResponseStatus = 'pending' | 'accepted' | 'declined' | 'completed'
+
+export interface ChurchNeed {
+  id: string
+  church_id: string
+  created_by: string
+  title: string
+  title_ar: string | null
+  description: string | null
+  description_ar: string | null
+  image_url: string | null
+  category: NeedCategory
+  quantity: number
+  urgency: NeedUrgency
+  status: NeedStatus
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email: string | null
+  expires_at: string | null
+  fulfilled_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ChurchNeedWithChurch extends ChurchNeed {
+  church: Pick<Church, 'id' | 'name' | 'name_ar' | 'country' | 'logo_url' | 'denomination'>
+}
+
+export interface ChurchNeedResponse {
+  id: string
+  need_id: string
+  responder_church_id: string
+  responder_user_id: string
+  message: string
+  message_ar: string | null
+  status: NeedResponseStatus
+  created_at: string
+  updated_at: string
+}
+
+export interface ChurchNeedResponseWithChurch extends ChurchNeedResponse {
+  responder_church: Pick<Church, 'id' | 'name' | 'name_ar' | 'country' | 'logo_url'>
 }

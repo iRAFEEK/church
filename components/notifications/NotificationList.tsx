@@ -1,7 +1,8 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
-import { Users, Calendar, AlertTriangle, UserPlus, Clock, Info } from 'lucide-react'
+import { Users, Calendar, AlertTriangle, UserPlus, Clock, Info, HandHelping } from 'lucide-react'
+import { timeAgo } from '@/lib/utils/time-ago'
 
 interface Notification {
   id: string
@@ -29,28 +30,11 @@ const typeIcons: Record<string, React.ElementType> = {
   at_risk_alert: AlertTriangle,
   visitor_sla_warning: Clock,
   event_reminder: Calendar,
+  need_response_received: HandHelping,
+  need_response_status_changed: HandHelping,
   general: Info,
 }
 
-function timeAgo(dateStr: string, locale: string): string {
-  const now = Date.now()
-  const diff = now - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (locale.startsWith('ar')) {
-    if (minutes < 1) return 'الآن'
-    if (minutes < 60) return `منذ ${minutes} دقيقة`
-    if (hours < 24) return `منذ ${hours} ساعة`
-    return `منذ ${days} يوم`
-  }
-
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  return `${days}d ago`
-}
 
 export function NotificationList({ notifications, onMarkRead, onNavigate }: NotificationListProps) {
   const locale = useLocale()

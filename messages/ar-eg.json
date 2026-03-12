@@ -816,6 +816,8 @@
       "event_service_request": "طلب خدمة",
       "event_service_assigned": "تعيين خدمة",
       "event_service_response": "رد الخدمة",
+      "need_response_received": "عرض مساعدة وارد",
+      "need_response_status_changed": "تحديث عرض المساعدة",
       "assignment": "تعيين",
       "general": "عام"
     },

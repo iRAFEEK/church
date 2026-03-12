@@ -51,3 +51,6 @@ firebase-adminsdk*.json
 
 # Generated Firebase service worker (built from env vars at dev/build time)
 public/firebase-messaging-sw.js
+
+# Claude Code auto-optimization logs
+.claude/logs/*.log
