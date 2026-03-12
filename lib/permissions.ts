@@ -17,6 +17,9 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
   'can_manage_songs',
   'can_view_prayers',
   'can_manage_outreach',
+  // Church Needs
+  'can_view_church_needs',
+  'can_manage_church_needs',
   // Finance
   'can_view_finances',
   'can_manage_finances',
@@ -46,6 +49,9 @@ export const PERMISSION_LABELS: Record<PermissionKey, { en: string; ar: string }
   can_manage_songs:        { en: 'Manage Songs',          ar: 'إدارة الترانيم' },
   can_view_prayers:        { en: 'View Prayer Requests',  ar: 'عرض طلبات الصلاة' },
   can_manage_outreach:     { en: 'Manage Outreach',       ar: 'إدارة التواصل' },
+  // Church Needs
+  can_view_church_needs:   { en: 'View Church Needs',     ar: 'عرض احتياجات الكنائس' },
+  can_manage_church_needs: { en: 'Manage Church Needs',   ar: 'إدارة احتياجات الكنائس' },
   // Finance
   can_view_finances:       { en: 'View Finances',         ar: 'عرض المالية' },
   can_manage_finances:     { en: 'Manage Finances',       ar: 'إدارة المالية' },
@@ -70,6 +76,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_serving: false, can_manage_announcements: false,
     can_view_reports: false, can_manage_songs: false,
     can_view_prayers: false, can_manage_outreach: false,
+    can_view_church_needs: false, can_manage_church_needs: false,
     can_view_finances: false, can_manage_finances: false,
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: false,
@@ -82,6 +89,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_serving: false, can_manage_announcements: false,
     can_view_reports: true, can_manage_songs: false,
     can_view_prayers: false, can_manage_outreach: false,
+    can_view_church_needs: true, can_manage_church_needs: false,
     can_view_finances: false, can_manage_finances: false,
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: false,
@@ -94,6 +102,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_serving: true, can_manage_announcements: false,
     can_view_reports: true, can_manage_songs: false,
     can_view_prayers: false, can_manage_outreach: false,
+    can_view_church_needs: true, can_manage_church_needs: false,
     can_view_finances: false, can_manage_finances: false,
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: true,
@@ -106,6 +115,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_serving: true, can_manage_announcements: true,
     can_view_reports: true, can_manage_songs: true,
     can_view_prayers: true, can_manage_outreach: true,
+    can_view_church_needs: true, can_manage_church_needs: true,
     can_view_finances: true, can_manage_finances: true,
     can_manage_donations: true, can_view_own_giving: true,
     can_manage_budgets: true, can_approve_expenses: true,

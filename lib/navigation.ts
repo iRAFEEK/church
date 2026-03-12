@@ -171,6 +171,18 @@ export const NAV_ITEMS: NavItem[] = [
     section_ar: 'الموارد',
   },
 
+  // ─── Community ─────────────────────────────────────────
+  {
+    label: 'Church Needs',
+    label_ar: 'احتياجات الكنائس',
+    href: '/community/needs',
+    iconName: 'HandHelping',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    permission: 'can_view_church_needs',
+    section: 'Community',
+    section_ar: 'المجتمع',
+  },
+
   // ─── Admin ──────────────────────────────────────────────
   {
     label: 'Prayer Management',

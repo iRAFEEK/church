@@ -108,6 +108,26 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectEn: 'Reminder: {eventName} tomorrow',
     emailSubjectAr: 'تذكير: {eventName} غداً',
   },
+
+  need_response_received: {
+    whatsappTemplate: 'need_response_received',
+    titleEn: 'New Help Offer',
+    titleAr: 'عرض مساعدة جديد',
+    bodyEn: '{churchName} has offered to help with your need: {needTitle}. Message: {message}',
+    bodyAr: '{churchName} عرضت المساعدة في احتياجك: {needTitle}. الرسالة: {message}',
+    emailSubjectEn: 'New help offer for: {needTitle}',
+    emailSubjectAr: 'عرض مساعدة جديد لـ: {needTitle}',
+  },
+
+  need_response_status_changed: {
+    whatsappTemplate: 'need_response_status_changed',
+    titleEn: 'Need Response Update',
+    titleAr: 'تحديث الرد على الاحتياج',
+    bodyEn: 'Your offer to help with "{needTitle}" has been {status} by {churchName}.',
+    bodyAr: '{churchName} قامت بـ{statusAr} عرض مساعدتك لـ "{needTitle}".',
+    emailSubjectEn: 'Your help offer has been {status}',
+    emailSubjectAr: 'تم {statusAr} عرض مساعدتك',
+  },
 }
 
 /**
