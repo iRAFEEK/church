@@ -40,7 +40,7 @@ class Dialog360Provider implements MessageProvider {
           template: {
             name: payload.template,
             language: {
-              code: payload.locale === 'ar' ? 'ar' : 'en',
+              code: payload.locale?.startsWith('ar') ? 'ar' : 'en',
             },
             components: this.buildComponents(payload.params),
           },

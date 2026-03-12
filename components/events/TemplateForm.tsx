@@ -65,7 +65,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const tc = useTranslations('common')
   const tg = useTranslations('groups')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 

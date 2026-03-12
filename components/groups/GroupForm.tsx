@@ -80,7 +80,7 @@ export function GroupForm({ ministries, leaders, group }: Props) {
   const t = useTranslations('groupForm')
   const tGroups = useTranslations('groups')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [form, setForm] = useState({
     name: group?.name || '',

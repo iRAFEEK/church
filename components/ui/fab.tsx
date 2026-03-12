@@ -19,7 +19,7 @@ interface FABProps {
 export function FAB({ profile }: FABProps) {
   const [open, setOpen] = useState(false)
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const actions = useFABActions(profile.role)

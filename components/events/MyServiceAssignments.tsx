@@ -29,7 +29,7 @@ interface MyServiceAssignmentsProps {
 export function MyServiceAssignments({ fullPage = false }: MyServiceAssignmentsProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [assignments, setAssignments] = useState<ServiceAssignment[]>([])
   const [loading, setLoading] = useState(true)
 

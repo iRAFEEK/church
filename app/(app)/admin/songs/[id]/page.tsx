@@ -17,7 +17,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const t = await getTranslations('songs')
   const cookieStore = await cookies()
   const lang = cookieStore.get('lang')?.value || 'ar'
-  const isAr = lang === 'ar'
+  const isAr = lang.startsWith('ar')
 
   const supabase = await createClient()
   const { data: song } = await supabase

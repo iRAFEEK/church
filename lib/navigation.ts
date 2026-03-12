@@ -241,80 +241,10 @@ export const NAV_ITEMS: NavItem[] = [
 
   // ─── Finance ────────────────────────────────────────────────
   {
-    label: 'Financial Dashboard',
-    label_ar: 'لوحة المالية',
+    label: 'Finance',
+    label_ar: 'المالية',
     href: '/admin/finance',
     iconName: 'DollarSign',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_view_finances',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Donations',
-    label_ar: 'التبرعات',
-    href: '/admin/finance/donations',
-    iconName: 'HandCoins',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_manage_donations',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Transactions',
-    label_ar: 'المعاملات المالية',
-    href: '/admin/finance/transactions',
-    iconName: 'ArrowLeftRight',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_manage_finances',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Budgets',
-    label_ar: 'الميزانيات',
-    href: '/admin/finance/budgets',
-    iconName: 'PieChart',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_manage_budgets',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Expense Requests',
-    label_ar: 'طلبات المصروفات',
-    href: '/admin/finance/expenses',
-    iconName: 'Receipt',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_submit_expenses',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Campaigns',
-    label_ar: 'الحملات',
-    href: '/admin/finance/campaigns',
-    iconName: 'Target',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_manage_campaigns',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Funds',
-    label_ar: 'الصناديق',
-    href: '/admin/finance/funds',
-    iconName: 'Wallet',
-    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
-    permission: 'can_view_finances',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Financial Reports',
-    label_ar: 'التقارير المالية',
-    href: '/admin/finance/reports',
-    iconName: 'FileSpreadsheet',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_finances',
     section: 'Finance',
@@ -327,16 +257,6 @@ export const NAV_ITEMS: NavItem[] = [
     iconName: 'HeartHandshake',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_own_giving',
-    section: 'Finance',
-    section_ar: 'المالية',
-  },
-  {
-    label: 'Finance Settings',
-    label_ar: 'إعدادات المالية',
-    href: '/admin/finance/settings',
-    iconName: 'Settings',
-    roles: ['super_admin'],
-    permission: 'can_manage_finances',
     section: 'Finance',
     section_ar: 'المالية',
   },
@@ -371,7 +291,7 @@ export function getNavSections(items: NavItem[], lang: 'en' | 'ar' = 'ar'): { se
   const sections: Map<string, NavItem[]> = new Map()
 
   for (const item of items) {
-    const section = lang === 'ar' ? (item.section_ar ?? item.section ?? '') : (item.section ?? '')
+    const section = lang.startsWith('ar') ? (item.section_ar ?? item.section ?? '') : (item.section ?? '')
     if (!sections.has(section)) sections.set(section, [])
     sections.get(section)!.push(item)
   }

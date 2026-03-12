@@ -14,11 +14,23 @@ export type Database = {
           country: string
           timezone: string
           primary_language: string
+          denomination: string | null
           welcome_message: string | null
           welcome_message_ar: string | null
           visitor_sla_hours: number
           logo_url: string | null
           primary_color: string
+          default_bible_id: string | null
+          default_currency: string
+          supported_currencies: string[]
+          fiscal_year_start_month: number
+          fiscal_year_start_day: number
+          financial_approval_required: boolean
+          donation_receipt_enabled: boolean
+          donation_min_receipt_amount: number | null
+          online_giving_enabled: boolean
+          stripe_account_id: string | null
+          financial_settings: Record<string, unknown>
           is_active: boolean
           created_at: string
           updated_at: string
@@ -30,11 +42,23 @@ export type Database = {
           country?: string
           timezone?: string
           primary_language?: string
+          denomination?: string | null
           welcome_message?: string | null
           welcome_message_ar?: string | null
           visitor_sla_hours?: number
           logo_url?: string | null
           primary_color?: string
+          default_bible_id?: string | null
+          default_currency?: string
+          supported_currencies?: string[]
+          fiscal_year_start_month?: number
+          fiscal_year_start_day?: number
+          financial_approval_required?: boolean
+          donation_receipt_enabled?: boolean
+          donation_min_receipt_amount?: number | null
+          online_giving_enabled?: boolean
+          stripe_account_id?: string | null
+          financial_settings?: Record<string, unknown>
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -46,11 +70,23 @@ export type Database = {
           country?: string
           timezone?: string
           primary_language?: string
+          denomination?: string | null
           welcome_message?: string | null
           welcome_message_ar?: string | null
           visitor_sla_hours?: number
           logo_url?: string | null
           primary_color?: string
+          default_bible_id?: string | null
+          default_currency?: string
+          supported_currencies?: string[]
+          fiscal_year_start_month?: number
+          fiscal_year_start_day?: number
+          financial_approval_required?: boolean
+          donation_receipt_enabled?: boolean
+          donation_min_receipt_amount?: number | null
+          online_giving_enabled?: boolean
+          stripe_account_id?: string | null
+          financial_settings?: Record<string, unknown>
           is_active?: boolean
           updated_at?: string
         }

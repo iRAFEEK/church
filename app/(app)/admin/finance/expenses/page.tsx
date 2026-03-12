@@ -6,23 +6,27 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Plus, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
-import { getLocale } from 'next-intl/server'
-import type { ExpenseRequestWithDetails } from '@/types'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; status?: string; ministry_id?: string; mine?: string }
 const PAGE_SIZE = 25
 
-const STATUS_CONFIG: Record<string, { en: string; ar: string; icon: string; class: string }> = {
-  draft:     { en: 'Draft',     ar: 'مسودة',    icon: '📝', class: 'bg-gray-100 text-gray-700' },
-  submitted: { en: 'Submitted', ar: 'مقدّم',     icon: '📤', class: 'bg-yellow-100 text-yellow-800' },
-  approved:  { en: 'Approved',  ar: 'معتمد',    icon: '✅', class: 'bg-blue-100 text-blue-800' },
-  rejected:  { en: 'Rejected',  ar: 'مرفوض',    icon: '❌', class: 'bg-red-100 text-red-800' },
-  paid:      { en: 'Paid',      ar: 'مدفوع',    icon: '💰', class: 'bg-green-100 text-green-800' },
-  cancelled: { en: 'Cancelled', ar: 'ملغي',     icon: '🚫', class: 'bg-gray-100 text-gray-500' },
+const STATUS_CONFIG: Record<string, { icon: string; class: string }> = {
+  draft:     { icon: '📝', class: 'bg-gray-100 text-gray-700' },
+  submitted: { icon: '📤', class: 'bg-yellow-100 text-yellow-800' },
+  approved:  { icon: '✅', class: 'bg-blue-100 text-blue-800' },
+  rejected:  { icon: '❌', class: 'bg-red-100 text-red-800' },
+  paid:      { icon: '💰', class: 'bg-green-100 text-green-800' },
+  cancelled: { icon: '🚫', class: 'bg-gray-100 text-gray-500' },
+}
+
+const STATUS_KEYS: Record<string, string> = {
+  draft: 'draft', submitted: 'submitted', approved: 'approved',
+  rejected: 'rejected', paid: 'paid', cancelled: 'cancelled',
 }
 
 function formatCurrency(amount: number, currency = 'USD', locale = 'en') {
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
     style: 'currency', currency,
     minimumFractionDigits: 0, maximumFractionDigits: 0,
   }).format(amount)
@@ -32,7 +36,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const { profile } = await requirePermission('can_submit_expenses')
   const supabase = await createClient()
   const locale = await getLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
+  const t = await getTranslations('finance')
   const params = await searchParams
 
   const canApprove = profile.role === 'super_admin' || profile.role === 'ministry_leader'
@@ -45,7 +50,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   let query = supabase
     .from('expense_requests')
     .select(`
-      *,
+      id, description, description_ar, amount, currency, status, vendor_name, vendor_name_ar, request_number, rejection_reason, created_at,
       requester:requested_by ( id, first_name, last_name, first_name_ar, last_name_ar, photo_url ),
       ministry:ministry_id ( id, name, name_ar ),
       fund:fund_id ( id, name, name_ar )
@@ -58,37 +63,37 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   if (params.status) query = query.eq('status', params.status)
   if (params.ministry_id) query = query.eq('ministry_id', params.ministry_id)
 
-  const { data: expenses, count } = await query
+  const [{ data: expenses, count }, { data: ministries }] = await Promise.all([
+    query,
+    supabase
+      .from('ministries')
+      .select('id, name, name_ar')
+      .eq('church_id', profile.church_id)
+      .eq('is_active', true)
+      .order('name'),
+  ])
 
-  // Pending count for badge
-  const pendingSubmitted = (expenses || []).filter((e) => e.status === 'submitted').length
+  const pendingSubmitted = (expenses || []).filter((e: any) => e.status === 'submitted').length
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
-
-  const { data: ministries } = await supabase
-    .from('ministries')
-    .select('id, name, name_ar')
-    .eq('church_id', profile.church_id)
-    .eq('is_active', true)
-    .order('name')
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">
-            {isAr ? 'طلبات المصروفات' : 'Expense Requests'}
+            {t('expenseRequests')}
             {canApprove && pendingSubmitted > 0 && (
               <Badge variant="destructive" className="ms-2 text-xs">{pendingSubmitted}</Badge>
             )}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {count} {isAr ? 'طلب' : 'requests'}
+            {count} {t('requests')}
           </p>
         </div>
         <Button asChild>
           <Link href="/admin/finance/expenses/new">
             <Plus className="w-4 h-4 me-2" />
-            {isAr ? 'طلب جديد' : 'New Request'}
+            {t('newRequest')}
           </Link>
         </Button>
       </div>
@@ -97,10 +102,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       {canApprove && (
         <div className="flex gap-2">
           <Button variant={!viewMine ? 'default' : 'outline'} size="sm" asChild>
-            <Link href="?mine=false">{isAr ? 'كل الطلبات' : 'All Requests'}</Link>
+            <Link href="?mine=false">{t('allRequests')}</Link>
           </Button>
           <Button variant={viewMine ? 'default' : 'outline'} size="sm" asChild>
-            <Link href="?mine=true">{isAr ? 'طلباتي' : 'My Requests'}</Link>
+            <Link href="?mine=true">{t('myRequests')}</Link>
           </Button>
         </div>
       )}
@@ -110,31 +115,31 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
         <CardContent className="pt-3 pb-3">
           <form className="flex flex-wrap gap-3 items-center">
             <select name="status" defaultValue={params.status || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-              <option value="">{isAr ? 'كل الحالات' : 'All Statuses'}</option>
-              {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                <option key={k} value={k}>{isAr ? v.ar : v.en}</option>
+              <option value="">{t('allStatuses')}</option>
+              {Object.entries(STATUS_KEYS).map(([k, tKey]) => (
+                <option key={k} value={k}>{t(tKey)}</option>
               ))}
             </select>
             {canApprove && (
               <select name="ministry_id" defaultValue={params.ministry_id || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-                <option value="">{isAr ? 'كل الخدمات' : 'All Ministries'}</option>
+                <option value="">{t('allMinistries')}</option>
                 {(ministries || []).map((m) => (
                   <option key={m.id} value={m.id}>{isAr ? m.name_ar || m.name : m.name}</option>
                 ))}
               </select>
             )}
-            <Button type="submit" variant="outline" size="sm">{isAr ? 'تطبيق' : 'Filter'}</Button>
+            <Button type="submit" variant="outline" size="sm">{t('filter')}</Button>
           </form>
         </CardContent>
       </Card>
 
       {/* Expenses list */}
       <div className="space-y-3">
-        {(expenses as ExpenseRequestWithDetails[] || []).map((e) => {
+        {(expenses as any[] || []).map((e) => {
           const sc = STATUS_CONFIG[e.status] || STATUS_CONFIG.draft
           const requesterName = e.requester
             ? `${isAr ? e.requester.first_name_ar || e.requester.first_name : e.requester.first_name} ${isAr ? e.requester.last_name_ar || e.requester.last_name : e.requester.last_name}`
-            : (isAr ? 'غير محدد' : 'Unknown')
+            : t('unknown')
 
           return (
             <Card key={e.id} className="hover:shadow-sm transition-shadow">
@@ -147,7 +152,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-sm">{isAr ? e.description_ar || e.description : e.description}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${sc.class}`}>{isAr ? sc.ar : sc.en}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${sc.class}`}>{t(STATUS_KEYS[e.status] || 'draft')}</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                         <span>{requesterName}</span>
@@ -187,7 +192,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                   </div>
                 </div>
                 {e.rejection_reason && (
-                  <p className="text-xs text-red-600 mt-2 ms-12">{isAr ? 'سبب الرفض: ' : 'Rejection reason: '}{e.rejection_reason}</p>
+                  <p className="text-xs text-red-600 mt-2 ms-12">{t('rejectionReason')}: {e.rejection_reason}</p>
                 )}
               </CardContent>
             </Card>
@@ -198,10 +203,10 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p>{isAr ? 'لا توجد طلبات مصروفات' : 'No expense requests found'}</p>
+              <p>{t('noExpenseRequests')}</p>
               <Button className="mt-4" asChild>
                 <Link href="/admin/finance/expenses/new">
-                  {isAr ? 'تقديم طلب جديد' : 'Submit New Request'}
+                  {t('submitNewRequest')}
                 </Link>
               </Button>
             </CardContent>
@@ -212,11 +217,11 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {isAr ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
+            {t('pageOf', { page, total: totalPages })}
           </p>
           <div className="flex gap-2">
-            {page > 1 && <Button variant="outline" size="sm" asChild><Link href={`?page=${page - 1}`}>{isAr ? 'السابق' : 'Prev'}</Link></Button>}
-            {page < totalPages && <Button variant="outline" size="sm" asChild><Link href={`?page=${page + 1}`}>{isAr ? 'التالي' : 'Next'}</Link></Button>}
+            {page > 1 && <Button variant="outline" size="sm" asChild><Link href={`?page=${page - 1}`}>{t('previous')}</Link></Button>}
+            {page < totalPages && <Button variant="outline" size="sm" asChild><Link href={`?page=${page + 1}`}>{t('next')}</Link></Button>}
           </div>
         </div>
       )}

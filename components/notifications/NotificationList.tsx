@@ -39,7 +39,7 @@ function timeAgo(dateStr: string, locale: string): string {
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
 
-  if (locale === 'ar') {
+  if (locale.startsWith('ar')) {
     if (minutes < 1) return 'الآن'
     if (minutes < 60) return `منذ ${minutes} دقيقة`
     if (hours < 24) return `منذ ${hours} ساعة`

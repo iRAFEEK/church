@@ -12,7 +12,7 @@ interface BookSelectorProps {
 export function BookSelector({ books, onSelect }: BookSelectorProps) {
   const t = useTranslations('bible')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   // Group books by section
   const otBooks: ApiBibleBook[] = []

@@ -90,7 +90,7 @@ export default function CreateFromTemplatePage() {
   const t = useTranslations('templates')
   const te = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [templates, setTemplates] = useState<TemplateItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(preselectedId)

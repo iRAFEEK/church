@@ -20,7 +20,7 @@ export function PermissionToggleGrid({
   disabled = false,
 }: PermissionToggleGridProps) {
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   return (
     <div className="grid gap-3">

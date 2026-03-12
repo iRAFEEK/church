@@ -42,7 +42,7 @@ export function getNextGatheringDate(
  */
 export function formatGatheringDate(dateStr: string, lang: 'ar' | 'en' = 'ar'): string {
   const date = new Date(dateStr)
-  return date.toLocaleDateString(lang === 'ar' ? 'ar-LB' : 'en-GB', {
+  return date.toLocaleDateString(lang.startsWith('ar') ? 'ar-LB' : 'en-GB', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

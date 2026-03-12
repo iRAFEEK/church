@@ -28,7 +28,7 @@ export async function sendNotification(request: NotificationRequest): Promise<{
   const { phone, email, locale } = await getProfileContactInfo(request.profileId, request.phone, request.email)
 
   const template = TEMPLATES[request.type]
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const title = isAr ? request.titleAr : request.titleEn
   const body = isAr ? request.bodyAr : request.bodyEn

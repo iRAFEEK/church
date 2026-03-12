@@ -30,7 +30,7 @@ export default async function PermissionsSummaryPage({
   await requireRole('super_admin')
   const t = await getTranslations('permissions')
   const locale = await getLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const supabase = await createClient()
   const params = await searchParams
 

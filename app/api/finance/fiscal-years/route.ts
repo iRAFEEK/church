@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -16,12 +17,14 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('fiscal_years')
-    .select('*')
+    .select('id, name, start_date, end_date, is_current')
     .eq('church_id', profile.church_id)
     .order('start_date', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
+  return NextResponse.json({ data }, {
+    headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
+  })
 }
 
 // POST /api/finance/fiscal-years
@@ -50,5 +53,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

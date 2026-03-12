@@ -37,7 +37,7 @@ export function Stepper({
 }: StepperProps) {
   const locale = useLocale()
   const t = useTranslations('common')
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const isLastStep = currentStep === steps.length - 1
   const isFirstStep = currentStep === 0
 

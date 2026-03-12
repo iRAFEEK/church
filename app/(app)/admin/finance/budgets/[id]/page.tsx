@@ -1,6 +1,6 @@
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,37 +10,21 @@ function fmt(n: number, currency = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
-type LineItem = {
-  id: string
-  account_id: string
-  account?: { code: string; name: string; name_ar: string | null }
-  budgeted_amount: number
-  actual_amount?: number
-  notes?: string
-}
-
 export default async function BudgetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const { profile } = await requirePermission('can_view_finances')
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) redirect('/login')
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) redirect('/admin')
 
   const { data: budget } = await supabase
     .from('budgets')
-    .select('*, line_items:budget_line_items(*, account:accounts(code, name, name_ar))')
+    .select('id, name, name_ar, currency, total_income, total_expense, start_date, end_date, is_active, line_items:budget_line_items(id, account_id, budgeted_amount, actual_amount, notes, account:accounts(code, name, name_ar))')
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .single()
 
   if (!budget) notFound()
 
-  const lineItems: LineItem[] = budget.line_items || []
+  const lineItems: any[] = budget.line_items || []
   const totalBudgeted = lineItems.reduce((s, l) => s + l.budgeted_amount, 0)
   const totalActual = lineItems.reduce((s, l) => s + (l.actual_amount || 0), 0)
   const variance = totalBudgeted - totalActual

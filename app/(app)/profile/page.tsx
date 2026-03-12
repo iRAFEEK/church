@@ -103,7 +103,7 @@ export default async function ProfilePage() {
 
   const displayNameAr = `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim()
   const displayNameEn = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim()
-  const displayName = locale === 'ar' ? (displayNameAr || displayNameEn) : (displayNameEn || displayNameAr)
+  const displayName = locale.startsWith('ar') ? (displayNameAr || displayNameEn) : (displayNameEn || displayNameAr)
   const initials = (displayNameAr || displayNameEn).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
@@ -170,7 +170,7 @@ export default async function ProfilePage() {
             { label: t('qlServing'), count: adminCounts.serving, href: '/serving', icon: Heart, color: 'text-teal-600 bg-teal-50' },
           ].map((item) => {
             const Icon = item.icon
-            const Chevron = locale === 'ar' ? ChevronLeft : ChevronRight
+            const Chevron = locale.startsWith('ar') ? ChevronLeft : ChevronRight
             return (
               <Link key={item.href} href={item.href}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -192,7 +192,7 @@ export default async function ProfilePage() {
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="info" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <Tabs defaultValue="info" dir={locale.startsWith('ar') ? 'rtl' : 'ltr'}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
           <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>

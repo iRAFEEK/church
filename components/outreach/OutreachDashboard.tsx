@@ -16,7 +16,7 @@ import type { OutreachMemberSummary } from '@/types'
 export function OutreachDashboard() {
   const t = useTranslations('outreach')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const [tab, setTab] = useState('all')
   const [members, setMembers] = useState<OutreachMemberSummary[]>([])

@@ -24,7 +24,7 @@ interface MembersSearchInputProps {
 export function MembersSearchInput({ defaultValue }: MembersSearchInputProps) {
   const t = useTranslations('members')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const router = useRouter()
   const [value, setValue] = useState(defaultValue ?? '')
 

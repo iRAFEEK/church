@@ -18,7 +18,7 @@ interface Props {
 export function LeaderDashboard({ data }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   // Use first group for stats (most leaders have one group)
   const primaryGroup = data.groups[0]

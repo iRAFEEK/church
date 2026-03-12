@@ -28,7 +28,7 @@ interface Props {
 export function PrayerAssignDialog({ prayerId, onAssigned }: Props) {
   const t = useTranslations('churchPrayer')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')

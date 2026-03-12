@@ -16,7 +16,7 @@ interface Props {
 export function MinistryLeaderDashboard({ data }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const ministryName = isAr ? (data.ministryNameAr || data.ministryName) : data.ministryName
 

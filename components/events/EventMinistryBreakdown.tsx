@@ -50,7 +50,7 @@ interface EventMinistryBreakdownProps {
 export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [groups, setGroups] = useState<MinistryGroup[]>([])
   const [loading, setLoading] = useState(true)

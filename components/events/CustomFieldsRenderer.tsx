@@ -14,7 +14,7 @@ interface CustomFieldsRendererProps {
 
 export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsRendererProps) {
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   if (fields.length === 0) return null
 

@@ -19,7 +19,7 @@ export default async function TemplatesPage() {
   const t = await getTranslations('templates')
   const te = await getTranslations('events')
   const locale = await getLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const supabase = await createClient()
 
   const { data: templates } = await supabase

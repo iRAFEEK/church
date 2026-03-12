@@ -5,21 +5,19 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Target, Calendar } from 'lucide-react'
-import { getLocale } from 'next-intl/server'
-import type { Campaign } from '@/types'
-
+import { getLocale, getTranslations } from 'next-intl/server'
 interface SearchParams { status?: string }
 
-const STATUS_CONFIG: Record<string, { en: string; ar: string; class: string }> = {
-  planning:  { en: 'Planning',   ar: 'تخطيط',  class: 'bg-gray-100 text-gray-700' },
-  active:    { en: 'Active',     ar: 'نشط',    class: 'bg-green-100 text-green-800' },
-  paused:    { en: 'Paused',     ar: 'موقوف',  class: 'bg-yellow-100 text-yellow-800' },
-  completed: { en: 'Completed',  ar: 'مكتمل',  class: 'bg-blue-100 text-blue-800' },
-  cancelled: { en: 'Cancelled',  ar: 'ملغي',   class: 'bg-red-100 text-red-800' },
+const STATUS_CONFIG: Record<string, { key: string; class: string }> = {
+  planning:  { key: 'planning',   class: 'bg-gray-100 text-gray-700' },
+  active:    { key: 'active',     class: 'bg-green-100 text-green-800' },
+  paused:    { key: 'paused',     class: 'bg-yellow-100 text-yellow-800' },
+  completed: { key: 'completed',  class: 'bg-blue-100 text-blue-800' },
+  cancelled: { key: 'cancelled',  class: 'bg-red-100 text-red-800' },
 }
 
 function formatCurrency(amount: number, currency = 'USD', locale = 'en') {
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
     style: 'currency', currency,
     minimumFractionDigits: 0, maximumFractionDigits: 0,
   }).format(amount)
@@ -29,12 +27,14 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
   const { profile } = await requirePermission('can_manage_campaigns')
   const supabase = await createClient()
   const locale = await getLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
+  const t = await getTranslations('finance')
+  const tCommon = await getTranslations('common')
   const params = await searchParams
 
   let query = supabase
     .from('campaigns')
-    .select('*, fund:fund_id(id, name, name_ar)', { count: 'exact' })
+    .select('id, name, name_ar, description, description_ar, goal_amount, raised_amount, pledged_amount, currency, status, start_date, end_date, image_url, is_public, allow_pledges, fund_id, fund:fund_id(id, name, name_ar)', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('start_date', { ascending: false })
 
@@ -42,23 +42,23 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
 
   const { data: campaigns, count } = await query
 
-  const activeCampaigns = (campaigns || []).filter((c: Campaign) => c.status === 'active')
-  const totalRaised = activeCampaigns.reduce((s: number, c: Campaign) => s + c.raised_amount, 0)
-  const totalGoal = activeCampaigns.reduce((s: number, c: Campaign) => s + c.goal_amount, 0)
+  const activeCampaigns = (campaigns || []).filter((c) => c.status === 'active')
+  const totalRaised = activeCampaigns.reduce((s, c) => s + c.raised_amount, 0)
+  const totalGoal = activeCampaigns.reduce((s, c) => s + c.goal_amount, 0)
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{isAr ? 'الحملات' : 'Campaigns'}</h1>
+          <h1 className="text-2xl font-bold">{t('campaigns')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {count} {isAr ? 'حملة' : 'campaigns'}
+            {count} {t('campaigns')}
           </p>
         </div>
         <Button asChild>
           <Link href="/admin/finance/campaigns/new">
             <Plus className="w-4 h-4 me-2" />
-            {isAr ? 'حملة جديدة' : 'New Campaign'}
+            {t('newCampaign')}
           </Link>
         </Button>
       </div>
@@ -69,7 +69,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي مجموع الحملات النشطة' : 'Combined Active Campaign Progress'}</p>
+                <p className="text-xs text-muted-foreground">{t('combinedProgress')}</p>
                 <p className="text-sm font-medium mt-0.5">
                   {formatCurrency(totalRaised, 'USD', locale)} / {formatCurrency(totalGoal, 'USD', locale)}
                 </p>
@@ -91,18 +91,18 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
       {/* Status filter tabs */}
       <div className="flex gap-2 flex-wrap">
         <Button variant={!params.status ? 'default' : 'outline'} size="sm" asChild>
-          <Link href="/admin/finance/campaigns">{isAr ? 'الكل' : 'All'}</Link>
+          <Link href="/admin/finance/campaigns">{tCommon('all')}</Link>
         </Button>
         {Object.entries(STATUS_CONFIG).map(([k, v]) => (
           <Button key={k} variant={params.status === k ? 'default' : 'outline'} size="sm" asChild>
-            <Link href={`?status=${k}`}>{isAr ? v.ar : v.en}</Link>
+            <Link href={`?status=${k}`}>{t(v.key)}</Link>
           </Button>
         ))}
       </div>
 
       {/* Campaign cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(campaigns as Campaign[] || []).map((c) => {
+        {(campaigns || []).map((c) => {
           const pct = c.goal_amount > 0 ? Math.min(100, (c.raised_amount / c.goal_amount) * 100) : 0
           const sc = STATUS_CONFIG[c.status] || STATUS_CONFIG.planning
 
@@ -117,7 +117,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-tight">{isAr ? c.name_ar || c.name : c.name}</CardTitle>
                   <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${sc.class}`}>
-                    {isAr ? sc.ar : sc.en}
+                    {t(sc.key)}
                   </span>
                 </div>
                 {c.description && (
@@ -143,14 +143,14 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                     />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>{isAr ? 'تم جمعه' : 'Raised'}</span>
-                    <span>{isAr ? 'الهدف' : 'Goal'}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
+                    <span>{t('raised')}</span>
+                    <span>{t('goal')}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
                   </div>
                 </div>
 
                 {c.pledged_amount > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {isAr ? 'الوعود: ' : 'Pledged: '}{formatCurrency(c.pledged_amount, c.currency, locale)}
+                    {t('pledged')}: {formatCurrency(c.pledged_amount, c.currency, locale)}
                   </p>
                 )}
 
@@ -161,7 +161,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
 
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link href={`/admin/finance/campaigns/${c.id}`}>
-                    {isAr ? 'عرض التفاصيل' : 'View Details'}
+                    {t('viewDetails')}
                   </Link>
                 </Button>
               </CardContent>
@@ -174,10 +174,10 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <Target className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p>{isAr ? 'لا توجد حملات' : 'No campaigns found'}</p>
+            <p>{t('noCampaigns')}</p>
             <Button className="mt-4" asChild>
               <Link href="/admin/finance/campaigns/new">
-                {isAr ? 'إنشاء حملة جديدة' : 'Create Campaign'}
+                {t('createCampaignBtn')}
               </Link>
             </Button>
           </CardContent>

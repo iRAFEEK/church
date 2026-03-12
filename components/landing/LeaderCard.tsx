@@ -11,7 +11,7 @@ interface LeaderCardProps {
 
 export function LeaderCard({ leader }: LeaderCardProps) {
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const name = isRTL ? (leader.name_ar ?? leader.name) : leader.name
   const title = isRTL ? (leader.title_ar ?? leader.title) : leader.title

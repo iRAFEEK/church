@@ -37,7 +37,7 @@ function ServingShimmer() {
 export function ServingMemberView() {
   const t = useTranslations('serving')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const [slots, setSlots] = useState<any[]>([])
   const [areas, setAreas] = useState<any[]>([])

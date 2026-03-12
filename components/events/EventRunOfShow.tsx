@@ -25,7 +25,7 @@ interface EventRunOfShowProps {
 export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
   const t = useTranslations('templates')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [segments, setSegments] = useState<Segment[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedNotes, setExpandedNotes] = useState<string | null>(null)

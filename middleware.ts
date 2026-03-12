@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
     const country = request.headers.get('x-vercel-ip-country') ?? ''
     let defaultLang = 'ar'
     if (country === 'EG') {
-      defaultLang = 'ar-eg'
+      defaultLang = 'ar'
     } else if (!['SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'IQ', 'JO', 'LB', 'SY', 'PS', 'YE', 'LY', 'TN', 'DZ', 'MA', 'SD', 'EG'].includes(country)) {
       // Non-Arabic-speaking country — check Accept-Language
       const acceptLang = request.headers.get('accept-language') ?? ''

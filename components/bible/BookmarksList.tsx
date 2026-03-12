@@ -15,7 +15,7 @@ interface BookmarksListProps {
 export function BookmarksList({ bookmarks, onNavigate, onDelete }: BookmarksListProps) {
   const t = useTranslations('bible')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   if (bookmarks.length === 0) {
     return (

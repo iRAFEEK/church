@@ -18,7 +18,7 @@ export default async function AnnouncementDetailPage({ params }: { params: Promi
   const t = await getTranslations('announcements')
   const cookieStore = await cookies()
   const lang = cookieStore.get('lang')?.value || 'ar'
-  const isAr = lang === 'ar'
+  const isAr = lang.startsWith('ar')
 
   const supabase = await createClient()
   const { data: announcement } = await supabase

@@ -16,7 +16,7 @@ export function LandingNav({ churchName, logoUrl }: LandingNavProps) {
   const locale = useLocale()
 
   function toggleLanguage() {
-    const next = locale === 'ar' ? 'en' : 'ar'
+    const next = locale.startsWith('ar') ? 'en' : 'ar'
     document.cookie = `lang=${next}; path=/; max-age=${60 * 60 * 24 * 365}`
     window.location.reload()
   }

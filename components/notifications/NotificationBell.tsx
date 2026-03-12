@@ -128,7 +128,7 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        align={locale === 'ar' ? 'start' : 'end'}
+        align={locale.startsWith('ar') ? 'start' : 'end'}
         className="w-80 p-0 hidden md:block"
       >
         <div className="flex items-center justify-between p-3 border-b">

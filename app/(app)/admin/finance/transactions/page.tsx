@@ -1,10 +1,10 @@
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, ArrowUpDown } from 'lucide-react'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 const STATUS_COLOR: Record<string, string> = {
   draft:    'bg-gray-100 text-gray-700',
@@ -14,21 +14,17 @@ const STATUS_COLOR: Record<string, string> = {
   void:     'bg-red-100 text-red-700',
 }
 
-function fmt(n: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
+function fmt(n: number, currency = 'USD', locale = 'en') {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
 export default async function TransactionsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const sp = await searchParams
+  const { profile, resolvedPermissions: perms } = await requirePermission('can_manage_finances')
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) redirect('/login')
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) redirect('/admin')
+  const locale = await getLocale()
+  const t = await getTranslations('finance')
 
   const page = parseInt(sp.page || '1')
   const limit = 50
@@ -36,7 +32,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
 
   let query = supabase
     .from('financial_transactions')
-    .select('*', { count: 'exact' })
+    .select('id, reference_number, transaction_date, description, status, total_amount, currency', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('transaction_date', { ascending: false })
     .range(offset, offset + limit - 1)
@@ -51,13 +47,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Transactions / المعاملات</h1>
-          <p className="text-muted-foreground text-sm">{count ?? 0} transactions</p>
+          <h1 className="text-2xl font-bold">{t('transactions')}</h1>
+          <p className="text-muted-foreground text-sm">{count ?? 0} {t('transactions')}</p>
         </div>
         {perms.can_manage_finances && (
           <Button asChild>
             <Link href="/admin/finance/transactions/new">
-              <Plus className="w-4 h-4 me-2" />New Journal Entry
+              <Plus className="w-4 h-4 me-2" />{t('newTransaction')}
             </Link>
           </Button>
         )}
@@ -66,7 +62,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       {/* Filters */}
       <form className="flex flex-wrap gap-3 items-end">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Status</label>
+          <label className="text-xs text-muted-foreground">{t('status')}</label>
           <select name="status" defaultValue={sp.status || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
             <option value="">All</option>
             <option value="draft">Draft</option>
@@ -77,15 +73,15 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">From</label>
+          <label className="text-xs text-muted-foreground">{t('from')}</label>
           <input type="date" name="date_from" defaultValue={sp.date_from || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">To</label>
+          <label className="text-xs text-muted-foreground">{t('to')}</label>
           <input type="date" name="date_to" defaultValue={sp.date_to || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
         </div>
-        <Button type="submit" variant="outline" size="sm">Filter</Button>
-        <Button type="reset" variant="ghost" size="sm" asChild><Link href="/admin/finance/transactions">Clear</Link></Button>
+        <Button type="submit" variant="outline" size="sm">{t('filter')}</Button>
+        <Button type="reset" variant="ghost" size="sm" asChild><Link href="/admin/finance/transactions">{t('clear')}</Link></Button>
       </form>
 
       <div className="border rounded-lg overflow-hidden">
@@ -100,7 +96,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                   <p className="text-xs text-muted-foreground mt-0.5 font-mono">{txn.reference_number || txn.id.slice(0, 8)} · {txn.transaction_date}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <p className="font-mono text-sm font-semibold" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD')}</p>
+                  <p className="font-mono text-sm font-semibold" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}</p>
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
                     {txn.status}
                   </span>
@@ -109,7 +105,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
             </Link>
           ))}
           {(!transactions || transactions.length === 0) && (
-            <p className="px-4 py-8 text-center text-muted-foreground text-sm">No transactions found</p>
+            <p className="px-4 py-8 text-center text-muted-foreground text-sm">{t('noTransactions')}</p>
           )}
         </div>
 
@@ -117,11 +113,11 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <table className="w-full text-sm hidden md:table">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-start px-4 py-2 font-medium">Ref #</th>
-              <th className="text-start px-4 py-2 font-medium">Date</th>
-              <th className="text-start px-4 py-2 font-medium">Description</th>
-              <th className="text-start px-4 py-2 font-medium">Status</th>
-              <th className="text-end px-4 py-2 font-medium">Amount</th>
+              <th className="text-start px-4 py-2 font-medium">{t('refNumber')}</th>
+              <th className="text-start px-4 py-2 font-medium">{t('date')}</th>
+              <th className="text-start px-4 py-2 font-medium">{t('description')}</th>
+              <th className="text-start px-4 py-2 font-medium">{t('status')}</th>
+              <th className="text-end px-4 py-2 font-medium">{t('amount')}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -140,14 +136,14 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                   </span>
                 </td>
                 <td className="px-4 py-2 text-end font-mono tabular-nums">
-                  {fmt(txn.total_amount || 0, txn.currency || 'USD')}
+                  {fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}
                 </td>
               </tr>
             ))}
             {(!transactions || transactions.length === 0) && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  No transactions found
+                  {t('noTransactions')}
                 </td>
               </tr>
             )}

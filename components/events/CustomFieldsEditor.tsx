@@ -21,7 +21,7 @@ const FIELD_TYPES = ['text', 'number', 'select', 'boolean'] as const
 export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps) {
   const t = useTranslations('templates')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editIndex, setEditIndex] = useState<number | null>(null)

@@ -41,7 +41,7 @@ export function ChapterContent({
 }: ChapterContentProps) {
   const t = useTranslations('bible')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const contentRef = useRef<HTMLDivElement>(null)
   const [selectedVerse, setSelectedVerse] = useState<{
     verseId: string

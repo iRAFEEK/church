@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('expense_requests')
     .select(`
-      *,
+      id, description, description_ar, amount, currency, status, vendor_name, vendor_name_ar, request_number, rejection_reason, payment_method, is_reimbursement, notes, created_at,
       requester:requested_by ( id, first_name, last_name, first_name_ar, last_name_ar, photo_url ),
       ministry:ministry_id ( id, name, name_ar ),
       fund:fund_id ( id, name, name_ar )
@@ -58,6 +59,8 @@ export async function GET(req: NextRequest) {
     page,
     pageSize,
     totalPages: Math.ceil((count || 0) / pageSize),
+  }, {
+    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
 }
 
@@ -95,5 +98,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

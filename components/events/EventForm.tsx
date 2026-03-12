@@ -53,7 +53,7 @@ export function EventForm({ event }: EventFormProps) {
   const t = useTranslations('events')
   const tc = useTranslations('common')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 

@@ -22,7 +22,7 @@ interface Props {
 
 export function AttendanceTrendChart({ data, locale }: Props) {
   const t = useTranslations('dashboard')
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   if (data.length === 0) {
     return (

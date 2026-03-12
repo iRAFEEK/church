@@ -1,34 +1,27 @@
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Plus, BarChart3 } from 'lucide-react'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 function fmt(n: number, currency = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
-const PERIOD_LABEL: Record<string, string> = {
-  annual: 'Annual', quarterly: 'Quarterly', monthly: 'Monthly', custom: 'Custom',
-}
-
 export default async function BudgetsPage() {
+  const { profile, resolvedPermissions: perms } = await requirePermission('can_manage_budgets')
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) redirect('/login')
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) redirect('/admin')
+  const locale = await getLocale()
+  const t = await getTranslations('finance')
+  const isAr = locale.startsWith('ar')
 
   const { data: budgets } = await supabase
     .from('budgets')
-    .select('*')
+    .select('id, name, name_ar, period_type, start_date, end_date, total_income, total_expense, is_active, currency')
     .eq('church_id', profile.church_id)
     .order('start_date', { ascending: false })
 
@@ -36,13 +29,13 @@ export default async function BudgetsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Budgets / الميزانيات</h1>
-          <p className="text-muted-foreground text-sm">{budgets?.length ?? 0} budgets</p>
+          <h1 className="text-2xl font-bold">{t('budgets')}</h1>
+          <p className="text-muted-foreground text-sm">{budgets?.length ?? 0} {t('budgets')}</p>
         </div>
         {perms.can_manage_budgets && (
           <Button asChild>
             <Link href="/admin/finance/budgets/new">
-              <Plus className="w-4 h-4 me-2" />New Budget
+              <Plus className="w-4 h-4 me-2" />{t('newBudget')}
             </Link>
           </Button>
         )}
@@ -51,15 +44,15 @@ export default async function BudgetsPage() {
       {(!budgets || budgets.length === 0) ? (
         <div className="text-center py-16 text-muted-foreground">
           <BarChart3 className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p>No budgets yet. Create your first budget to start tracking planned vs. actual spending.</p>
+          <p>{t('noBudgets')}</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {budgets.map(budget => {
-            const usedPct = budget.total_amount > 0
-              ? Math.min(100, ((budget.actual_amount || 0) / budget.total_amount) * 100)
+            const usedPct = budget.total_income > 0
+              ? Math.min(100, ((budget.total_expense || 0) / budget.total_income) * 100)
               : 0
-            const overBudget = (budget.actual_amount || 0) > budget.total_amount
+            const overBudget = (budget.total_expense || 0) > budget.total_income
 
             return (
               <Link key={budget.id} href={`/admin/finance/budgets/${budget.id}`}>
@@ -67,24 +60,24 @@ export default async function BudgetsPage() {
                   <CardContent className="pt-5 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-semibold leading-tight">{budget.name}</p>
-                        {budget.name_ar && <p className="text-sm text-muted-foreground" dir="rtl">{budget.name_ar}</p>}
+                        <p className="font-semibold leading-tight">{isAr ? budget.name_ar || budget.name : budget.name}</p>
+                        {budget.name_ar && !isAr && <p className="text-sm text-muted-foreground" dir="rtl">{budget.name_ar}</p>}
                       </div>
                       <Badge variant={budget.is_active ? 'default' : 'secondary'} className="shrink-0">
-                        {PERIOD_LABEL[budget.period_type] || budget.period_type}
+                        {t(budget.period_type)}
                       </Badge>
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                      {budget.start_date} → {budget.end_date || 'ongoing'}
+                      {budget.start_date} → {budget.end_date || t('ongoing')}
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Actual</span>
+                        <span className="text-muted-foreground">{t('actual')}</span>
                         <span className={overBudget ? 'text-red-600 font-medium' : 'font-medium'}>
-                          {fmt(budget.actual_amount || 0, budget.currency || 'USD')}
-                          {' '}<span className="text-muted-foreground font-normal">/ {fmt(budget.total_amount, budget.currency || 'USD')}</span>
+                          {fmt(budget.total_expense || 0)}
+                          {' '}<span className="text-muted-foreground font-normal">/ {fmt(budget.total_income)}</span>
                         </span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -93,7 +86,7 @@ export default async function BudgetsPage() {
                           style={{ width: `${Math.min(100, usedPct)}%` }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground text-end">{usedPct.toFixed(0)}% used</p>
+                      <p className="text-xs text-muted-foreground text-end">{usedPct.toFixed(0)}% {t('used')}</p>
                     </div>
                   </CardContent>
                 </Card>

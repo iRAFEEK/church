@@ -1,11 +1,12 @@
+import { Suspense } from 'react'
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Target, Users } from 'lucide-react'
+import { FinanceListSkeleton } from '@/components/finance/FinanceSkeleton'
 
 function fmt(n: number, currency = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
@@ -21,37 +22,17 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const { profile, resolvedPermissions: perms } = await requirePermission('can_view_finances')
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) redirect('/login')
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) redirect('/admin')
 
   const { data: campaign } = await supabase
     .from('campaigns')
-    .select('*')
+    .select('id, name, name_ar, description, description_ar, goal_amount, raised_amount, pledged_amount, currency, status, start_date, end_date, image_url, is_public, allow_pledges')
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .single()
 
   if (!campaign) notFound()
-
-  const { data: donations } = await supabase
-    .from('donations')
-    .select('*, donor:profiles!donor_id(full_name, full_name_ar)')
-    .eq('campaign_id', id)
-    .order('donation_date', { ascending: false })
-    .limit(50)
-
-  const { data: pledges } = await supabase
-    .from('pledges')
-    .select('*, pledger:profiles!pledger_id(full_name)')
-    .eq('campaign_id', id)
-    .order('created_at', { ascending: false })
 
   const currency = campaign.currency || 'USD'
   const raised = campaign.raised_amount || 0
@@ -105,7 +86,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
           <div className="grid grid-cols-3 gap-4 pt-2 text-center text-sm">
             <div>
               <p className="text-muted-foreground">Donors</p>
-              <p className="font-semibold">{donations?.length ?? 0}</p>
+              <p className="font-semibold">—</p>
             </div>
             <div>
               <p className="text-muted-foreground">Start</p>
@@ -120,70 +101,99 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Donations */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Donations ({donations?.length ?? 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {(donations || []).map(d => (
-                <div key={d.id} className="px-4 py-2.5 flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {d.is_anonymous ? 'Anonymous' : (d.donor?.full_name || 'Unknown')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{d.donation_date}</p>
-                  </div>
-                  <p className="font-mono tabular-nums text-sm font-semibold">
-                    {fmt(d.amount, d.currency || currency)}
-                  </p>
-                </div>
-              ))}
-              {(!donations || donations.length === 0) && (
-                <p className="px-4 py-6 text-sm text-muted-foreground text-center">No donations yet</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<Card><CardHeader className="pb-3"><CardTitle className="text-base">Donations</CardTitle></CardHeader><CardContent><FinanceListSkeleton /></CardContent></Card>}>
+          <CampaignDonations campaignId={id} currency={currency} />
+        </Suspense>
 
-        {/* Pledges */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Pledges ({pledges?.length ?? 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {(pledges || []).map(p => {
-                const fulfilled = p.fulfilled_amount || 0
-                const pledgePct = p.pledge_amount > 0 ? Math.min(100, (fulfilled / p.pledge_amount) * 100) : 0
-                return (
-                  <div key={p.id} className="px-4 py-2.5 space-y-1">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium">{p.pledger?.full_name || 'Unknown'}</p>
-                      <p className="font-mono tabular-nums text-sm">
-                        {fmt(fulfilled, currency)} / {fmt(p.pledge_amount, currency)}
-                      </p>
-                    </div>
-                    <div className="h-1 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pledgePct}%` }} />
-                    </div>
-                  </div>
-                )
-              })}
-              {(!pledges || pledges.length === 0) && (
-                <p className="px-4 py-6 text-sm text-muted-foreground text-center">No pledges yet</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<Card><CardHeader className="pb-3"><CardTitle className="text-base">Pledges</CardTitle></CardHeader><CardContent><FinanceListSkeleton /></CardContent></Card>}>
+          <CampaignPledges campaignId={id} currency={currency} />
+        </Suspense>
       </div>
     </div>
+  )
+}
+
+async function CampaignDonations({ campaignId, currency }: { campaignId: string; currency: string }) {
+  const supabase = await createClient()
+  const { data: donations } = await supabase
+    .from('donations')
+    .select('id, amount, currency, donation_date, is_anonymous, donor:profiles!donor_id(full_name, full_name_ar)')
+    .eq('campaign_id', campaignId)
+    .order('donation_date', { ascending: false })
+    .limit(50)
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Users className="w-4 h-4" />
+          Donations ({donations?.length ?? 0})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="divide-y max-h-80 overflow-y-auto">
+          {(donations as any[] || []).map((d: any) => (
+            <div key={d.id} className="px-4 py-2.5 flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium">
+                  {d.is_anonymous ? 'Anonymous' : (d.donor?.full_name || 'Unknown')}
+                </p>
+                <p className="text-xs text-muted-foreground">{d.donation_date}</p>
+              </div>
+              <p className="font-mono tabular-nums text-sm font-semibold">
+                {fmt(d.amount, d.currency || currency)}
+              </p>
+            </div>
+          ))}
+          {(!donations || donations.length === 0) && (
+            <p className="px-4 py-6 text-sm text-muted-foreground text-center">No donations yet</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+async function CampaignPledges({ campaignId, currency }: { campaignId: string; currency: string }) {
+  const supabase = await createClient()
+  const { data: pledges } = await supabase
+    .from('pledges')
+    .select('id, total_amount, fulfilled_amount, currency, status, donor:profiles!donor_id(full_name)')
+    .eq('campaign_id', campaignId)
+    .order('created_at', { ascending: false })
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Target className="w-4 h-4" />
+          Pledges ({pledges?.length ?? 0})
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="divide-y max-h-80 overflow-y-auto">
+          {(pledges as any[] || []).map((p: any) => {
+            const fulfilled = p.fulfilled_amount || 0
+            const pledgePct = p.total_amount > 0 ? Math.min(100, (fulfilled / p.total_amount) * 100) : 0
+            return (
+              <div key={p.id} className="px-4 py-2.5 space-y-1">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium">{p.donor?.full_name || 'Unknown'}</p>
+                  <p className="font-mono tabular-nums text-sm">
+                    {fmt(fulfilled, currency)} / {fmt(p.total_amount, currency)}
+                  </p>
+                </div>
+                <div className="h-1 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pledgePct}%` }} />
+                </div>
+              </div>
+            )
+          })}
+          {(!pledges || pledges.length === 0) && (
+            <p className="px-4 py-6 text-sm text-muted-foreground text-center">No pledges yet</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

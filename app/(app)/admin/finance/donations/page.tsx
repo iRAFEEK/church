@@ -6,25 +6,24 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Plus, Download, HandCoins, Users, Filter } from 'lucide-react'
-import { getLocale } from 'next-intl/server'
-import type { DonationWithDonor } from '@/types'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; fund_id?: string; method?: string; date_from?: string; date_to?: string }
 const PAGE_SIZE = 25
 
-const METHOD_LABELS: Record<string, { en: string; ar: string }> = {
-  cash:           { en: 'Cash',          ar: 'نقد' },
-  check:          { en: 'Check',         ar: 'شيك' },
-  bank_transfer:  { en: 'Bank Transfer', ar: 'تحويل بنكي' },
-  credit_card:    { en: 'Card',          ar: 'بطاقة' },
-  online:         { en: 'Online',        ar: 'أونلاين' },
-  mobile_payment: { en: 'Mobile',        ar: 'موبايل' },
-  in_kind:        { en: 'In-Kind',       ar: 'عيني' },
-  other:          { en: 'Other',         ar: 'أخرى' },
+const METHOD_KEYS: Record<string, string> = {
+  cash: 'cash',
+  check: 'check',
+  bank_transfer: 'bankTransfer',
+  credit_card: 'creditCard',
+  online: 'online',
+  mobile_payment: 'mobilePayment',
+  in_kind: 'inKind',
+  other: 'other',
 }
 
 function formatCurrency(amount: number, currency = 'USD', locale = 'en') {
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
     style: 'currency', currency,
     minimumFractionDigits: 0, maximumFractionDigits: 0,
   }).format(amount)
@@ -34,7 +33,8 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
   const { profile } = await requirePermission('can_manage_donations')
   const supabase = await createClient()
   const locale = await getLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
+  const t = await getTranslations('finance')
   const params = await searchParams
 
   const page = parseInt(params.page || '1')
@@ -44,7 +44,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
   let query = supabase
     .from('donations')
     .select(`
-      *,
+      id, amount, currency, base_amount, donation_date, payment_method, receipt_number, is_anonymous, is_tithe,
       donor:donor_id ( id, first_name, last_name, first_name_ar, last_name_ar, photo_url ),
       fund:fund_id ( id, name, name_ar ),
       campaign:campaign_id ( id, name, name_ar )
@@ -58,47 +58,46 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
   if (params.date_from) query = query.gte('donation_date', params.date_from)
   if (params.date_to) query = query.lte('donation_date', params.date_to)
 
-  const { data: donations, count } = await query
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]
 
-  // Summary stats
-  const { data: stats } = await supabase
-    .from('donations')
-    .select('base_amount, payment_method')
-    .eq('church_id', profile.church_id)
-    .gte('donation_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
+  const [{ data: donations, count }, { data: stats }, { data: funds }] = await Promise.all([
+    query,
+    supabase
+      .from('donations')
+      .select('base_amount')
+      .eq('church_id', profile.church_id)
+      .gte('donation_date', startOfMonth),
+    supabase
+      .from('funds')
+      .select('id, name, name_ar')
+      .eq('church_id', profile.church_id)
+      .eq('is_active', true)
+      .order('name'),
+  ])
 
-  const totalThisMonth = (stats || []).reduce((s, d) => s + (d.base_amount || 0), 0)
-
-  // Funds for filter
-  const { data: funds } = await supabase
-    .from('funds')
-    .select('id, name, name_ar')
-    .eq('church_id', profile.church_id)
-    .eq('is_active', true)
-    .order('name')
-
+  const totalThisMonth = (stats || []).reduce((s: number, d: any) => s + (d.base_amount || 0), 0)
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{isAr ? 'التبرعات' : 'Donations'}</h1>
+          <h1 className="text-2xl font-bold">{t('donations')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {count} {isAr ? 'سجل تبرع' : 'donation records'}
+            {count} {t('donationRecords')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href="/admin/finance/donations/batch">
               <Users className="w-4 h-4 me-2" />
-              {isAr ? 'دفعة جماعية' : 'Batch Entry'}
+              {t('batchEntry')}
             </Link>
           </Button>
           <Button size="sm" asChild>
             <Link href="/admin/finance/donations/new">
               <Plus className="w-4 h-4 me-2" />
-              {isAr ? 'تبرع جديد' : 'New Donation'}
+              {t('newDonation')}
             </Link>
           </Button>
         </div>
@@ -108,11 +107,11 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
       <Card>
         <CardContent className="pt-4 pb-4 flex gap-6">
           <div>
-            <p className="text-xs text-muted-foreground">{isAr ? 'هذا الشهر' : 'This Month'}</p>
+            <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
             <p className="text-lg font-bold">{formatCurrency(totalThisMonth, 'USD', locale)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي السجلات' : 'Total Records'}</p>
+            <p className="text-xs text-muted-foreground">{t('totalRecords')}</p>
             <p className="text-lg font-bold">{count || 0}</p>
           </div>
         </CardContent>
@@ -123,22 +122,22 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <CardContent className="pt-4 pb-4">
           <form className="flex flex-wrap gap-3 items-center">
             <select name="fund_id" defaultValue={params.fund_id || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-              <option value="">{isAr ? 'كل الصناديق' : 'All Funds'}</option>
+              <option value="">{t('allFunds')}</option>
               {(funds || []).map((f) => (
                 <option key={f.id} value={f.id}>{isAr ? f.name_ar || f.name : f.name}</option>
               ))}
             </select>
             <select name="method" defaultValue={params.method || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-              <option value="">{isAr ? 'كل الطرق' : 'All Methods'}</option>
-              {Object.entries(METHOD_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{isAr ? v.ar : v.en}</option>
+              <option value="">{t('allMethods')}</option>
+              {Object.entries(METHOD_KEYS).map(([k, tKey]) => (
+                <option key={k} value={k}>{t(tKey)}</option>
               ))}
             </select>
             <input type="date" name="date_from" defaultValue={params.date_from || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
             <input type="date" name="date_to" defaultValue={params.date_to || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
             <Button type="submit" variant="outline" size="sm">
               <Filter className="w-4 h-4 me-1" />
-              {isAr ? 'تطبيق' : 'Filter'}
+              {t('apply')}
             </Button>
           </form>
         </CardContent>
@@ -149,9 +148,9 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <CardContent className="p-0">
           {/* Mobile card list */}
           <div className="md:hidden divide-y">
-            {(donations as DonationWithDonor[] || []).map((d) => {
+            {(donations as any[] || []).map((d) => {
               const donorName = d.is_anonymous
-                ? (isAr ? 'مجهول' : 'Anonymous')
+                ? t('anonymous')
                 : d.donor
                   ? `${isAr ? d.donor.first_name_ar || d.donor.first_name : d.donor.first_name} ${isAr ? d.donor.last_name_ar || d.donor.last_name : d.donor.last_name}`
                   : '—'
@@ -160,7 +159,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <p className="font-medium text-sm truncate">{donorName}</p>
-                      {d.is_tithe && <Badge variant="outline" className="text-xs shrink-0">{isAr ? 'عشور' : 'Tithe'}</Badge>}
+                      {d.is_tithe && <Badge variant="outline" className="text-xs shrink-0">{t('tithe')}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {d.fund ? (isAr ? d.fund.name_ar || d.fund.name : d.fund.name) : '—'} · {d.donation_date}
@@ -169,7 +168,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <p className="font-bold text-sm text-green-700" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
                     <Badge variant="secondary" className="text-xs">
-                      {isAr ? METHOD_LABELS[d.payment_method]?.ar : METHOD_LABELS[d.payment_method]?.en}
+                      {t(METHOD_KEYS[d.payment_method] || 'other')}
                     </Badge>
                   </div>
                 </div>
@@ -177,7 +176,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
             })}
             {(donations || []).length === 0 && (
               <p className="px-4 py-8 text-center text-muted-foreground text-sm">
-                {isAr ? 'لا توجد تبرعات' : 'No donations found'}
+                {t('noDonationsFound')}
               </p>
             )}
           </div>
@@ -187,16 +186,16 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'المتبرع' : 'Donor'}</th>
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'المبلغ' : 'Amount'}</th>
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'الصندوق' : 'Fund'}</th>
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'الطريقة' : 'Method'}</th>
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'التاريخ' : 'Date'}</th>
-                  <th className="text-start px-4 py-3 font-medium">{isAr ? 'الإيصال' : 'Receipt'}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('donor')}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('amount')}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('fund')}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('paymentMethod')}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('date')}</th>
+                  <th className="text-start px-4 py-3 font-medium">{t('receipt')}</th>
                 </tr>
               </thead>
               <tbody>
-                {(donations as DonationWithDonor[] || []).map((d) => (
+                {(donations as any[] || []).map((d) => (
                   <tr key={d.id} className="border-b hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -207,12 +206,12 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                         </Avatar>
                         <span>
                           {d.is_anonymous
-                            ? (isAr ? 'مجهول' : 'Anonymous')
+                            ? t('anonymous')
                             : d.donor
                               ? `${isAr ? d.donor.first_name_ar || d.donor.first_name : d.donor.first_name} ${isAr ? d.donor.last_name_ar || d.donor.last_name : d.donor.last_name}`
-                              : (isAr ? 'غير محدد' : '—')}
+                              : '—'}
                         </span>
-                        {d.is_tithe && <Badge variant="outline" className="text-xs">{isAr ? 'عشور' : 'Tithe'}</Badge>}
+                        {d.is_tithe && <Badge variant="outline" className="text-xs">{t('tithe')}</Badge>}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-bold text-green-700">
@@ -223,7 +222,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant="secondary" className="text-xs">
-                        {isAr ? METHOD_LABELS[d.payment_method]?.ar : METHOD_LABELS[d.payment_method]?.en}
+                        {t(METHOD_KEYS[d.payment_method] || 'other')}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{d.donation_date}</td>
@@ -233,7 +232,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                 {(donations || []).length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                      {isAr ? 'لا توجد تبرعات' : 'No donations found'}
+                      {t('noDonationsFound')}
                     </td>
                   </tr>
                 )}
@@ -245,17 +244,17 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t">
               <p className="text-sm text-muted-foreground">
-                {isAr ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
+                {t('pageOf', { page, total: totalPages })}
               </p>
               <div className="flex gap-2">
                 {page > 1 && (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`?page=${page - 1}`}>{isAr ? 'السابق' : 'Previous'}</Link>
+                    <Link href={`?page=${page - 1}`}>{t('previous')}</Link>
                   </Button>
                 )}
                 {page < totalPages && (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`?page=${page + 1}`}>{isAr ? 'التالي' : 'Next'}</Link>
+                    <Link href={`?page=${page + 1}`}>{t('next')}</Link>
                   </Button>
                 )}
               </div>

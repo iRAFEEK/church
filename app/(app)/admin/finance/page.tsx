@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
@@ -5,14 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  DollarSign, TrendingUp, TrendingDown, HandCoins, Receipt,
-  Target, Wallet, ArrowRight, Clock, CheckCircle2, AlertCircle,
+  DollarSign, TrendingUp, HandCoins, Receipt,
+  Target, Wallet, ArrowRight, Clock,
 } from 'lucide-react'
-import { getLocale } from 'next-intl/server'
-import type { Fund, Campaign, DonationWithDonor, ExpenseRequest } from '@/types'
+import { getLocale, getTranslations } from 'next-intl/server'
+import type { DonationWithDonor } from '@/types'
+import { FinanceSkeleton } from '@/components/finance/FinanceSkeleton'
 
 function formatCurrency(amount: number, currency = 'USD', locale = 'en') {
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
@@ -21,16 +23,55 @@ function formatCurrency(amount: number, currency = 'USD', locale = 'en') {
 }
 
 export default async function FinanceDashboardPage() {
-  const { profile } = await requirePermission('can_view_finances')
+  const { profile, church } = await requirePermission('can_view_finances')
+  const t = await getTranslations('finance')
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{t('dashboard')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('overview')}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild size="sm">
+            <Link href="/admin/finance/donations/new">
+              <HandCoins className="w-4 h-4 me-2" />
+              {t('recordDonation')}
+            </Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/admin/finance/expenses/new">
+              <Receipt className="w-4 h-4 me-2" />
+              {t('expenseRequest')}
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <Suspense fallback={<FinanceSkeleton />}>
+        <DashboardContent
+          churchId={profile.church_id}
+          defaultCurrency={(church as any)?.default_currency || 'USD'}
+        />
+      </Suspense>
+    </div>
+  )
+}
+
+async function DashboardContent({ churchId, defaultCurrency }: { churchId: string; defaultCurrency: string }) {
   const supabase = await createClient()
   const locale = await getLocale()
+  const t = await getTranslations('finance')
+  const isAr = locale.startsWith('ar')
+  const currency = defaultCurrency
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0]
   const today = now.toISOString().split('T')[0]
 
-  // Fetch in parallel
   const [
     { data: funds },
     { data: donationsThisMonth },
@@ -39,21 +80,18 @@ export default async function FinanceDashboardPage() {
     { data: pendingExpenses },
     { data: activeCampaigns },
   ] = await Promise.all([
-    supabase.from('funds').select('*').eq('church_id', profile.church_id).eq('is_active', true).order('display_order'),
-    supabase.from('donations').select('base_amount').eq('church_id', profile.church_id).gte('donation_date', startOfMonth).lte('donation_date', today),
-    supabase.from('donations').select('base_amount').eq('church_id', profile.church_id).gte('donation_date', startOfYear).lte('donation_date', today),
-    supabase.from('donations').select('*, donor:donor_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url), fund:fund_id(id, name, name_ar)').eq('church_id', profile.church_id).order('donation_date', { ascending: false }).limit(5),
-    supabase.from('expense_requests').select('id, amount, currency, description, status, requested_by, created_at, requester:requested_by(id, first_name, last_name, first_name_ar, last_name_ar)').eq('church_id', profile.church_id).in('status', ['submitted', 'approved']).order('created_at', { ascending: false }),
-    supabase.from('campaigns').select('*').eq('church_id', profile.church_id).eq('status', 'active').order('start_date', { ascending: false }).limit(4),
+    supabase.from('funds').select('id, name, name_ar, current_balance, target_amount, is_restricted').eq('church_id', churchId).eq('is_active', true).order('display_order'),
+    supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfMonth).lte('donation_date', today),
+    supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfYear).lte('donation_date', today),
+    supabase.from('donations').select('*, donor:donor_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url), fund:fund_id(id, name, name_ar)').eq('church_id', churchId).order('donation_date', { ascending: false }).limit(5),
+    supabase.from('expense_requests').select('id, amount, currency, description, status, requested_by, created_at, requester:requested_by(id, first_name, last_name, first_name_ar, last_name_ar)').eq('church_id', churchId).in('status', ['submitted', 'approved']).order('created_at', { ascending: false }),
+    supabase.from('campaigns').select('id, name, name_ar, goal_amount, raised_amount, currency').eq('church_id', churchId).eq('status', 'active').order('start_date', { ascending: false }).limit(4),
   ])
 
   const totalIncomeThisMonth = (donationsThisMonth || []).reduce((s, d) => s + (d.base_amount || 0), 0)
   const totalIncomeThisYear = (donationsThisYear || []).reduce((s, d) => s + (d.base_amount || 0), 0)
   const pendingCount = (pendingExpenses || []).filter((e) => e.status === 'submitted').length
   const pendingAmount = (pendingExpenses || []).filter((e) => e.status === 'submitted').reduce((s, e) => s + (e.amount || 0), 0)
-
-  const isAr = locale === 'ar'
-  const currency = 'USD' // TODO: from church settings
 
   const expenseStatusColor: Record<string, string> = {
     submitted: 'bg-yellow-100 text-yellow-800',
@@ -63,38 +101,14 @@ export default async function FinanceDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{isAr ? 'لوحة المالية' : 'Financial Dashboard'}</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {isAr ? 'نظرة عامة على الوضع المالي للكنيسة' : 'Overview of your church finances'}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild size="sm">
-            <Link href="/admin/finance/donations/new">
-              <HandCoins className="w-4 h-4 me-2" />
-              {isAr ? 'تسجيل تبرع' : 'Record Donation'}
-            </Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/admin/finance/expenses/new">
-              <Receipt className="w-4 h-4 me-2" />
-              {isAr ? 'طلب مصروف' : 'Expense Request'}
-            </Link>
-          </Button>
-        </div>
-      </div>
-
+    <>
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تبرعات هذا الشهر' : 'Income This Month'}</p>
+                <p className="text-xs text-muted-foreground">{t('incomeThisMonth')}</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(totalIncomeThisMonth, currency, locale)}</p>
               </div>
               <div className="p-2 bg-green-100 rounded-full">
@@ -108,7 +122,7 @@ export default async function FinanceDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تبرعات هذا العام' : 'Income This Year'}</p>
+                <p className="text-xs text-muted-foreground">{t('incomeThisYear')}</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(totalIncomeThisYear, currency, locale)}</p>
               </div>
               <div className="p-2 bg-blue-100 rounded-full">
@@ -122,7 +136,7 @@ export default async function FinanceDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'طلبات مصروفات معلقة' : 'Pending Expenses'}</p>
+                <p className="text-xs text-muted-foreground">{t('pendingExpenses')}</p>
                 <p className="text-2xl font-bold mt-1">{pendingCount}</p>
                 {pendingAmount > 0 && (
                   <p className="text-xs text-muted-foreground">{formatCurrency(pendingAmount, currency, locale)}</p>
@@ -139,7 +153,7 @@ export default async function FinanceDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'حملات نشطة' : 'Active Campaigns'}</p>
+                <p className="text-xs text-muted-foreground">{t('activeCampaigns')}</p>
                 <p className="text-2xl font-bold mt-1">{(activeCampaigns || []).length}</p>
               </div>
               <div className="p-2 bg-purple-100 rounded-full">
@@ -156,7 +170,7 @@ export default async function FinanceDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Wallet className="w-4 h-4" />
-              {isAr ? 'أرصدة الصناديق' : 'Fund Balances'}
+              {t('fundBalances')}
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/funds">
@@ -166,9 +180,9 @@ export default async function FinanceDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {(funds || []).length === 0 ? (
-              <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد صناديق' : 'No funds yet'}</p>
+              <p className="text-muted-foreground text-sm">{t('noFundsYet')}</p>
             ) : (
-              (funds || []).map((fund: Fund) => (
+              (funds || []).map((fund) => (
                 <div key={fund.id} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{isAr ? fund.name_ar || fund.name : fund.name}</span>
@@ -183,14 +197,14 @@ export default async function FinanceDashboardPage() {
                     </div>
                   )}
                   {fund.is_restricted && (
-                    <span className="text-xs text-orange-600">{isAr ? 'مقيّد' : 'Restricted'}</span>
+                    <span className="text-xs text-orange-600">{t('restricted')}</span>
                   )}
                 </div>
               ))
             )}
             <Button variant="outline" className="w-full mt-2" size="sm" asChild>
               <Link href="/admin/finance/funds">
-                {isAr ? 'إدارة الصناديق' : 'Manage Funds'}
+                {t('manageFunds')}
               </Link>
             </Button>
           </CardContent>
@@ -201,7 +215,7 @@ export default async function FinanceDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <HandCoins className="w-4 h-4" />
-              {isAr ? 'آخر التبرعات' : 'Recent Donations'}
+              {t('recentDonations')}
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/donations">
@@ -211,7 +225,7 @@ export default async function FinanceDashboardPage() {
           </CardHeader>
           <CardContent>
             {(recentDonations || []).length === 0 ? (
-              <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد تبرعات بعد' : 'No donations yet'}</p>
+              <p className="text-muted-foreground text-sm">{t('noDonationsYet')}</p>
             ) : (
               <div className="space-y-3">
                 {(recentDonations as DonationWithDonor[]).map((d) => (
@@ -223,10 +237,10 @@ export default async function FinanceDashboardPage() {
                       <div>
                         <p className="text-sm font-medium">
                           {d.is_anonymous
-                            ? (isAr ? 'مجهول' : 'Anonymous')
+                            ? t('anonymous')
                             : d.donor
                               ? `${isAr ? d.donor.first_name_ar || d.donor.first_name : d.donor.first_name} ${isAr ? d.donor.last_name_ar || d.donor.last_name : d.donor.last_name}`
-                              : (isAr ? 'غير محدد' : 'Unknown')}
+                              : t('unknown')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {d.fund ? (isAr ? d.fund.name_ar || d.fund.name : d.fund.name) : ''} · {d.donation_date}
@@ -248,7 +262,7 @@ export default async function FinanceDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Receipt className="w-4 h-4" />
-              {isAr ? 'طلبات المصروفات' : 'Expense Requests'}
+              {t('expenseRequests')}
               {pendingCount > 0 && (
                 <Badge variant="destructive" className="text-xs">{pendingCount}</Badge>
               )}
@@ -261,7 +275,7 @@ export default async function FinanceDashboardPage() {
           </CardHeader>
           <CardContent>
             {(pendingExpenses || []).length === 0 ? (
-              <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد طلبات معلقة' : 'No pending requests'}</p>
+              <p className="text-muted-foreground text-sm">{t('noPendingRequests')}</p>
             ) : (
               <div className="space-y-2">
                 {(pendingExpenses as any[]).slice(0, 5).map((e) => (
@@ -288,7 +302,7 @@ export default async function FinanceDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Target className="w-4 h-4" />
-              {isAr ? 'الحملات النشطة' : 'Active Campaigns'}
+              {t('activeCampaigns')}
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/campaigns">
@@ -298,10 +312,10 @@ export default async function FinanceDashboardPage() {
           </CardHeader>
           <CardContent>
             {(activeCampaigns || []).length === 0 ? (
-              <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد حملات نشطة' : 'No active campaigns'}</p>
+              <p className="text-muted-foreground text-sm">{t('noActiveCampaigns')}</p>
             ) : (
               <div className="space-y-4">
-                {(activeCampaigns as Campaign[]).map((c) => {
+                {(activeCampaigns || []).map((c) => {
                   const pct = c.goal_amount > 0 ? Math.min(100, (c.raised_amount / c.goal_amount) * 100) : 0
                   return (
                     <div key={c.id}>
@@ -313,8 +327,8 @@ export default async function FinanceDashboardPage() {
                         <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>{formatCurrency(c.raised_amount, c.currency, locale)} {isAr ? 'تم جمعه' : 'raised'}</span>
-                        <span>{isAr ? 'الهدف' : 'Goal'}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
+                        <span>{formatCurrency(c.raised_amount, c.currency, locale)} {t('raised')}</span>
+                        <span>{t('goal')}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
                       </div>
                     </div>
                   )
@@ -324,6 +338,6 @@ export default async function FinanceDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   )
 }

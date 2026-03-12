@@ -13,7 +13,7 @@ interface ServingAreaCardProps {
 export function ServingAreaCard({ area, admin }: ServingAreaCardProps) {
   const t = useTranslations('serving')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const name = isAr ? (area.name_ar || area.name) : area.name
   const description = isAr ? (area.description_ar || area.description) : area.description

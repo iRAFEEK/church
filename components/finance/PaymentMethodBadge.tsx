@@ -22,7 +22,7 @@ export function PaymentMethodBadge({ method, locale = 'en' }: PaymentMethodBadge
   const config = METHOD_CONFIG[method] ?? { label: method, label_ar: method, variant: 'secondary' as const }
   return (
     <Badge variant={config.variant}>
-      {locale === 'ar' ? config.label_ar : config.label}
+      {locale.startsWith('ar') ? config.label_ar : config.label}
     </Badge>
   )
 }

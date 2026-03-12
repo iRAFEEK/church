@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const locale = await getLocale()
   const supabase = await createClient()
 
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const firstName = isRTL
     ? (profile.first_name_ar || profile.first_name || t('fallbackUser'))
     : (profile.first_name || profile.first_name_ar || t('fallbackUser'))

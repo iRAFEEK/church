@@ -29,7 +29,7 @@ interface MinistryOption {
 export function EventAudienceSelector({ value, onChange }: Props) {
   const t = useTranslations('eventVisibility')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [ministries, setMinistries] = useState<MinistryOption[]>([])
   const [groups, setGroups] = useState<MinistryOption[]>([])
   const [loading, setLoading] = useState(false)

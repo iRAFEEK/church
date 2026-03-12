@@ -25,7 +25,7 @@ const FONT_MAP: Record<string, string> = {
 export function SongPresenter({ song }: SongPresenterProps) {
   const t = useTranslations('songs')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
   const slides = lyrics
