@@ -21,7 +21,7 @@ interface ServiceNeedItem {
 export function LeaderServiceNeeds() {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [needs, setNeeds] = useState<ServiceNeedItem[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -3,10 +3,11 @@ import { cookies } from 'next/headers'
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies()
-  const locale = cookieStore.get('lang')?.value ?? 'en'
-  const valid = ['en', 'ar', 'ar-eg'].includes(locale) ? locale : 'en'
+  const raw = cookieStore.get('lang')?.value ?? 'en'
+  // Normalize locale: ar-eg, ar-SA, etc. → ar (matches messages/ar.json)
+  const locale = raw.startsWith('ar') ? 'ar' : raw === 'en' ? 'en' : 'en'
   return {
-    locale: valid,
-    messages: (await import(`../messages/${valid}.json`)).default,
+    locale,
+    messages: (await import(`../messages/${locale}.json`)).default,
   }
 })

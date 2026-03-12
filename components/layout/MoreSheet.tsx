@@ -54,7 +54,7 @@ export function MoreSheet({
   const locale = useLocale()
   const t = useTranslations('moreSheet')
   const sidebarT = useTranslations('sidebar')
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const displayName = isRTL
     ? `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim() || profile.email || ''

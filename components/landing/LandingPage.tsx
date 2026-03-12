@@ -13,7 +13,7 @@ interface LandingPageProps {
 
 export async function LandingPage({ church, leaders }: LandingPageProps) {
   const locale = await getLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const churchName = isRTL ? (church.name_ar ?? church.name) : church.name
   const welcomeMessage = isRTL

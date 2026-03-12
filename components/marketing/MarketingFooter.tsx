@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils'
 const LANGUAGES = [
   { code: 'en', label: 'English' },
   { code: 'ar', label: 'العربية' },
-  { code: 'ar-eg', label: 'مصري' },
 ] as const
 
 function switchLanguage(code: string) {

@@ -16,7 +16,7 @@ interface EventServiceFulfillmentProps {
 export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const [needs, setNeeds] = useState<EventServiceNeedWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedNeed, setExpandedNeed] = useState<string | null>(null)

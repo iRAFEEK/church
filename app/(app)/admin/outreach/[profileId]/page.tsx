@@ -44,7 +44,7 @@ interface Visit {
 export default function OutreachMemberDetailPage() {
   const t = useTranslations('outreach')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const params = useParams()
   const profileId = params.profileId as string
 

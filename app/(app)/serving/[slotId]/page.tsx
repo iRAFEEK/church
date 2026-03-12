@@ -14,7 +14,7 @@ export default function SlotDetailMemberPage() {
   const router = useRouter()
   const t = useTranslations('serving')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const [slot, setSlot] = useState<any>(null)
   const [loading, setLoading] = useState(true)

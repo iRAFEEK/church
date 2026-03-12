@@ -32,7 +32,7 @@ interface ServiceNeedsPickerProps {
 export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPickerProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [ministries, setMinistries] = useState<Ministry[]>([])
   const [groups, setGroups] = useState<Group[]>([])

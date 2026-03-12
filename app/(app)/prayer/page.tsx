@@ -41,7 +41,7 @@ interface AssignedPrayer {
 export default function PrayerPage() {
   const t = useTranslations('churchPrayer')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const [myPrayers, setMyPrayers] = useState<MyPrayer[]>([])
   const [assignedPrayers, setAssignedPrayers] = useState<AssignedPrayer[]>([])

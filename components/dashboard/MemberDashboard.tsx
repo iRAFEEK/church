@@ -17,7 +17,7 @@ interface Props {
 export function MemberDashboard({ data }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   return (
     <div className="space-y-6">

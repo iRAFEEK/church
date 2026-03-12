@@ -31,7 +31,7 @@ interface Props {
 export function VisitHistoryList({ visits, onDelete }: Props) {
   const t = useTranslations('outreach')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   if (visits.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-8">{t('noVisits')}</p>

@@ -59,8 +59,9 @@ class ResendProvider implements MessageProvider {
   }
 
   private buildHtml(body: string, locale?: string): string {
-    const dir = locale === 'ar' ? 'rtl' : 'ltr'
-    const fontFamily = locale === 'ar'
+    const loc = locale ?? 'en'
+    const dir = loc.startsWith('ar') ? 'rtl' : 'ltr'
+    const fontFamily = loc.startsWith('ar')
       ? "'Noto Sans Arabic', 'Segoe UI', sans-serif"
       : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
 

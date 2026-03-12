@@ -33,7 +33,7 @@ interface SegmentEditorProps {
 export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
   const t = useTranslations('templates')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [ministries, setMinistries] = useState<Ministry[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)

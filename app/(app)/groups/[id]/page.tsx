@@ -92,7 +92,7 @@ export default async function GroupLeaderPage({ params }: Params) {
     .eq('status', 'active')
     .order('created_at', { ascending: false })
 
-  const dateLocale = locale === 'ar' ? 'ar-LB' : 'en-US'
+  const dateLocale = locale.startsWith('ar') ? 'ar-LB' : 'en-US'
 
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
   const backHref = isAdmin ? '/admin/groups' : '/my-group'

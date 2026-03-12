@@ -13,7 +13,7 @@ interface ServingSlotCardProps {
 export function ServingSlotCard({ slot, admin }: ServingSlotCardProps) {
   const t = useTranslations('serving')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const title = isAr ? (slot.title_ar || slot.title) : slot.title
   const areaName = slot.serving_areas

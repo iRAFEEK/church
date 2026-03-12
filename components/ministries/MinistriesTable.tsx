@@ -29,7 +29,7 @@ type Ministry = {
 export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
   const t = useTranslations('ministries')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const router = useRouter()
   const [search, setSearch] = useState('')
 

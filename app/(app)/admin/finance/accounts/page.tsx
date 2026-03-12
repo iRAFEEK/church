@@ -1,10 +1,10 @@
+import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, ChevronRight } from 'lucide-react'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 type Account = {
   id: string
@@ -72,19 +72,16 @@ function AccountRow({ account, depth = 0 }: { account: Account & { children?: Ac
 }
 
 export default async function AccountsPage() {
+  const { profile, resolvedPermissions: perms } = await requirePermission('can_manage_finances')
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) redirect('/login')
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) redirect('/admin')
+  const locale = await getLocale()
+  const t = await getTranslations('finance')
+  const isAr = locale.startsWith('ar')
 
   const { data: accounts } = await supabase
     .from('accounts')
-    .select('*')
+    .select('id, code, name, name_ar, account_type, account_sub_type, current_balance, currency, is_header, is_active, parent_id, display_order')
     .eq('church_id', profile.church_id)
     .order('display_order', { ascending: true })
     .order('code', { ascending: true })
@@ -108,13 +105,13 @@ export default async function AccountsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Chart of Accounts / دليل الحسابات</h1>
-          <p className="text-muted-foreground text-sm">{accounts?.length ?? 0} accounts</p>
+          <h1 className="text-2xl font-bold">{t('chartOfAccounts')}</h1>
+          <p className="text-muted-foreground text-sm">{accounts?.length ?? 0} {t('accountsCount')}</p>
         </div>
         {perms.can_manage_finances && (
           <Button asChild>
             <Link href="/admin/finance/accounts/new">
-              <Plus className="w-4 h-4 me-2" />New Account
+              <Plus className="w-4 h-4 me-2" />{t('newAccount')}
             </Link>
           </Button>
         )}
@@ -123,7 +120,7 @@ export default async function AccountsPage() {
       {/* Mobile card list */}
       <div className="md:hidden border rounded-lg overflow-hidden divide-y">
         {(!accounts || accounts.length === 0) && (
-          <p className="px-4 py-8 text-center text-muted-foreground text-sm">No accounts found.</p>
+          <p className="px-4 py-8 text-center text-muted-foreground text-sm">{t('noAccounts')}</p>
         )}
         {typeGroups.map(type => {
           const groupAccts = (accounts || []).filter(a => a.account_type === type)
@@ -156,11 +153,11 @@ export default async function AccountsPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-start px-4 py-2 font-medium">Code</th>
-              <th className="text-start px-4 py-2 font-medium">Name</th>
-              <th className="text-start px-4 py-2 font-medium">Type</th>
-              <th className="text-end px-4 py-2 font-medium">Balance</th>
-              <th className="text-center px-4 py-2 font-medium">Active</th>
+              <th className="text-start px-4 py-2 font-medium">{t('code')}</th>
+              <th className="text-start px-4 py-2 font-medium">{t('name')}</th>
+              <th className="text-start px-4 py-2 font-medium">{t('type')}</th>
+              <th className="text-end px-4 py-2 font-medium">{t('balance')}</th>
+              <th className="text-center px-4 py-2 font-medium">{t('active')}</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -183,7 +180,7 @@ export default async function AccountsPage() {
             {(!accounts || accounts.length === 0) && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  No accounts found. The chart of accounts will be seeded when you set up your church finances.
+                  {t('noAccounts')}
                 </td>
               </tr>
             )}

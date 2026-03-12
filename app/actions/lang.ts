@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export async function setLanguage(lang: string, pathname: string) {
-  const valid = ['en', 'ar', 'ar-eg'].includes(lang) ? lang : 'en'
+  const valid = lang.startsWith('ar') ? 'ar' : lang === 'en' ? 'en' : 'en'
   const cookieStore = await cookies()
   cookieStore.set('lang', valid, {
     path: '/',

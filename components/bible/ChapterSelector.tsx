@@ -15,7 +15,7 @@ interface ChapterSelectorProps {
 export function ChapterSelector({ bookId, bookName, chapters, onSelect, onBack }: ChapterSelectorProps) {
   const t = useTranslations('bible')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const displayName = isAr && BIBLE_BOOKS_AR[bookId] ? BIBLE_BOOKS_AR[bookId] : bookName
 

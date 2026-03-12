@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -32,5 +33,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }

@@ -10,7 +10,7 @@ interface ServingSignupListProps {
 export function ServingSignupList({ signups }: ServingSignupListProps) {
   const t = useTranslations('serving')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const active = signups.filter(s => s.status !== 'cancelled')
 

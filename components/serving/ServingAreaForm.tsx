@@ -27,7 +27,7 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
   const t = useTranslations('serving')
   const tc = useTranslations('common')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
   const [ministries, setMinistries] = useState<Ministry[]>([])

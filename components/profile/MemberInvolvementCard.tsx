@@ -15,7 +15,7 @@ interface MemberInvolvementCardProps {
 export function MemberInvolvementCard({ profileId }: MemberInvolvementCardProps) {
   const t = useTranslations('involvement')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [data, setData] = useState<MemberInvolvementData | null>(null)
   const [loading, setLoading] = useState(true)

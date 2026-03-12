@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useTransition } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, ArrowRight } from 'lucide-react'
+import { Loader2, ArrowRight, Globe, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { setLanguage } from '@/app/actions/lang'
+import { cn } from '@/lib/utils'
 
 import { createClient } from '@/lib/supabase/client'
 import { PhotoUpload } from '@/components/profile/PhotoUpload'
@@ -44,10 +46,14 @@ function createEditSchema(t: (key: string) => string) {
 
 export default function ProfileEditPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const t = useTranslations('profileEdit')
+  const locale = useLocale()
+  const isAr = locale.startsWith('ar')
   const [isLoading, setIsLoading] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string>('')
+  const [, startLangTransition] = useTransition()
   const [loading, setLoading] = useState(true)
 
   const editSchema = createEditSchema(t)
@@ -134,8 +140,16 @@ export default function ProfileEditPage() {
 
     toast.success(t('toastSaveSuccess'))
     setIsLoading(false)
-    router.push('/profile')
-    router.refresh()
+    // If language changed, update cookie so entire app reflects new language
+    const newLang = values.preferred_language
+    if ((newLang === 'ar') !== isAr) {
+      startLangTransition(() => {
+        setLanguage(newLang, '/profile')
+      })
+    } else {
+      router.push('/profile')
+      router.refresh()
+    }
   }
 
   if (loading) {
@@ -294,6 +308,42 @@ export default function ProfileEditPage() {
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* Language */}
+              <FormField control={form.control} name="preferred_language" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    {t('languageLabel')}
+                  </FormLabel>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    {[
+                      { code: 'ar', label: t('languageAr') },
+                      { code: 'en', label: t('languageEn') },
+                    ].map((opt) => (
+                      <button
+                        key={opt.code}
+                        type="button"
+                        onClick={() => field.onChange(opt.code)}
+                        className={cn(
+                          'relative flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all',
+                          field.value === opt.code
+                            ? 'border-primary bg-primary/5 text-primary'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        {field.value === opt.code && (
+                          <Check className="h-4 w-4 shrink-0" />
+                        )}
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t('languageNote')}</p>
+                </FormItem>
+              )} />
+
+              <Separator />
 
               <div className="flex gap-3 justify-end pt-2">
                 <Button type="button" variant="outline" asChild>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('accounts')
-    .select('*')
+    .select('id, code, name, name_ar, account_type, account_sub_type, current_balance, currency, is_header, is_active, parent_id, display_order')
     .eq('church_id', profile.church_id)
     .order('display_order', { ascending: true })
     .order('code', { ascending: true })
@@ -34,7 +35,9 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
+  return NextResponse.json({ data }, {
+    headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
+  })
 }
 
 // POST /api/finance/accounts
@@ -57,5 +60,6 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }

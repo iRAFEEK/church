@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { revalidateTag } from 'next/cache'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -17,7 +18,9 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
+  return NextResponse.json({ data }, {
+    headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
+  })
 }
 
 export async function PATCH(req: NextRequest) {
@@ -38,7 +41,10 @@ export async function PATCH(req: NextRequest) {
   ]
   const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
 
-  const { data, error } = await supabase
+  // Use admin client to bypass RLS (churches UPDATE policy is super_admin-only,
+  // but permission check above already enforces can_manage_finances)
+  const adminClient = await createAdminClient()
+  const { data, error } = await adminClient
     .from('churches')
     .update(update)
     .eq('id', profile.church_id)
@@ -46,5 +52,6 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }

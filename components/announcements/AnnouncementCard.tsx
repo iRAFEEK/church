@@ -14,7 +14,7 @@ interface AnnouncementCardProps {
 export function AnnouncementCard({ announcement, admin }: AnnouncementCardProps) {
   const t = useTranslations('announcements')
   const locale = useLocale()
-  const isAr = locale === 'ar'
+  const isAr = locale.startsWith('ar')
 
   const title = isAr ? (announcement.title_ar || announcement.title) : announcement.title
   const body = isAr ? (announcement.body_ar || announcement.body) : announcement.body

@@ -18,7 +18,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
 
   const t = await getTranslations('events')
   const locale = await getLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const supabase = await createClient()
 
   const { data: event } = await supabase

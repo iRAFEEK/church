@@ -67,7 +67,7 @@ interface InlineStaffingManagerProps {
 export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const [needs, setNeeds] = useState<ServiceNeed[]>([])
   const [loading, setLoading] = useState(true)

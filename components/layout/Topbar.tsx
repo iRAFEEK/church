@@ -25,7 +25,7 @@ interface TopbarProps {
 export function Topbar({ profile, churchName, churchNameAr, onLangChange }: TopbarProps) {
   const locale = useLocale()
   const t = useTranslations('topbar')
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const displayName = isRTL
     ? `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim() || profile.email || ''

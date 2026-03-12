@@ -46,7 +46,7 @@ export function SwipeAttendance({
 }: SwipeAttendanceProps) {
   const t = useTranslations('attendance')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
   const router = useRouter()
 
   const [members, setMembers] = useState(initialMembers)

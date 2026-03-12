@@ -19,7 +19,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
   const t = await getTranslations('serving')
   const cookieStore = await cookies()
   const lang = cookieStore.get('lang')?.value || 'ar'
-  const isAr = lang === 'ar'
+  const isAr = lang.startsWith('ar')
 
   const supabase = await createClient()
   const { data: slot } = await supabase

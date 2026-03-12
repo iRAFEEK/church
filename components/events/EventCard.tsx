@@ -26,7 +26,7 @@ interface EventCardProps {
 export function EventCard({ event, href }: EventCardProps) {
   const t = useTranslations('events')
   const locale = useLocale()
-  const isRTL = locale === 'ar'
+  const isRTL = locale.startsWith('ar')
 
   const title = isRTL ? (event.title_ar || event.title) : event.title
   const description = isRTL ? (event.description_ar || event.description) : event.description
