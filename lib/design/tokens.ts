@@ -38,6 +38,42 @@ export const PRAYER_STATUS_COLORS = {
   archived: { bg: 'bg-zinc-50',    text: 'text-zinc-500' },
 } as const
 
+export const NEED_URGENCY_COLORS = {
+  low:      'bg-green-100 text-green-800',
+  medium:   'bg-yellow-100 text-yellow-800',
+  high:     'bg-orange-100 text-orange-800',
+  critical: 'bg-red-100 text-red-800',
+} as const
+
+export const NEED_STATUS_COLORS = {
+  open:        'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
+  fulfilled:   'bg-purple-100 text-purple-800',
+  closed:      'bg-zinc-100 text-zinc-600',
+} as const
+
+export const NEED_CATEGORY_COLORS = {
+  furniture:   'bg-amber-50 text-amber-700',
+  electronics: 'bg-blue-50 text-blue-700',
+  supplies:    'bg-slate-50 text-slate-700',
+  food:        'bg-green-50 text-green-700',
+  clothing:    'bg-pink-50 text-pink-700',
+  building:    'bg-orange-50 text-orange-700',
+  vehicle:     'bg-indigo-50 text-indigo-700',
+  educational: 'bg-purple-50 text-purple-700',
+  medical:     'bg-red-50 text-red-700',
+  financial:   'bg-emerald-50 text-emerald-700',
+  volunteer:   'bg-cyan-50 text-cyan-700',
+  other:       'bg-zinc-50 text-zinc-700',
+} as const
+
+export const NEED_RESPONSE_STATUS_COLORS = {
+  pending:   'bg-yellow-100 text-yellow-800',
+  accepted:  'bg-green-100 text-green-800',
+  declined:  'bg-red-100 text-red-800',
+  completed: 'bg-blue-100 text-blue-800',
+} as const
+
 export type StatusKey = keyof typeof STATUS_COLORS
 export type RoleKey = keyof typeof ROLE_COLORS
 export type VisitorStatusKey = keyof typeof VISITOR_STATUS_COLORS

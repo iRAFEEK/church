@@ -429,6 +429,119 @@ export async function notifyAssignmentResponse(assignmentId: string, churchId: s
 }
 
 /**
+ * Notify the need-owner church's admin when another church offers help.
+ * Called from POST /api/community/needs/[id]/responses
+ */
+export async function notifyNeedResponseReceived(
+  needId: string,
+  responderChurchId: string,
+  message: string
+) {
+  try {
+    const supabase = await createClient()
+
+    // Get need + owner church info
+    const { data: need } = await supabase
+      .from('church_needs')
+      .select('title, title_ar, church_id, created_by')
+      .eq('id', needId)
+      .single()
+
+    if (!need) return
+
+    // Get responder church name
+    const { data: responderChurch } = await supabase
+      .from('churches')
+      .select('name, name_ar')
+      .eq('id', responderChurchId)
+      .single()
+
+    if (!responderChurch) return
+
+    const needTitle = need.title_ar || need.title
+    const churchName = responderChurch.name_ar || responderChurch.name
+    const template = TEMPLATES.need_response_received
+    const truncatedMessage = message.length > 100 ? message.slice(0, 100) + '…' : message
+
+    await sendNotification({
+      profileId: need.created_by,
+      churchId: need.church_id,
+      type: 'need_response_received',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { churchName, needTitle, message: truncatedMessage }),
+      bodyAr: interpolate(template.bodyAr, { churchName, needTitle, message: truncatedMessage }),
+      referenceId: needId,
+      referenceType: 'church_need',
+      data: { churchName, needTitle, message: truncatedMessage },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyNeedResponseReceived error:', error)
+  }
+}
+
+/**
+ * Notify the responder church's user when need owner accepts/declines/completes their offer.
+ * Called from PATCH /api/community/needs/[id]/responses/[responseId]
+ */
+export async function notifyNeedResponseStatusChanged(
+  needId: string,
+  responseId: string,
+  newStatus: 'accepted' | 'declined' | 'completed'
+) {
+  try {
+    const supabase = await createClient()
+
+    // Get response + responder info
+    const { data: response } = await supabase
+      .from('church_need_responses')
+      .select('responder_user_id, responder_church_id')
+      .eq('id', responseId)
+      .single()
+
+    if (!response) return
+
+    // Get need + owner church info
+    const { data: need } = await supabase
+      .from('church_needs')
+      .select('title, title_ar, church_id')
+      .eq('id', needId)
+      .single()
+
+    if (!need) return
+
+    const { data: ownerChurch } = await supabase
+      .from('churches')
+      .select('name, name_ar')
+      .eq('id', need.church_id)
+      .single()
+
+    if (!ownerChurch) return
+
+    const needTitle = need.title_ar || need.title
+    const churchName = ownerChurch.name_ar || ownerChurch.name
+    const statusMap: Record<string, string> = { accepted: 'accepted', declined: 'declined', completed: 'completed' }
+    const statusArMap: Record<string, string> = { accepted: 'قبول', declined: 'رفض', completed: 'إتمام' }
+    const template = TEMPLATES.need_response_status_changed
+
+    await sendNotification({
+      profileId: response.responder_user_id,
+      churchId: response.responder_church_id,
+      type: 'need_response_status_changed',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { needTitle, status: statusMap[newStatus], churchName }),
+      bodyAr: interpolate(template.bodyAr, { needTitle, statusAr: statusArMap[newStatus], churchName }),
+      referenceId: needId,
+      referenceType: 'church_need',
+      data: { needTitle, status: statusMap[newStatus], statusAr: statusArMap[newStatus], churchName },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyNeedResponseStatusChanged error:', error)
+  }
+}
+
+/**
  * Send gathering reminder to all group members.
  * Called by a cron/scheduled function.
  */

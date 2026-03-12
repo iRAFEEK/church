@@ -10,5 +10,18 @@
       "Bash(npx tsx:*)",
       "WebFetch(domain:bible.helloao.org)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"$CLAUDE_TOOL_INPUT\" | grep -q \"CLAUDE.md\" && bash .claude/scripts/post-feature-optimize.sh || true'"
+          }
+        ]
+      }
+    ]
   }
 }
