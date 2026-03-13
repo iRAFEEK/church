@@ -7,76 +7,68 @@ import { CreateTransactionSchema } from '@/lib/schemas/transaction'
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
-  const fund_id = searchParams.get('fund_id')
-  const date_from = searchParams.get('date_from')
-  const date_to = searchParams.get('date_to')
+  const fundId = searchParams.get('fund_id')
+  const dateFrom = searchParams.get('date_from')
+  const dateTo = searchParams.get('date_to')
   const page = parseInt(searchParams.get('page') || '1')
-  const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
-  const offset = (page - 1) * limit
+  const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '25'), 100)
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
 
   let query = supabase
     .from('financial_transactions')
-    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at, created_by_profile:profiles!created_by(full_name)', { count: 'exact' })
+    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('transaction_date', { ascending: false })
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    .range(from, to)
 
   if (status) query = query.eq('status', status)
-  if (fund_id) query = query.eq('fund_id', fund_id)
-  if (date_from) query = query.gte('transaction_date', date_from)
-  if (date_to) query = query.lte('transaction_date', date_to)
+  if (fundId) query = query.eq('fund_id', fundId)
+  if (dateFrom) query = query.gte('transaction_date', dateFrom)
+  if (dateTo) query = query.lte('transaction_date', dateTo)
 
   const { data, error, count } = await query
   if (error) throw error
-  return Response.json({ data, count, page, limit }, {
+
+  return Response.json({
+    data,
+    count,
+    page,
+    pageSize,
+    totalPages: Math.ceil((count || 0) / pageSize),
+  }, {
     headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
 }, { requirePermissions: ['can_view_finances'] })
 
-// POST /api/finance/transactions
+// POST /api/finance/transactions — atomic creation with line items via RPC
 export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
   const validated = validate(CreateTransactionSchema, body)
 
-  // Validate balanced journal entry
-  const totalDebits = validated.line_items.reduce((s, l) => s + (l.debit_amount || 0), 0)
-  const totalCredits = validated.line_items.reduce((s, l) => s + (l.credit_amount || 0), 0)
-  if (Math.abs(totalDebits - totalCredits) > 0.01) {
-    return Response.json({ error: 'Journal entry must be balanced (debits = credits)' }, { status: 422 })
+  // Use atomic RPC function — header + line items in one DB transaction
+  const { data, error } = await supabase.rpc('create_transaction_with_items', {
+    p_church_id: profile.church_id,
+    p_created_by: user.id,
+    p_transaction_date: validated.transaction_date,
+    p_description: validated.description,
+    p_memo: validated.memo ?? null,
+    p_reference_number: validated.reference_number ?? null,
+    p_total_amount: validated.total_amount ?? null,
+    p_currency: validated.currency,
+    p_fund_id: validated.fund_id ?? null,
+    p_line_items: JSON.stringify(validated.line_items),
+  })
+
+  if (error) {
+    // RPC raises exception for unbalanced transactions
+    if (error.message.includes('not balanced')) {
+      return Response.json({ error: 'Transaction is not balanced: debits must equal credits' }, { status: 422 })
+    }
+    throw error
   }
 
-  const { data: txn, error: txnError } = await supabase
-    .from('financial_transactions')
-    .insert({
-      transaction_date: validated.transaction_date,
-      description: validated.description,
-      memo: validated.memo,
-      reference_number: validated.reference_number,
-      total_amount: validated.total_amount ?? totalDebits,
-      currency: validated.currency,
-      fund_id: validated.fund_id,
-      church_id: profile.church_id,
-      created_by: user.id,
-      status: 'draft',
-    })
-    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at')
-    .single()
-
-  if (txnError) throw txnError
-
-  const items = validated.line_items.map((l) => ({
-    account_id: l.account_id,
-    debit_amount: l.debit_amount,
-    credit_amount: l.credit_amount,
-    description: l.description,
-    fund_id: l.fund_id,
-    transaction_id: txn.id,
-    church_id: profile.church_id,
-  }))
-  const { error: lineError } = await supabase.from('transaction_line_items').insert(items)
-  if (lineError) throw lineError
-
   revalidateTag(`dashboard-${profile.church_id}`)
-  return Response.json({ data: txn }, { status: 201 })
+  return Response.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_finances'] })
