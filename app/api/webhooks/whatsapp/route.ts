@@ -1,21 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/server'
 
 const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET
 
+/**
+ * Verify the HMAC-SHA256 signature from the X-Hub-Signature-256 header.
+ * Uses timing-safe comparison to prevent timing attacks.
+ */
+function verifyWebhookSignature(rawBody: string, signature: string, secret: string): boolean {
+  const expectedSignature = createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('hex')
+
+  // The header value may be prefixed with "sha256="
+  const providedHash = signature.startsWith('sha256=')
+    ? signature.slice(7)
+    : signature
+
+  try {
+    return timingSafeEqual(
+      Buffer.from(providedHash),
+      Buffer.from(expectedSignature)
+    )
+  } catch {
+    // timingSafeEqual throws if buffers have different lengths
+    return false
+  }
+}
+
 // POST /api/webhooks/whatsapp — receive delivery status from 360dialog
 export async function POST(req: NextRequest) {
   try {
-    // Verify webhook secret if configured
-    if (WHATSAPP_WEBHOOK_SECRET) {
-      const signature = req.headers.get('x-hub-signature-256') || ''
-      if (!signature) {
-        return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
-      }
-      // In production, verify HMAC signature here
+    // Fail closed: reject if webhook secret is not configured
+    if (!WHATSAPP_WEBHOOK_SECRET) {
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 403 })
     }
 
-    const body = await req.json()
+    // Read raw body for signature verification before parsing
+    const rawBody = await req.text()
+
+    // Verify HMAC-SHA256 signature
+    const signature = req.headers.get('x-hub-signature-256') || ''
+    if (!signature) {
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
+    }
+
+    if (!verifyWebhookSignature(rawBody, signature, WHATSAPP_WEBHOOK_SECRET)) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+
+    const body = JSON.parse(rawBody)
 
     // 360dialog sends statuses in this format
     const statuses = body?.entry?.[0]?.changes?.[0]?.value?.statuses
