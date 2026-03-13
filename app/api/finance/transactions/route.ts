@@ -1,26 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateTransactionSchema } from '@/lib/schemas/transaction'
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+// GET /api/finance/transactions
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const fund_id = searchParams.get('fund_id')
   const date_from = searchParams.get('date_from')
   const date_to = searchParams.get('date_to')
   const page = parseInt(searchParams.get('page') || '1')
-  const limit = parseInt(searchParams.get('limit') || '50')
+  const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
   const offset = (page - 1) * limit
 
   let query = supabase
@@ -37,53 +28,55 @@ export async function GET(req: NextRequest) {
   if (date_to) query = query.lte('transaction_date', date_to)
 
   const { data, error, count } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data, count, page, limit }, {
+  if (error) throw error
+  return Response.json({ data, count, page, limit }, {
     headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
-}
+}, { requirePermissions: ['can_view_finances'] })
 
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+// POST /api/finance/transactions
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
-  const { line_items, ...txnData } = body
+  const validated = validate(CreateTransactionSchema, body)
 
   // Validate balanced journal entry
-  if (line_items && line_items.length > 0) {
-    const totalDebits = line_items.reduce((s: number, l: any) => s + (l.debit_amount || 0), 0)
-    const totalCredits = line_items.reduce((s: number, l: any) => s + (l.credit_amount || 0), 0)
-    if (Math.abs(totalDebits - totalCredits) > 0.01) {
-      return NextResponse.json({ error: 'Journal entry must be balanced (debits = credits)' }, { status: 422 })
-    }
+  const totalDebits = validated.line_items.reduce((s, l) => s + (l.debit_amount || 0), 0)
+  const totalCredits = validated.line_items.reduce((s, l) => s + (l.credit_amount || 0), 0)
+  if (Math.abs(totalDebits - totalCredits) > 0.01) {
+    return Response.json({ error: 'Journal entry must be balanced (debits = credits)' }, { status: 422 })
   }
 
   const { data: txn, error: txnError } = await supabase
     .from('financial_transactions')
-    .insert({ ...txnData, church_id: profile.church_id, created_by: user.id, status: 'draft' })
-    .select()
+    .insert({
+      transaction_date: validated.transaction_date,
+      description: validated.description,
+      memo: validated.memo,
+      reference_number: validated.reference_number,
+      total_amount: validated.total_amount ?? totalDebits,
+      currency: validated.currency,
+      fund_id: validated.fund_id,
+      church_id: profile.church_id,
+      created_by: user.id,
+      status: 'draft',
+    })
+    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at')
     .single()
 
-  if (txnError) return NextResponse.json({ error: txnError.message }, { status: 500 })
+  if (txnError) throw txnError
 
-  if (line_items && line_items.length > 0) {
-    const items = line_items.map((l: any) => ({
-      ...l,
-      transaction_id: txn.id,
-      church_id: profile.church_id,
-    }))
-    const { error: lineError } = await supabase.from('transaction_line_items').insert(items)
-    if (lineError) return NextResponse.json({ error: lineError.message }, { status: 500 })
-  }
+  const items = validated.line_items.map((l) => ({
+    account_id: l.account_id,
+    debit_amount: l.debit_amount,
+    credit_amount: l.credit_amount,
+    description: l.description,
+    fund_id: l.fund_id,
+    transaction_id: txn.id,
+    church_id: profile.church_id,
+  }))
+  const { error: lineError } = await supabase.from('transaction_line_items').insert(items)
+  if (lineError) throw lineError
 
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data: txn }, { status: 201 })
-}
+  return Response.json({ data: txn }, { status: 201 })
+}, { requirePermissions: ['can_manage_finances'] })
