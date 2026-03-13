@@ -1,27 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 import { resolveAudience, type AudienceTarget } from '@/lib/messaging/audience'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { whatsappProvider } from '@/lib/messaging/providers/whatsapp'
 import { getSendableScopes, validateTargetsAgainstScopes } from '@/lib/messaging/scopes'
-import { rateLimitNotify } from '@/lib/api/rate-limit'
+import { NextResponse } from 'next/server'
 
 // POST /api/notifications/send — send targeted notification (role-scoped)
-export async function POST(req: NextRequest) {
-  const limited = rateLimitNotify(req)
-  if (limited) return limited
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
   const scopes = await getSendableScopes(user.id, profile.church_id, profile.role)
   if (!scopes.canSend) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -103,4 +88,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ sent, targets: totalTargets })
-}
+})

@@ -1,12 +1,7 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // PATCH /api/notifications/read-all — mark all notifications as read
-export async function PATCH() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
+export const PATCH = apiHandler(async ({ supabase, user }) => {
   const { error } = await supabase
     .from('notifications_log')
     .update({ read_at: new Date().toISOString(), status: 'read' })
@@ -14,7 +9,7 @@ export async function PATCH() {
     .eq('channel', 'in_app')
     .is('read_at', null)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+})

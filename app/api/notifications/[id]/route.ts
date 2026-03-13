@@ -1,15 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // PATCH /api/notifications/[id] — mark a notification as read
-export async function PATCH(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ supabase, user, params }) => {
+  const id = params?.id
+  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('notifications_log')
@@ -19,7 +13,7 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
-  return NextResponse.json({ data })
-}
+  return { data }
+})

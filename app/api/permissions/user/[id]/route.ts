@@ -1,70 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { updateUserPermissionsSchema } from '@/lib/schemas/permission'
+import { createAdminClient } from '@/lib/supabase/server'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
+import type { PermissionMap } from '@/types'
 
-type Params = { params: Promise<{ id: string }> }
-
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id: targetId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: currentProfile, error: profileError } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile || currentProfile.role !== 'super_admin') {
-    return NextResponse.json({
-      error: 'Forbidden',
-      detail: profileError?.message || `role: ${currentProfile?.role}`,
-    }, { status: 403 })
-  }
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const targetId = params?.id
+  if (!targetId) return Response.json({ error: 'Not found' }, { status: 404 })
 
   // Try anon client first, then admin client as fallback
-  let target: any = null
-  let targetError: any = null
+  let target: {
+    id: string; first_name: string; last_name: string;
+    first_name_ar: string | null; last_name_ar: string | null;
+    photo_url: string | null; email: string | null;
+    role: string; permissions: PermissionMap | null; church_id: string;
+  } | null = null
 
-  const targetQuery = () => supabase
+  const selectFields = 'id, first_name, last_name, first_name_ar, last_name_ar, photo_url, email, role, permissions, church_id'
+
+  const { data: d1 } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, first_name_ar, last_name_ar, photo_url, email, role, permissions, church_id')
+    .select(selectFields)
     .eq('id', targetId)
-    .eq('church_id', currentProfile.church_id)
+    .eq('church_id', profile.church_id)
     .single()
-
-  const { data: d1, error: e1 } = await targetQuery()
   target = d1
-  targetError = e1
 
   if (!target) {
     // Fallback: try admin client
     try {
       const adminClient = await createAdminClient()
-      const { data: d2, error: e2 } = await adminClient
+      const { data: d2 } = await adminClient
         .from('profiles')
-        .select('id, first_name, last_name, first_name_ar, last_name_ar, photo_url, email, role, permissions, church_id')
+        .select(selectFields)
         .eq('id', targetId)
-        .eq('church_id', currentProfile.church_id)
+        .eq('church_id', profile.church_id)
         .single()
       target = d2
-      targetError = e2
-    } catch (e) {
+    } catch {
       // adminClient creation failed
     }
   }
 
   if (!target) {
-    return NextResponse.json({
-      error: 'Not found',
-      detail: targetError?.message,
-      targetId,
-      churchId: currentProfile.church_id,
-    }, { status: 404 })
+    return Response.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // Get church role defaults (ok if missing)
+  // Get church role defaults
   const { data: roleDefaultsRow } = await supabase
     .from('role_permission_defaults')
     .select('permissions')
@@ -79,12 +62,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 
   const resolved = resolvePermissions(
-    target.role as any,
+    target.role as keyof typeof HARDCODED_ROLE_DEFAULTS,
     churchDefaults,
     target.permissions
   )
 
-  return NextResponse.json({
+  return {
     member: {
       id: target.id,
       first_name: target.first_name,
@@ -98,91 +81,72 @@ export async function GET(_req: NextRequest, { params }: Params) {
     roleDefaults: effectiveRoleDefaults,
     userOverrides: target.permissions,
     resolved,
-  })
-}
-
-export async function PUT(req: NextRequest, { params }: Params) {
-  const { id: targetId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile || currentProfile.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+}, { requireRoles: ['super_admin'] })
 
-  const { permissions } = await req.json()
+export const PUT = apiHandler(async ({ req, supabase, profile, user, params }) => {
+  const targetId = params?.id
+  if (!targetId) return Response.json({ error: 'Not found' }, { status: 404 })
+
+  const body = await req.json()
+  const { permissions } = validate(updateUserPermissionsSchema, body)
 
   // Get old value for audit — try anon, then admin
-  let target: any = null
-  let targetError: any = null
+  let target: { permissions: PermissionMap | null; church_id: string } | null = null
 
-  const { data: d1, error: e1 } = await supabase
+  const { data: d1 } = await supabase
     .from('profiles')
     .select('permissions, church_id')
     .eq('id', targetId)
-    .eq('church_id', currentProfile.church_id)
+    .eq('church_id', profile.church_id)
     .single()
   target = d1
-  targetError = e1
 
   if (!target) {
     try {
       const adminClient = await createAdminClient()
-      const { data: d2, error: e2 } = await adminClient
+      const { data: d2 } = await adminClient
         .from('profiles')
         .select('permissions, church_id')
         .eq('id', targetId)
-        .eq('church_id', currentProfile.church_id)
+        .eq('church_id', profile.church_id)
         .single()
       target = d2
-      targetError = e2
     } catch {
       // adminClient creation failed
     }
   }
 
   if (!target) {
-    return NextResponse.json({
-      error: 'Not found',
-      detail: targetError?.message,
-      targetId,
-      churchId: currentProfile.church_id,
-    }, { status: 404 })
+    return Response.json({ error: 'Not found' }, { status: 404 })
   }
 
   // Update — try admin client first (bypasses RLS), fall back to anon
-  let updateError: any = null
+  let updateError: Error | null = null
   try {
     const adminClient = await createAdminClient()
     const { error } = await adminClient
       .from('profiles')
       .update({ permissions })
       .eq('id', targetId)
-      .eq('church_id', currentProfile.church_id)
-    updateError = error
+      .eq('church_id', profile.church_id)
+    if (error) updateError = error
   } catch {
     const { error } = await supabase
       .from('profiles')
       .update({ permissions })
       .eq('id', targetId)
-      .eq('church_id', currentProfile.church_id)
-    updateError = error
+      .eq('church_id', profile.church_id)
+    if (error) updateError = error
   }
 
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+  if (updateError) throw updateError
 
   // Audit log (best effort)
   try {
     const adminClient = await createAdminClient()
     await adminClient.from('permission_audit_log').insert({
-      church_id: currentProfile.church_id,
+      church_id: profile.church_id,
       changed_by: user.id,
       target_id: targetId,
       change_type: 'user_override',
@@ -193,5 +157,5 @@ export async function PUT(req: NextRequest, { params }: Params) {
     // Don't fail the request for audit log issues
   }
 
-  return NextResponse.json({ ok: true })
-}
+  return { ok: true }
+}, { requireRoles: ['super_admin'] })

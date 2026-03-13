@@ -1,63 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { updateRoleDefaultsSchema } from '@/lib/schemas/permission'
 import { HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 import type { UserRole } from '@/types'
 
 const CONFIGURABLE_ROLES: UserRole[] = ['member', 'group_leader', 'ministry_leader']
 
-export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || profile.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const GET = apiHandler(async ({ supabase, profile }) => {
   const { data: rows } = await supabase
     .from('role_permission_defaults')
-    .select('*')
+    .select('role, permissions')
     .eq('church_id', profile.church_id)
 
   // Build response: merge hardcoded defaults with church overrides
-  const result: Record<string, any> = {}
+  const result: Record<string, { hardcoded: Record<string, boolean>; churchOverride: Record<string, boolean> | null; effective: Record<string, boolean> }> = {}
   for (const role of CONFIGURABLE_ROLES) {
-    const row = (rows || []).find((r: any) => r.role === role)
+    const row = (rows || []).find((r: { role: string }) => r.role === role)
     result[role] = {
       hardcoded: HARDCODED_ROLE_DEFAULTS[role],
-      churchOverride: row?.permissions ?? null,
-      effective: { ...HARDCODED_ROLE_DEFAULTS[role], ...(row?.permissions ?? {}) },
+      churchOverride: (row?.permissions as Record<string, boolean>) ?? null,
+      effective: { ...HARDCODED_ROLE_DEFAULTS[role], ...((row?.permissions as Record<string, boolean>) ?? {}) },
     }
   }
 
-  return NextResponse.json(result)
-}
+  return result
+}, { requireRoles: ['super_admin'] })
 
-export async function PUT(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || profile.role !== 'super_admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { role, permissions } = await req.json()
-  if (!CONFIGURABLE_ROLES.includes(role)) {
-    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
-  }
+export const PUT = apiHandler(async ({ req, supabase, profile, user }) => {
+  const body = await req.json()
+  const { role, permissions } = validate(updateRoleDefaultsSchema, body)
 
   // Get old value for audit log
   const { data: existing } = await supabase
@@ -78,7 +49,7 @@ export async function PUT(req: NextRequest) {
       updated_by: user.id,
     }, { onConflict: 'church_id,role' })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
   // Audit log
   await supabase.from('permission_audit_log').insert({
@@ -90,5 +61,5 @@ export async function PUT(req: NextRequest) {
     new_value: permissions,
   })
 
-  return NextResponse.json({ ok: true })
-}
+  return { ok: true }
+}, { requireRoles: ['super_admin'] })

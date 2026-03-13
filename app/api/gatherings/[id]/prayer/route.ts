@@ -1,41 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
-type Params = { params: Promise<{ id: string }> }
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const gathering_id = params?.id
+  if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id: gathering_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Verify gathering belongs to this church
+  const { data: gathering } = await supabase
+    .from('gatherings')
+    .select('id, church_id')
+    .eq('id', gathering_id)
+    .eq('church_id', profile.church_id)
+    .single()
+
+  if (!gathering) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('prayer_requests')
-    .select('*, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
+    .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
     .eq('gathering_id', gathering_id)
+    .eq('church_id', profile.church_id)
     .order('created_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return { data }
+})
 
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id: gathering_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
+  const gathering_id = params?.id
+  if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const { content, is_private } = await req.json()
-  if (!content?.trim()) return NextResponse.json({ error: 'content required' }, { status: 400 })
+  if (!content?.trim()) return Response.json({ error: 'content required' }, { status: 400 })
 
-  // Get gathering's group + church
+  // Get gathering's group + church — verify church_id
   const { data: gathering } = await supabase
     .from('gatherings')
     .select('group_id, church_id')
     .eq('id', gathering_id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (!gathering) return NextResponse.json({ error: 'Gathering not found' }, { status: 404 })
+  if (!gathering) return Response.json({ error: 'Gathering not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('prayer_requests')
@@ -47,9 +52,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       content: content.trim(),
       is_private: !!is_private,
     })
-    .select('*, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
+    .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data }, { status: 201 })
-}
+  if (error) throw error
+  return Response.json({ data }, { status: 201 })
+})

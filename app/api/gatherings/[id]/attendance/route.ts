@@ -1,15 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-
-type Params = { params: Promise<{ id: string }> }
+import { apiHandler } from '@/lib/api/handler'
+import { NextResponse } from 'next/server'
 
 // POST: bulk upsert attendance records
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id: gathering_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
+  const gathering_id = params?.id
+  if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const { records } = await req.json()
   // records: Array<{ profile_id: string, status: AttendanceStatus, excuse_reason?: string }>
@@ -18,11 +14,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'records array required' }, { status: 400 })
   }
 
-  // Get gathering to pull group_id and church_id
+  // Get gathering to pull group_id and church_id — verify church_id matches
   const { data: gathering } = await supabase
     .from('gatherings')
     .select('group_id, church_id')
     .eq('id', gathering_id)
+    .eq('church_id', profile.church_id)
     .single()
 
   if (!gathering) return NextResponse.json({ error: 'Gathering not found' }, { status: 404 })
@@ -43,7 +40,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     .upsert(rows, { onConflict: 'gathering_id,profile_id' })
     .select()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${gathering.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+})
