@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { TEMPLATES, interpolate } from '@/lib/messaging/templates'
+import { verifyCronAuth } from '@/lib/api/cron-auth'
 
 export async function GET(req: NextRequest) {
-  // Verify cron secret
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(req)
+  if (authError) return authError
 
   const supabase = await createAdminClient()
 
