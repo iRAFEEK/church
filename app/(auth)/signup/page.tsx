@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, Search, Building2, Check } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -163,6 +164,7 @@ function SignupFormStep({
 }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const t = useTranslations('auth')
 
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -183,7 +185,7 @@ function SignupFormStep({
 
     if (error) {
       setIsLoading(false)
-      toast.error('Sign up failed', { description: error.message })
+      toast.error(t('signUpError'), { description: error.message })
       return
     }
 
@@ -303,45 +305,88 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">
-          {showForm ? 'Create your account' : 'Find your church'}
-        </CardTitle>
-        <CardDescription>
-          {showForm
-            ? 'Join your church community on Ekklesia'
-            : 'Select your church to get started'}
-        </CardDescription>
+        <CardTitle className="text-2xl">{t('signUpTitle')}</CardTitle>
+        <CardDescription>{t('signUpDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
-        {showForm ? (
-          <SignupFormStep
-            churchId={churchId}
-            churchName={churchName}
-            onBack={() => setSelectedChurch(null)}
-          />
-        ) : (
-          <ChurchSelectStep onSelect={setSelectedChurch} />
-        )}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('emailLabel')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder={t('emailPlaceholder')}
+                      autoComplete="email"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('passwordLabel')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder={t('passwordPlaceholder')}
+                      autoComplete="new-password"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder={t('passwordPlaceholder')}
+                      autoComplete="new-password"
+                      dir="ltr"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('creatingAccount')}
+                </>
+              ) : (
+                t('createAccountButton')
+              )}
+            </Button>
+          </form>
+        </Form>
 
-        <div className="mt-4 space-y-2 text-center text-sm text-muted-foreground">
-          <p>
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="font-medium underline underline-offset-4"
-            >
-              Sign in
-            </Link>
-          </p>
-          <p>
-            <Link
-              href="/welcome"
-              className="underline underline-offset-4"
-            >
-              Register a new church
-            </Link>
-          </p>
-        </div>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          {t('alreadyHaveAccount')}{' '}
+          <Link href="/login" className="font-medium underline underline-offset-4">
+            {t('signInLink')}
+          </Link>
+        </p>
       </CardContent>
     </Card>
   )

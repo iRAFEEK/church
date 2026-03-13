@@ -138,8 +138,8 @@ export default function LoginPage() {
       router.push('/')
       router.refresh()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Dev login failed'
-      toast.error('Dev login failed', { description: message })
+      const message = err instanceof Error ? err.message : t('devLoginFailed')
+      toast.error(t('devLoginFailed'), { description: message })
     } finally {
       setDevLoading(null)
     }
@@ -214,14 +214,14 @@ export default function LoginPage() {
         </Form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          New to Ekklesia?{' '}
+          {t('newToEkklesia')}{' '}
           <Link href="/signup" className="font-medium underline underline-offset-4">
-            Create an account
+            {t('createAnAccountLink')}
           </Link>
         </p>
 
         <div className="mt-6 border-t pt-4">
-          <p className="text-sm font-medium mb-3">Test Accounts</p>
+          <p className="text-sm font-medium mb-3">{t('testAccounts')}</p>
           <div className="grid gap-2">
             {TEST_ACCOUNTS.map((account) => (
               <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
@@ -240,7 +240,7 @@ export default function LoginPage() {
                   {devLoading === account.email ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    'Login'
+                    t('devLoginButton')
                   )}
                 </Button>
               </div>
@@ -249,7 +249,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-4 border-t pt-4">
-          <p className="text-sm font-medium mb-3">Cross-Church Accounts (Church Needs)</p>
+          <p className="text-sm font-medium mb-3">{t('crossChurchAccounts')}</p>
           <div className="grid gap-2">
             {CROSS_CHURCH_ACCOUNTS.map((account) => (
               <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
@@ -268,7 +268,7 @@ export default function LoginPage() {
                   {devLoading === account.email ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    'Login'
+                    t('devLoginButton')
                   )}
                 </Button>
               </div>
