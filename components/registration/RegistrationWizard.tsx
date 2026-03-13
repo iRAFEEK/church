@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { LazyMotion, domAnimation, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
@@ -215,27 +215,29 @@ export function RegistrationWizard() {
   }
 
   return (
-    <WizardLayout
-      currentStep={step}
-      totalSteps={TOTAL_STEPS}
-      onBack={goBack}
-      showBack={step > 0 && step < 6}
-    >
-      <AnimatePresence mode="wait" custom={direction}>
-        <StepTransition key={step} direction={direction} stepKey={step}>
-          {renderStep()}
-        </StepTransition>
-      </AnimatePresence>
+    <LazyMotion features={domAnimation} strict>
+      <WizardLayout
+        currentStep={step}
+        totalSteps={TOTAL_STEPS}
+        onBack={goBack}
+        showBack={step > 0 && step < 6}
+      >
+        <AnimatePresence mode="wait" custom={direction}>
+          <StepTransition key={step} direction={direction} stepKey={step}>
+            {renderStep()}
+          </StepTransition>
+        </AnimatePresence>
 
-      {/* Loading overlay */}
-      {isSubmitting && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground">{t('creating')}</p>
+        {/* Loading overlay */}
+        {isSubmitting && (
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-muted-foreground">{t('creating')}</p>
+            </div>
           </div>
-        </div>
-      )}
-    </WizardLayout>
+        )}
+      </WizardLayout>
+    </LazyMotion>
   )
 }

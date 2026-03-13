@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Check, ArrowRight, Users, FolderPlus, QrCode } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -18,7 +18,7 @@ function Confetti() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {Array.from({ length: 20 }).map((_, i) => (
-        <motion.div
+        <m.div
           key={i}
           className={`absolute w-2 h-2 rounded-full ${colors[i % colors.length]}`}
           initial={{
@@ -59,25 +59,25 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
       <Confetti />
 
       {/* Animated checkmark */}
-      <motion.div
+      <m.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
         className="relative z-10"
       >
         <div className="h-20 w-20 rounded-full bg-green-500 flex items-center justify-center mx-auto shadow-lg shadow-green-500/30">
-          <motion.div
+          <m.div
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.4 }}
           >
             <Check className="h-10 w-10 text-white" strokeWidth={3} />
-          </motion.div>
+          </m.div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Headline */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
@@ -85,10 +85,10 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
       >
         <h2 className="text-2xl font-bold tracking-tight">{t('headline')}</h2>
         <p className="text-muted-foreground text-sm">{t('subheadline')}</p>
-      </motion.div>
+      </m.div>
 
       {/* Summary */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
@@ -108,10 +108,10 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
           <span className="text-sm text-muted-foreground">{t('summaryCountry')}</span>
           <span className="text-sm font-medium">{country}</span>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* CTA */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.0 }}
@@ -127,10 +127,10 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
-      </motion.div>
+      </m.div>
 
       {/* Tips */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
@@ -148,7 +148,7 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
             )
           })}
         </div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

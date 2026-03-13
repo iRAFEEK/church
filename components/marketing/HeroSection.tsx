@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Church, Users } from 'lucide-react'
 import Link from 'next/link'
@@ -24,7 +24,7 @@ export function HeroSection() {
 
       <div className="relative z-10 text-center max-w-2xl mx-auto space-y-8">
         {/* Scripture verse */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -34,30 +34,30 @@ export function HeroSection() {
             {t('hero.verse')}
           </p>
           <p className="text-sm text-muted-foreground/70">{t('hero.verseRef')}</p>
-        </motion.div>
+        </m.div>
 
         {/* Headline */}
-        <motion.h1
+        <m.h1
           className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {t('hero.headline')}
-        </motion.h1>
+        </m.h1>
 
         {/* Subheadline */}
-        <motion.p
+        <m.p
           className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
         >
           {t('hero.subheadline')}
-        </motion.p>
+        </m.p>
 
         {/* Dual CTAs */}
-        <motion.div
+        <m.div
           className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,7 +80,7 @@ export function HeroSection() {
               {t('hero.ctaSecondary')}
             </Link>
           </Button>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )

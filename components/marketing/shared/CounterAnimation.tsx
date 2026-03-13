@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
+import { useInView, animate } from 'framer-motion'
 import { useRef, useEffect, useState } from 'react'
 
 interface CounterAnimationProps {
