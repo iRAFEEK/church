@@ -2048,5 +2048,18 @@
     "noConversations": "No conversations yet",
     "noConversationsDesc": "Conversations appear here when you or other churches communicate about needs",
     "cancel": "Cancel"
+  },
+  "SelectChurch": {
+    "title": "Choose a church",
+    "description": "Select which church you want to sign in to. You can switch anytime from the app.",
+    "emptyState": {
+      "title": "No churches yet",
+      "body": "Join an existing church or create a new one to get started.",
+      "joinChurch": "Find a church",
+      "createChurch": "Create a church"
+    },
+    "error": {
+      "switch": "Could not switch church"
+    }
   }
 }

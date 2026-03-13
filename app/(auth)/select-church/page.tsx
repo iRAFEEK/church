@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Building2, Check, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Building2, Check, Loader2, Search, Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +18,7 @@ import {
 import type { UserChurchWithDetails } from '@/types'
 
 export default function SelectChurchPage() {
+  const t = useTranslations('SelectChurch')
   const router = useRouter()
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +42,7 @@ export default function SelectChurchPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error('Could not switch church', { description: data.error })
+        toast.error(t('error.switch'), { description: data.error })
         return
       }
 
@@ -53,15 +56,39 @@ export default function SelectChurchPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Choose a church</CardTitle>
+        <CardTitle className="text-2xl">{t('title')}</CardTitle>
         <CardDescription>
-          Select which church you want to sign in to. You can switch anytime from the app.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : churches.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+            <div className="size-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Building2 className="size-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold text-lg mb-1">{t('emptyState.title')}</h3>
+            <p className="text-muted-foreground text-sm mb-6 max-w-xs">
+              {t('emptyState.body')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <Button asChild className="h-11 w-full sm:w-auto">
+                <Link href="/onboarding">
+                  <Search className="size-4 me-2" />
+                  {t('emptyState.joinChurch')}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-11 w-full sm:w-auto">
+                <Link href="/welcome">
+                  <Plus className="size-4 me-2" />
+                  {t('emptyState.createChurch')}
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <ul className="space-y-2">
@@ -89,7 +116,7 @@ export default function SelectChurchPage() {
                       )}
                     </div>
 
-                    <div className="flex-1 text-left min-w-0">
+                    <div className="flex-1 text-start min-w-0">
                       <p className="font-medium truncate">{church.name}</p>
                       {church.name_ar && (
                         <p className="text-sm text-muted-foreground truncate" dir="rtl">
