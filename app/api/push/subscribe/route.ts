@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { logger } from '@/lib/logger'
+import { rateLimitMutation } from '@/lib/api/rate-limit'
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimitMutation(req)
+  if (limited) return limited
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
