@@ -56,5 +56,6 @@ export const POST = apiHandler(async ({ supabase, profile, req }) => {
 
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
+  revalidateTag(`groups-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_members'] })

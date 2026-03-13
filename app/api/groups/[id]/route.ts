@@ -45,6 +45,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   revalidateTag(`dashboard-${data.church_id}`)
+  revalidateTag(`groups-${data.church_id}`)
   return NextResponse.json({ data })
 }
 
@@ -57,6 +58,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   // Soft delete
   const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).select('church_id').single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (data) revalidateTag(`dashboard-${data.church_id}`)
+  if (data) {
+    revalidateTag(`dashboard-${data.church_id}`)
+    revalidateTag(`groups-${data.church_id}`)
+  }
   return NextResponse.json({ success: true })
 }

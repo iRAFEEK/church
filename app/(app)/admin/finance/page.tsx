@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCachedFunds } from '@/lib/cache/queries'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -73,14 +74,14 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
   const today = now.toISOString().split('T')[0]
 
   const [
-    { data: funds },
+    funds,
     { data: donationsThisMonth },
     { data: donationsThisYear },
     { data: recentDonations },
     { data: pendingExpenses },
     { data: activeCampaigns },
   ] = await Promise.all([
-    supabase.from('funds').select('id, name, name_ar, current_balance, target_amount, is_restricted').eq('church_id', churchId).eq('is_active', true).order('display_order'),
+    getCachedFunds(churchId),
     supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfMonth).lte('donation_date', today),
     supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfYear).lte('donation_date', today),
     supabase.from('donations').select('*, donor:donor_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url), fund:fund_id(id, name, name_ar)').eq('church_id', churchId).order('donation_date', { ascending: false }).limit(5),

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCachedChurchLeaders } from '@/lib/cache/queries'
 import type { Church, ChurchLeader } from '@/types'
 
 export async function getLandingPageData() {
@@ -13,15 +14,10 @@ export async function getLandingPageData() {
 
   if (!church) return null
 
-  const { data: leaders } = await supabase
-    .from('church_leaders')
-    .select('id, name, name_ar, title, title_ar, photo_url, bio, bio_ar, display_order')
-    .eq('church_id', church.id)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
+  const leaders = await getCachedChurchLeaders(church.id)
 
   return {
     church: church as Church,
-    leaders: (leaders ?? []) as ChurchLeader[],
+    leaders: leaders as ChurchLeader[],
   }
 }
