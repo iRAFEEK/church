@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     .single()
 
   if (error) {
-    console.error('Ministry member upsert error:', error)
+    logger.error('Ministry member upsert failed', { module: 'ministries', churchId: profile.church_id, error })
     return NextResponse.json({ error: error.message, details: error }, { status: 500 })
   }
 

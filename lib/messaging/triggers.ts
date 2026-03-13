@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from './dispatcher'
 import { TEMPLATES, interpolate } from './templates'
+import { logger } from '@/lib/logger'
 
 function truncate(text: string, max = 100): string {
   return text.length > max ? text.slice(0, max) + '…' : text
@@ -60,7 +61,7 @@ export async function notifyWelcomeVisitor(visitorId: string, churchId: string) 
       sent_at: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('[Trigger] notifyWelcomeVisitor error:', error)
+    logger.error('notifyWelcomeVisitor failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -96,7 +97,7 @@ export async function notifyVisitorAssigned(visitorId: string, leaderId: string,
       data: { visitorName },
     })
   } catch (error) {
-    console.error('[Trigger] notifyVisitorAssigned error:', error)
+    logger.error('notifyVisitorAssigned failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -145,7 +146,7 @@ export async function notifyAtRiskMember(
       data: { memberName, groupName, weeks },
     })
   } catch (error) {
-    console.error('[Trigger] notifyAtRiskMember error:', error)
+    logger.error('notifyAtRiskMember failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -192,7 +193,7 @@ export async function notifyVisitorSLA(visitorId: string, churchId: string) {
       })
     }
   } catch (error) {
-    console.error('[Trigger] notifyVisitorSLA error:', error)
+    logger.error('notifyVisitorSLA failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -268,7 +269,7 @@ export async function notifyEventServiceRequest(eventId: string, serviceNeedId: 
       data: { teamName, eventName, date, count },
     })
   } catch (error) {
-    console.error('[Trigger] notifyEventServiceRequest error:', error)
+    logger.error('notifyEventServiceRequest failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -345,7 +346,7 @@ export async function notifyEventServiceAssigned(assignmentId: string, churchId:
       data: { eventName, date, teamName, roleInfo },
     })
   } catch (error) {
-    console.error('[Trigger] notifyEventServiceAssigned error:', error)
+    logger.error('notifyEventServiceAssigned failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -428,7 +429,7 @@ export async function notifyAssignmentResponse(assignmentId: string, churchId: s
       data: { memberName, action, eventName, teamName },
     })
   } catch (error) {
-    console.error('[Trigger] notifyAssignmentResponse error:', error)
+    logger.error('notifyAssignmentResponse failed', { module: 'messaging', churchId, error })
   }
 }
 
@@ -480,7 +481,7 @@ export async function notifyNeedResponseReceived(
       data: { churchName, needTitle, message: truncatedMessage },
     })
   } catch (error) {
-    console.error('[Trigger] notifyNeedResponseReceived error:', error)
+    logger.error('notifyNeedResponseReceived failed', { module: 'messaging', error })
   }
 }
 
@@ -541,7 +542,7 @@ export async function notifyNeedResponseStatusChanged(
       data: { needTitle, status: statusMap[newStatus], statusAr: statusArMap[newStatus], churchName },
     })
   } catch (error) {
-    console.error('[Trigger] notifyNeedResponseStatusChanged error:', error)
+    logger.error('notifyNeedResponseStatusChanged failed', { module: 'messaging', error })
   }
 }
 
@@ -599,7 +600,7 @@ export async function notifyNeedMessage(
       data: { churchName, needTitle, message: truncatedMessage, responseId },
     })
   } catch (error) {
-    console.error('[Trigger] notifyNeedMessage error:', error)
+    logger.error('notifyNeedMessage failed', { module: 'messaging', error })
   }
 }
 
@@ -656,6 +657,6 @@ export async function notifyGatheringReminder(gatheringId: string, churchId: str
       })
     }
   } catch (error) {
-    console.error('[Trigger] notifyGatheringReminder error:', error)
+    logger.error('notifyGatheringReminder failed', { module: 'messaging', churchId, error })
   }
 }

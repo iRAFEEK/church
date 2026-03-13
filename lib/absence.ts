@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notifyAtRiskMember } from '@/lib/messaging/triggers'
+import { logger } from '@/lib/logger'
 
 /**
  * Count consecutive absences for a profile in a group
@@ -84,7 +85,9 @@ export async function checkAndFlagAtRisk(gatheringId: string): Promise<void> {
 
       // Only notify if status actually changed (was active, now at_risk)
       if (count && count > 0) {
-        notifyAtRiskMember(member.profile_id, gathering.group_id, gathering.church_id, streak).catch(console.error)
+        notifyAtRiskMember(member.profile_id, gathering.group_id, gathering.church_id, streak).catch((err) =>
+          logger.error('notifyAtRiskMember fire-and-forget failed', { module: 'attendance', churchId: gathering.church_id, error: err })
+        )
       }
     }
   }

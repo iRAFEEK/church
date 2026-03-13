@@ -1,6 +1,7 @@
 import type { MessagePayload, MessageResult, MessageProvider } from '../types'
 import { getAdminMessaging, isFirebaseAdminConfigured } from '@/lib/firebase/admin'
 import { createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 /**
  * Firebase Cloud Messaging (FCM) push notification provider.
@@ -14,7 +15,7 @@ class FCMPushProvider implements MessageProvider {
 
   async send(payload: MessagePayload): Promise<MessageResult> {
     if (!this.isConfigured()) {
-      console.warn('[Push] Firebase Admin not configured — skipping send')
+      logger.warn('Firebase Admin not configured — skipping push send', { module: 'messaging' })
       return { success: false, error: 'Firebase Admin not configured' }
     }
 
@@ -28,7 +29,7 @@ class FCMPushProvider implements MessageProvider {
         .eq('profile_id', payload.to)
 
       if (fetchError) {
-        console.error('[Push] Failed to fetch tokens:', fetchError.message)
+        logger.error('Failed to fetch push tokens', { module: 'messaging', error: fetchError.message })
         return { success: false, error: fetchError.message }
       }
 
@@ -80,7 +81,7 @@ class FCMPushProvider implements MessageProvider {
 
       if (staleTokens.length > 0) {
         await supabase.from('push_tokens').delete().in('token', staleTokens)
-        console.log(`[Push] Cleaned up ${staleTokens.length} stale token(s)`)
+        logger.info(`Cleaned up ${staleTokens.length} stale push token(s)`, { module: 'messaging' })
       }
 
       const successCount = response.successCount
@@ -91,7 +92,7 @@ class FCMPushProvider implements MessageProvider {
       return { success: true, messageId: `multicast:${successCount}/${tokens.length}` }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error'
-      console.error('[Push] Send error:', msg)
+      logger.error('Push send error', { module: 'messaging', error })
       return { success: false, error: msg }
     }
   }

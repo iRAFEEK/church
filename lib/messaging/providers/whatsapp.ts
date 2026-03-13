@@ -1,4 +1,5 @@
 import type { MessagePayload, MessageResult, MessageProvider } from '../types'
+import { logger } from '@/lib/logger'
 
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY
 const WHATSAPP_API_URL = process.env.WHATSAPP_API_URL || 'https://waba.360dialog.io/v1'
@@ -19,7 +20,7 @@ class Dialog360Provider implements MessageProvider {
 
   async send(payload: MessagePayload): Promise<MessageResult> {
     if (!this.isConfigured()) {
-      console.warn('[WhatsApp] API key not configured — skipping send')
+      logger.warn('WhatsApp API key not configured — skipping send', { module: 'messaging' })
       return { success: false, error: 'WhatsApp API key not configured' }
     }
 
@@ -50,7 +51,7 @@ class Dialog360Provider implements MessageProvider {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const errorMsg = errorData?.error?.message || `HTTP ${response.status}`
-        console.error('[WhatsApp] Send failed:', errorMsg)
+        logger.error('WhatsApp send failed', { module: 'messaging', error: errorMsg })
         return { success: false, error: errorMsg }
       }
 
@@ -60,7 +61,7 @@ class Dialog360Provider implements MessageProvider {
       return { success: true, messageId }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error'
-      console.error('[WhatsApp] Send error:', msg)
+      logger.error('WhatsApp send error', { module: 'messaging', error })
       return { success: false, error: msg }
     }
   }

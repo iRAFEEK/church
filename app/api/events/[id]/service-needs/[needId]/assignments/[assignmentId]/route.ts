@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyAssignmentResponse } from '@/lib/messaging/triggers'
+import { logger } from '@/lib/logger'
 
 type Params = { params: Promise<{ id: string; needId: string; assignmentId: string }> }
 
@@ -42,7 +43,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   // Notify assigner when member confirms/declines
   if (status && assignment.assigned_by) {
-    notifyAssignmentResponse(assignmentId, assignment.church_id).catch(console.error)
+    notifyAssignmentResponse(assignmentId, assignment.church_id).catch((err) =>
+      logger.error('notifyAssignmentResponse fire-and-forget failed', { module: 'events', churchId: assignment.church_id, error: err })
+    )
   }
 
   return NextResponse.json({ data: assignment })

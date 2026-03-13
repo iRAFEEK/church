@@ -8,6 +8,7 @@
 // Fire-and-forget pattern: audit logging should never block the main request.
 
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 interface AuditEvent {
   churchId: string
@@ -45,7 +46,14 @@ export async function logAuditEvent({
     })
   } catch (err) {
     // ARCH: Never let audit logging failures break the main request
-    console.error('[AUDIT] Failed to log event:', action, entityType, entityId, err)
+    logger.error('Failed to log audit event', {
+      module: 'audit',
+      churchId,
+      action,
+      entityType,
+      entityId,
+      error: err,
+    })
   }
 }
 
