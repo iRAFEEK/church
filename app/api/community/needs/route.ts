@@ -3,6 +3,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateChurchNeedSchema } from '@/lib/schemas/church-need'
 import { createAdminClient } from '@/lib/supabase/server'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // GET /api/community/needs — list all needs (cross-church)
 export const GET = apiHandler(async ({ req, profile }) => {
@@ -37,7 +38,8 @@ export const GET = apiHandler(async ({ req, profile }) => {
   if (status) query = query.eq('status', status)
   if (country) query = query.eq('church.country', country)
   if (search) {
-    query = query.or(`title.ilike.%${search}%,title_ar.ilike.%${search}%,description.ilike.%${search}%,description_ar.ilike.%${search}%`)
+    const safe = sanitizeLikePattern(search)
+    query = query.or(`title.ilike.%${safe}%,title_ar.ilike.%${safe}%,description.ilike.%${safe}%,description_ar.ilike.%${safe}%`)
   }
 
   const { data, error, count } = await query
