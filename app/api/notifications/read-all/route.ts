@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 
 // PATCH /api/notifications/read-all — mark all notifications as read

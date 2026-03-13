@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
@@ -45,7 +46,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
-  return Response.json({
+  return NextResponse.json({
     data,
     count,
     page,
@@ -99,4 +100,4 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
-}
+}, { requirePermissions: ['can_manage_finances'] })

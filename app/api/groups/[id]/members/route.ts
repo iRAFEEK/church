@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
@@ -14,7 +15,7 @@ const removeGroupMemberSchema = z.object({
 
 export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   const group_id = params?.id
-  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!group_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
   const { profile_id, role_in_group } = validate(addGroupMemberSchema, body)
@@ -37,12 +38,12 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
-  return Response.json({ data }, { status: 201 })
+  return NextResponse.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_members'] })
 
 export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
   const group_id = params?.id
-  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!group_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
   const { profile_id } = validate(removeGroupMemberSchema, body)
@@ -59,6 +60,6 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
     console.error('[/api/groups/[id]/members DELETE]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ success: true })
-}
+}, { requirePermissions: ['can_manage_members'] })

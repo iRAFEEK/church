@@ -1,8 +1,9 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const gathering_id = params?.id
-  if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!gathering_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Verify gathering belongs to this church
   const { data: gathering } = await supabase
@@ -12,7 +13,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (!gathering) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!gathering) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('prayer_requests')
@@ -26,14 +27,14 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-}
+})
 
 export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
   const gathering_id = params?.id
-  if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!gathering_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { content, is_private } = await req.json()
-  if (!content?.trim()) return Response.json({ error: 'content required' }, { status: 400 })
+  if (!content?.trim()) return NextResponse.json({ error: 'content required' }, { status: 400 })
 
   // Get gathering's group + church — verify church_id
   const { data: gathering } = await supabase
@@ -43,7 +44,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .eq('church_id', profile.church_id)
     .single()
 
-  if (!gathering) return Response.json({ error: 'Gathering not found' }, { status: 404 })
+  if (!gathering) return NextResponse.json({ error: 'Gathering not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('prayer_requests')
@@ -63,4 +64,4 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data }, { status: 201 })
-}
+})

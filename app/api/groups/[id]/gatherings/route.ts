@@ -1,9 +1,10 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { getNextGatheringDate } from '@/lib/gatherings'
 
 export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
   const group_id = params?.id
-  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!group_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { searchParams } = new URL(req.url)
   const limit = parseInt(searchParams.get('limit') || '10')
@@ -21,12 +22,12 @@ export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-}
+})
 
 // Generate next gathering for a group
 export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
   const group_id = params?.id
-  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!group_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
 
@@ -42,7 +43,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
       .single()
 
     if (!group?.meeting_day) {
-      return Response.json({ error: 'Group has no meeting_day set' }, { status: 400 })
+      return NextResponse.json({ error: 'Group has no meeting_day set' }, { status: 400 })
     }
 
     scheduledAt = getNextGatheringDate(group.meeting_day, group.meeting_time).toISOString()
@@ -67,4 +68,4 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data }, { status: 201 })
-}
+})

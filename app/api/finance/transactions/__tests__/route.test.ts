@@ -54,15 +54,15 @@ describe('Transaction [id] PATCH — double-entry balance validation', () => {
 
 describe('Transaction Zod schema', () => {
   it('should validate line item amounts are non-negative', () => {
-    expect(schemaCode).toContain('z.number().min(0)')
+    expect(schemaCode).toContain(".min(0, 'Amount cannot be negative')")
   })
 
   it('should require at least 1 line item on create', () => {
-    expect(schemaCode).toContain(".min(1, 'At least one line item required')")
+    expect(schemaCode).toContain(".min(1, 'At least one line item is required')")
   })
 
   it('should validate amount is finite (no NaN/Infinity)', () => {
-    expect(schemaCode).toContain('.finite()')
+    expect(schemaCode).toContain(".finite('Amount must be finite')")
   })
 
   it('should validate account_id is UUID', () => {

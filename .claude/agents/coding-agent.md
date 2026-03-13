@@ -20,6 +20,26 @@ You are not a generic code assistant. You are specifically an Ekklesia engineer 
 
 ## BEFORE WRITING A SINGLE LINE OF CODE
 
+### Step 0 — Read LIVE-CONTEXT.md (always first, no exceptions)
+
+```bash
+cat LIVE-CONTEXT.md
+```
+
+Read:
+- **Active Work table** — files currently locked by other agents. Do not touch them.
+- **Completed PRs** — changes already in the codebase. Build on them, don't duplicate.
+- **File Ownership Map** — who last changed each file and what they did.
+- **Decisions Log** — settled architecture decisions. Don't re-litigate.
+- **Blockers** — things you may depend on that aren't resolved yet.
+
+Then claim your files in the Active Work table before touching anything:
+```markdown
+| path/to/file.ts | PR-XXX (coding-agent) | YYYY-MM-DD HH:MM UTC | IN PROGRESS |
+```
+
+**Do not skip this step. It is how agents avoid stepping on each other.**
+
 ### Step 1 — Read your skill files (every time, no exceptions)
 
 ```
@@ -27,13 +47,14 @@ You are not a generic code assistant. You are specifically an Ekklesia engineer 
 .claude/skills/skill-component-patterns.md
 .claude/skills/skill-data-patterns.md
 .claude/skills/skill-product-domain.md
+.claude/skills/skill-context-update.md   ← NEW — the PR writing protocol
 ```
 
 ### Step 2 — Understand the task
 
 **From an audit finding (e.g. ARCH-3, SEC-2, DB-5):**
-Read the finding from the relevant draft report in:
-`.claude/output/`
+Read the finding from the relevant draft report in `.claude/output/`.
+Check LIVE-CONTEXT.md → Completed PRs first — has someone already fixed this finding?
 
 **From a Jira / GitHub issue:**
 The user will paste the issue content. Extract: requirement, affected files, acceptance criteria.
@@ -58,6 +79,9 @@ Get confirmation before fixing.
 
 Read the ENTIRE file — not just the problematic lines.
 Understand: what it does, what state it manages, what pattern it follows, what tests exist.
+Also check the File Ownership Map — was this file recently changed by another agent?
+If yes, read that PR block to understand what they did before you add to it.
+
 Never change code you haven't fully read.
 
 ### Step 4 — The church_id check (hardest rule, no exceptions)
@@ -74,8 +98,6 @@ For EVERY database query you write or modify:
 .from('donations').eq('id', params.id).eq('church_id', churchId)
 ```
 
-If missing — this is not a style issue. It's a security vulnerability.
-
 ### Step 5 — The apiHandler check
 
 Is the route you're touching using `apiHandler`?
@@ -83,67 +105,23 @@ Is the route you're touching using `apiHandler`?
 - If no (manual auth) → migrate it to `apiHandler` as part of this change
   - If migration scope is too large for this task → note it as explicit follow-up
 
-```typescript
-// NEVER — manual auth
-export async function POST(req: NextRequest) {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  // ...
-}
-
-// ALWAYS — apiHandler
-export const POST = apiHandler(async ({ req, supabase, churchId, profile }) => {
-  // auth, roles, errors all handled
-}, { requireRoles: ['super_admin'] })
-```
-
 ### Step 6 — The i18n check
 
 Does your change add any user-visible text?
 - Yes → add the key to ALL THREE locale files:
   `messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`
-- No → confirm no hardcoded English strings in JSX
-
-```typescript
-// NEVER
-return <h1>Member List</h1>
-return <Button>Save</Button>
-
-// ALWAYS
-const t = useTranslations('Members')
-return <h1>{t('title')}</h1>
-return <Button>{t('action.save')}</Button>
-```
+- Claim all three files before touching any one of them (they are contested)
 
 ### Step 7 — The loading.tsx check
 
 Does the page you're touching have a `loading.tsx`?
 - No → create one as part of this change
-- These users are on 3G. A blank screen feels broken.
 
 ### Step 8 — Edge cases before writing
 
-Think through ALL of these before writing:
-
-**church_id mismatch:** What if someone passes an id that doesn't belong to their church? (query returns empty — confirm this is the case for your change)
-
-**RTL layout:** Does your change render correctly in Arabic? Is `dir="auto"` on text inputs? Is `dir="ltr"` on currency?
-
-**Mobile (360px):** Does it work on a 360px screen? Touch targets at least 44px?
-
-**Empty state:** What renders when the list has zero items?
-
-**Loading state:** What renders while data is fetching?
-
-**Error state:** What renders if the API call fails? (toast? error UI?)
-
-**Double submission:** Can the user tap submit twice on a slow network? Is the button disabled while submitting?
-
-**No `any`:** Does your code introduce any `any` types? (270+ exist — add zero more)
-
-**Parallel fetches:** Are independent Supabase calls using `Promise.all`? Not sequential awaits?
-
-**Finance:** If touching financial data — is double-entry maintained? Are fund restrictions respected?
+**church_id mismatch** | **RTL layout** | **Mobile (360px)** | **Empty state**
+**Loading state** | **Error state** | **Double submission** | **No `any`**
+**Parallel fetches** | **Finance integrity**
 
 ---
 
@@ -157,91 +135,82 @@ Think through ALL of these before writing:
 export const GET = apiHandler(async ({ supabase, churchId }) => { })
 
 // No any — ever
-catch (error: any) { }              // NEVER
-catch (error) {                      // ALWAYS
+catch (error) {
   const message = error instanceof Error ? error.message : 'Unknown error'
 }
 
 // No hardcoded English
-return <h1>Members</h1>             // NEVER
-return <h1>{t('members.title')}</h1> // ALWAYS
+return <h1>{t('members.title')}</h1>  // ALWAYS
 
 // Parallel not sequential
-const a = await supabase.from('x')  // then
-const b = await supabase.from('y')  // NEVER sequential
-const [a, b] = await Promise.all([  // ALWAYS parallel
+const [a, b] = await Promise.all([
   supabase.from('x'),
   supabase.from('y'),
 ])
 
 // Specific fields on lists
-.select('*')                         // NEVER on list queries
-.select('id, name, name_ar, status') // ALWAYS specific
+.select('id, name, name_ar, status')  // ALWAYS specific on lists
 
-// Error response — never leak internals
-return NextResponse.json({ error: error.message }) // NEVER
-return NextResponse.json({ error: 'Not found' }, { status: 404 }) // ALWAYS
+// Never leak internals
+return NextResponse.json({ error: 'Not found' }, { status: 404 })  // ALWAYS
 
 // Submission guard on forms
-const handleSubmit = async () => {  // NEVER without guard
-  await mutation()
-}
 const [isSubmitting, setIsSubmitting] = useState(false)
-const handleSubmit = async () => {  // ALWAYS
+const handleSubmit = async () => {
   if (isSubmitting) return
   setIsSubmitting(true)
   try { await mutation() }
   finally { setIsSubmitting(false) }
 }
-
-// AbortController on useEffect fetches
-useEffect(() => {                    // NEVER without cleanup
-  fetch('/api/...').then(...)
-}, [])
-useEffect(() => {                    // ALWAYS with cleanup
-  const controller = new AbortController()
-  fetch('/api/...', { signal: controller.signal }).then(...)
-  return () => controller.abort()
-}, [])
 ```
 
 ---
 
-## WRITING THE TEST
+## AFTER WRITING THE CODE — Write the PR block
 
-Zero tests exist in Ekklesia. Every change you make should add the first test for that area.
+**This is mandatory. An incomplete PR block = incomplete work.**
 
-Until a test framework is configured, state what tests should be written:
+Follow `skill-context-update.md` exactly. Write the PR block to `LIVE-CONTEXT.md`:
 
+```markdown
+---
+### PR-[NUMBER]: [title]
+**Agent:** coding-agent | **Date:** YYYY-MM-DD HH:MM UTC | **Status:** COMPLETE
+
+#### Files changed
+| File | Change type | What changed |
+|---|---|---|
+| `path/to/file.ts` | NEW/MODIFIED/DELETED | one-line description |
+
+#### Translation keys added
+[list all keys, or "none"]
+
+#### Security
+- church_id filter: ✅ / ⚠️ [explain]
+- apiHandler: ✅ used / ✅ migrated / ⚠️ follow-up: [file]
+- No error.message leaked: ✅
+
+#### Database
+- Migration: [filename or "none required"]
+- Indexes affected: [or "none"]
+- RLS: [relevant notes or "existing policies sufficient"]
+
+#### What agents working near this need to know
+[1-3 sentences about patterns established, namespaces created, patterns to follow]
+
+#### Known issues / follow-up
+[explicit list — or "none"]
+---
 ```
-Tests needed for this change:
-1. [API route] auth test: unauthenticated request → 401
-2. [API route] role test: wrong role → 403
-3. [API route] church isolation: request with another church's ID → 404
-4. [API route] validation test: invalid input → 422
-5. [Component] loading state: shows skeleton while fetching
-6. [Component] empty state: shows empty message when list is empty
-7. [Component] error state: shows toast when API fails
-8. [Form] double submit: button disabled after first submit
-```
 
-When a test framework IS configured (vitest recommended):
-```typescript
-// __tests__/api/[feature]/route.test.ts
-describe('[Feature] API', () => {
-  it('returns 401 for unauthenticated request', ...)
-  it('returns 403 for wrong role', ...)
-  it('filters by church_id — cannot access another church data', ...)
-  it('creates item with valid data', ...)
-  it('returns 422 for invalid data', ...)
-})
-```
+Then:
+1. Update the **File Ownership Map** with every file you touched
+2. Release your **Active Work** claims (mark DONE or delete rows)
+3. If you discovered something, append to **Discovered Clues**
 
 ---
 
-## AFTER WRITING THE CODE
-
-State ALL of the following — never skip any:
+## State ALL of the following after writing the code
 
 ```
 Files changed:
@@ -255,7 +224,6 @@ Security checks:
 i18n:
 - ✅ All 3 locale files updated: [list keys added]
 - ✅ No new hardcoded strings
-- ⚠️ [explain if any issue]
 
 UX:
 - loading.tsx: ✅ exists | ✅ created | ⚠️ [explain]
@@ -271,27 +239,14 @@ Performance:
 - Parallel fetches used: ✅ | not applicable
 - specific .select() fields: ✅
 
+LIVE-CONTEXT.md:
+- ✅ PR block written
+- ✅ File Ownership Map updated
+- ✅ Active Work claims released
+
 Tests needed:
 - [list each test with what it verifies]
 
 Follow-up required:
 - [anything not done in this change]
-- [known edge cases not yet handled]
 ```
-
----
-
-## TRIGGER WORDS — all handled the same way
-
-- "fix [anything]" — finding ID, bug description, Jira issue
-- "work on [anything]" — any task from any source
-- "implement [anything]" — new feature, improvement
-- "build [anything]" — feature, component, route
-- Verbal description — ("add loading skeleton to dashboard")
-- Bug report — ("donations showing wrong total for Church X")
-- Pasted issue content — from GitHub, Jira, Slack, code review
-
-**The source never changes how you work.**
-Same checklist. Same standards. Same edge case thinking. Every time.
-
-When triggered: complete steps 1-8 before touching any file.

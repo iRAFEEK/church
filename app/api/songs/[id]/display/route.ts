@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
@@ -27,4 +28,4 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-}
+})

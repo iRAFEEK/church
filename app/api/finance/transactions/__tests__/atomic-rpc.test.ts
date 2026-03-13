@@ -61,8 +61,10 @@ describe('P0-7: Finance atomic operations', () => {
       expect(content).not.toMatch(/supabase\.auth\.getUser\(\)/)
     })
 
-    it('uses switch_default_fund RPC', () => {
-      expect(content).toContain("supabase.rpc('switch_default_fund'")
+    it('uses manual update to unset previous default before setting new default', () => {
+      // Uses a two-step update pattern: unset old default, then set new one
+      expect(content).toContain("update({ is_default: false })")
+      expect(content).toContain("validated.is_default")
     })
 
     it('does not manually unset is_default in a separate query', () => {

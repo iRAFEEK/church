@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 
 export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
@@ -14,4 +15,4 @@ export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data }, { status: 201 })
-}
+})

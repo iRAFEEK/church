@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimitPublic } from '@/lib/api/rate-limit'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 export async function GET(request: NextRequest) {
   const limited = rateLimitPublic(request)

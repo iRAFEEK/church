@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (churchError) {
       // If error is about unknown column, retry with core fields only
       if (churchError.message?.includes('column') || churchError.code === '42703') {
-        logger.warn('Retrying church insert without optional columns', { module: 'auth', error: churchError.message })
+        console.warn('[church-register] Retrying church insert without optional columns', churchError.message)
         delete churchData.denomination
         delete churchData.default_bible_id
         const { data: retryResult, error: retryError } = await supabase
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (retryError || !retryResult) {
-          logger.error('Church creation failed after retry', { module: 'auth', error: retryError })
+          console.error('[church-register] Church creation failed after retry', retryError)
           return NextResponse.json(
             { error: 'Failed to create church' },
             { status: 500 }
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         }
         church = retryResult
       } else {
-        logger.error('Church creation failed', { module: 'auth', error: churchError })
+        console.error('[church-register] Church creation failed', churchError)
         return NextResponse.json(
           { error: 'Failed to create church' },
           { status: 500 }
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      logger.error('User creation failed during registration', { module: 'auth', error: authError })
+      console.error('[church-register] User creation failed during registration', authError)
       return NextResponse.json(
         { error: 'Failed to create account' },
         { status: 500 }
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!profileUpdated) {
-      logger.error('Profile upgrade to super_admin failed after retries', { module: 'auth', userId })
+      console.error('[church-register] Profile upgrade to super_admin failed after retries', userId)
     }
 
     // 3b. Insert into user_churches with super_admin role
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
         .insert(leaderRows)
 
       if (leadersError) {
-        logger.warn('Leaders creation failed (non-fatal)', { module: 'auth', churchId: church.id, error: leadersError })
+        console.warn('[church-register] Leaders creation failed (non-fatal)', leadersError)
       }
     }
 
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (err) {
-    logger.error('Church registration error', { module: 'auth', error: err })
+    console.error('[church-register] Church registration error', err)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

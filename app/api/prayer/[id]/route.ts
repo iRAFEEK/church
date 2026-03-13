@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
@@ -16,7 +17,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (fetchError || !prayer) {
-    return Response.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
   // Permission check: must be submitter, assigned_to, or leader+
@@ -25,7 +26,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const isLeader = ['super_admin', 'ministry_leader', 'group_leader'].includes(profile.role)
 
   if (!isOwner && !isAssigned && !isLeader) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const { data, error } = await supabase
@@ -41,4 +42,4 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-}
+})

@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateGatheringSchema } from '@/lib/schemas/gathering'
@@ -5,7 +6,7 @@ import { checkAndFlagAtRisk } from '@/lib/absence'
 
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const id = params?.id
-  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('gatherings')
@@ -28,8 +29,6 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     console.error('[/api/gatherings/[id] GET]', error)
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ data })
-}
 
   // Filter out private prayer requests unless user is the submitter or a leader
   if (data.prayer_requests) {
@@ -40,12 +39,12 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     )
   }
 
-  return Response.json({ data })
+  return NextResponse.json({ data })
 })
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const id = params?.id
-  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
   const validated = validate(UpdateGatheringSchema, body)
@@ -68,5 +67,5 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     await checkAndFlagAtRisk(id)
   }
 
-  return { data }
+  return NextResponse.json({ data })
 })

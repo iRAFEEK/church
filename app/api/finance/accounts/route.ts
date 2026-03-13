@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
@@ -63,4 +64,4 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`accounts-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
-}
+}, { requirePermissions: ['can_manage_finances'] })

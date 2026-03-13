@@ -29,7 +29,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { data, error, count } = await query
   if (error) {
     console.error('[/api/finance/budgets GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   return Response.json({ data, count }, {
@@ -65,7 +65,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
 
   if (error) {
     console.error('[/api/finance/budgets POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
