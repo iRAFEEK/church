@@ -721,10 +721,10 @@ export function BiblePresenter({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 text-zinc-300 border-zinc-600"
+                className="h-11 w-11 text-zinc-300 border-zinc-600"
                 onClick={() => setSettings(s => ({ ...s, font_size: Math.max(24, s.font_size - 4) }))}
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-5 w-5" />
               </Button>
               <input
                 type="range"
@@ -738,10 +738,10 @@ export function BiblePresenter({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 text-zinc-300 border-zinc-600"
+                className="h-11 w-11 text-zinc-300 border-zinc-600"
                 onClick={() => setSettings(s => ({ ...s, font_size: Math.min(120, s.font_size + 4) }))}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-5 w-5" />
               </Button>
             </div>
             <div className="flex justify-between text-xs text-zinc-500">
