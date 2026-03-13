@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 import type {
   ApiBibleBook, ApiBibleChapter,
   ApiBibleChapterContent, ApiBibleVerse,
@@ -197,7 +198,8 @@ export async function searchBible(
 
   // Each word must appear somewhere in text_plain (AND logic)
   for (const word of words) {
-    q = q.ilike('text_plain', `%${word}%`)
+    const safe = sanitizeLikePattern(word)
+    q = q.ilike('text_plain', `%${safe}%`)
   }
 
   const { data } = await q.limit(limit)

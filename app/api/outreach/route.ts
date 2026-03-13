@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // GET /api/outreach — list congregation members with visit summaries
 export async function GET(req: NextRequest) {
@@ -35,7 +36,8 @@ export async function GET(req: NextRequest) {
     .order('first_name')
 
   if (city) {
-    membersQuery = membersQuery.or(`city.ilike.%${city}%,city_ar.ilike.%${city}%`)
+    const safeCity = sanitizeLikePattern(city)
+    membersQuery = membersQuery.or(`city.ilike.%${safeCity}%,city_ar.ilike.%${safeCity}%`)
   }
 
   const { data: members, error: membersError } = await membersQuery
