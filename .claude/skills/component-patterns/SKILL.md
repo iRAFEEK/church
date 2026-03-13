@@ -1,3 +1,8 @@
+---
+name: component-patterns
+description: React component patterns for the Ekklesia app — Server vs Client components, forms, loading states, empty states, RTL, i18n, mobile-first layout, and shadcn/ui usage.
+---
+
 # Skill: Component Patterns — Ekklesia
 
 This document describes how to write components, hooks, and UI in the Ekklesia codebase. Every code change involving UI must match these patterns exactly. When in doubt, find an existing component that does something similar and copy its structure.

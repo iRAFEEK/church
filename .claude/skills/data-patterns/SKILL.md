@@ -1,3 +1,8 @@
+---
+name: data-patterns
+description: Data fetching and API route patterns for the Ekklesia app — Supabase queries, apiHandler, Zod validation, pagination, caching, permissions, and finance double-entry rules.
+---
+
 # Skill: Data Patterns — Ekklesia
 
 No ORM. No React Query. No tRPC. Data flows one way: Server Components query Supabase directly. Client Components call API routes. API routes query Supabase via the query builder. The `apiHandler` wrapper handles auth, roles, and errors for all routes.
