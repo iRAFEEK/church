@@ -1,55 +1,101 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateTransactionSchema } from '@/lib/schemas/transaction'
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+// GET /api/finance/transactions/[id] — get transaction with line items
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const { data, error } = await supabase
     .from('financial_transactions')
     .select('*, line_items:transaction_line_items(*, account:accounts(code, name))')
-    .eq('id', id)
+    .eq('id', params!.id)
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json({ data }, {
+  if (error || !data) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  return Response.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
-}
+}, { requirePermissions: ['can_view_finances'] })
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// PATCH /api/finance/transactions/[id] — update transaction
+// Re-validates double-entry balance after line item changes
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const body = validate(UpdateTransactionSchema, await req.json())
+  const txnId = params!.id
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  // If line_items are being updated, re-validate double-entry balance
+  if (body.line_items && body.line_items.length > 0) {
+    const totalDebits = body.line_items.reduce((sum, li) => sum + (li.debit_amount ?? 0), 0)
+    const totalCredits = body.line_items.reduce((sum, li) => sum + (li.credit_amount ?? 0), 0)
 
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (Math.abs(totalDebits - totalCredits) > 0.01) {
+      return Response.json(
+        {
+          error: 'Transaction is not balanced',
+          details: { debits: totalDebits, credits: totalCredits },
+        },
+        { status: 422 }
+      )
+    }
 
-  const body = await req.json()
-  const { data, error } = await supabase
+    // Delete old line items and insert new ones
+    const { error: deleteError } = await supabase
+      .from('transaction_line_items')
+      .delete()
+      .eq('transaction_id', txnId)
+      .eq('church_id', profile.church_id)
+
+    if (deleteError) throw deleteError
+
+    const items = body.line_items.map(li => ({
+      ...li,
+      transaction_id: txnId,
+      church_id: profile.church_id,
+    }))
+
+    const { error: insertError } = await supabase
+      .from('transaction_line_items')
+      .insert(items)
+
+    if (insertError) throw insertError
+  }
+
+  // Update transaction header (exclude line_items from header update)
+  const { line_items: _lineItems, ...headerUpdates } = body
+
+  if (Object.keys(headerUpdates).length > 0) {
+    const { data, error } = await supabase
+      .from('financial_transactions')
+      .update(headerUpdates)
+      .eq('id', txnId)
+      .eq('church_id', profile.church_id)
+      .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency')
+      .single()
+
+    if (error || !data) {
+      return Response.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    revalidateTag(`dashboard-${profile.church_id}`)
+    return Response.json({ data })
+  }
+
+  // If only line items were updated, re-fetch the full transaction
+  const { data: refreshed, error: refreshError } = await supabase
     .from('financial_transactions')
-    .update(body)
-    .eq('id', id)
+    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency')
+    .eq('id', txnId)
     .eq('church_id', profile.church_id)
-    .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (refreshError || !refreshed) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return Response.json({ data: refreshed })
+}, { requirePermissions: ['can_manage_finances'] })
