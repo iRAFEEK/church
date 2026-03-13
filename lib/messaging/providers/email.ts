@@ -1,4 +1,5 @@
 import type { MessagePayload, MessageResult, MessageProvider } from '../types'
+import { logger } from '@/lib/logger'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@ekklesia.app'
@@ -27,7 +28,7 @@ class ResendProvider implements MessageProvider {
 
   async send(payload: MessagePayload): Promise<MessageResult> {
     if (!this.isConfigured()) {
-      console.warn('[Email] Resend API key not configured — skipping send')
+      logger.warn('Resend API key not configured — skipping send', { module: 'messaging' })
       return { success: false, error: 'Resend API key not configured' }
     }
 
@@ -46,14 +47,14 @@ class ResendProvider implements MessageProvider {
       })
 
       if (error) {
-        console.error('[Email] Send failed:', error.message)
+        logger.error('Email send failed', { module: 'messaging', error: error.message })
         return { success: false, error: error.message }
       }
 
       return { success: true, messageId: data?.id }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error'
-      console.error('[Email] Send error:', msg)
+      logger.error('Email send error', { module: 'messaging', error })
       return { success: false, error: msg }
     }
   }

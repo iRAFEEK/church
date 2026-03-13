@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function DELETE(req: NextRequest) {
       .eq('token', token)
 
     if (error) {
-      console.error('[Push/Unsubscribe] Delete failed:', error.message)
+      logger.error('Push token delete failed', { module: 'push', userId: user.id, error: error.message })
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

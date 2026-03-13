@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyEventServiceAssigned } from '@/lib/messaging/triggers'
 import { resolveApiPermissions } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 type Params = { params: Promise<{ id: string; needId: string }> }
 
@@ -101,7 +102,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Notify the assigned member (fire-and-forget)
-  notifyEventServiceAssigned(assignment.id, profile.church_id).catch(console.error)
+  notifyEventServiceAssigned(assignment.id, profile.church_id).catch((err) =>
+    logger.error('notifyEventServiceAssigned fire-and-forget failed', { module: 'events', churchId: profile.church_id, error: err })
+  )
 
   return NextResponse.json({ data: assignment }, { status: 201 })
 }

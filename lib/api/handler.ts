@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
+import { logger } from '@/lib/logger'
 import type { PermissionKey, UserRole, PermissionMap } from '@/types'
 
 export type ApiContext = {
@@ -124,7 +125,13 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
 
     } catch (err) {
       const duration = Math.round(performance.now() - start)
-      console.error(`[API ERROR] ${req.method} ${routeName} ${duration}ms`, err)
+      logger.error('API route error', {
+        module: 'api',
+        method: req.method,
+        route: routeName,
+        durationMs: duration,
+        error: err,
+      })
 
       if (err instanceof ValidationError) {
         return NextResponse.json(

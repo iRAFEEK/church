@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notifyVisitorAssigned } from '@/lib/messaging/triggers'
+import { logger } from '@/lib/logger'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -41,7 +42,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     // Notify the assigned leader
-    notifyVisitorAssigned(id, assigned_to, data.church_id).catch(console.error)
+    notifyVisitorAssigned(id, assigned_to, data.church_id).catch((err) =>
+      logger.error('notifyVisitorAssigned fire-and-forget failed', { module: 'visitors', churchId: data.church_id, error: err })
+    )
 
     return NextResponse.json({ data })
   }
