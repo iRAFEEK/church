@@ -47,8 +47,16 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
   const [rolePresets, setRolePresets] = useState<RolePreset[]>([])
 
   useEffect(() => {
-    fetch('/api/ministries').then(r => r.json()).then(d => setMinistries(d.data || []))
-    fetch('/api/groups').then(r => r.json()).then(d => setGroups(d.data || []))
+    const controller = new AbortController()
+    fetch('/api/ministries', { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => { if (!controller.signal.aborted) setMinistries(d.data || []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[ServiceNeedsPicker] Failed to fetch ministries:', e) })
+    fetch('/api/groups', { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => { if (!controller.signal.aborted) setGroups(d.data || []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[ServiceNeedsPicker] Failed to fetch groups:', e) })
+    return () => controller.abort()
   }, [])
 
   const openAddDialog = () => {

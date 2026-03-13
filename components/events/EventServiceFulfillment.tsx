@@ -22,11 +22,17 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
   const [expandedNeed, setExpandedNeed] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/events/${eventId}/service-needs`)
+    const controller = new AbortController()
+    fetch(`/api/events/${eventId}/service-needs`, { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setNeeds(d.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .then(d => { if (!controller.signal.aborted) setNeeds(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventServiceFulfillment] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [eventId])
 
   if (loading) return <div className="text-sm text-zinc-400 py-4">{t('loading')}</div>

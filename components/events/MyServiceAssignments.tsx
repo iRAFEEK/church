@@ -33,21 +33,29 @@ export function MyServiceAssignments({ fullPage = false }: MyServiceAssignmentsP
   const [assignments, setAssignments] = useState<ServiceAssignment[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/my-service-assignments')
-      if (res.ok) {
+      const res = await fetch('/api/my-service-assignments', { signal })
+      if (res.ok && !signal?.aborted) {
         const data = await res.json()
         setAssignments(data.data || [])
       }
-    } catch {
-      // silently fail
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        // silently fail
+      }
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }
 
-  useEffect(() => { fetchAssignments() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchAssignments(controller.signal)
+    return () => controller.abort()
+  }, [])
 
   const updateStatus = async (assignment: ServiceAssignment, newStatus: 'confirmed' | 'declined') => {
     const res = await fetch(

@@ -35,18 +35,26 @@ export function EventAudienceSelector({ value, onChange }: Props) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (value.visibility === 'restricted' && ministries.length === 0) {
-      setLoading(true)
-      Promise.all([
-        fetch('/api/ministries').then(r => r.json()),
-        fetch('/api/groups').then(r => r.json()),
-      ])
-        .then(([mData, gData]) => {
+    if (value.visibility !== 'restricted' || ministries.length > 0) return
+    const controller = new AbortController()
+    setLoading(true)
+    Promise.all([
+      fetch('/api/ministries', { signal: controller.signal }).then(r => r.json()),
+      fetch('/api/groups', { signal: controller.signal }).then(r => r.json()),
+    ])
+      .then(([mData, gData]) => {
+        if (!controller.signal.aborted) {
           setMinistries(mData.data || [])
           setGroups(gData.data || [])
-        })
-        .finally(() => setLoading(false))
-    }
+        }
+      })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventAudienceSelector] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [value.visibility, ministries.length])
 
   return (

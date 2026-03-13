@@ -34,20 +34,25 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/notifications?pageSize=15')
+      const res = await fetch('/api/notifications?pageSize=15', { signal })
       if (!res.ok) return
+      if (signal?.aborted) return
       const json = await res.json()
       setNotifications(json.data || [])
       setUnreadCount(json.unreadCount || 0)
-    } catch {
-      // silently fail
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        // silently fail
+      }
     }
   }, [])
 
   useEffect(() => {
-    fetchNotifications()
+    const controller = new AbortController()
+    fetchNotifications(controller.signal)
+    return () => controller.abort()
   }, [fetchNotifications])
 
   useEffect(() => {

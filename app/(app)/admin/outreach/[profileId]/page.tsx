@@ -52,11 +52,11 @@ export default function OutreachMemberDetailPage() {
   const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchVisits = useCallback(async () => {
+  const fetchVisits = useCallback(async (signal?: AbortSignal) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/outreach/visits?profile_id=${profileId}`)
-      if (res.ok) {
+      const res = await fetch(`/api/outreach/visits?profile_id=${profileId}`, signal ? { signal } : undefined)
+      if (res.ok && !(signal?.aborted)) {
         const json = await res.json()
         const data = json.data || []
         setVisits(data)
@@ -65,13 +65,19 @@ export default function OutreachMemberDetailPage() {
           setMemberProfile(data[0].profile)
         }
       }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('[OutreachDetail] Failed to fetch:', e)
+      }
     } finally {
-      setLoading(false)
+      if (!(signal?.aborted)) setLoading(false)
     }
   }, [profileId])
 
   useEffect(() => {
-    fetchVisits()
+    const controller = new AbortController()
+    fetchVisits(controller.signal)
+    return () => controller.abort()
   }, [fetchVisits])
 
   const handleDeleteVisit = async (id: string) => {

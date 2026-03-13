@@ -92,20 +92,38 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
 
   const debouncedSearch = useDebounce(memberSearch, 300)
 
-  const fetchNeeds = useCallback(async () => {
-    const res = await fetch(`/api/events/${eventId}/service-needs`)
-    const data = await res.json()
-    setNeeds(data.data || [])
-    setLoading(false)
+  const fetchNeeds = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/service-needs`, { signal })
+      if (signal?.aborted) return
+      const data = await res.json()
+      setNeeds(data.data || [])
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('[InlineStaffingManager] Failed to fetch needs:', e)
+      }
+    } finally {
+      if (!signal?.aborted) setLoading(false)
+    }
   }, [eventId])
 
-  useEffect(() => { fetchNeeds() }, [fetchNeeds])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchNeeds(controller.signal)
+    return () => controller.abort()
+  }, [fetchNeeds])
 
   useEffect(() => {
-    fetch('/api/role-suggestions')
+    const controller = new AbortController()
+    fetch('/api/role-suggestions', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setRoleSuggestions(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setRoleSuggestions(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[InlineStaffingManager] Failed to fetch role suggestions:', e)
+        }
+      })
+    return () => controller.abort()
   }, [])
 
   const getDisplayName = useCallback((p: { first_name?: string | null; last_name?: string | null; first_name_ar?: string | null; last_name_ar?: string | null }) => {

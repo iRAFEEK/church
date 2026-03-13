@@ -49,10 +49,16 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
   const notesField = isAr ? 'notes_ar' : 'notes'
 
   useEffect(() => {
-    fetch('/api/serving/areas')
+    const controller = new AbortController()
+    fetch('/api/serving/areas', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setAreas(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setAreas(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[ServingSlotForm] Failed to fetch areas:', e)
+        }
+      })
+    return () => controller.abort()
   }, [])
 
   const handleSubmit = async () => {

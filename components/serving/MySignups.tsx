@@ -15,25 +15,33 @@ export function MySignups() {
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
 
-  const loadMySignups = async () => {
+  const controllerRef = { current: null as AbortController | null }
+
+  const loadMySignups = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/serving/slots?upcoming=true')
+      const res = await fetch('/api/serving/slots?upcoming=true', { signal })
       if (!res.ok) return
       const { data } = await res.json()
-      // We need to check which slots the user is signed up for
-      // The slot detail endpoint returns user's signup info
-      // For efficiency, we load all upcoming slots then filter client-side
-      // by fetching each slot detail — but that's N+1
-      // Instead, let's just show all upcoming slots and let the member page handle it
-      setSlots(data || [])
-    } catch {
-      // ignore
+      if (!signal?.aborted) {
+        setSlots(data || [])
+      }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        // ignore
+      }
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }
 
-  useEffect(() => { loadMySignups() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    controllerRef.current = controller
+    loadMySignups(controller.signal)
+    return () => controller.abort()
+  }, [])
 
   const handleCancel = async (slotId: string) => {
     if (!confirm(t('confirmCancel'))) return

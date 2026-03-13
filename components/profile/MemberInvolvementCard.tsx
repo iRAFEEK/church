@@ -21,11 +21,17 @@ export function MemberInvolvementCard({ profileId }: MemberInvolvementCardProps)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/profiles/${profileId}/involvement`)
+    const controller = new AbortController()
+    fetch(`/api/profiles/${profileId}/involvement`, { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setData(d))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .then(d => { if (!controller.signal.aborted) setData(d) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[MemberInvolvementCard] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [profileId])
 
   if (loading) {
