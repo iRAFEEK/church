@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 /** Get admin client for notification reads/writes (bypasses RLS for cross-church). */
 async function getAdminOrFallback() {
@@ -206,6 +207,6 @@ async function logNotification(
       sent_at: result.success ? new Date().toISOString() : null,
     })
   } catch (error) {
-    console.error('[Dispatcher] Failed to log notification:', error)
+    logger.error('Failed to log notification', { module: 'messaging', churchId: request.churchId, error })
   }
 }

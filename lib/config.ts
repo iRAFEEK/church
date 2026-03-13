@@ -69,6 +69,7 @@ function loadConfig(): AppConfig {
     const formatted = result.error.errors
       .map(e => `  ${e.path.join('.')}: ${e.message}`)
       .join('\n')
+    // Logger not available yet (config loads first), use console directly
     console.error(`[CONFIG] Invalid configuration:\n${formatted}`)
     // Don't throw in development — allow partial config for local dev
     if (process.env.NODE_ENV === 'production') {

@@ -1,5 +1,6 @@
 import type { MessagePayload, MessageResult, MessageProvider } from '../types'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 /**
  * In-app notification provider.
@@ -38,14 +39,14 @@ class InAppProvider implements MessageProvider {
         .single()
 
       if (error) {
-        console.error('[InApp] Insert failed:', error.message)
+        logger.error('In-app notification insert failed', { module: 'messaging', error: error.message })
         return { success: false, error: error.message }
       }
 
       return { success: true, messageId: data?.id }
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error'
-      console.error('[InApp] Error:', msg)
+      logger.error('In-app notification error', { module: 'messaging', error })
       return { success: false, error: msg }
     }
   }
