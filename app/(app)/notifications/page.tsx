@@ -8,6 +8,7 @@ import {
   Bell, BellOff, CheckCheck, ChevronLeft, ChevronRight, Filter,
   Calendar, UserPlus, AlertTriangle, Clock, Info, Loader2,
   Send, X, Image, Link as LinkIcon, ExternalLink,
+  HandHelping, MessageCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -54,12 +55,15 @@ const NOTIFICATION_TYPES = [
   'all', 'gathering_reminder', 'visitor_assigned', 'visitor_welcome',
   'at_risk_alert', 'visitor_sla_warning', 'event_reminder',
   'event_service_request', 'event_service_assigned', 'event_service_response',
+  'need_response_received', 'need_response_status_changed', 'need_message',
   'general',
 ] as const
 
 const typeIcons: Record<string, React.ElementType> = {
   gathering_reminder: Calendar, visitor_assigned: UserPlus, visitor_welcome: UserPlus,
-  at_risk_alert: AlertTriangle, visitor_sla_warning: Clock, event_reminder: Calendar, general: Info,
+  at_risk_alert: AlertTriangle, visitor_sla_warning: Clock, event_reminder: Calendar,
+  need_response_received: HandHelping, need_response_status_changed: HandHelping, need_message: MessageCircle,
+  general: Info,
 }
 
 const typeColors: Record<string, string> = {
@@ -69,6 +73,9 @@ const typeColors: Record<string, string> = {
   at_risk_alert: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   visitor_sla_warning: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   event_reminder: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  need_response_received: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  need_response_status_changed: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+  need_message: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
   general: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 }
 
@@ -211,6 +218,13 @@ export default function NotificationsPage() {
     if (n.reference_type === 'gathering') return '/groups'
     if (n.reference_type === 'profile' && n.reference_id) return `/admin/members/${n.reference_id}`
     if (n.reference_type === 'event' && n.reference_id) return `/events/${n.reference_id}`
+    if (n.reference_type === 'church_need' && n.reference_id) {
+      const base = `/community/needs/${n.reference_id}`
+      if (n.type === 'need_message' && n.payload?.responseId) {
+        return `${base}?openThread=${n.payload.responseId}`
+      }
+      return base
+    }
     return null
   }
 

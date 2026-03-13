@@ -1,4 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+
+/** Get admin client for notification reads/writes (bypasses RLS for cross-church). */
+async function getAdminOrFallback() {
+  try {
+    return await createAdminClient()
+  } catch {
+    return await createClient()
+  }
+}
 import { whatsappProvider } from './providers/whatsapp'
 import { emailProvider } from './providers/email'
 import { inAppProvider } from './providers/in-app'
@@ -113,7 +122,7 @@ export async function sendNotification(request: NotificationRequest): Promise<{
  */
 async function resolveChannels(profileId: string): Promise<MessageChannel[]> {
   try {
-    const supabase = await createClient()
+    const supabase = await getAdminOrFallback()
     const { data } = await supabase
       .from('profiles')
       .select('notification_pref')
@@ -144,7 +153,7 @@ async function getProfileContactInfo(
   overrideEmail?: string
 ): Promise<{ phone: string | null; email: string | null; locale: 'ar' | 'en' }> {
   try {
-    const supabase = await createClient()
+    const supabase = await getAdminOrFallback()
     const { data } = await supabase
       .from('profiles')
       .select('phone, email, church_id')
@@ -181,7 +190,7 @@ async function logNotification(
   result: MessageResult
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = await getAdminOrFallback()
     await supabase.from('notifications_log').insert({
       church_id: request.churchId,
       profile_id: request.profileId,

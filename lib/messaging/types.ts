@@ -12,6 +12,7 @@ export type NotificationType =
   | 'event_service_response'
   | 'need_response_received'
   | 'need_response_status_changed'
+  | 'need_message'
   | 'general'
 
 export interface MessagePayload {

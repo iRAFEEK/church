@@ -1,6 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from './dispatcher'
 import { TEMPLATES, interpolate } from './templates'
+
+function truncate(text: string, max = 100): string {
+  return text.length > max ? text.slice(0, max) + '…' : text
+}
 
 /**
  * Send welcome message to a new visitor.
@@ -438,7 +442,7 @@ export async function notifyNeedResponseReceived(
   message: string
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Get need + owner church info
     const { data: need } = await supabase
@@ -461,7 +465,7 @@ export async function notifyNeedResponseReceived(
     const needTitle = need.title_ar || need.title
     const churchName = responderChurch.name_ar || responderChurch.name
     const template = TEMPLATES.need_response_received
-    const truncatedMessage = message.length > 100 ? message.slice(0, 100) + '…' : message
+    const truncatedMessage = truncate(message)
 
     await sendNotification({
       profileId: need.created_by,
@@ -490,7 +494,7 @@ export async function notifyNeedResponseStatusChanged(
   newStatus: 'accepted' | 'declined' | 'completed'
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Get response + responder info
     const { data: response } = await supabase
@@ -538,6 +542,64 @@ export async function notifyNeedResponseStatusChanged(
     })
   } catch (error) {
     console.error('[Trigger] notifyNeedResponseStatusChanged error:', error)
+  }
+}
+
+/**
+ * Notify the other party when a message is sent on a need response thread.
+ * Called from POST /api/community/needs/[id]/responses/[responseId]/messages
+ */
+export async function notifyNeedMessage(
+  needId: string,
+  responseId: string,
+  senderChurchId: string,
+  recipientChurchId: string,
+  message: string
+) {
+  try {
+    const supabase = await createAdminClient()
+
+    const [{ data: need }, { data: senderChurch }] = await Promise.all([
+      supabase.from('church_needs').select('title, title_ar, church_id, created_by').eq('id', needId).single(),
+      supabase.from('churches').select('name, name_ar').eq('id', senderChurchId).single(),
+    ])
+
+    if (!need || !senderChurch) return
+
+    // Find the recipient user (the admin who created the need or the responder)
+    let recipientUserId: string | null = null
+    if (recipientChurchId === need.church_id) {
+      recipientUserId = need.created_by
+    } else {
+      const { data: response } = await supabase
+        .from('church_need_responses')
+        .select('responder_user_id')
+        .eq('id', responseId)
+        .single()
+      recipientUserId = response?.responder_user_id || null
+    }
+
+    if (!recipientUserId) return
+
+    const needTitle = need.title_ar || need.title
+    const churchName = senderChurch.name_ar || senderChurch.name
+    const truncatedMessage = truncate(message)
+    const template = TEMPLATES.need_message
+
+    await sendNotification({
+      profileId: recipientUserId,
+      churchId: recipientChurchId,
+      type: 'need_message',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { churchName, needTitle, message: truncatedMessage }),
+      bodyAr: interpolate(template.bodyAr, { churchName, needTitle, message: truncatedMessage }),
+      referenceId: needId,
+      referenceType: 'church_need',
+      data: { churchName, needTitle, message: truncatedMessage, responseId },
+    })
+  } catch (error) {
+    console.error('[Trigger] notifyNeedMessage error:', error)
   }
 }
 

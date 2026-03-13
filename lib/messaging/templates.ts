@@ -128,6 +128,16 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectEn: 'Your help offer has been {status}',
     emailSubjectAr: 'تم {statusAr} عرض مساعدتك',
   },
+
+  need_message: {
+    whatsappTemplate: 'need_message',
+    titleEn: 'New Message on Need',
+    titleAr: 'رسالة جديدة على الاحتياج',
+    bodyEn: '{churchName} sent a message about "{needTitle}": {message}',
+    bodyAr: '{churchName} أرسلت رسالة بخصوص "{needTitle}": {message}',
+    emailSubjectEn: 'New message about: {needTitle}',
+    emailSubjectAr: 'رسالة جديدة بخصوص: {needTitle}',
+  },
 }
 
 /**

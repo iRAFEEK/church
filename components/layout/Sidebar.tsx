@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getAvatarUrl } from '@/lib/utils/storage'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import { analytics } from '@/lib/analytics'
 import { useRouter } from 'next/navigation'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -51,6 +52,12 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   async function handleSignOut() {
+    analytics.auth.loggedOut({
+      church_id: profile.church_id,
+      role: profile.role,
+      locale: locale as string,
+    })
+    analytics.reset()
     const supabase = createClient()
     await supabase.auth.signOut()
     toast.success(t('signedOut'))
