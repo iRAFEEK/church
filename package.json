@@ -8,7 +8,8 @@
     "build": "npm run generate:sw && next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": "22.x"
