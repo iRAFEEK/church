@@ -4,9 +4,12 @@ import { resolveAudience, type AudienceTarget } from '@/lib/messaging/audience'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { whatsappProvider } from '@/lib/messaging/providers/whatsapp'
 import { getSendableScopes, validateTargetsAgainstScopes } from '@/lib/messaging/scopes'
+import { rateLimitNotify } from '@/lib/api/rate-limit'
 
 // POST /api/notifications/send — send targeted notification (role-scoped)
 export async function POST(req: NextRequest) {
+  const limited = rateLimitNotify(req)
+  if (limited) return limited
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
