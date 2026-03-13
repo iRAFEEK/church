@@ -49,7 +49,10 @@ export const PUT = apiHandler(async ({ req, supabase, profile, user }) => {
       updated_by: user.id,
     }, { onConflict: 'church_id,role' })
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/permissions/role-defaults PUT]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Audit log
   await supabase.from('permission_audit_log').insert({

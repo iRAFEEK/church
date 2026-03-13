@@ -31,7 +31,10 @@ export async function GET(
     .eq('church_id', profile.church_id)
     .order('sort_order', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/segments GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data: data || [] })
 }
 
@@ -85,7 +88,10 @@ export async function PUT(
     }))
 
     const { error } = await supabase.from('event_segments').insert(rows)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/events/[id]/segments PUT]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ success: true })

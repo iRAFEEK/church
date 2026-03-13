@@ -14,8 +14,11 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) throw error
-  return Response.json({ data }, {
+  if (error) {
+    console.error('[/api/finance/campaigns/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  return NextResponse.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
 }, { requirePermissions: ['can_view_finances'] })
@@ -49,7 +52,10 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('id, name, name_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, created_at')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/campaigns/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_campaigns'] })

@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
   const { data: { users }, error: listError } = await supabase.auth.admin.listUsers()
 
   if (listError) {
-    return NextResponse.json({ error: listError.message }, { status: 500 })
+    console.error('[/api/auth/dev-login POST]', listError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   const user = users.find(u => u.email === email)
@@ -34,7 +35,8 @@ export async function POST(req: NextRequest) {
   })
 
   if (error || !data) {
-    return NextResponse.json({ error: error?.message || 'Failed to generate link' }, { status: 500 })
+    console.error('[/api/auth/dev-login POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Return the token hash and verification type for client-side verification

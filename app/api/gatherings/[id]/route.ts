@@ -24,8 +24,23 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
-  return { data }
+  if (error) {
+    console.error('[/api/gatherings/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  return NextResponse.json({ data })
+}
+
+  // Filter out private prayer requests unless user is the submitter or a leader
+  if (data.prayer_requests) {
+    const isLeader = ['super_admin', 'ministry_leader', 'group_leader'].includes(profile.role)
+    data.prayer_requests = data.prayer_requests.filter(
+      (p: { is_private: boolean; submitted_by: string }) =>
+        !p.is_private || p.submitted_by === profile.id || isLeader
+    )
+  }
+
+  return Response.json({ data })
 })
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
@@ -43,7 +58,10 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select()
     .single()
 
-  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (error) {
+    console.error('[/api/gatherings/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // If just completed, trigger at-risk check
   if (validated.status === 'completed') {

@@ -21,9 +21,12 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .order('created_at', { ascending: true })
 
-  if (error) throw error
-  return { data }
-})
+  if (error) {
+    console.error('[/api/gatherings/[id]/prayer GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data })
+}
 
 export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
   const gathering_id = params?.id
@@ -55,6 +58,9 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
     .single()
 
-  if (error) throw error
-  return Response.json({ data }, { status: 201 })
-})
+  if (error) {
+    console.error('[/api/gatherings/[id]/prayer POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data }, { status: 201 })
+}

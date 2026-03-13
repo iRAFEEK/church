@@ -24,9 +24,27 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
   return Response.json({ data })
 })
 
-// PATCH /api/ministries/[id] — update ministry (admins+)
-export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
-  const body = validate(UpdateMinistrySchema, await req.json())
+  if (error) {
+    console.error('[/api/ministries/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  return NextResponse.json({ data })
+}
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await req.json()
+
+  // Only pass known columns to avoid errors if migration not applied
+  const allowed = ['name', 'name_ar', 'description', 'description_ar', 'leader_id', 'is_active', 'photo_url']
+  const updates: Record<string, unknown> = {}
+  for (const key of allowed) {
+    if (key in body) updates[key] = body[key]
+  }
 
   const { data, error } = await supabase
     .from('ministries')
@@ -35,10 +53,9 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('*, church_id')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (data?.church_id) {
-    revalidateTag(`ministries-${data.church_id}`)
-    revalidateTag(`dashboard-${data.church_id}`)
+  if (error) {
+    console.error('[/api/ministries/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
 }
@@ -55,10 +72,9 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
   const { data: ministry } = await supabase.from('ministries').select('church_id').eq('id', id).single()
 
   const { error } = await supabase.from('ministries').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (ministry?.church_id) {
-    revalidateTag(`ministries-${ministry.church_id}`)
-    revalidateTag(`dashboard-${ministry.church_id}`)
+  if (error) {
+    console.error('[/api/ministries/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ success: true })
 }

@@ -16,9 +16,12 @@ export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
     .order('scheduled_at', { ascending: false })
     .limit(limit)
 
-  if (error) throw error
-  return { data }
-})
+  if (error) {
+    console.error('[/api/groups/[id]/gatherings GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data })
+}
 
 // Generate next gathering for a group
 export const POST = apiHandler(async ({ req, supabase, profile, user, params }) => {
@@ -59,6 +62,9 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .select()
     .single()
 
-  if (error) throw error
-  return Response.json({ data }, { status: 201 })
-})
+  if (error) {
+    console.error('[/api/groups/[id]/gatherings POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data }, { status: 201 })
+}

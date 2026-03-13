@@ -9,7 +9,10 @@ export const PATCH = apiHandler(async ({ supabase, user }) => {
     .eq('channel', 'in_app')
     .is('read_at', null)
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/notifications/read-all PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return { success: true }
 })

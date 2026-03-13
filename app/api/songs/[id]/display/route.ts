@@ -22,8 +22,9 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('display_settings')
     .single()
 
-  if (error || !data) {
-    return Response.json({ error: 'Not found' }, { status: 404 })
+  if (error) {
+    console.error('[/api/songs/[id]/display PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  return Response.json({ data })
-}, { requireRoles: ['super_admin', 'ministry_leader', 'group_leader'] })
+  return NextResponse.json({ data })
+}

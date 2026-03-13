@@ -23,7 +23,10 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     .select('id, description, amount, currency, status, rejection_reason, approved_by, approved_at')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/expenses/[id]/reject POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_approve_expenses'] })

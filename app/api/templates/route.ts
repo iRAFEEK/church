@@ -27,7 +27,10 @@ export async function GET() {
     .eq('is_active', true)
     .order('name', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/templates GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   const enriched = (data || []).map((t: any) => ({
     ...t,
@@ -73,7 +76,10 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/templates POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Insert needs
   if (Array.isArray(needs) && needs.length > 0) {

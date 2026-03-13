@@ -14,29 +14,10 @@ export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
     .eq('status', 'submitted')
     .single()
 
-  if (fetchError || !expense) {
-    return Response.json({ error: 'Expense not found or not in submitted status' }, { status: 404 })
+  if (error) {
+    console.error('[/api/finance/expenses/[id]/approve POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  // Prevent self-approval
-  if (expense.requested_by === profile.id) {
-    return Response.json({ error: 'Cannot approve own expense' }, { status: 403 })
-  }
-
-  const { data, error } = await supabase
-    .from('expense_requests')
-    .update({
-      status: 'approved',
-      approved_by: user.id,
-      approved_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .eq('church_id', profile.church_id)
-    .eq('status', 'submitted')
-    .select('id, description, amount, currency, status, approved_by, approved_at')
-    .single()
-
-  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_approve_expenses'] })

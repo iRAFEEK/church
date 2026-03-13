@@ -28,6 +28,9 @@ export async function GET() {
     .lt('visited_at', cutoff)
     .order('visited_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/visitors/escalations GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data, sla_hours: slaHours })
 }

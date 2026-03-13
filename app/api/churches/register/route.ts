@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         if (retryError || !retryResult) {
           logger.error('Church creation failed after retry', { module: 'auth', error: retryError })
           return NextResponse.json(
-            { error: retryError?.message || 'Failed to create church' },
+            { error: 'Failed to create church' },
             { status: 500 }
           )
         }
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       } else {
         logger.error('Church creation failed', { module: 'auth', error: churchError })
         return NextResponse.json(
-          { error: churchError.message || 'Failed to create church' },
+          { error: 'Failed to create church' },
           { status: 500 }
         )
       }

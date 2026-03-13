@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50)
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/church-prayers GET]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     // Strip submitter info for anonymous prayers
     const sanitized = (data as any[] || []).map(p => {
@@ -68,7 +71,10 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50)
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/church-prayers GET]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
     return NextResponse.json({ data })
   }
 
@@ -86,7 +92,10 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(100)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church-prayers GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Strip submitter info for anonymous prayers (unless super_admin)
   const isSuperAdmin = profile.role === 'super_admin'
@@ -147,7 +156,10 @@ export async function POST(req: NextRequest) {
     .select('id, content, is_anonymous, status, created_at')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church-prayers POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Notify super_admins about the new prayer request
   try {

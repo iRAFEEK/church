@@ -27,7 +27,10 @@ export async function GET(
     .eq('id', id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/serving/slots/[id] GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Non-admins only see their own signup status
@@ -70,7 +73,10 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/serving/slots/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data })
 }
 
@@ -101,6 +107,9 @@ export async function DELETE(
     .delete()
     .eq('id', id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/serving/slots/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

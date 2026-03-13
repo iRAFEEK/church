@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
       .from('user_churches')
       .insert({ user_id: user.id, church_id, role: 'member' })
 
-    if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 })
+    if (insertError) {
+      console.error('[/api/churches/join POST]', insertError)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     // Set as active church on profile
     const { error: profileError } = await supabase
@@ -53,7 +56,10 @@ export async function POST(request: NextRequest) {
       .update({ church_id })
       .eq('id', user.id)
 
-    if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 })
+    if (profileError) {
+      console.error('[/api/churches/join POST]', profileError)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
   } else {
     // Subsequent join: just add to user_churches (don't change active church)
     const { error: insertError } = await supabase
@@ -61,7 +67,8 @@ export async function POST(request: NextRequest) {
       .insert({ user_id: user.id, church_id, role: 'member' })
 
     if (insertError && !insertError.message.includes('duplicate')) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 })
+      console.error('[/api/churches/join POST]', insertError)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
   }
 

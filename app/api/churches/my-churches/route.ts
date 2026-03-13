@@ -21,7 +21,10 @@ export async function GET() {
     .eq('user_id', user.id)
     .order('joined_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/churches/my-churches GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   const result = (data ?? []).map((row) => ({
     ...row,

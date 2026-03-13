@@ -40,7 +40,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (method) query = query.eq('payment_method', method)
 
   const { data, error, count } = await query
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/donations GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return Response.json({
     data,
@@ -89,7 +92,10 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     `)
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/donations POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })

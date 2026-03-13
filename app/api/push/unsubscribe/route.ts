@@ -22,8 +22,9 @@ export async function DELETE(req: NextRequest) {
       .eq('token', token)
 
     if (error) {
-      logger.error('Push token delete failed', { module: 'push', userId: user.id, error: error.message })
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[Push/Unsubscribe] Delete failed:', error.message)
+      console.error('[/api/push/unsubscribe DELETE]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

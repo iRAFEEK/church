@@ -72,7 +72,10 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (eventError) return NextResponse.json({ error: eventError.message }, { status: 500 })
+  if (eventError) {
+    console.error('[/api/events/from-template POST]', eventError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Copy service needs
   if (templateNeeds && templateNeeds.length > 0) {

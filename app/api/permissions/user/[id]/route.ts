@@ -140,7 +140,10 @@ export const PUT = apiHandler(async ({ req, supabase, profile, user, params }) =
     if (error) updateError = error
   }
 
-  if (updateError) throw updateError
+  if (updateError) {
+    console.error('[/api/permissions/user/[id] PUT]', updateError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Audit log (best effort)
   try {

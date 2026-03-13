@@ -40,7 +40,10 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .upsert(rows, { onConflict: 'gathering_id,profile_id' })
     .select()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/gatherings/[id]/attendance POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${gathering.church_id}`)
   return { data }
 })
