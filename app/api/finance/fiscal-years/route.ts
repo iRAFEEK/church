@@ -7,11 +7,12 @@ import { CreateFiscalYearSchema } from '@/lib/schemas/fiscal-year'
 export const GET = apiHandler(async ({ supabase, profile }) => {
   const { data, error } = await supabase
     .from('fiscal_years')
-    .select('id, name, start_date, end_date, is_current')
+    .select('id, name, name_ar, start_date, end_date, is_current')
     .eq('church_id', profile.church_id)
     .order('start_date', { ascending: false })
 
   if (error) throw error
+
   return Response.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
   })
@@ -22,15 +23,37 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const body = await req.json()
   const validated = validate(CreateFiscalYearSchema, body)
 
-  // If setting as current, unset previous current
   if (validated.is_current) {
-    await supabase
+    // Use atomic RPC to switch current fiscal year
+    // First insert, then activate atomically
+    const { data: inserted, error: insertError } = await supabase
       .from('fiscal_years')
-      .update({ is_current: false })
-      .eq('church_id', profile.church_id)
-      .eq('is_current', true)
+      .insert({
+        name: validated.name,
+        name_ar: validated.name_ar,
+        start_date: validated.start_date,
+        end_date: validated.end_date,
+        is_current: false, // Will be set atomically
+        church_id: profile.church_id,
+      })
+      .select('id, name, name_ar, start_date, end_date, is_current')
+      .single()
+
+    if (insertError) throw insertError
+
+    // Atomically activate this fiscal year (deactivates all others)
+    const { data, error } = await supabase.rpc('activate_fiscal_year', {
+      p_church_id: profile.church_id,
+      p_fiscal_year_id: inserted.id,
+    })
+
+    if (error) throw error
+
+    revalidateTag(`dashboard-${profile.church_id}`)
+    return Response.json({ data }, { status: 201 })
   }
 
+  // Non-current fiscal year — simple insert
   const { data, error } = await supabase
     .from('fiscal_years')
     .insert({
@@ -38,10 +61,10 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
       name_ar: validated.name_ar,
       start_date: validated.start_date,
       end_date: validated.end_date,
-      is_current: validated.is_current,
+      is_current: false,
       church_id: profile.church_id,
     })
-    .select('id, name, start_date, end_date, is_current')
+    .select('id, name, name_ar, start_date, end_date, is_current')
     .single()
 
   if (error) throw error
