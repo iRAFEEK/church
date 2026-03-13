@@ -26,12 +26,13 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const body = await req.json()
   const validated = validate(UpdateFundSchema, body)
 
+  // If setting as default, use atomic RPC to switch (unset old + set new in one DB transaction)
   if (validated.is_default) {
-    await supabase
-      .from('funds')
-      .update({ is_default: false })
-      .eq('church_id', profile.church_id)
-      .eq('is_default', true)
+    const { error: switchError } = await supabase.rpc('switch_default_fund', {
+      p_church_id: profile.church_id,
+      p_fund_id: id,
+    })
+    if (switchError) throw switchError
   }
 
   // Build explicit update object
@@ -45,23 +46,33 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   if (validated.color !== undefined) updateData.color = validated.color
   if (validated.currency !== undefined) updateData.currency = validated.currency
   if (validated.is_active !== undefined) updateData.is_active = validated.is_active
-  if (validated.is_default !== undefined) updateData.is_default = validated.is_default
   if (validated.is_restricted !== undefined) updateData.is_restricted = validated.is_restricted
   if (validated.display_order !== undefined) updateData.display_order = validated.display_order
+  // is_default=false handled here (true already handled atomically above)
+  if (validated.is_default !== undefined && !validated.is_default) updateData.is_default = false
 
-  const { data, error } = await supabase
+  if (Object.keys(updateData).length > 0) {
+    const { error } = await supabase
+      .from('funds')
+      .update(updateData)
+      .eq('id', id)
+      .eq('church_id', profile.church_id)
+
+    if (error) throw error
+  }
+
+  // Fetch final state
+  const { data, error: fetchError } = await supabase
     .from('funds')
-    .update(updateData)
+    .select('id, name, name_ar, code, description, description_ar, current_balance, target_amount, color, is_active, is_default, is_restricted, display_order')
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select('id, name, name_ar, code, description, description_ar, current_balance, target_amount, color, is_active, is_default, is_restricted, display_order')
     .single()
 
-  if (error) throw error
+  if (fetchError) throw fetchError
   revalidateTag(`dashboard-${profile.church_id}`)
-  revalidateTag(`funds-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return Response.json({ data })
+}, { requirePermissions: ['can_manage_finances'] })
 
 // DELETE /api/finance/funds/[id] — soft delete
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -75,6 +86,5 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
 
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  revalidateTag(`funds-${profile.church_id}`)
-  return NextResponse.json({ success: true })
-}
+  return Response.json({ success: true })
+}, { requirePermissions: ['can_manage_finances'] })
