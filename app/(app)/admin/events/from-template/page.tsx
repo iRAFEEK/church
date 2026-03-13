@@ -102,15 +102,18 @@ export default function CreateFromTemplatePage() {
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
-    fetch('/api/templates')
+    const controller = new AbortController()
+    fetch('/api/templates', { signal: controller.signal })
       .then(r => r.json())
       .then(d => {
+        if (controller.signal.aborted) return
         setTemplates(d.data || [])
         // Also fetch full details for templates to get schedule info
         ;(d.data || []).forEach((tmpl: TemplateItem) => {
-          fetch(`/api/templates/${tmpl.id}`)
+          fetch(`/api/templates/${tmpl.id}`, { signal: controller.signal })
             .then(r => r.json())
             .then(detail => {
+              if (controller.signal.aborted) return
               if (detail.data) {
                 setTemplates(prev => prev.map(t =>
                   t.id === tmpl.id ? {
@@ -124,11 +127,12 @@ export default function CreateFromTemplatePage() {
                 ))
               }
             })
-            .catch(() => {})
+            .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') { /* ignore */ } })
         })
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') { /* ignore */ } })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [])
 
   const selectedTemplate = templates.find(t => t.id === selectedId)

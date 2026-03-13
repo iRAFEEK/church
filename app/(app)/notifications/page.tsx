@@ -138,11 +138,13 @@ export default function NotificationsPage() {
 
   // Load user scopes on mount
   useEffect(() => {
+    const controller = new AbortController()
     async function loadScopes() {
       try {
-        const res = await fetch('/api/notifications/scopes')
-        if (!res.ok) return
+        const res = await fetch('/api/notifications/scopes', { signal: controller.signal })
+        if (!res.ok || controller.signal.aborted) return
         const data = await res.json()
+        if (controller.signal.aborted) return
         setUserRole(data.role)
         setCanSend(data.canSend)
         setAllowedTargetTypes(data.allowedTargetTypes || [])
@@ -151,34 +153,42 @@ export default function NotificationsPage() {
           if (data.ministries?.length) setScopedMinistries(data.ministries)
           if (data.groups?.length) setScopedGroups(data.groups)
         }
-      } catch { /* ignore */ }
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') { /* ignore */ }
+      }
     }
     loadScopes()
+    return () => controller.abort()
   }, [])
 
   // Fetch notifications
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (signal?: AbortSignal) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) })
       if (showUnreadOnly) params.set('unread', 'true')
       if (typeFilter !== 'all') params.set('type', typeFilter)
 
-      const res = await fetch(`/api/notifications?${params}`)
-      if (!res.ok) return
+      const res = await fetch(`/api/notifications?${params}`, signal ? { signal } : undefined)
+      if (!res.ok || signal?.aborted) return
       const json = await res.json()
+      if (signal?.aborted) return
       setNotifications(json.data || [])
       setTotalPages(json.totalPages || 1)
       setUnreadCount(json.unreadCount || 0)
       setTotalCount(json.count || 0)
-    } catch {
-      // silently fail
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') { /* silently fail */ }
     } finally {
-      setLoading(false)
+      if (!(signal?.aborted)) setLoading(false)
     }
   }, [page, typeFilter, showUnreadOnly])
 
-  useEffect(() => { fetchNotifications() }, [fetchNotifications])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchNotifications(controller.signal)
+    return () => controller.abort()
+  }, [fetchNotifications])
 
   // Real-time subscription
   useEffect(() => {

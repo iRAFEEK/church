@@ -29,21 +29,26 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const fetchRegistrations = useCallback(async () => {
+  const fetchRegistrations = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch(`/api/events/${eventId}/registrations`)
+      const res = await fetch(`/api/events/${eventId}/registrations`, { signal })
       if (!res.ok) return
+      if (signal?.aborted) return
       const json = await res.json()
       setRegistrations(json.data || [])
-    } catch {
-      // silently fail
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        // silently fail
+      }
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) setLoading(false)
     }
   }, [eventId])
 
   useEffect(() => {
-    fetchRegistrations()
+    const controller = new AbortController()
+    fetchRegistrations(controller.signal)
+    return () => controller.abort()
   }, [fetchRegistrations])
 
   const handleAction = async (registrationId: string, action: 'check_in' | 'cancel') => {

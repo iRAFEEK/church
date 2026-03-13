@@ -27,22 +27,28 @@ export function MemberPermissionEditor({ memberId, memberRole }: MemberPermissio
   )
 
   useEffect(() => {
+    const controller = new AbortController()
     async function load() {
       try {
-        const res = await fetch(`/api/permissions/user/${memberId}`)
-        if (res.ok) {
+        const res = await fetch(`/api/permissions/user/${memberId}`, { signal: controller.signal })
+        if (res.ok && !controller.signal.aborted) {
           const data = await res.json()
           setRoleDefaults(data.roleDefaults ?? HARDCODED_ROLE_DEFAULTS[memberRole])
           setUserOverrides(data.userOverrides ?? {})
           setValues(data.resolved ?? HARDCODED_ROLE_DEFAULTS[memberRole])
         }
-      } catch {
-        // Use defaults
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          // Use defaults
+        }
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
     load()
+    return () => controller.abort()
   }, [memberId, memberRole])
 
   function handleChange(key: PermissionKey, value: boolean) {

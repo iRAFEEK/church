@@ -77,21 +77,30 @@ export function NotificationComposer({
   // For super_admin: load all groups/ministries
   useEffect(() => {
     if (!isUnscoped) return
+    const controller = new AbortController()
     async function loadOptions() {
-      const [groupsRes, ministriesRes] = await Promise.all([
-        fetch('/api/groups'),
-        fetch('/api/ministries'),
-      ])
-      if (groupsRes.ok) {
-        const json = await groupsRes.json()
-        setGroups((json.data || json) as GroupOption[])
-      }
-      if (ministriesRes.ok) {
-        const json = await ministriesRes.json()
-        setMinistries((json.data || json) as MinistryOption[])
+      try {
+        const [groupsRes, ministriesRes] = await Promise.all([
+          fetch('/api/groups', { signal: controller.signal }),
+          fetch('/api/ministries', { signal: controller.signal }),
+        ])
+        if (controller.signal.aborted) return
+        if (groupsRes.ok) {
+          const json = await groupsRes.json()
+          setGroups((json.data || json) as GroupOption[])
+        }
+        if (ministriesRes.ok) {
+          const json = await ministriesRes.json()
+          setMinistries((json.data || json) as MinistryOption[])
+        }
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[NotificationComposer] Failed to fetch options:', e)
+        }
       }
     }
     loadOptions()
+    return () => controller.abort()
   }, [isUnscoped])
 
   const buildTargets = useCallback((): AudienceTarget[] => {
@@ -111,17 +120,23 @@ export function NotificationComposer({
     const targets = buildTargets()
     if (!targets.length) { setAudienceCount(null); return }
     setLoadingCount(true)
+    const controller = new AbortController()
     const timer = setTimeout(async () => {
       try {
         const res = await fetch('/api/notifications/audience', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targets }),
+          signal: controller.signal,
         })
-        if (res.ok) setAudienceCount(await res.json())
-      } catch { /* ignore */ } finally { setLoadingCount(false) }
+        if (res.ok && !controller.signal.aborted) setAudienceCount(await res.json())
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') { /* ignore */ }
+      } finally {
+        if (!controller.signal.aborted) setLoadingCount(false)
+      }
     }, 500)
-    return () => clearTimeout(timer)
+    return () => { clearTimeout(timer); controller.abort() }
   }, [buildTargets])
 
   const toggleInArray = (arr: string[], value: string, setter: (v: string[]) => void) => {

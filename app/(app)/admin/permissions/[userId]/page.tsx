@@ -47,11 +47,11 @@ export default function UserPermissionPage() {
   const [values, setValues] = useState<Record<PermissionKey, boolean>>(HARDCODED_ROLE_DEFAULTS.member)
 
   useEffect(() => {
+    const controller = new AbortController()
     async function load() {
       try {
-        // Fetch member profile
-        const profileRes = await fetch(`/api/permissions/user/${userId}`)
-        if (profileRes.ok) {
+        const profileRes = await fetch(`/api/permissions/user/${userId}`, { signal: controller.signal })
+        if (profileRes.ok && !controller.signal.aborted) {
           const data = await profileRes.json()
           setMember(data.member)
           const role = (data.member?.role ?? 'member') as UserRole
@@ -59,13 +59,14 @@ export default function UserPermissionPage() {
           setUserOverrides(data.userOverrides ?? {})
           setValues(data.resolved ?? HARDCODED_ROLE_DEFAULTS[role])
         }
-      } catch {
-        // fallback
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') { /* fallback */ }
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     load()
+    return () => controller.abort()
   }, [userId])
 
   function handleChange(key: PermissionKey, value: boolean) {

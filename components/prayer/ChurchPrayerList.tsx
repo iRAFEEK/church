@@ -62,21 +62,29 @@ export function ChurchPrayerList() {
   const [prayers, setPrayers] = useState<Prayer[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchPrayers = useCallback(async (status: string) => {
+  const fetchPrayers = useCallback(async (status: string, signal?: AbortSignal) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/church-prayers?status=${status}`)
-      if (res.ok) {
+      const res = await fetch(`/api/church-prayers?status=${status}`, { signal })
+      if (res.ok && !signal?.aborted) {
         const json = await res.json()
         setPrayers(json.data || [])
       }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('[ChurchPrayerList] Failed to fetch:', e)
+      }
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
-    fetchPrayers(tab)
+    const controller = new AbortController()
+    fetchPrayers(tab, controller.signal)
+    return () => controller.abort()
   }, [tab, fetchPrayers])
 
   const handleMarkAnswered = async (id: string) => {

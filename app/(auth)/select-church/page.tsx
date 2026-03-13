@@ -25,10 +25,13 @@ export default function SelectChurchPage() {
   const [switchingId, setSwitchingId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/churches/my-churches')
+    const controller = new AbortController()
+    fetch('/api/churches/my-churches', { signal: controller.signal })
       .then((res) => res.json())
-      .then((data) => setChurches(Array.isArray(data) ? data : []))
-      .finally(() => setLoading(false))
+      .then((data) => { if (!controller.signal.aborted) setChurches(Array.isArray(data) ? data : []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[SelectChurch] Failed to fetch:', e) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [])
 
   async function handleSelect(churchId: string) {

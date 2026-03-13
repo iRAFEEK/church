@@ -47,10 +47,16 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
   const descAltField = isAr ? 'description' : 'description_ar'
 
   useEffect(() => {
-    fetch('/api/ministries')
+    const controller = new AbortController()
+    fetch('/api/ministries', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setMinistries(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setMinistries(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[ServingAreaForm] Failed to fetch ministries:', e)
+        }
+      })
+    return () => controller.abort()
   }, [])
 
   const handleSubmit = async () => {

@@ -80,27 +80,33 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
 
   // Fetch available versions on mount
   useEffect(() => {
-    fetch('/api/bible/bibles')
+    const controller = new AbortController()
+    fetch('/api/bible/bibles', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setAvailableVersions(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setAvailableVersions(d.data || []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[BibleReader] Failed to fetch versions:', e) })
+    return () => controller.abort()
   }, [])
 
   // Load bookmarks on mount
   useEffect(() => {
-    fetch('/api/bible/bookmarks')
+    const controller = new AbortController()
+    fetch('/api/bible/bookmarks', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setBookmarks(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setBookmarks(d.data || []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[BibleReader] Failed to fetch bookmarks:', e) })
+    return () => controller.abort()
   }, [])
 
   // Load highlights when chapter changes
   useEffect(() => {
     if (!chapterContent) return
-    fetch(`/api/bible/highlights?chapter_id=${chapterContent.id}`)
+    const controller = new AbortController()
+    fetch(`/api/bible/highlights?chapter_id=${chapterContent.id}`, { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setHighlights(d.data || []))
-      .catch(() => {})
+      .then(d => { if (!controller.signal.aborted) setHighlights(d.data || []) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[BibleReader] Failed to fetch highlights:', e) })
+    return () => controller.abort()
   }, [chapterContent?.id])
 
   // Handle version change
