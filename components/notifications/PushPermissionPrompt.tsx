@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Bell, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { usePushNotifications } from '@/lib/hooks/usePushNotifications'
 import { isFirebaseClientConfigured } from '@/lib/firebase/client'
@@ -17,6 +18,7 @@ export function PushPermissionPrompt() {
   const { permission, isSubscribed, isLoading, subscribe } = usePushNotifications()
   const [dismissedThisSession, setDismissedThisSession] = useState(false)
   const [isIosNotStandalone, setIsIosNotStandalone] = useState(false)
+  const t = useTranslations('push')
 
   useEffect(() => {
     // Detect iOS PWA: push only works when installed to home screen on iOS
@@ -45,8 +47,8 @@ export function PushPermissionPrompt() {
   async function handleEnable() {
     await subscribe()
     if (Notification.permission === 'granted') {
-      toast.success('Push notifications enabled', {
-        description: 'You will now receive notifications even when the app is closed.',
+      toast.success(t('enabledSuccess'), {
+        description: t('enabledDescription'),
       })
     }
   }
@@ -59,9 +61,9 @@ export function PushPermissionPrompt() {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold leading-tight">Enable push notifications</p>
+          <p className="text-sm font-semibold leading-tight">{t('title')}</p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            Get notified for prayer requests, serving assignments, and events — even when the app is closed.
+            {t('description')}
           </p>
 
           <div className="flex gap-2 mt-3">
@@ -71,7 +73,7 @@ export function PushPermissionPrompt() {
               onClick={handleEnable}
               disabled={isLoading}
             >
-              {isLoading ? 'Enabling...' : 'Enable'}
+              {isLoading ? t('enablingButton') : t('enableButton')}
             </Button>
             <Button
               size="sm"
@@ -79,7 +81,7 @@ export function PushPermissionPrompt() {
               className="h-7 text-xs text-muted-foreground"
               onClick={() => setDismissedThisSession(true)}
             >
-              Later
+              {t('laterButton')}
             </Button>
           </div>
         </div>
@@ -87,7 +89,7 @@ export function PushPermissionPrompt() {
         <button
           onClick={() => setDismissedThisSession(true)}
           className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Dismiss"
+          aria-label={t('dismiss')}
         >
           <X className="h-4 w-4" />
         </button>
