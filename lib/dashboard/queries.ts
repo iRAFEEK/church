@@ -78,10 +78,7 @@ export async function fetchAdminDashboard(
     attendanceRateRes,
     upcomingEventsRes,
     attendanceTrendRes,
-    visitorNewRes,
-    visitorAssignedRes,
-    visitorContactedRes,
-    visitorConvertedRes,
+    visitorPipelineRes,
     atRiskRes,
     slaVisitorsRes,
     unfilledSlotsRes,
@@ -144,33 +141,11 @@ export async function fetchAdminDashboard(
       .eq('church_id', churchId)
       .gte('gatherings.scheduled_at', weeksAgo(12)),
 
-    // 8a. Visitor pipeline — new count
+    // 8. Visitor pipeline
     supabase
       .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'new'),
-
-    // 8b. Visitor pipeline — assigned count
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'assigned'),
-
-    // 8c. Visitor pipeline — contacted count
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'contacted'),
-
-    // 8d. Visitor pipeline — converted count
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'converted'),
+      .select('status')
+      .eq('church_id', churchId),
 
     // 9. At-risk members (attention)
     supabase
@@ -268,12 +243,17 @@ export async function fetchAdminDashboard(
       rate: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
     }))
 
-  // Process visitor pipeline (head:true counts — no data transfer)
+  // Process visitor pipeline
+  const visitors = (visitorPipelineRes.data || []) as any[]
+  const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
+  for (const v of visitors) {
+    if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
+  }
   const visitorPipeline: VisitorPipelineItem[] = [
-    { status: 'new', count: visitorNewRes.count ?? 0 },
-    { status: 'assigned', count: visitorAssignedRes.count ?? 0 },
-    { status: 'contacted', count: visitorContactedRes.count ?? 0 },
-    { status: 'converted', count: visitorConvertedRes.count ?? 0 },
+    { status: 'new', count: pipelineCounts.new },
+    { status: 'assigned', count: pipelineCounts.assigned },
+    { status: 'contacted', count: pipelineCounts.contacted },
+    { status: 'converted', count: pipelineCounts.converted },
   ]
 
   // Process attention items
@@ -312,13 +292,20 @@ export async function fetchAdminDashboard(
     }
   }
 
-  // Church-wide prayer requests
-  const { count: activePrayerCount } = await supabase
-    .from('prayer_requests')
-    .select('id', { count: 'exact', head: true })
-    .eq('church_id', churchId)
-    .is('group_id', null)
-    .eq('status', 'active')
+  // Church-wide prayer requests + outreach follow-ups (parallel)
+  const [{ count: activePrayerCount }, { count: followupCount }] = await Promise.all([
+    supabase
+      .from('prayer_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .is('group_id', null)
+      .eq('status', 'active'),
+    supabase
+      .from('outreach_visits')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('needs_followup', true),
+  ])
 
   if (activePrayerCount && activePrayerCount > 0) {
     attentionItems.push({
@@ -329,13 +316,6 @@ export async function fetchAdminDashboard(
       href: '/admin/prayers',
     })
   }
-
-  // Outreach follow-ups
-  const { count: followupCount } = await supabase
-    .from('outreach_visits')
-    .select('id', { count: 'exact', head: true })
-    .eq('church_id', churchId)
-    .eq('needs_followup', true)
 
   if (followupCount && followupCount > 0) {
     attentionItems.push({
@@ -480,20 +460,28 @@ export async function fetchMinistryLeaderDashboard(
   const now = new Date()
   const slaThreshold = new Date(now.getTime() - slaHours * 60 * 60 * 1000).toISOString()
 
-  // 1. Find ministries this user leads
-  const { data: myMinistries } = await supabase
-    .from('ministry_members')
-    .select('ministry_id')
-    .eq('profile_id', profileId)
-    .eq('is_active', true)
-    .eq('role_in_ministry', 'leader')
-
-  // Also check legacy leader_id on ministries table
-  const { data: legacyMinistries } = await supabase
-    .from('ministries')
-    .select('id')
-    .eq('church_id', churchId)
-    .eq('leader_id', profileId)
+  // 1. Find ministries this user leads + direct leader/co-leader groups (parallel)
+  const [{ data: myMinistries }, { data: legacyMinistries }, { data: directGroups }] = await Promise.all([
+    supabase
+      .from('ministry_members')
+      .select('ministry_id')
+      .eq('profile_id', profileId)
+      .eq('is_active', true)
+      .eq('role_in_ministry', 'leader'),
+    // Also check legacy leader_id on ministries table
+    supabase
+      .from('ministries')
+      .select('id')
+      .eq('church_id', churchId)
+      .eq('leader_id', profileId),
+    // Also include groups where this user is direct leader/co-leader
+    supabase
+      .from('groups')
+      .select('id')
+      .eq('church_id', churchId)
+      .eq('is_active', true)
+      .or(`leader_id.eq.${profileId},co_leader_id.eq.${profileId}`),
+  ])
 
   const ministryIds = [
     ...new Set([
@@ -513,14 +501,6 @@ export async function fetchMinistryLeaderDashboard(
       .in('ministry_id', ministryIds)
     groupIds = (groups || []).map(g => g.id)
   }
-
-  // Also include groups where this user is direct leader/co-leader
-  const { data: directGroups } = await supabase
-    .from('groups')
-    .select('id')
-    .eq('church_id', churchId)
-    .eq('is_active', true)
-    .or(`leader_id.eq.${profileId},co_leader_id.eq.${profileId}`)
 
   groupIds = [...new Set([...groupIds, ...(directGroups || []).map(g => g.id)])]
 
@@ -554,10 +534,7 @@ export async function fetchMinistryLeaderDashboard(
     slaBreachedRes,
     upcomingEventsRes,
     attendanceTrendRes,
-    visitorNewRes,
-    visitorAssignedRes,
-    visitorContactedRes,
-    visitorConvertedRes,
+    visitorPipelineRes,
     atRiskRes,
     slaVisitorsRes,
     unfilledSlotsRes,
@@ -613,33 +590,11 @@ export async function fetchMinistryLeaderDashboard(
       .in('group_id', groupIds)
       .gte('gatherings.scheduled_at', weeksAgo(12)),
 
-    // 7a. Visitor pipeline — new count (church-wide)
+    // 7. Visitor pipeline (church-wide)
     supabase
       .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'new'),
-
-    // 7b. Visitor pipeline — assigned count (church-wide)
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'assigned'),
-
-    // 7c. Visitor pipeline — contacted count (church-wide)
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'contacted'),
-
-    // 7d. Visitor pipeline — converted count (church-wide)
-    supabase
-      .from('visitors')
-      .select('id', { count: 'exact', head: true })
-      .eq('church_id', churchId)
-      .eq('status', 'converted'),
+      .select('status')
+      .eq('church_id', churchId),
 
     // 8. At-risk members in my groups
     supabase
@@ -745,12 +700,17 @@ export async function fetchMinistryLeaderDashboard(
       rate: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
     }))
 
-  // Process visitor pipeline (head:true counts — no data transfer)
+  // Process visitor pipeline (church-wide)
+  const visitors = (visitorPipelineRes.data || []) as any[]
+  const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
+  for (const v of visitors) {
+    if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
+  }
   const visitorPipeline: VisitorPipelineItem[] = [
-    { status: 'new', count: visitorNewRes.count ?? 0 },
-    { status: 'assigned', count: visitorAssignedRes.count ?? 0 },
-    { status: 'contacted', count: visitorContactedRes.count ?? 0 },
-    { status: 'converted', count: visitorConvertedRes.count ?? 0 },
+    { status: 'new', count: pipelineCounts.new },
+    { status: 'assigned', count: pipelineCounts.assigned },
+    { status: 'contacted', count: pipelineCounts.contacted },
+    { status: 'converted', count: pipelineCounts.converted },
   ]
 
   // Process attention items
@@ -832,47 +792,39 @@ export async function fetchMinistryLeaderDashboard(
 
   upcomingThisWeek.sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
 
-  // Process group health (scoped)
+  // Process group health (scoped) — single 8-week query, split in JS
   const groups = (groupsRes.data || []) as any[]
   const groupHealth: GroupHealthRow[] = []
 
   let groupAttendanceMap = new Map<string, { present: number; total: number }>()
-  if (groupIds.length > 0) {
-    const { data: groupAttendance } = await supabase
-      .from('attendance')
-      .select('group_id, status, gatherings!inner(status, scheduled_at)')
-      .eq('church_id', churchId)
-      .in('group_id', groupIds)
-      .gte('gatherings.scheduled_at', weeksAgo(4))
-
-    for (const rec of (groupAttendance || []) as any[]) {
-      if (rec.gatherings?.status !== 'completed') continue
-      if (!groupAttendanceMap.has(rec.group_id)) {
-        groupAttendanceMap.set(rec.group_id, { present: 0, total: 0 })
-      }
-      const entry = groupAttendanceMap.get(rec.group_id)!
-      entry.total++
-      if (rec.status === 'present' || rec.status === 'late') entry.present++
-    }
-  }
-
   let prevGroupAttendanceMap = new Map<string, number>()
   if (groupIds.length > 0) {
-    const { data: prevAttendance } = await supabase
+    const fourWeeksAgo = weeksAgo(4)
+    const { data: allGroupAttendance } = await supabase
       .from('attendance')
       .select('group_id, status, gatherings!inner(status, scheduled_at)')
       .eq('church_id', churchId)
       .in('group_id', groupIds)
       .gte('gatherings.scheduled_at', weeksAgo(8))
-      .lte('gatherings.scheduled_at', weeksAgo(4))
 
     const prevMap = new Map<string, { present: number; total: number }>()
-    for (const rec of (prevAttendance || []) as any[]) {
+    for (const rec of (allGroupAttendance || []) as any[]) {
       if (rec.gatherings?.status !== 'completed') continue
-      if (!prevMap.has(rec.group_id)) prevMap.set(rec.group_id, { present: 0, total: 0 })
-      const entry = prevMap.get(rec.group_id)!
-      entry.total++
-      if (rec.status === 'present' || rec.status === 'late') entry.present++
+      const isRecent = rec.gatherings.scheduled_at >= fourWeeksAgo
+
+      if (isRecent) {
+        if (!groupAttendanceMap.has(rec.group_id)) {
+          groupAttendanceMap.set(rec.group_id, { present: 0, total: 0 })
+        }
+        const entry = groupAttendanceMap.get(rec.group_id)!
+        entry.total++
+        if (rec.status === 'present' || rec.status === 'late') entry.present++
+      } else {
+        if (!prevMap.has(rec.group_id)) prevMap.set(rec.group_id, { present: 0, total: 0 })
+        const entry = prevMap.get(rec.group_id)!
+        entry.total++
+        if (rec.status === 'present' || rec.status === 'late') entry.present++
+      }
     }
     for (const [gId, data] of prevMap) {
       prevGroupAttendanceMap.set(gId, data.total > 0 ? (data.present / data.total) * 100 : 0)
@@ -956,16 +908,17 @@ export async function fetchLeaderDashboard(
   profileId: string,
   churchId: string
 ): Promise<LeaderDashboardData> {
-  // Get groups where user is direct leader/co-leader
-  const { data: leaderGroups } = await supabase
-    .from('groups')
-    .select('id, name, name_ar')
-    .eq('church_id', churchId)
-    .eq('is_active', true)
-    .or(`leader_id.eq.${profileId},co_leader_id.eq.${profileId}`)
-
-  // Also include groups from ministries where user is co_leader
-  const coLedGroupIds = await getCoLedMinistryGroupIds(supabase, profileId, churchId)
+  // Get groups where user is direct leader/co-leader + co-led ministry groups (parallel)
+  const [{ data: leaderGroups }, coLedGroupIds] = await Promise.all([
+    supabase
+      .from('groups')
+      .select('id, name, name_ar')
+      .eq('church_id', churchId)
+      .eq('is_active', true)
+      .or(`leader_id.eq.${profileId},co_leader_id.eq.${profileId}`),
+    // Also include groups from ministries where user is co_leader
+    getCoLedMinistryGroupIds(supabase, profileId, churchId),
+  ])
   const directGroupIds = new Set((leaderGroups || []).map(g => g.id))
   const additionalGroupIds = coLedGroupIds.filter(id => !directGroupIds.has(id))
 
@@ -1059,13 +1012,20 @@ export async function fetchLeaderDashboard(
     memberCounts.set(m.group_id, (memberCounts.get(m.group_id) || 0) + 1)
   }
 
-  // Attendance per group (last 12 weeks for trend, last 4 weeks for rate)
-  const { data: groupAttendance } = await supabase
-    .from('attendance')
-    .select('group_id, status, gatherings!inner(status, scheduled_at)')
-    .eq('church_id', churchId)
-    .in('group_id', groupIds)
-    .gte('gatherings.scheduled_at', weeksAgo(12))
+  // Attendance per group + prayer counts (parallel)
+  const [{ data: groupAttendance }, { data: prayerCounts }] = await Promise.all([
+    supabase
+      .from('attendance')
+      .select('group_id, status, gatherings!inner(status, scheduled_at)')
+      .eq('church_id', churchId)
+      .in('group_id', groupIds)
+      .gte('gatherings.scheduled_at', weeksAgo(12)),
+    supabase
+      .from('prayer_requests')
+      .select('group_id')
+      .in('group_id', groupIds)
+      .eq('status', 'active'),
+  ])
 
   const fourWeeksAgoStr = weeksAgo(4)
   const groupRateMap = new Map<string, { present: number; total: number }>()
@@ -1094,13 +1054,6 @@ export async function fetchLeaderDashboard(
       weekLabel: formatWeekLabel(data.date),
       rate: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
     }))
-
-  // Prayer counts per group
-  const { data: prayerCounts } = await supabase
-    .from('prayer_requests')
-    .select('group_id')
-    .in('group_id', groupIds)
-    .eq('status', 'active')
 
   const prayerCountMap = new Map<string, number>()
   for (const p of (prayerCounts || []) as any[]) {
@@ -1142,22 +1095,27 @@ export async function fetchLeaderDashboard(
     uniqueAtRisk.push(p)
   }
 
-  // Fetch last attendance for all at-risk members in parallel
-  const lastAttResults = await Promise.all(
-    uniqueAtRisk.map(p =>
-      supabase
-        .from('attendance')
-        .select('marked_at, gatherings!inner(scheduled_at)')
-        .eq('profile_id', p.id)
-        .in('status', ['present', 'late'])
-        .order('marked_at', { ascending: false })
-        .limit(1)
-    )
-  )
+  // Batch fetch last attendance for all at-risk members in a single query
+  const atRiskMemberIds = uniqueAtRisk.map(p => p.id)
+  let lastSeenMap = new Map<string, string>()
+  if (atRiskMemberIds.length > 0) {
+    const { data: allLastAtt } = await supabase
+      .from('attendance')
+      .select('profile_id, marked_at, gatherings!inner(scheduled_at)')
+      .in('profile_id', atRiskMemberIds)
+      .in('status', ['present', 'late'])
+      .order('marked_at', { ascending: false })
 
-  const atRiskMembers: AtRiskMember[] = uniqueAtRisk.map((p, i) => {
-    const row = lastAttResults[i].data?.[0] as any
-    const lastSeen = row?.gatherings?.scheduled_at || null
+    // Group by profile_id, keep only the most recent (first encountered due to desc order)
+    for (const rec of (allLastAtt || []) as any[]) {
+      if (!lastSeenMap.has(rec.profile_id)) {
+        lastSeenMap.set(rec.profile_id, rec.gatherings?.scheduled_at || null)
+      }
+    }
+  }
+
+  const atRiskMembers: AtRiskMember[] = uniqueAtRisk.map((p) => {
+    const lastSeen = lastSeenMap.get(p.id) || null
     const daysAbsent = lastSeen
       ? Math.floor((Date.now() - new Date(lastSeen).getTime()) / (1000 * 60 * 60 * 24))
       : 999
@@ -1218,19 +1176,20 @@ export async function fetchMinistryLeaderDashboardV2(
 ): Promise<MinistryLeaderDashboardData> {
   const now = new Date()
 
-  // Find ministries this user leads
-  const { data: myMinistries } = await supabase
-    .from('ministry_members')
-    .select('ministry_id, ministries!inner(name, name_ar)')
-    .eq('profile_id', profileId)
-    .eq('is_active', true)
-    .eq('role_in_ministry', 'leader')
-
-  const { data: legacyMinistries } = await supabase
-    .from('ministries')
-    .select('id, name, name_ar')
-    .eq('church_id', churchId)
-    .eq('leader_id', profileId)
+  // Find ministries this user leads (parallel)
+  const [{ data: myMinistries }, { data: legacyMinistries }] = await Promise.all([
+    supabase
+      .from('ministry_members')
+      .select('ministry_id, ministries!inner(name, name_ar)')
+      .eq('profile_id', profileId)
+      .eq('is_active', true)
+      .eq('role_in_ministry', 'leader'),
+    supabase
+      .from('ministries')
+      .select('id, name, name_ar')
+      .eq('church_id', churchId)
+      .eq('leader_id', profileId),
+  ])
 
   const allMinistries = [
     ...(myMinistries || []).map((m: any) => ({ id: m.ministry_id, name: m.ministries?.name, nameAr: m.ministries?.name_ar })),
