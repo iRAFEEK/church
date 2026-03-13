@@ -1,12 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { NextResponse } from 'next/server'
 
 // GET /api/notifications — get current user's notifications (paginated)
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
+export const GET = apiHandler(async ({ req, supabase, user }) => {
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = parseInt(searchParams.get('pageSize') || '20')
@@ -31,7 +27,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error, count } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
   // Also get unread count
   const { count: unreadCount } = await supabase
@@ -49,4 +45,4 @@ export async function GET(req: NextRequest) {
     pageSize,
     totalPages: Math.ceil((count || 0) / pageSize),
   })
-}
+})

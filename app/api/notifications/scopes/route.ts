@@ -1,21 +1,9 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 import { getSendableScopes } from '@/lib/messaging/scopes'
+import { NextResponse } from 'next/server'
 
 // GET /api/notifications/scopes — returns what audience targets the current user can send to
-export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ supabase, profile, user }) => {
   const scopes = await getSendableScopes(user.id, profile.church_id, profile.role)
 
   // For scoped users, also return display names for their ministries/groups
@@ -41,4 +29,4 @@ export async function GET() {
   }
 
   return NextResponse.json({ ...scopes, ministries, groups })
-}
+})

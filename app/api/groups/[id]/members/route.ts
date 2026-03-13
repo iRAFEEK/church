@@ -1,20 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { z } from 'zod'
 
-type Params = { params: Promise<{ id: string }> }
+const addGroupMemberSchema = z.object({
+  profile_id: z.string().uuid(),
+  role_in_group: z.enum(['member', 'leader', 'co_leader']).default('member'),
+})
 
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id: group_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+const removeGroupMemberSchema = z.object({
+  profile_id: z.string().uuid(),
+})
 
-  const { profile_id, role_in_group } = await req.json()
-  if (!profile_id) return NextResponse.json({ error: 'profile_id required' }, { status: 400 })
+export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
+  const group_id = params?.id
+  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  const body = await req.json()
+  const { profile_id, role_in_group } = validate(addGroupMemberSchema, body)
 
   // Upsert — re-activates if previously removed
   const { data, error } = await supabase
@@ -23,27 +26,23 @@ export async function POST(req: NextRequest, { params }: Params) {
       group_id,
       profile_id,
       church_id: profile.church_id,
-      role_in_group: role_in_group || 'member',
+      role_in_group,
       is_active: true,
     }, { onConflict: 'group_id,profile_id' })
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return Response.json({ data }, { status: 201 })
+}, { requirePermissions: ['can_manage_members'] })
 
-export async function DELETE(req: NextRequest, { params }: Params) {
-  const { id: group_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
+  const group_id = params?.id
+  if (!group_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  const { profile_id } = await req.json()
-  if (!profile_id) return NextResponse.json({ error: 'profile_id required' }, { status: 400 })
-
-  const { data: userProfile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
+  const body = await req.json()
+  const { profile_id } = validate(removeGroupMemberSchema, body)
 
   // Soft remove
   const { error } = await supabase
@@ -51,8 +50,9 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .update({ is_active: false })
     .eq('group_id', group_id)
     .eq('profile_id', profile_id)
+    .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
-  return NextResponse.json({ success: true })
-}
+  if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
+  return { success: true }
+}, { requirePermissions: ['can_manage_members'] })

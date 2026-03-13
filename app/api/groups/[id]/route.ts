@@ -1,14 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateGroupSchema } from '@/lib/schemas/group'
 
-type Params = { params: Promise<{ id: string }> }
-
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params?.id
+  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('groups')
@@ -23,44 +20,45 @@ export async function GET(_req: NextRequest, { params }: Params) {
       )
     `)
     .eq('id', id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json({ data })
-}
+  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
+  return { data }
+})
 
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params?.id
+  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
+  const validated = validate(UpdateGroupSchema, body)
+
   const { data, error } = await supabase
     .from('groups')
-    .update(body)
+    .update(validated)
     .eq('id', id)
-    .select('*, church_id')
+    .eq('church_id', profile.church_id)
+    .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  revalidateTag(`dashboard-${data.church_id}`)
-  revalidateTag(`groups-${data.church_id}`)
-  return NextResponse.json({ data })
-}
+  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
+  revalidateTag(`dashboard-${profile.church_id}`)
+  return { data }
+}, { requirePermissions: ['can_manage_members'] })
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params?.id
+  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   // Soft delete
-  const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).select('church_id').single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  if (data) {
-    revalidateTag(`dashboard-${data.church_id}`)
-    revalidateTag(`groups-${data.church_id}`)
-  }
-  return NextResponse.json({ success: true })
-}
+  const { error } = await supabase
+    .from('groups')
+    .update({ is_active: false })
+    .eq('id', id)
+    .eq('church_id', profile.church_id)
+
+  if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
+  return { success: true }
+}, { requireRoles: ['super_admin', 'ministry_leader'] })
