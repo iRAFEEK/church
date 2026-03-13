@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Building2, Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +23,7 @@ export default function SelectChurchPage() {
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [switchingId, setSwitchingId] = useState<string | null>(null)
+  const t = useTranslations('auth')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -44,7 +46,7 @@ export default function SelectChurchPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error(t('error.switch'), { description: data.error })
+        toast.error(t('switchChurchError'), { description: data.error })
         return
       }
 
@@ -58,9 +60,9 @@ export default function SelectChurchPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">{t('title')}</CardTitle>
+        <CardTitle className="text-2xl">{t('selectChurchTitle')}</CardTitle>
         <CardDescription>
-          {t('description')}
+          {t('selectChurchDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
