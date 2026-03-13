@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
     .eq('id', profile.church_id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church/settings GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
   })
@@ -51,7 +54,10 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church/settings PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }

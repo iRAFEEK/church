@@ -36,7 +36,10 @@ export async function GET(
     .eq('event_id', eventId)
     .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/service-needs GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Enrich with assignment counts
   const enriched = (needs || []).map((need: any) => ({
@@ -138,7 +141,10 @@ export async function PUT(
       .from('event_service_needs')
       .upsert(upsertData)
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/events/[id]/service-needs PUT]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
   }
 
   // Send notifications for newly added needs (fire-and-forget)

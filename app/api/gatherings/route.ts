@@ -9,6 +9,9 @@ export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
     .select()
     .single()
 
-  if (error) throw error
-  return Response.json({ data }, { status: 201 })
-})
+  if (error) {
+    console.error('[/api/gatherings POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data }, { status: 201 })
+}

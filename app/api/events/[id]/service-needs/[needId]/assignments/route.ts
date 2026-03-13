@@ -22,7 +22,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     .eq('service_need_id', needId)
     .order('created_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/service-needs/[needId]/assignments GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data: assignments })
 }
 
@@ -99,7 +102,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/service-needs/[needId]/assignments POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Notify the assigned member (fire-and-forget)
   notifyEventServiceAssigned(assignment.id, profile.church_id).catch((err) =>
@@ -129,6 +135,9 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('id', assignment_id)
     .eq('service_need_id', needId)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/service-needs/[needId]/assignments DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

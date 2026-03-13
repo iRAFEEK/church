@@ -36,6 +36,9 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('id, content, is_private, status, assigned_to, submitted_by, created_at')
     .single()
 
-  if (error) throw error
-  return Response.json({ data })
-})
+  if (error) {
+    console.error('[/api/prayer/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data })
+}

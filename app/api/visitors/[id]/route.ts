@@ -17,7 +17,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
     .eq('id', id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
+  if (error) {
+    console.error('[/api/visitors/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   return NextResponse.json({ data })
 }
 
@@ -39,7 +42,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       .eq('id', id)
       .select()
       .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/visitors/[id] PATCH]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     // Notify the assigned leader
     notifyVisitorAssigned(id, assigned_to, data.church_id).catch((err) =>
@@ -57,7 +63,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       .eq('id', id)
       .select()
       .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/visitors/[id] PATCH]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
     return NextResponse.json({ data })
   }
 
@@ -80,7 +89,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       user_metadata: { church_id: visitor.church_id },
       email_confirm: true,
     })
-    if (authErr) return NextResponse.json({ error: authErr.message }, { status: 500 })
+    if (authErr) {
+      console.error('[/api/visitors/[id] PATCH]', authErr)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     // Update the auto-created profile
     const { error: profileErr } = await adminSupabase
@@ -96,7 +108,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
       .eq('id', authData.user.id)
 
-    if (profileErr) return NextResponse.json({ error: profileErr.message }, { status: 500 })
+    if (profileErr) {
+      console.error('[/api/visitors/[id] PATCH]', profileErr)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     // Mark visitor as converted
     const { data, error } = await adminSupabase
@@ -105,7 +120,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       .eq('id', id)
       .select()
       .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/visitors/[id] PATCH]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     return NextResponse.json({ data, profile_id: authData.user.id })
   }
@@ -117,6 +135,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .eq('id', id)
     .select()
     .single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/visitors/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data })
 }

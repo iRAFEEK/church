@@ -42,7 +42,10 @@ export async function GET(req: NextRequest) {
 
   const { data: members, error: membersError } = await membersQuery
 
-  if (membersError) return NextResponse.json({ error: membersError.message }, { status: 500 })
+  if (membersError) {
+    console.error('[/api/outreach GET]', membersError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Fetch latest visit per member + followup status
   const memberIds = (members || []).map(m => m.id)

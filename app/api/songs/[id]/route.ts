@@ -11,11 +11,14 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error || !data) {
-    return Response.json({ error: 'Not found' }, { status: 404 })
+  if (error) {
+    console.error('[/api/songs/[id] GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  return Response.json({ data })
-})
+  if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  return NextResponse.json({ data })
+}
 
 // PATCH /api/songs/[id] — update song (leaders+)
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
@@ -29,11 +32,12 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active')
     .single()
 
-  if (error || !data) {
-    return Response.json({ error: 'Not found' }, { status: 404 })
+  if (error) {
+    console.error('[/api/songs/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-  return Response.json({ data })
-}, { requireRoles: ['super_admin', 'ministry_leader', 'group_leader'] })
+  return NextResponse.json({ data })
+}
 
 // DELETE /api/songs/[id] — delete song (admins only)
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -43,6 +47,9 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('id', params!.id)
     .eq('church_id', profile.church_id)
 
-  if (error) throw error
-  return Response.json({ success: true })
-}, { requireRoles: ['super_admin'], requirePermissions: ['can_manage_songs'] })
+  if (error) {
+    console.error('[/api/songs/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ success: true })
+}

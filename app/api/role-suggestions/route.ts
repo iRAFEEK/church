@@ -22,7 +22,10 @@ export async function GET(req: NextRequest) {
     .not('role', 'is', null)
     .limit(500)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/role-suggestions GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   const unique = [...new Set((data || []).map((d: any) => d.role).filter(Boolean))]
   return NextResponse.json({ data: unique }, {

@@ -27,7 +27,10 @@ export const GET = apiHandler(async ({ req, supabase, user }) => {
   }
 
   const { data, error, count } = await query
-  if (error) throw error
+  if (error) {
+    console.error('[/api/notifications GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Also get unread count
   const { count: unreadCount } = await supabase

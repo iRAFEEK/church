@@ -44,8 +44,9 @@ export async function POST(req: NextRequest) {
       )
 
     if (error) {
-      logger.error('Push token upsert failed', { module: 'push', userId: user.id, churchId: profile.church_id, error: error.message })
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[Push/Subscribe] Upsert failed:', error.message)
+      console.error('[/api/push/subscribe POST]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

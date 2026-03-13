@@ -50,7 +50,10 @@ export async function PUT(
     }))
 
     const { error } = await supabase.from('event_template_needs').insert(rows)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/templates/[id]/needs PUT]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ success: true })

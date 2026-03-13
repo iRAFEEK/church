@@ -23,9 +23,12 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
-  return { data }
-})
+  if (error) {
+    console.error('[/api/groups/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  return NextResponse.json({ data })
+}
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const id = params?.id
@@ -42,23 +45,25 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select()
     .single()
 
-  if (error || !data) return Response.json({ error: 'Not found' }, { status: 404 })
-  revalidateTag(`dashboard-${profile.church_id}`)
-  return { data }
-}, { requirePermissions: ['can_manage_members'] })
+  if (error) {
+    console.error('[/api/groups/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  revalidateTag(`dashboard-${data.church_id}`)
+  revalidateTag(`groups-${data.church_id}`)
+  return NextResponse.json({ data })
+}
 
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
   const id = params?.id
   if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
 
   // Soft delete
-  const { error } = await supabase
-    .from('groups')
-    .update({ is_active: false })
-    .eq('id', id)
-    .eq('church_id', profile.church_id)
-
-  if (error) throw error
-  revalidateTag(`dashboard-${profile.church_id}`)
-  return { success: true }
-}, { requireRoles: ['super_admin', 'ministry_leader'] })
+  const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).select('church_id').single()
+  if (error) {
+    console.error('[/api/groups/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  if (data) revalidateTag(`dashboard-${data.church_id}`)
+  return NextResponse.json({ success: true })
+}

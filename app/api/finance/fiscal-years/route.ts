@@ -11,9 +11,11 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
     .eq('church_id', profile.church_id)
     .order('start_date', { ascending: false })
 
-  if (error) throw error
-
-  return Response.json({ data }, {
+  if (error) {
+    console.error('[/api/finance/fiscal-years GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
   })
 }, { requirePermissions: ['can_view_finances'] })
@@ -67,7 +69,10 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
     .select('id, name, name_ar, start_date, end_date, is_current')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/fiscal-years POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_finances'] })

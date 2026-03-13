@@ -40,7 +40,10 @@ export async function GET(req: NextRequest) {
     .limit(200)
 
   const { data, error } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church-prayers/members GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return NextResponse.json({ data: data || [] })
 }
