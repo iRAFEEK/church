@@ -55,5 +55,6 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
 
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return Response.json({ data }, { status: 201 })
-}, { requirePermissions: ['can_manage_finances'] })
+  revalidateTag(`accounts-${profile.church_id}`)
+  return NextResponse.json({ data }, { status: 201 })
+}

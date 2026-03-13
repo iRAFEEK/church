@@ -69,8 +69,9 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return { data }
-}, { requirePermissions: ['can_manage_finances'] })
+  revalidateTag(`funds-${profile.church_id}`)
+  return NextResponse.json({ data })
+}
 
 // DELETE /api/finance/donations/[id]
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -84,5 +85,6 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
 
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return { success: true }
-}, { requirePermissions: ['can_manage_finances'] })
+  revalidateTag(`funds-${profile.church_id}`)
+  return NextResponse.json({ success: true })
+}
