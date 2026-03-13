@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
+import { logger } from '@/lib/logger'
 
 // POST /api/visitors — public, no auth required
 export async function POST(req: NextRequest) {
@@ -52,12 +53,14 @@ export async function POST(req: NextRequest) {
     if (error) throw error
 
     // Fire-and-forget: send welcome WhatsApp to visitor
-    notifyWelcomeVisitor(data.id, resolvedChurchId).catch(console.error)
+    notifyWelcomeVisitor(data.id, resolvedChurchId).catch((err) =>
+      logger.error('notifyWelcomeVisitor fire-and-forget failed', { module: 'visitors', churchId: resolvedChurchId, error: err })
+    )
 
     revalidateTag(`dashboard-${resolvedChurchId}`)
     return NextResponse.json({ data }, { status: 201 })
   } catch (e: unknown) {
-    console.error('POST /api/visitors', e)
+    logger.error('POST /api/visitors failed', { module: 'visitors', error: e })
     return NextResponse.json({ error: 'حدث خطأ غير متوقع' }, { status: 500 })
   }
 }

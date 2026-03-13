@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyEventServiceRequest } from '@/lib/messaging/triggers'
 import { resolveApiPermissions } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 // GET /api/events/[id]/service-needs — list service needs with assignment counts
 export async function GET(
@@ -152,7 +153,9 @@ export async function PUT(
     for (const need of allNeeds || []) {
       const key = need.ministry_id ? `m:${need.ministry_id}` : `g:${need.group_id}`
       if (newNeedKeys.has(key)) {
-        notifyEventServiceRequest(eventId, need.id, profile.church_id).catch(console.error)
+        notifyEventServiceRequest(eventId, need.id, profile.church_id).catch((err) =>
+          logger.error('notifyEventServiceRequest fire-and-forget failed', { module: 'events', churchId: profile.church_id, error: err })
+        )
       }
     }
   }

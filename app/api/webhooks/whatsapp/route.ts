@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('[Webhook] WhatsApp error:', error)
+    logger.error('WhatsApp webhook error', { module: 'webhooks', error })
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }

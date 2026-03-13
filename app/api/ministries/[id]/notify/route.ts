@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/messaging/dispatcher'
+import { logger } from '@/lib/logger'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
       sent++
     } catch (error) {
-      console.error(`Failed to notify member ${member.profile_id}:`, error)
+      logger.error('Failed to notify ministry member', { module: 'ministries', churchId: userProfile.church_id, userId: member.profile_id, error })
     }
   }
 
