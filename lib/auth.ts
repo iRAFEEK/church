@@ -35,18 +35,30 @@ export const getCurrentUserWithRole = cache(async (): Promise<AuthUser> => {
     redirect('/login')
   }
 
-  const profile = profileData as Profile
+  const rawProfile = profileData as Profile
+
+  // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
+  // Prevents privilege escalation if profiles.role is stale after church switch
+  const { data: membership } = await supabase
+    .from('user_churches')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('church_id', rawProfile.church_id)
+    .single()
+
+  const effectiveRole = (membership?.role ?? rawProfile.role) as Profile['role']
+  const profile: Profile = { ...rawProfile, role: effectiveRole }
 
   // Fetch church-level role permission defaults (if configured)
   const { data: roleDefaults } = await supabase
     .from('role_permission_defaults')
     .select('permissions')
     .eq('church_id', profile.church_id)
-    .eq('role', profile.role)
+    .eq('role', effectiveRole)
     .single()
 
   const resolvedPermissions = resolvePermissions(
-    profile.role,
+    effectiveRole,
     roleDefaults?.permissions ?? null,
     profile.permissions ?? null
   )
@@ -82,17 +94,28 @@ export async function getCurrentUserSafe(): Promise<AuthUser | null> {
     const { church: churchData, ...profileData } = profileWithChurch
     if (!churchData) return null
 
-    const profile = profileData as Profile
+    const rawProfile = profileData as Profile
+
+    // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
+    const { data: membership } = await supabase
+      .from('user_churches')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('church_id', rawProfile.church_id)
+      .single()
+
+    const effectiveRole = (membership?.role ?? rawProfile.role) as Profile['role']
+    const profile: Profile = { ...rawProfile, role: effectiveRole }
 
     const { data: roleDefaults } = await supabase
       .from('role_permission_defaults')
       .select('permissions')
       .eq('church_id', profile.church_id)
-      .eq('role', profile.role)
+      .eq('role', effectiveRole)
       .single()
 
     const resolved = resolvePermissions(
-      profile.role,
+      effectiveRole,
       roleDefaults?.permissions ?? null,
       profile.permissions ?? null
     )
@@ -174,17 +197,33 @@ export async function requirePermission(...permissions: PermissionKey[]): Promis
  */
 export async function resolveApiPermissions(
   supabase: any,
-  profile: { role: string; church_id: string; permissions?: any }
+  profile: { role: string; church_id: string; permissions?: any },
+  userId?: string
 ): Promise<Record<PermissionKey, boolean>> {
+  // If userId provided, cross-check role from user_churches (defense in depth)
+  let effectiveRole = profile.role as Profile['role']
+  if (userId) {
+    const { data: membership } = await supabase
+      .from('user_churches')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('church_id', profile.church_id)
+      .single()
+
+    if (membership?.role) {
+      effectiveRole = membership.role as Profile['role']
+    }
+  }
+
   const { data: roleDefaults } = await supabase
     .from('role_permission_defaults')
     .select('permissions')
     .eq('church_id', profile.church_id)
-    .eq('role', profile.role)
+    .eq('role', effectiveRole)
     .single()
 
   return resolvePermissions(
-    profile.role as Profile['role'],
+    effectiveRole,
     roleDefaults?.permissions ?? null,
     profile.permissions ?? null
   )
