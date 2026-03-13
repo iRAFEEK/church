@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireRole } from '@/lib/auth'
+import { getCachedMinistries } from '@/lib/cache/queries'
 import Link from 'next/link'
 import { GroupsTable } from '@/components/groups/GroupsTable'
 import { Button } from '@/components/ui/button'
@@ -37,11 +38,7 @@ export default async function GroupsPage() {
 
   const { data: groups } = await groupsQuery
 
-  const { data: ministries } = await supabase
-    .from('ministries')
-    .select('id,name,name_ar')
-    .eq('is_active', true)
-    .order('name')
+  const ministries = await getCachedMinistries(user.profile.church_id)
 
   return (
     <div className="space-y-6">

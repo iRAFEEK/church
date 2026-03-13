@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCachedFunds } from '@/lib/cache/queries'
 import DonationForm from './DonationForm'
 
 export default async function NewDonationPage() {
@@ -7,16 +8,11 @@ export default async function NewDonationPage() {
   const supabase = await createClient()
 
   const [
-    { data: funds },
+    funds,
     { data: campaigns },
     { data: members },
   ] = await Promise.all([
-    supabase
-      .from('funds')
-      .select('id, name, name_ar')
-      .eq('church_id', profile.church_id)
-      .eq('is_active', true)
-      .order('name'),
+    getCachedFunds(profile.church_id),
     supabase
       .from('campaigns')
       .select('id, name, name_ar')

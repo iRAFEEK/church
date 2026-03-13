@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateServingAreaSchema } from '@/lib/schemas/serving'
@@ -33,5 +34,6 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
     .single()
 
   if (error) throw error
+  revalidateTag(`serving-areas-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_serving'] })

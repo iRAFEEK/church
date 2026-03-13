@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { getCachedFunds } from '@/lib/cache/queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -30,11 +31,11 @@ export default async function FinancialReportsPage() {
   // Quick stats for the report hub
   const [
     { data: yearDonations },
-    { data: funds },
+    funds,
     { data: budgets },
   ] = await Promise.all([
     supabase.from('donations').select('base_amount, fund_id, payment_method').eq('church_id', profile.church_id).gte('donation_date', startOfYear).lte('donation_date', today),
-    supabase.from('funds').select('id, name, name_ar, current_balance, target_amount').eq('church_id', profile.church_id).eq('is_active', true).order('display_order'),
+    getCachedFunds(profile.church_id),
     supabase.from('budgets').select('id, name, total_income, total_expense, is_approved').eq('church_id', profile.church_id).eq('is_active', true).limit(5),
   ])
 

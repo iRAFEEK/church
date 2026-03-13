@@ -1,17 +1,11 @@
 import { requirePermission } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedFunds } from '@/lib/cache/queries'
 import { CampaignForm } from './CampaignForm'
 
 export default async function NewCampaignPage() {
   const { profile } = await requirePermission('can_manage_campaigns')
-  const supabase = await createClient()
 
-  const { data: funds } = await supabase
-    .from('funds')
-    .select('id, name, name_ar')
-    .eq('church_id', profile.church_id)
-    .eq('is_active', true)
-    .order('name')
+  const funds = await getCachedFunds(profile.church_id)
 
   return <CampaignForm funds={funds || []} />
 }

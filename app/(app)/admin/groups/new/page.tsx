@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
+import { getCachedMinistries } from '@/lib/cache/queries'
 import { redirect } from 'next/navigation'
 import { GroupForm } from '@/components/groups/GroupForm'
 import { getTranslations } from 'next-intl/server'
@@ -12,18 +13,15 @@ export default async function NewGroupPage() {
   const t = await getTranslations('groups')
   const supabase = await createClient()
 
-  const { data: ministries } = await supabase
-    .from('ministries')
-    .select('id,name,name_ar')
-    .eq('is_active', true)
-    .order('name')
-
-  const { data: leaders } = await supabase
-    .from('profiles')
-    .select('id,first_name,last_name,first_name_ar,last_name_ar')
-    .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
-    .eq('status', 'active')
-    .order('first_name')
+  const [ministries, { data: leaders }] = await Promise.all([
+    getCachedMinistries(user.profile.church_id),
+    supabase
+      .from('profiles')
+      .select('id,first_name,last_name,first_name_ar,last_name_ar')
+      .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
+      .eq('status', 'active')
+      .order('first_name'),
+  ])
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
