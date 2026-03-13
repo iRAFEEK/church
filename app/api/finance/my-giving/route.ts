@@ -1,53 +1,68 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+const PAGE_SIZE = 25
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const GET = apiHandler(async ({ req, supabase, user, profile }) => {
+  const { searchParams } = new URL(req.url)
+  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+  const offset = (page - 1) * PAGE_SIZE
 
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_own_giving) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const churchId = profile.church_id
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0]
+  const today = now.toISOString().split('T')[0]
 
-  const [donationsRes, pledgesRes] = await Promise.all([
+  const [donationsRes, monthRes, yearRes, pledgesRes] = await Promise.all([
     supabase
       .from('donations')
-      .select('*, fund:funds(name, name_ar)')
+      .select('id, amount, base_amount, currency, donation_date, payment_method, receipt_number, is_tithe, fund:fund_id(id, name, name_ar), campaign:campaign_id(id, name, name_ar)', { count: 'exact' })
       .eq('donor_id', user.id)
-      .eq('church_id', profile.church_id)
-      .order('donation_date', { ascending: false }),
+      .eq('church_id', churchId)
+      .order('donation_date', { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1),
+    supabase
+      .from('donations')
+      .select('base_amount')
+      .eq('donor_id', user.id)
+      .eq('church_id', churchId)
+      .gte('donation_date', startOfMonth)
+      .lte('donation_date', today),
+    supabase
+      .from('donations')
+      .select('base_amount')
+      .eq('donor_id', user.id)
+      .eq('church_id', churchId)
+      .gte('donation_date', startOfYear)
+      .lte('donation_date', today),
     supabase
       .from('pledges')
-      .select('*, campaign:campaigns(name, name_ar)')
+      .select('id, total_amount, fulfilled_amount, currency, status, frequency, next_due_date, campaign:campaign_id(id, name, name_ar)')
       .eq('donor_id', user.id)
-      .eq('church_id', profile.church_id)
-      .eq('status', 'active'),
+      .eq('church_id', churchId)
+      .in('status', ['active', 'completed'])
+      .order('created_at', { ascending: false }),
   ])
 
-  const donations = donationsRes.data || []
-  const pledges = pledgesRes.data || []
+  const donations = donationsRes.data ?? []
+  const total = donationsRes.count ?? 0
+  const pledges = pledgesRes.data ?? []
 
-  const thisMonth = donations
-    .filter(d => d.donation_date >= startOfMonth)
-    .reduce((s: number, d: any) => s + (d.base_amount || d.amount), 0)
+  const thisMonth = (monthRes.data ?? []).reduce((s, d) => s + (d.base_amount || 0), 0)
+  const thisYear = (yearRes.data ?? []).reduce((s, d) => s + (d.base_amount || 0), 0)
 
-  const thisYear = donations
-    .filter(d => d.donation_date >= startOfYear)
-    .reduce((s: number, d: any) => s + (d.base_amount || d.amount), 0)
-
-  const allTime = donations.reduce((s: number, d: any) => s + (d.base_amount || d.amount), 0)
-
-  return NextResponse.json({
-    data: { donations, pledges, summary: { thisMonth, thisYear, allTime } },
+  return Response.json({
+    data: {
+      donations,
+      pledges,
+      summary: { thisMonth, thisYear },
+      total,
+      page,
+      pageSize: PAGE_SIZE,
+      hasMore: total > offset + PAGE_SIZE,
+    },
   }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
-}
+}, { requirePermissions: ['can_view_own_giving'] })
