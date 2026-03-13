@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { analytics } from '@/lib/analytics'
+import posthog from 'posthog-js'
 
 export default function ErrorPage({
   error,
@@ -12,10 +15,16 @@ export default function ErrorPage({
   reset: () => void
 }) {
   const t = useTranslations('error')
+  const pathname = usePathname()
 
   useEffect(() => {
     console.error(error)
-  }, [error])
+    posthog.captureException(error)
+    analytics.error.boundaryTriggered({
+      page: pathname ?? 'unknown',
+      error_message: error.message,
+    })
+  }, [error, pathname])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

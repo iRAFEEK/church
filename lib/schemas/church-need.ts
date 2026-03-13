@@ -28,3 +28,8 @@ export const CreateNeedResponseSchema = z.object({
 export const UpdateNeedResponseStatusSchema = z.object({
   status: z.enum(['accepted', 'declined', 'completed']),
 })
+
+export const CreateNeedMessageSchema = z.object({
+  message: z.string().min(1).max(2000),
+  message_ar: z.string().max(2000).optional().nullable(),
+})

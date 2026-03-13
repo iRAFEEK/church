@@ -1,7 +1,7 @@
 # Ekklesia — Project Context
 
 > This file is auto-maintained. Every agent that completes a task must update the relevant sections.
-> Last updated: 2026-03-12 | Updated by: Initial CLAUDE.md creation
+> Last updated: 2026-03-12 | Updated by: UX designer agent system
 
 ---
 
@@ -23,6 +23,69 @@ cat .claude/skills/optimization/SKILL.md    # for performance work
 ```
 
 Do not skip step 3. The skills contain patterns that are not repeated in this file.
+
+---
+
+## Engineering Agent System
+
+This project has a full multi-agent engineering system in `.claude/`.
+
+### Modes
+
+**Investigate / Audit** — triggered by: "find", "audit", "analyze", "what's wrong", "go over"
+- Reads the relevant agent from `.claude/agents/`
+- Walks actual files, finds actual line numbers
+- Reports only — never modifies anything
+- Output written to `.claude/output/`
+
+**Code** — triggered by: "fix", "work on", "implement", "build", any task description
+- Reads `.claude/agents/coding-agent.md` first
+- Reads ALL 4 skill files before touching anything
+- Applies the same standards every time regardless of task source
+
+**Build a feature** — triggered by: "build the X feature", "implement Y from scratch"
+- Reads `.claude/agents/feature-builder.md`
+- Coordinates the full team: security review, DB review, UX review, then builds
+- Every feature gets: migration + RLS + apiHandler routes + loading.tsx + i18n + tests
+
+### Agent roster
+
+| What you say | Agent |
+|---|---|
+| fix, work on, implement, build, any task | `coding-agent.md` |
+| build a feature end-to-end | `feature-builder.md` |
+| audit, find, analyze, what's wrong | relevant specialist agent |
+| performance, slow, 3G, loading | `04-performance.md` |
+| security, auth, IDOR, data leak | `03-security.md` |
+| database, RLS, index, migration | `05-database.md` |
+| quality, bug, any, null, error | `02-quality.md` |
+| tests, coverage, debt | `06-tests-debt.md` |
+| full audit, everything | all agents via `07-cto.md` orchestrator |
+
+### Non-negotiable rules (enforced by all agents)
+
+- Every query: `.eq('church_id', churchId)` — no exceptions
+- Every API route: `apiHandler` — never manual auth
+- Every string: `t('key')` — never hardcoded English
+- Every new page: `loading.tsx` — users are on 3G
+- Zero new `any` types — 270+ already exist
+- Finance data: validate before touching
+
+### Skills location
+
+`.claude/skills/` — read these before making any code change
+
+| Skill file | When to read |
+|---|---|
+| `skill-fix-standards.md` | Before any fix, refactor, or code change |
+| `skill-component-patterns.md` | Before writing any React component |
+| `skill-data-patterns.md` | Before writing any API route, query, or DB work |
+| `skill-product-domain.md` | Before working on any feature (understand the domain) |
+| `code-quality/SKILL.md` | For code quality and structure patterns |
+| `optimization/SKILL.md` | For performance optimization patterns |
+| `ux-design/SKILL.md` | For UX design patterns and standards |
+| `analytics/SKILL.md` | For PostHog analytics instrumentation |
+| `context-update/SKILL.md` | After completing ANY task (mandatory) |
 
 ---
 
@@ -48,6 +111,7 @@ Ekklesia is a church management platform built for Arabic-speaking churches (pri
 | i18n | next-intl 4.x | Arabic (ar, ar-eg) + English (en), cookie-based locale |
 | Push Notifications | Firebase Cloud Messaging | Service worker generated at build time |
 | Email | Resend | Optional, for transactional emails |
+| Analytics | PostHog | EU data residency, privacy-first config |
 | Charts | Recharts 3.x | Always dynamically imported |
 | Virtualization | @tanstack/react-virtual | For long lists |
 | Forms | react-hook-form + zod | With @hookform/resolvers |
@@ -90,7 +154,7 @@ app/
 │   │   └── visitors/       # Visitor queue management
 │   ├── announcements/      # Member-facing announcements
 │   ├── bible/              # Bible reader + bookmarks
-│   ├── community/needs/    # Church Needs marketplace (cross-church)
+│   ├── community/needs/    # Church Needs marketplace (cross-church) with "Your Needs" tab + messaging
 │   ├── dashboard/          # Role-based dashboards
 │   ├── events/             # Member-facing event list + detail
 │   ├── finance/my-giving/  # Member's own giving history
@@ -113,7 +177,7 @@ app/
 │   ├── bible/              # Bible API proxy + bookmarks/highlights
 │   ├── church-prayers/     # Church prayer management
 │   ├── churches/           # Church search, join, register, switch
-│   ├── community/needs/    # Church Needs CRUD + responses (cross-church)
+│   ├── community/needs/    # Church Needs CRUD + responses + messaging (cross-church)
 │   ├── cron/               # Scheduled jobs (event reminders, visitor SLA)
 │   ├── events/             # Events + segments + service needs + assignments
 │   ├── finance/            # Donations, expenses, funds, accounts, budgets, campaigns, transactions, fiscal years, my-giving
@@ -152,6 +216,7 @@ lib/
 ├── firebase/               # Firebase admin + client setup
 ├── hooks/                  # usePushNotifications
 ├── landing/queries.ts      # Landing page queries
+├── analytics/              # PostHog analytics (client, server, event catalog)
 ├── messaging/              # Multi-channel messaging (email, push, in-app, WhatsApp)
 ├── supabase/
 │   ├── client.ts           # Browser Supabase client (no Database generic)
@@ -193,19 +258,26 @@ messages/
 ├── ar.json                 # Arabic translations
 └── ar-eg.json              # Egyptian Arabic translations
 supabase/
-└── migrations/             # 34 migration files (see Section 5)
+├── migrations/             # 43 migration files (see Section 5)
+└── seeds/                  # Feature-specific test data (run manually, idempotent)
+    └── [feature].sql       # One file per feature
 .claude/
 ├── settings.json           # Claude Code hooks (post-feature optimization trigger)
 ├── agents/
-│   └── optimize-after-feature.md  # Optimization agent prompt template
+│   ├── optimize-after-feature.md  # Optimization agent prompt template
+│   ├── seed-feature.md            # Feature seeding + edge case testing agent
+│   └── ux-designer.md             # UX review + design spec agent
 ├── scripts/
 │   ├── post-feature-optimize.sh   # Hook trigger script
-│   └── optimize-now.sh            # Manual optimization trigger
+│   ├── optimize-now.sh            # Manual optimization trigger
+│   ├── seed-feature.sh            # Feature seeding trigger
+│   └── ux-review.sh               # UX designer agent runner
 ├── logs/                   # Gitignored — auto-optimize run logs
 └── skills/                 # Claude Code skills
     ├── optimization/       # Performance optimization patterns
     ├── code-quality/       # Code quality and structure patterns
-    └── context-update/     # How to update this file after completing work
+    ├── context-update/     # How to update this file after completing work
+    └── ux-design/                  # Senior UX designer patterns
 ```
 
 ---
@@ -229,6 +301,7 @@ supabase/
 | `attendance` | Meeting attendance records | gathering_id, profile_id, church_id, status (present/absent/excused/late) | Yes |
 | `prayer_requests` | Prayer submissions | church_id, submitted_by, content, is_private, status, assigned_to | Yes |
 | `notifications` | In-app notifications | church_id, profile_id, title, body, is_read | Yes |
+| `church_need_messages` | Inter-church messaging on need responses | response_id, sender_user_id, sender_church_id, message, message_ar | Yes (both parties) |
 | `events` | Church events | church_id, title, title_ar, starts_at, ends_at, event_type, is_public, registration_required | Yes |
 | `event_registrations` | Event RSVPs | event_id, profile_id, status | Yes |
 | `event_segments` | Run-of-show segments | event_id, title, duration_minutes, sort_order | Yes |
@@ -326,6 +399,8 @@ supabase/
 | 034 | finance_performance_indexes.sql | Compound indexes for finance queries |
 | 035 | church_needs.sql | Church Needs marketplace: church_needs, church_need_responses tables, cross-church RLS, storage bucket |
 | 036 | seed_church_needs_test_data.sql | Test data: 2 additional churches + admins, 8 needs, 6 cross-church responses |
+| 042 | new_test_churches_and_needs.sql | 2 more test churches (Amman, Baghdad) + admins + 7 needs + 3 responses |
+| 043 | church_need_messages.sql | church_need_messages table for inter-church messaging threads on accepted responses |
 
 ---
 
@@ -416,6 +491,19 @@ All errors flow through `apiHandler`. Never return raw error messages to the cli
 
 - Browser: `lib/supabase/client.ts` — do NOT use `<Database>` generic (causes `never` type errors)
 - Server: `lib/supabase/server.ts` — uses CookieMethodsServer pattern with `setAll` typed as `{ name: string; value: string; options?: any }[]`
+
+### Analytics
+
+All analytics go through the event catalog. Never call `posthog.capture()` directly.
+
+```ts
+import { analytics } from '@/lib/analytics'
+analytics.finance.donationRecorded({ church_id, role, locale, amount, currency, method, fund_id, has_campaign })
+```
+
+Every event requires: `church_id`, `role`, `locale`. Never include PII (names, emails, phone).
+Track after confirmed success, never on attempt.
+New events: add to `lib/analytics/events.ts`, follow `{module}_{action}_{object}` naming.
 
 ---
 
@@ -521,8 +609,15 @@ Last measured: 2026-03-11
 - [x] Product marketing landing page
 
 - [x] Church Needs cross-church marketplace (needs, responses, permissions, 3 pages, 5 components, 4 API routes)
+- [x] Church Needs notifications (need_response_received, need_response_status_changed, need_message)
+- [x] Church Needs inter-church messaging (message threads on accepted responses)
+- [x] Church Needs "Your Needs" tab (own needs dashboard with response counts)
+- [x] Church Needs test data expansion (4 test churches total: Egypt, Jordan, Iraq + original)
 
 - [x] Auto-optimization agent system (hooks + agent + scripts)
+- [x] UX designer agent system (skill + agent + runner script)
+- [x] Feature seeding agent (.claude/agents/seed-feature.md + seed-feature.sh)
+- [x] PostHog analytics (full instrumentation: events catalog, provider, identification, error tracking, audit script, analytics skill)
 
 ### In Progress
 
@@ -565,6 +660,9 @@ WHATSAPP_API_KEY=                  # Optional: WhatsApp messaging
 WHATSAPP_API_URL=                  # Optional: WhatsApp API endpoint
 WHATSAPP_WEBHOOK_SECRET=           # Optional: webhook verification
 CRON_SECRET=                       # Optional: cron job authentication
+NEXT_PUBLIC_POSTHOG_KEY=           # PostHog project API key (public)
+NEXT_PUBLIC_POSTHOG_HOST=          # https://eu.i.posthog.com or https://us.i.posthog.com
+POSTHOG_PROJECT_API_KEY=           # Same as public key (server-side)
 ```
 
 ---
@@ -605,6 +703,30 @@ bash .claude/scripts/optimize-now.sh app/\(app\)/admin/finance/
 
 # View optimization log
 cat .claude/logs/auto-optimize.log
+
+# UX review on last changed files
+bash .claude/scripts/ux-review.sh
+
+# UX design spec for a new feature
+bash .claude/scripts/ux-review.sh "build a recurring donations feature"
+
+# UX review on a specific directory
+bash .claude/scripts/ux-review.sh "" app/(app)/admin/finance/
+
+# Seed the most recently built feature (auto-detects from git)
+bash .claude/scripts/seed-feature.sh
+
+# Seed a specific feature by name
+bash .claude/scripts/seed-feature.sh "recurring donations feature"
+
+# Seed a specific directory
+bash .claude/scripts/seed-feature.sh "finance reports" app/(app)/admin/finance/reports/
+
+# Re-run a saved seed file to reset test data
+supabase db execute --file supabase/seeds/[feature].sql
+
+# Run analytics coverage audit
+bash .claude/scripts/analytics-audit.sh
 ```
 
 ---
@@ -638,6 +760,8 @@ cat .claude/logs/auto-optimize.log
 
 13. **Middleware cookie `setAll` typed as `{ name: string; value: string; options?: any }[]`.** Required for Supabase SSR compatibility.
 
+14. **Analytics is part of done.** Every form submission, primary CTA, and key user action needs an analytics call from the event catalog (`lib/analytics/events.ts`). No uninstrumented features. Read `.claude/skills/analytics/SKILL.md`.
+
 ---
 
 ## 14. Skills — Read Before You Start
@@ -652,6 +776,8 @@ Skills contain the condensed patterns from all previous work. An agent that skip
 |-----------|----------------|
 | Any performance work (slow page, query optimization, bundle size, loading states, Lighthouse) | `.claude/skills/optimization/SKILL.md` |
 | Any code work (new feature, new component, new API route, refactor, new module) | `.claude/skills/code-quality/SKILL.md` |
+| Any UI work (new page, form, list, layout decision, UX review) | `.claude/skills/ux-design/SKILL.md` |
+| Any feature with user interactions (forms, buttons, navigation) | `.claude/skills/analytics/SKILL.md` |
 | After completing ANY task | `.claude/skills/context-update/SKILL.md` |
 
 ### How to read a skill
@@ -660,6 +786,8 @@ Skills contain the condensed patterns from all previous work. An agent that skip
 cat .claude/skills/optimization/SKILL.md
 cat .claude/skills/code-quality/SKILL.md
 cat .claude/skills/context-update/SKILL.md
+cat .claude/skills/ux-design/SKILL.md
+cat .claude/skills/analytics/SKILL.md
 ```
 
 ### When in doubt, read both
@@ -674,6 +802,10 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-03-12 | PostHog analytics | Full PostHog instrumentation: events catalog (50+ events), provider, user identification, error boundary tracking, analytics skill, audit script | lib/analytics/**, components/shared/PostHogProvider.tsx, .claude/skills/analytics/SKILL.md, .claude/scripts/analytics-audit.sh |
+| 2026-03-12 | Feature seeding agent | Seeding agent for realistic test data + edge cases per feature, runner script, supabase/seeds/ directory | .claude/agents/seed-feature.md, .claude/scripts/seed-feature.sh |
+| 2026-03-12 | UX designer agent system | UX design skill (design system, component patterns, review checklist), agent prompt (Mode A review + Mode B spec), runner script | .claude/skills/ux-design/SKILL.md, .claude/agents/ux-designer.md, .claude/scripts/ux-review.sh |
+| 2026-03-12 | Church Needs messaging + notifications | Inter-church messaging threads, 3 notification triggers, "Your Needs" tab, 2 more test churches, /simplify optimization | supabase/migrations/042-043, app/api/community/**/messages/**, components/community/MessageThread.tsx, lib/messaging/triggers.ts, lib/messaging/templates.ts, lib/messaging/types.ts |
 | 2026-03-12 | Church Needs marketplace | Cross-church needs/responses feature: 2 permissions, 4 API routes, 5 components, 3 pages, seed data with 3 churches | supabase/migrations/035-036, app/api/community/**, app/(app)/community/**, components/community/**, lib/permissions.ts, lib/navigation.ts, types/index.ts |
 | 2026-03-12 | Auto-optimization agent system | Hooks, agent prompt, trigger scripts | .claude/agents/, .claude/scripts/, .claude/settings.json |
 | 2026-03-12 | Initial CLAUDE.md creation | Created project context system + 3 skills | CLAUDE.md, .claude/skills/** |

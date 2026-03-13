@@ -818,6 +818,7 @@
       "event_service_response": "Service Response",
       "need_response_received": "Help Offer Received",
       "need_response_status_changed": "Help Offer Update",
+      "need_message": "Need Message",
       "assignment": "Assignment",
       "general": "General"
     },
@@ -2035,6 +2036,17 @@
       "in_progress": "In Progress",
       "fulfilled": "Fulfilled",
       "closed": "Closed"
-    }
+    },
+    "allNeeds": "All Needs",
+    "yourNeeds": "Your Needs",
+    "noYourNeeds": "You haven't posted any needs yet",
+    "messages": "Messages",
+    "noMessages": "No messages yet. Start the conversation.",
+    "typeMessage": "Type a message...",
+    "messagesLoadError": "Failed to load messages",
+    "messagesTab": "Messages",
+    "noConversations": "No conversations yet",
+    "noConversationsDesc": "Conversations appear here when you or other churches communicate about needs",
+    "cancel": "Cancel"
   }
 }

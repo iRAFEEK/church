@@ -25,6 +25,11 @@ const ConfigSchema = z.object({
   cron: z.object({
     secret: z.string().min(1).optional(),
   }),
+  posthog: z.object({
+    publicKey: z.string().min(1).optional(),
+    host: z.string().url().optional(),
+    serverKey: z.string().min(1).optional(),
+  }),
 })
 
 export type AppConfig = z.infer<typeof ConfigSchema>
@@ -51,6 +56,11 @@ function loadConfig(): AppConfig {
     },
     cron: {
       secret: process.env.CRON_SECRET,
+    },
+    posthog: {
+      publicKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      serverKey: process.env.POSTHOG_PROJECT_API_KEY,
     },
   })
 
