@@ -56,18 +56,30 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
           .single()
 
         if (!p) return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
-        profile = p as ApiContext['profile']
 
-        // Resolve permissions
+        // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
+        // This prevents privilege escalation if profiles.role is stale after church switch
+        const { data: membership } = await supabase
+          .from('user_churches')
+          .select('role')
+          .eq('user_id', u.id)
+          .eq('church_id', p.church_id)
+          .single()
+
+        // Use user_churches.role if available (defense in depth), fallback to profiles.role
+        const effectiveRole = (membership?.role ?? p.role) as UserRole
+        profile = { ...p, role: effectiveRole } as ApiContext['profile']
+
+        // Resolve permissions using the verified per-church role
         const { data: roleDefaults } = await supabase
           .from('role_permission_defaults')
           .select('permissions')
           .eq('church_id', profile.church_id)
-          .eq('role', profile.role)
+          .eq('role', effectiveRole)
           .single()
 
         resolvedPermissions = resolvePermissions(
-          profile.role,
+          effectiveRole,
           (roleDefaults?.permissions ?? null) as PermissionMap | null,
           profile.permissions
         )

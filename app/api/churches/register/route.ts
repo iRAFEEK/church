@@ -169,6 +169,16 @@ export async function POST(request: NextRequest) {
       console.error('Profile upgrade to super_admin failed after retries for user:', userId)
     }
 
+    // 3b. Insert into user_churches with super_admin role
+    // This is the authoritative per-church role used for privilege checks
+    const { error: ucError } = await supabase
+      .from('user_churches')
+      .insert({ user_id: userId, church_id: church.id, role: 'super_admin' })
+
+    if (ucError && !ucError.message?.includes('duplicate')) {
+      console.error('user_churches insert failed (non-fatal):', ucError)
+    }
+
     // 4. Insert church leaders if provided
     if (leaders && leaders.length > 0) {
       const leaderRows = leaders.map((leader, i) => ({
