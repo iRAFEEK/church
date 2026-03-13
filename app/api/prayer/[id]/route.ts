@@ -1,23 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
 
-type Params = { params: Promise<{ id: string }> }
+// PATCH /api/prayer/[id] — update prayer request
+// Requires: group_leader+ or the submitter or the assigned_to
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const body = validate(UpdatePrayerRequestSchema, await req.json())
 
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // First verify the prayer request exists and belongs to this church
+  const { data: prayer, error: fetchError } = await supabase
+    .from('prayer_requests')
+    .select('id, submitted_by, assigned_to, church_id')
+    .eq('id', params!.id)
+    .eq('church_id', profile.church_id)
+    .single()
 
-  const body = await req.json()
+  if (fetchError || !prayer) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  // Permission check: must be submitter, assigned_to, or leader+
+  const isOwner = prayer.submitted_by === profile.id
+  const isAssigned = prayer.assigned_to === profile.id
+  const isLeader = ['super_admin', 'ministry_leader', 'group_leader'].includes(profile.role)
+
+  if (!isOwner && !isAssigned && !isLeader) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const { data, error } = await supabase
     .from('prayer_requests')
     .update(body)
-    .eq('id', id)
-    .select()
+    .eq('id', params!.id)
+    .eq('church_id', profile.church_id)
+    .select('id, content, is_private, status, assigned_to, submitted_by, created_at')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return Response.json({ data })
+})
