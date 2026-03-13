@@ -3,10 +3,13 @@ import { revalidateTag } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
-import { logger } from '@/lib/logger'
+import { rateLimitPublic } from '@/lib/api/rate-limit'
 
 // POST /api/visitors — public, no auth required
 export async function POST(req: NextRequest) {
+  const limited = rateLimitPublic(req)
+  if (limited) return limited
+
   try {
     const body = await req.json()
     const { first_name, last_name, phone, email, age_range, occupation, how_heard, church_id } = body

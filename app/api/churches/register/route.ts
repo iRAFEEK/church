@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { logger } from '@/lib/logger'
+import { rateLimitSensitive } from '@/lib/api/rate-limit'
 
 interface LeaderEntry {
   name: string
@@ -10,6 +10,9 @@ interface LeaderEntry {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimitSensitive(request)
+  if (limited) return limited
+
   try {
     const body = await request.json()
     const {
