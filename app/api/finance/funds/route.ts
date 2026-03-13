@@ -1,24 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateFundSchema } from '@/lib/schemas/fund'
 
 // GET /api/finance/funds — list funds for user's church
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const activeOnly = searchParams.get('active') !== 'false'
 
@@ -32,33 +18,20 @@ export async function GET(req: NextRequest) {
   if (activeOnly) query = query.eq('is_active', true)
 
   const { data, error, count } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
-  return NextResponse.json({ data, count }, {
+  return Response.json({ data, count }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
-}
+}, { requirePermissions: ['can_view_finances'] })
 
 // POST /api/finance/funds — create fund
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const body = await req.json()
+  const validated = validate(CreateFundSchema, body)
 
   // If this is set as default, unset the previous default
-  if (body.is_default) {
+  if (validated.is_default) {
     await supabase
       .from('funds')
       .update({ is_default: false })
@@ -68,11 +41,25 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('funds')
-    .insert({ ...body, church_id: profile.church_id })
-    .select()
+    .insert({
+      name: validated.name,
+      name_ar: validated.name_ar,
+      code: validated.code,
+      description: validated.description,
+      description_ar: validated.description_ar,
+      target_amount: validated.target_amount,
+      color: validated.color,
+      currency: validated.currency,
+      is_active: validated.is_active,
+      is_default: validated.is_default,
+      is_restricted: validated.is_restricted,
+      display_order: validated.display_order,
+      church_id: profile.church_id,
+    })
+    .select('id, name, name_ar, code, description, description_ar, current_balance, target_amount, color, is_active, is_default, is_restricted, display_order')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return Response.json({ data }, { status: 201 })
+}, { requirePermissions: ['can_manage_finances'] })
