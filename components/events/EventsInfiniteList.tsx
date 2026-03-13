@@ -49,7 +49,7 @@ export function EventsInfiniteList({ initialEvents, initialCursor, isAdmin, upco
       return
     }
 
-    let cancelled = false
+    const controller = new AbortController()
     setFiltering(true)
 
     const params = new URLSearchParams({ pageSize: '20' })
@@ -59,17 +59,21 @@ export function EventsInfiniteList({ initialEvents, initialCursor, isAdmin, upco
     if (ministryId) params.set('ministry_id', ministryId)
     if (groupId) params.set('group_id', groupId)
 
-    fetch(`/api/events?${params}`)
+    fetch(`/api/events?${params}`, { signal: controller.signal })
       .then(r => r.json())
       .then(json => {
-        if (cancelled) return
+        if (controller.signal.aborted) return
         setEvents(json.data || [])
         setCursor(json.nextCursor || null)
       })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setFiltering(false) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventsInfiniteList] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setFiltering(false) })
 
-    return () => { cancelled = true }
+    return () => controller.abort()
   }, [search, ministryId, groupId, hasFilters, isAdmin, upcoming, initialEvents, initialCursor])
 
   const loadMore = useCallback(async () => {

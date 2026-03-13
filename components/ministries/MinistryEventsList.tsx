@@ -33,14 +33,22 @@ export function MinistryEventsList({ ministryId }: MinistryEventsListProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/ministries/${ministryId}/events`)
+    const controller = new AbortController()
+    fetch(`/api/ministries/${ministryId}/events`, { signal: controller.signal })
       .then(r => r.json())
       .then(d => {
-        setUpcoming(d.data?.upcoming || [])
-        setRecent(d.data?.recent || [])
+        if (!controller.signal.aborted) {
+          setUpcoming(d.data?.upcoming || [])
+          setRecent(d.data?.recent || [])
+        }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[MinistryEventsList] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [ministryId])
 
   if (loading) return <div className="text-sm text-zinc-400 py-4">{te('loading')}</div>

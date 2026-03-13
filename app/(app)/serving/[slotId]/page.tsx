@@ -22,15 +22,24 @@ export default function SlotDetailMemberPage() {
   const [acting, setActing] = useState(false)
 
   useEffect(() => {
-    (async () => {
-      const res = await fetch(`/api/serving/slots/${slotId}`)
-      if (res.ok) {
-        const { data } = await res.json()
-        setSlot(data)
-        setIsSignedUp(data.serving_signups?.some((s: any) => s.status !== 'cancelled') || false)
+    const controller = new AbortController()
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/serving/slots/${slotId}`, { signal: controller.signal })
+        if (res.ok && !controller.signal.aborted) {
+          const { data } = await res.json()
+          setSlot(data)
+          setIsSignedUp(data.serving_signups?.some((s: any) => s.status !== 'cancelled') || false)
+        }
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[SlotDetail] Failed to fetch:', e)
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
       }
-      setLoading(false)
     })()
+    return () => controller.abort()
   }, [slotId])
 
   const handleSignup = async () => {

@@ -50,19 +50,25 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
+    const controller = new AbortController()
 
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
       try {
-        const res = await fetch(`/api/churches/search?q=${encodeURIComponent(query)}`)
-        if (res.ok) setResults(await res.json())
+        const res = await fetch(`/api/churches/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+        if (res.ok && !controller.signal.aborted) setResults(await res.json())
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[ChurchSearch] Failed to fetch:', e)
+        }
       } finally {
-        setSearching(false)
+        if (!controller.signal.aborted) setSearching(false)
       }
     }, 300)
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
+      controller.abort()
     }
   }, [query])
 

@@ -40,21 +40,25 @@ export function PrayerAssignDialog({ prayerId, onAssigned }: Props) {
   // Load all members once when dialog opens
   useEffect(() => {
     if (!open) return
-    let cancelled = false
+    const controller = new AbortController()
     async function loadMembers() {
       setLoading(true)
       try {
-        const res = await fetch('/api/church-prayers/members')
-        if (res.ok && !cancelled) {
+        const res = await fetch('/api/church-prayers/members', { signal: controller.signal })
+        if (res.ok && !controller.signal.aborted) {
           const json = await res.json()
           setAllMembers(json.data || [])
         }
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[PrayerAssignDialog] Failed to fetch members:', e)
+        }
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     loadMembers()
-    return () => { cancelled = true }
+    return () => controller.abort()
   }, [open])
 
   function getDisplayName(m: Member) {

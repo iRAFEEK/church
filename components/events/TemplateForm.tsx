@@ -95,58 +95,64 @@ export function TemplateForm({ template }: TemplateFormProps) {
 
   // Load existing needs and segments when editing
   useEffect(() => {
-    if (template?.id) {
-      fetch(`/api/templates/${template.id}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.data?.needs) {
-            setServiceNeeds(
-              d.data.needs.map((n: any) => ({
-                ministry_id: n.ministry_id || undefined,
-                group_id: n.group_id || undefined,
-                volunteers_needed: n.volunteers_needed,
-                notes: n.notes || '',
-                notes_ar: n.notes_ar || '',
-                role_presets: n.role_presets || [],
-                _name: n.ministry?.name || n.group?.name || '',
-                _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
-                _type: n.ministry_id ? 'ministry' as const : 'group' as const,
-              }))
-            )
-          }
-          if (d.data?.segments) {
-            setSegments(
-              d.data.segments.map((s: any) => ({
-                title: s.title,
-                title_ar: s.title_ar || '',
-                duration_minutes: s.duration_minutes,
-                ministry_id: s.ministry_id,
-                assigned_to: s.assigned_to,
-                notes: s.notes || '',
-                notes_ar: s.notes_ar || '',
-                _ministry_name: s.ministry?.name,
-                _ministry_name_ar: s.ministry?.name_ar,
-                _person_name: s.profile
-                  ? `${s.profile.first_name || ''} ${s.profile.last_name || ''}`.trim()
-                  : undefined,
-              }))
-            )
-          }
-          if (d.data?.custom_fields) {
-            setCustomFields(d.data.custom_fields)
-          }
-          if (d.data?.recurrence_type) {
-            setForm(prev => ({
-              ...prev,
-              recurrence_type: d.data.recurrence_type || 'none',
-              recurrence_day: d.data.recurrence_day ?? 0,
-              default_start_time: d.data.default_start_time || '',
-              default_end_time: d.data.default_end_time || '',
+    if (!template?.id) return
+    const controller = new AbortController()
+    fetch(`/api/templates/${template.id}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => {
+        if (controller.signal.aborted) return
+        if (d.data?.needs) {
+          setServiceNeeds(
+            d.data.needs.map((n: any) => ({
+              ministry_id: n.ministry_id || undefined,
+              group_id: n.group_id || undefined,
+              volunteers_needed: n.volunteers_needed,
+              notes: n.notes || '',
+              notes_ar: n.notes_ar || '',
+              role_presets: n.role_presets || [],
+              _name: n.ministry?.name || n.group?.name || '',
+              _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
+              _type: n.ministry_id ? 'ministry' as const : 'group' as const,
             }))
-          }
-        })
-        .catch(() => {})
-    }
+          )
+        }
+        if (d.data?.segments) {
+          setSegments(
+            d.data.segments.map((s: any) => ({
+              title: s.title,
+              title_ar: s.title_ar || '',
+              duration_minutes: s.duration_minutes,
+              ministry_id: s.ministry_id,
+              assigned_to: s.assigned_to,
+              notes: s.notes || '',
+              notes_ar: s.notes_ar || '',
+              _ministry_name: s.ministry?.name,
+              _ministry_name_ar: s.ministry?.name_ar,
+              _person_name: s.profile
+                ? `${s.profile.first_name || ''} ${s.profile.last_name || ''}`.trim()
+                : undefined,
+            }))
+          )
+        }
+        if (d.data?.custom_fields) {
+          setCustomFields(d.data.custom_fields)
+        }
+        if (d.data?.recurrence_type) {
+          setForm(prev => ({
+            ...prev,
+            recurrence_type: d.data.recurrence_type || 'none',
+            recurrence_day: d.data.recurrence_day ?? 0,
+            default_start_time: d.data.default_start_time || '',
+            default_end_time: d.data.default_end_time || '',
+          }))
+        }
+      })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[TemplateForm] Failed to fetch template:', e)
+        }
+      })
+    return () => controller.abort()
   }, [template?.id])
 
   const eventTypes = ['service', 'conference', 'retreat', 'workshop', 'social', 'outreach', 'other']

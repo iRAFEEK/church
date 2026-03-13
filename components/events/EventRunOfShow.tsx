@@ -31,11 +31,17 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
   const [expandedNotes, setExpandedNotes] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/events/${eventId}/segments`)
+    const controller = new AbortController()
+    fetch(`/api/events/${eventId}/segments`, { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setSegments(d.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .then(d => { if (!controller.signal.aborted) setSegments(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventRunOfShow] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [eventId])
 
   if (loading) return <div className="text-sm text-zinc-400 py-4">{t('loading')}</div>

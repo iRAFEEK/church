@@ -24,14 +24,27 @@ export function SongsTable() {
 
   // Load all songs once on mount
   useEffect(() => {
-    (async () => {
-      const res = await fetch('/api/songs?pageSize=500')
-      if (res.ok) {
-        const json = await res.json()
-        setAllSongs(json.data || [])
+    const controller = new AbortController()
+    ;(async () => {
+      try {
+        const res = await fetch('/api/songs?pageSize=500', { signal: controller.signal })
+        if (res.ok) {
+          const json = await res.json()
+          if (!controller.signal.aborted) {
+            setAllSongs(json.data || [])
+          }
+        }
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[SongsTable] Failed to fetch:', e)
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
-      setLoading(false)
     })()
+    return () => controller.abort()
   }, [])
 
   // Instant client-side filtering with Arabic normalization

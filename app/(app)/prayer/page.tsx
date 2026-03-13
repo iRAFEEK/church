@@ -48,33 +48,43 @@ export default function PrayerPage() {
   const [loadingMine, setLoadingMine] = useState(true)
   const [loadingAssigned, setLoadingAssigned] = useState(true)
 
-  const fetchMyPrayers = async () => {
+  const fetchMyPrayers = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/church-prayers?mine=true')
-      if (res.ok) {
+      const res = await fetch('/api/church-prayers?mine=true', signal ? { signal } : undefined)
+      if (res.ok && !(signal?.aborted)) {
         const json = await res.json()
         setMyPrayers(json.data || [])
       }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('[PrayerPage] Failed to fetch my prayers:', e)
+      }
     } finally {
-      setLoadingMine(false)
+      if (!(signal?.aborted)) setLoadingMine(false)
     }
   }
 
-  const fetchAssignedPrayers = async () => {
+  const fetchAssignedPrayers = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/church-prayers?assigned=true')
-      if (res.ok) {
+      const res = await fetch('/api/church-prayers?assigned=true', signal ? { signal } : undefined)
+      if (res.ok && !(signal?.aborted)) {
         const json = await res.json()
         setAssignedPrayers(json.data || [])
       }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        console.error('[PrayerPage] Failed to fetch assigned prayers:', e)
+      }
     } finally {
-      setLoadingAssigned(false)
+      if (!(signal?.aborted)) setLoadingAssigned(false)
     }
   }
 
   useEffect(() => {
-    fetchMyPrayers()
-    fetchAssignedPrayers()
+    const controller = new AbortController()
+    fetchMyPrayers(controller.signal)
+    fetchAssignedPrayers(controller.signal)
+    return () => controller.abort()
   }, [])
 
   function getSubmitterName(s: Submitter) {

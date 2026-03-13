@@ -36,19 +36,23 @@ export default function RoleDefaultsPage() {
   }>>({})
 
   useEffect(() => {
+    const controller = new AbortController()
     async function load() {
       try {
-        const res = await fetch('/api/permissions/role-defaults')
-        if (res.ok) {
+        const res = await fetch('/api/permissions/role-defaults', { signal: controller.signal })
+        if (res.ok && !controller.signal.aborted) {
           setRoleData(await res.json())
         }
-      } catch {
-        toast.error(isRTL ? 'فشل تحميل البيانات' : 'Failed to load data')
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          toast.error(isRTL ? 'فشل تحميل البيانات' : 'Failed to load data')
+        }
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
     load()
+    return () => controller.abort()
   }, [isRTL])
 
   async function handleSave(role: string) {

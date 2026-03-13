@@ -47,7 +47,16 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
   const [notesAr, setNotesAr] = useState('')
 
   useEffect(() => {
-    fetch('/api/ministries').then(r => r.json()).then(d => setMinistries(d.data || []))
+    const controller = new AbortController()
+    fetch('/api/ministries', { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => { if (!controller.signal.aborted) setMinistries(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[SegmentEditor] Failed to fetch ministries:', e)
+        }
+      })
+    return () => controller.abort()
   }, [])
 
   const totalDuration = segments.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)

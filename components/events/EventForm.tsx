@@ -82,48 +82,60 @@ export function EventForm({ event }: EventFormProps) {
 
   // Load existing audience config when editing
   useEffect(() => {
-    if (event?.id) {
-      fetch(`/api/events/${event.id}`)
-        .then(r => r.json())
-        .then(d => {
-          const evt = d.data
-          if (evt?.visibility === 'restricted') {
-            const targets = evt.event_visibility_targets || []
-            setAudience({
-              visibility: 'restricted',
-              hide_from_non_invited: evt.hide_from_non_invited ?? false,
-              ministry_ids: targets.filter((t: any) => t.target_type === 'ministry').map((t: any) => t.target_id),
-              group_ids: targets.filter((t: any) => t.target_type === 'group').map((t: any) => t.target_id),
-            })
-          }
-        })
-        .catch(() => {})
-    }
+    if (!event?.id) return
+    const controller = new AbortController()
+    fetch(`/api/events/${event.id}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => {
+        if (controller.signal.aborted) return
+        const evt = d.data
+        if (evt?.visibility === 'restricted') {
+          const targets = evt.event_visibility_targets || []
+          setAudience({
+            visibility: 'restricted',
+            hide_from_non_invited: evt.hide_from_non_invited ?? false,
+            ministry_ids: targets.filter((t: any) => t.target_type === 'ministry').map((t: any) => t.target_id),
+            group_ids: targets.filter((t: any) => t.target_type === 'group').map((t: any) => t.target_id),
+          })
+        }
+      })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventForm] Failed to fetch event:', e)
+        }
+      })
+    return () => controller.abort()
   }, [event?.id])
 
   // Load existing service needs when editing
   useEffect(() => {
-    if (event?.id) {
-      fetch(`/api/events/${event.id}/service-needs`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.data) {
-            setServiceNeeds(
-              d.data.map((n: any) => ({
-                ministry_id: n.ministry_id || undefined,
-                group_id: n.group_id || undefined,
-                volunteers_needed: n.volunteers_needed,
-                notes: n.notes || '',
-                notes_ar: n.notes_ar || '',
-                _name: n.ministry?.name || n.group?.name || '',
-                _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
-                _type: n.ministry_id ? 'ministry' as const : 'group' as const,
-              }))
-            )
-          }
-        })
-        .catch(() => {})
-    }
+    if (!event?.id) return
+    const controller = new AbortController()
+    fetch(`/api/events/${event.id}/service-needs`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(d => {
+        if (controller.signal.aborted) return
+        if (d.data) {
+          setServiceNeeds(
+            d.data.map((n: any) => ({
+              ministry_id: n.ministry_id || undefined,
+              group_id: n.group_id || undefined,
+              volunteers_needed: n.volunteers_needed,
+              notes: n.notes || '',
+              notes_ar: n.notes_ar || '',
+              _name: n.ministry?.name || n.group?.name || '',
+              _name_ar: n.ministry?.name_ar || n.group?.name_ar || '',
+              _type: n.ministry_id ? 'ministry' as const : 'group' as const,
+            }))
+          )
+        }
+      })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[EventForm] Failed to fetch service needs:', e)
+        }
+      })
+    return () => controller.abort()
   }, [event?.id])
 
   const eventTypes = ['service', 'conference', 'retreat', 'workshop', 'social', 'outreach', 'other']

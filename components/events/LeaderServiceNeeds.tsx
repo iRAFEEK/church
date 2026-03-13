@@ -26,11 +26,17 @@ export function LeaderServiceNeeds() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/leader/service-needs')
+    const controller = new AbortController()
+    fetch('/api/leader/service-needs', { signal: controller.signal })
       .then(r => r.json())
-      .then(d => setNeeds(d.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .then(d => { if (!controller.signal.aborted) setNeeds(d.data || []) })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[LeaderServiceNeeds] Failed to fetch:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
   }, [])
 
   if (loading) return null

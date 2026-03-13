@@ -121,11 +121,13 @@ export function BiblePresenter({
       return
     }
     setSearchLoading(true)
+    const controller = new AbortController()
     searchDebounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/bible/${bibleId}/search?query=${encodeURIComponent(searchQuery.trim())}&limit=10`)
+        const res = await fetch(`/api/bible/${bibleId}/search?query=${encodeURIComponent(searchQuery.trim())}&limit=10`, { signal: controller.signal })
         if (!res.ok) throw new Error()
         const json = await res.json()
+        if (controller.signal.aborted) return
         const data = json.data || {}
         setSearchResults(
           (data.verses || []).map((v: any) => {
@@ -142,14 +144,17 @@ export function BiblePresenter({
             }
           })
         )
-      } catch {
-        setSearchResults([])
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          setSearchResults([])
+        }
       } finally {
-        setSearchLoading(false)
+        if (!controller.signal.aborted) setSearchLoading(false)
       }
     }, 150)
     return () => {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+      controller.abort()
     }
   }, [searchQuery])
 
@@ -270,13 +275,21 @@ export function BiblePresenter({
     setGoToChapters([])
     setGoToChapterId('')
 
-    fetch(`/api/bible/${bibleId}/books/${goToBookId}/chapters`)
+    const controller = new AbortController()
+    fetch(`/api/bible/${bibleId}/books/${goToBookId}/chapters`, { signal: controller.signal })
       .then(r => r.json())
       .then(json => {
-        const chs = (json.data || []).map((c: any) => ({ id: c.id, number: c.number }))
-        setGoToChapters(chs)
+        if (!controller.signal.aborted) {
+          const chs = (json.data || []).map((c: any) => ({ id: c.id, number: c.number }))
+          setGoToChapters(chs)
+        }
       })
-      .catch(() => {})
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[BiblePresenter] Failed to fetch chapters:', e)
+        }
+      })
+    return () => controller.abort()
   }, [goToBookId, showGoTo])
 
   // Navigate to selected chapter/verse

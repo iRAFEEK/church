@@ -45,36 +45,48 @@ export function ServingMemberView() {
   const [loading, setLoading] = useState(true)
   const [signingUp, setSigningUp] = useState<string | null>(null)
 
-  const loadData = async () => {
+  const loadData = async (signal?: AbortSignal) => {
     try {
       const [slotsRes, areasRes] = await Promise.all([
-        fetch('/api/serving/slots?upcoming=true'),
-        fetch('/api/serving/areas'),
+        fetch('/api/serving/slots?upcoming=true', { signal }),
+        fetch('/api/serving/areas', { signal }),
       ])
       const slotsData = await slotsRes.json()
       const areasData = await areasRes.json()
+
+      if (signal?.aborted) return
 
       setSlots(slotsData.data || [])
       setAreas(areasData.data || [])
 
       const signupMap: Record<string, boolean> = {}
       const detailPromises = (slotsData.data || []).map(async (slot: any) => {
-        const res = await fetch(`/api/serving/slots/${slot.id}`)
+        const res = await fetch(`/api/serving/slots/${slot.id}`, { signal })
         const detail = await res.json()
         if (detail.data?.serving_signups?.some((s: any) => s.status !== 'cancelled')) {
           signupMap[slot.id] = true
         }
       })
       await Promise.all(detailPromises)
-      setMySignups(signupMap)
-    } catch {
-      // ignore
+      if (!signal?.aborted) {
+        setMySignups(signupMap)
+      }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        // ignore
+      }
     } finally {
-      setLoading(false)
+      if (!signal?.aborted) {
+        setLoading(false)
+      }
     }
   }
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    loadData(controller.signal)
+    return () => controller.abort()
+  }, [])
 
   const handleSignup = async (slotId: string) => {
     setSigningUp(slotId)
