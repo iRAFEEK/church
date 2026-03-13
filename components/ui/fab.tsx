@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Plus, X, Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus, Network } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useFABActions } from '@/hooks/useFABActions'
+import { useFABActions } from '@/lib/hooks/useFABActions'
 import type { Profile } from '@/types'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
