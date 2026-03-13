@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Search, Building2, Check, ChevronRight } from 'lucide-react'
+import { Loader2, Search, Building2, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -176,15 +176,11 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
         </p>
       )}
 
-      {/* Skip */}
-      <div className="flex justify-between items-center pt-2 border-t">
+      {/* Register a new church link */}
+      <div className="flex justify-center pt-2 border-t">
         <Link href="/welcome" className="text-sm text-muted-foreground underline underline-offset-4">
           Register a new church
         </Link>
-        <Button variant="ghost" size="sm" onClick={onJoined} className="gap-1">
-          Skip for now
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   )
@@ -450,7 +446,8 @@ function ProfileStep() {
 
 export default function OnboardingPage() {
   const t = useTranslations('onboarding')
-  const [step, setStep] = useState<'church' | 'profile'>('church')
+  // If user already selected a church during signup, skip to profile step
+  const [step, setStep] = useState<'church' | 'profile'>('profile')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
