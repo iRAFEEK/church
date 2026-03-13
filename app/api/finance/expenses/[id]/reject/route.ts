@@ -25,7 +25,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
 
   if (error) {
     console.error('[/api/finance/expenses/[id]/reject POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   return { data }

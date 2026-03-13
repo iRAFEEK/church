@@ -31,9 +31,9 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { data, error, count } = await query
   if (error) {
     console.error('[/api/finance/transactions GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
-  return NextResponse.json({ data, count, page, limit }, {
+  return Response.json({ data, count, page, pageSize }, {
     headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
 }, { requirePermissions: ['can_view_finances'] })
@@ -63,41 +63,6 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       return Response.json({ error: 'Transaction is not balanced: debits must equal credits' }, { status: 422 })
     }
     throw error
-  }
-
-  const { data: txn, error: txnError } = await supabase
-    .from('financial_transactions')
-    .insert({
-      transaction_date: validated.transaction_date,
-      description: validated.description,
-      memo: validated.memo,
-      reference_number: validated.reference_number,
-      total_amount: validated.total_amount ?? totalDebits,
-      currency: validated.currency,
-      fund_id: validated.fund_id,
-      church_id: profile.church_id,
-      created_by: user.id,
-      status: 'draft',
-    })
-    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency, created_at')
-    .single()
-
-  if (txnError) {
-    console.error('[/api/finance/transactions POST]', txnError)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-
-  if (line_items && line_items.length > 0) {
-    const items = line_items.map((l: any) => ({
-      ...l,
-      transaction_id: txn.id,
-      church_id: profile.church_id,
-    }))
-    const { error: lineError } = await supabase.from('transaction_line_items').insert(items)
-    if (lineError) {
-      console.error('[/api/finance/transactions POST]', lineError)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)

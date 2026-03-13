@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
@@ -5,7 +6,7 @@ import { UpdateGroupSchema } from '@/lib/schemas/group'
 
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const id = params?.id
-  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const { data, error } = await supabase
     .from('groups')
@@ -28,11 +29,11 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
   return NextResponse.json({ data })
-}
+})
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const id = params?.id
-  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
   const validated = validate(UpdateGroupSchema, body)
@@ -52,18 +53,18 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   revalidateTag(`dashboard-${data.church_id}`)
   revalidateTag(`groups-${data.church_id}`)
   return NextResponse.json({ data })
-}
+})
 
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
   const id = params?.id
-  if (!id) return Response.json({ error: 'Not found' }, { status: 404 })
+  if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Soft delete
-  const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).select('church_id').single()
+  const { data, error } = await supabase.from('groups').update({ is_active: false }).eq('id', id).eq('church_id', profile.church_id).select('church_id').single()
   if (error) {
     console.error('[/api/groups/[id] DELETE]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   if (data) revalidateTag(`dashboard-${data.church_id}`)
   return NextResponse.json({ success: true })
-}
+})

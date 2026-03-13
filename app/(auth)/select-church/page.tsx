@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Building2, Check, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Building2, Check, Loader2, Search, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 
@@ -19,11 +20,11 @@ import type { UserChurchWithDetails } from '@/types'
 
 export default function SelectChurchPage() {
   const t = useTranslations('SelectChurch')
+  const tAuth = useTranslations('auth')
   const router = useRouter()
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [switchingId, setSwitchingId] = useState<string | null>(null)
-  const t = useTranslations('auth')
 
   useEffect(() => {
     const controller = new AbortController()

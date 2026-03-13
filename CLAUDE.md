@@ -618,6 +618,7 @@ Last measured: 2026-03-11
 - [x] UX designer agent system (skill + agent + runner script)
 - [x] Feature seeding agent (.claude/agents/seed-feature.md + seed-feature.sh)
 - [x] PostHog analytics (full instrumentation: events catalog, provider, identification, error tracking, audit script, analytics skill)
+- [x] Comprehensive test suite — 913 tests across 56 files (auth, permissions, messaging, API routes, smoke tests, utilities, middleware, church registration)
 
 ### In Progress
 
@@ -687,6 +688,13 @@ supabase db push
 
 # Generate types from Supabase schema
 npx supabase gen types typescript --local > types/supabase.ts
+
+# Run all tests
+npx vitest run
+
+# Run tests for a specific module
+npx vitest run lib/__tests__/
+npx vitest run app/api/
 
 # RTL violation check (must return 0)
 grep -rn "\bml-[0-9]\|\bmr-[0-9]\|\btext-right\b\|\btext-left\b" \
@@ -802,6 +810,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-03-13 | Comprehensive test expansion | 913 tests (56 files) — from 455 tests (22 files). P0: auth, rate-limit, absence, middleware. P1: features, audit, config, scope, navigation, messaging (templates, audience, scopes, dispatcher, providers, triggers), church registration flow. P2: smoke tests (manual auth 54 entries, public routes 6 entries, apiHandler 35+38 entries), API route behavioral tests (finance, serving, events, profiles, notifications, visitors, community needs, announcements, bible, templates, church-prayers), dashboard queries, utilities | lib/__tests__/*.test.ts (7 files), lib/api/__tests__/*.test.ts (5 files), lib/messaging/__tests__/*.test.ts (6 files), app/api/**/__tests__/*.test.ts (13 files), lib/utils/__tests__/*.test.ts (2 files), lib/analytics/__tests__/events.test.ts, lib/dashboard/__tests__/queries.test.ts, __tests__/middleware.test.ts |
 | 2026-03-12 | PostHog analytics | Full PostHog instrumentation: events catalog (50+ events), provider, user identification, error boundary tracking, analytics skill, audit script | lib/analytics/**, components/shared/PostHogProvider.tsx, .claude/skills/analytics/SKILL.md, .claude/scripts/analytics-audit.sh |
 | 2026-03-12 | Feature seeding agent | Seeding agent for realistic test data + edge cases per feature, runner script, supabase/seeds/ directory | .claude/agents/seed-feature.md, .claude/scripts/seed-feature.sh |
 | 2026-03-12 | UX designer agent system | UX design skill (design system, component patterns, review checklist), agent prompt (Mode A review + Mode B spec), runner script | .claude/skills/ux-design/SKILL.md, .claude/agents/ux-designer.md, .claude/scripts/ux-review.sh |

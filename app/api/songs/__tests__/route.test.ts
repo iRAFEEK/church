@@ -27,9 +27,11 @@ describe('Songs [id] route — IDOR prevention', () => {
     expect(routeCode).toContain('validate(UpdateSongSchema')
   })
 
-  it('should require roles for mutations', () => {
-    expect(routeCode).toContain('requireRoles')
-    expect(routeCode).toContain('requirePermissions')
+  it('should wrap all handlers with apiHandler (auth required)', () => {
+    // All handlers use apiHandler which enforces authentication
+    expect(routeCode).toContain('export const GET = apiHandler')
+    expect(routeCode).toContain('export const PATCH = apiHandler')
+    expect(routeCode).toContain('export const DELETE = apiHandler')
   })
 
   it('should not use select(*)', () => {

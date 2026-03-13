@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
 import { rateLimitPublic } from '@/lib/api/rate-limit'
+import { logger } from '@/lib/logger'
 
 // POST /api/visitors — public, no auth required
 export async function POST(req: NextRequest) {

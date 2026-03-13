@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { updateRoleDefaultsSchema } from '@/lib/schemas/permission'

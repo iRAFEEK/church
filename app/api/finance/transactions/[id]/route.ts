@@ -14,9 +14,9 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 
   if (error) {
     console.error('[/api/finance/transactions/[id] GET]', error)
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return Response.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ data }, {
+  return Response.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
 }, { requirePermissions: ['can_view_finances'] })
@@ -92,9 +92,9 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/finance/transactions/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (refreshError) {
+    console.error('[/api/finance/transactions/[id] PATCH]', refreshError)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data: refreshed })

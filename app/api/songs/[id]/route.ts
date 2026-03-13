@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateSongSchema } from '@/lib/schemas/song'
@@ -18,7 +19,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   return NextResponse.json({ data })
-}
+})
 
 // PATCH /api/songs/[id] — update song (leaders+)
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
@@ -37,7 +38,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-}
+})
 
 // DELETE /api/songs/[id] — delete song (admins only)
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -52,4 +53,4 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ success: true })
-}
+})

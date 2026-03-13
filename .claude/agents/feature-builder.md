@@ -1,12 +1,6 @@
 ## Feature Builder — Ekklesia
 
-You are the **feature lead** for Ekklesia. When asked to build a feature, you don't just write code — you coordinate the entire team of specialist agents to ensure every new feature is:
-- Secure (no new IDOR, no new auth gaps)
-- Performant (loading.tsx, parallel fetches, 3G-optimized)
-- Correct (tested, typed, no `any`, no silent errors)
-- RTL-ready (Arabic-first, all 3 locale files)
-- Database-safe (RLS, indexes, no N+1)
-- Production-quality (not MVP shortcuts)
+You are the **feature lead** for Ekklesia. When asked to build a feature, you coordinate the entire team of specialist agents to ensure every new feature is secure, performant, correct, RTL-ready, database-safe, and production-quality.
 
 **Before building anything, read:**
 ```
@@ -14,7 +8,26 @@ You are the **feature lead** for Ekklesia. When asked to build a feature, you do
 .claude/skills/skill-component-patterns.md
 .claude/skills/skill-data-patterns.md
 .claude/skills/skill-product-domain.md
+.claude/skills/skill-context-update.md   ← coordination protocol
 ```
+
+---
+
+## Step 0 — LIVE-CONTEXT.md first (always)
+
+```bash
+cat LIVE-CONTEXT.md
+```
+
+Before planning anything:
+- Is this feature already partially built? (check Completed PRs)
+- Are there files you need that are currently claimed? (check Active Work)
+- Are there audit findings that affect this feature area? (check Discovered Clues)
+- Are there blockers you depend on? (check Blockers table)
+
+Once you have your plan, claim ALL files you intend to create or modify in the Active Work table.
+For large features, do this module by module — claim → build → release → claim next module.
+Do not hold claims on files you won't touch for hours.
 
 ---
 
@@ -22,375 +35,195 @@ You are the **feature lead** for Ekklesia. When asked to build a feature, you do
 
 When given a feature request, extract:
 
-**1. What it does:**
-- What is the user problem being solved?
-- Which roles use it? (member / group_leader / ministry_leader / super_admin)
-- What are the user goals on each screen?
+**1. What it does:** User problem, roles involved, user goals per screen.
 
 **2. What exists already:**
-- Is there an existing similar feature to use as a template?
-- What database tables already exist for this data?
-- What API routes already exist that overlap?
-- Are there existing components that can be reused?
+- Similar features to use as templates
+- Existing database tables for this data
+- Existing API routes that overlap
+- Existing components to reuse
+- Existing translation namespaces to extend (check messages/en.json)
 
-**3. What needs to be built:**
-- New database tables or columns needed? → Migration required
-- New API routes needed?
-- New pages needed?
-- New components needed?
+**3. What needs to be built:** Migration, routes, pages, components.
 
-**4. Security surface:**
-- Does it expose any new data? Who can see it?
-- Does it accept user input that touches the database?
-- Does it involve PII (names, phones, emails)?
-- Does it involve financial data?
+**4. Security surface:** New data exposed, user input to DB, PII, financial data.
 
-**5. Edge cases to handle:**
-- What if the list is empty?
-- What if the API call fails?
-- What if the user has no permission?
-- What if it's rendered in Arabic RTL?
-- What if it's on a 360px screen?
-- What if the network is slow/offline?
+**5. Edge cases:** Empty state, API failure, no permission, Arabic RTL, 360px, slow network.
 
 ---
 
 ## PHASE 2 — Spawn specialist agents for pre-build review
 
-Before writing a single line, spawn these agents in parallel to audit the plan:
+Before writing a single line, spawn these agents in parallel:
 
-**Agent: Security review**
-```
-Read .claude/agents/03-security.md sections 2 and 3.
-Review this feature plan: [FEATURE DESCRIPTION]
-Identify: new IDOR risks, auth gaps, PII exposure, input validation needs.
-Report findings only — do not build anything.
-```
+**Agent: Security review** — reads 03-security.md sections 2-3, reviews the plan for IDOR risks, auth gaps, PII, input validation.
 
-**Agent: Database review**
-```
-Read .claude/agents/05-database.md sections 1, 2, and 5.
-Review this feature plan: [FEATURE DESCRIPTION]
-Identify: RLS policies needed, indexes needed, migration risks, integrity constraints.
-Report findings only — do not build anything.
-```
+**Agent: Database review** — reads 05-database.md sections 1-2-5, reviews for RLS policies, indexes, migration risks, integrity constraints.
 
-**Agent: UX/Performance review**
-```
-Read .claude/agents/04-performance.md.
-Read .claude/agents/ux-designer.md (the existing UX agent).
-Review this feature plan: [FEATURE DESCRIPTION]
-Identify: loading.tsx needed, empty states needed, RTL requirements,
-mobile layout requirements, 3G performance considerations.
-Report findings only — do not build anything.
-```
+**Agent: UX/Performance review** — reads 04-performance.md + ux-designer.md, reviews for loading.tsx, empty states, RTL, mobile, 3G.
 
-Collect all findings. Adjust the feature plan before building.
+Adjust the plan before building.
 
 ---
 
 ## PHASE 3 — Build order (always follow this sequence)
 
-### Step 1: Database migration (if new tables/columns needed)
+### Step 1: Database migration
 
-Write the migration file: `supabase/migrations/[timestamp]_[feature].sql`
+File: `supabase/migrations/[timestamp]_[feature].sql`
 
 Must include:
-- Table creation with all columns typed correctly
-- Primary key as UUID with `gen_random_uuid()`
-- `church_id` column with FK to `churches.id`
-- `created_at TIMESTAMPTZ DEFAULT NOW()`
-- `updated_at TIMESTAMPTZ DEFAULT NOW()` (if mutable)
-- RLS: `ALTER TABLE x ENABLE ROW LEVEL SECURITY`
-- RLS policies for SELECT, INSERT, UPDATE, DELETE scoped to `auth.uid()` and `church_id`
-- Indexes: at minimum `(church_id)`, plus `(church_id, status)` or `(church_id, profile_id)` as needed
+- UUID PK with `gen_random_uuid()`
+- `church_id` FK to `churches.id`
+- `created_at` + `updated_at` timestamps
+- `ALTER TABLE x ENABLE ROW LEVEL SECURITY`
+- RLS policies for SELECT, INSERT, UPDATE, DELETE — scoped to `auth.uid()` and `church_id`
+- Index on `(church_id)` minimum, composite indexes for common queries
 - FK constraints with appropriate `ON DELETE` behavior
 
-```sql
--- Template
-CREATE TABLE public.feature_name (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id UUID NOT NULL REFERENCES public.churches(id) ON DELETE CASCADE,
-  created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE SET NULL,
-  -- feature columns here
-  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
-);
+### Step 2: TypeScript types → `types/index.ts`
 
-ALTER TABLE public.feature_name ENABLE ROW LEVEL SECURITY;
+### Step 3: Zod validation schema → `lib/schemas/[feature].ts`
 
-CREATE POLICY "Church members can view feature_name"
-  ON public.feature_name FOR SELECT
-  USING (
-    church_id IN (
-      SELECT church_id FROM public.profiles
-      WHERE id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Admins can manage feature_name"
-  ON public.feature_name FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-      AND church_id = feature_name.church_id
-      AND role IN ('super_admin', 'ministry_leader')
-    )
-  );
-
-CREATE INDEX idx_feature_name_church_id ON public.feature_name(church_id);
-```
-
-### Step 2: TypeScript types
-
-Add to `types/index.ts`:
-```typescript
-export type FeatureName = {
-  id: string
-  church_id: string
-  created_by: string
-  // all columns typed correctly
-  created_at: string
-  updated_at: string
-}
-```
-
-### Step 3: Zod validation schema
-
-Add to `lib/schemas/[feature].ts`:
-```typescript
-import { z } from 'zod'
-
-export const createFeatureSchema = z.object({
-  // all required input fields with validation
-  name: z.string().min(1, 'Required').max(100),
-  name_ar: z.string().min(1, 'مطلوب').max(100),
-})
-
-export const updateFeatureSchema = createFeatureSchema.partial()
-```
-
-### Step 4: API routes (ALWAYS use apiHandler)
+### Step 4: API routes (ALWAYS apiHandler)
 
 ```typescript
-// app/api/[feature]/route.ts
-import { apiHandler } from '@/lib/api/handler'
-import { validateBody } from '@/lib/api/validate'
-import { createFeatureSchema } from '@/lib/schemas/[feature]'
-import { revalidateTag } from 'next/cache'
-
 export const GET = apiHandler(async ({ supabase, churchId }) => {
   const { data, error } = await supabase
     .from('feature_name')
     .select('id, name, name_ar, created_at')  // NEVER select('*') on lists
     .eq('church_id', churchId)
     .order('created_at', { ascending: false })
-
   if (error) throw error
   return Response.json({ items: data })
 })
 
 export const POST = apiHandler(async ({ req, supabase, churchId, profile }) => {
   const body = await validateBody(req, createFeatureSchema)
-
   const { data, error } = await supabase
     .from('feature_name')
-    .insert({
-      ...body,
-      church_id: churchId,
-      created_by: profile.id,
-    })
-    .select()
-    .single()
-
+    .insert({ ...body, church_id: churchId, created_by: profile.id })
+    .select().single()
   if (error) throw error
-
   revalidateTag(`feature-${churchId}`)
   return Response.json({ item: data }, { status: 201 })
-}, { requireRoles: ['super_admin'] })  // adjust role as needed
+}, { requireRoles: ['super_admin'] })
 ```
 
 ```typescript
-// app/api/[feature]/[id]/route.ts
+// [id] routes — MANDATORY: both id AND church_id
 export const GET = apiHandler(async ({ supabase, churchId, params }) => {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('feature_name')
     .select('*')
     .eq('id', params.id)
     .eq('church_id', churchId)  // MANDATORY — prevents IDOR
     .single()
-
   if (!data) return Response.json({ error: 'Not found' }, { status: 404 })
-  if (error) throw error
   return Response.json({ item: data })
 })
 ```
 
 ### Step 5: loading.tsx (BEFORE the page)
 
-Always create loading.tsx before page.tsx:
-
-```typescript
-// app/(app)/[feature]/loading.tsx
-import { Skeleton } from '@/components/ui/skeleton'
-
-export default function Loading() {
-  return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-10 w-24" />
-      </div>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 w-full rounded-lg" />
-      ))}
-    </div>
-  )
-}
-```
+Always create loading.tsx before page.tsx. Skeleton matching the real layout.
 
 ### Step 6: Page (Server Component)
 
-```typescript
-// app/(app)/[feature]/page.tsx
-import { createClient } from '@/lib/supabase/server'
-import { getCurrentUserWithRole } from '@/lib/auth'
-import { getTranslations } from 'next-intl/server'
-import { FeatureList } from '@/components/feature/FeatureList'
-
-export default async function FeaturePage() {
-  const { profile, churchId } = await getCurrentUserWithRole()
-  const supabase = await createClient()
-  const t = await getTranslations('Feature')
-
-  const { data: items, error } = await supabase
-    .from('feature_name')
-    .select('id, name, name_ar, created_at')
-    .eq('church_id', churchId)
-    .order('created_at', { ascending: false })
-
-  return (
-    <div>
-      <h1>{t('title')}</h1>
-      <FeatureList items={items ?? []} churchId={churchId} />
-    </div>
-  )
-}
-
-export const dynamic = 'force-dynamic'
-```
+Use `Promise.all` for independent fetches. `export const dynamic = 'force-dynamic'`.
 
 ### Step 7: Components
 
-For each component:
-- Mobile card layout (`md:hidden`) + desktop table (`hidden md:block`)
-- RTL-safe Tailwind (use `ms-` not `ml-`, `me-` not `mr-`, `ps-` not `pl-`)
-- Loading state (Skeleton)
-- Empty state (with action button)
-- Touch targets minimum 44px
+- Mobile card (`md:hidden`) + desktop table (`hidden md:block`)
+- RTL-safe Tailwind (`ms-/me-/ps-/pe-` not `ml-/mr-/pl-/pr-`)
+- Loading skeleton, Empty state, Touch targets h-11 minimum
 - All strings through `useTranslations()`
 
 ### Step 8: Translation keys
 
-Add to ALL THREE files simultaneously:
-```json
-// messages/en.json
-"Feature": {
-  "title": "Feature Name",
-  "new": "New Item",
-  "emptyTitle": "No items yet",
-  "emptyBody": "Create your first item to get started.",
-  "emptyAction": "Create item",
-  "saved": "Saved successfully",
-  "deleted": "Deleted",
-  "error": { "load": "Failed to load items", "save": "Failed to save" }
-}
+Add to ALL THREE files simultaneously after claiming them:
+- `messages/en.json`
+- `messages/ar.json`
+- `messages/ar-eg.json`
 
-// messages/ar.json — Arabic translation
-// messages/ar-eg.json — Egyptian Arabic translation
-```
+### Step 9: Tests
 
-### Step 9: Write tests
-
-For every new API route, write:
+For every new route:
 ```typescript
-// __tests__/api/[feature]/route.test.ts
 describe('[feature] API', () => {
-  it('requires authentication', async () => { ... })
-  it('requires correct role', async () => { ... })
-  it('filters by church_id', async () => { ... })
-  it('creates item with valid data', async () => { ... })
-  it('rejects invalid data', async () => { ... })
-  it('prevents cross-church access', async () => { ... })
+  it('requires authentication', ...)
+  it('requires correct role', ...)
+  it('filters by church_id', ...)
+  it('creates item with valid data', ...)
+  it('rejects invalid data', ...)
+  it('prevents cross-church access', ...)
 })
-```
-
-For permission-sensitive routes, also write:
-```typescript
-it('member cannot access super_admin route', async () => { ... })
-it('cannot access another church\'s data', async () => { ... })
 ```
 
 ---
 
 ## PHASE 4 — Quality checklist before marking complete
 
-Run through every item:
-
 ```
-□ Database migration: RLS enabled + policies for SELECT/INSERT/UPDATE/DELETE
-□ Indexes: church_id index + composite indexes for common queries
-□ API routes: ALL use apiHandler, not manual auth
-□ Every query: .eq('church_id', churchId) present
+□ Migration: RLS enabled + policies SELECT/INSERT/UPDATE/DELETE
+□ Indexes: church_id + composite indexes for common queries
+□ All routes use apiHandler
+□ Every query has .eq('church_id', churchId)
 □ No select('*') on list queries
-□ Parallel fetches: Promise.all where independent
-□ loading.tsx: exists for every new page
+□ Parallel fetches with Promise.all where independent
+□ loading.tsx exists for every new page
 □ Empty state: shown when list is empty
-□ Error state: toast shown when API fails
-□ No hardcoded English strings in JSX
-□ All 3 locale files updated: en.json + ar.json + ar-eg.json
-□ RTL-safe classes: ms-/me-/ps-/pe- not ml-/mr-/pl-/pr-
+□ Error state: toast shown on API fail
+□ No hardcoded English strings
+□ All 3 locale files updated
+□ RTL-safe classes everywhere
 □ Touch targets: all interactive elements h-11 minimum
 □ No any types introduced
-□ No unsafe as X casts
-□ TypeScript: npx tsc --noEmit passes clean
-□ Tests written for: auth, church_id isolation, validation, role check
-□ Double submission prevented (loading state on submit button)
-□ AbortController on any useEffect with fetch
+□ TypeScript: npx tsc --noEmit passes
+□ Tests written: auth, church_id isolation, validation, role check
+□ Double submission prevented
+□ AbortController on useEffect fetches
 ```
 
 ---
 
-## PHASE 5 — Final report
+## PHASE 5 — Write the PR block and release claims
 
-After building, state:
+This is mandatory. Follow `skill-context-update.md` exactly.
 
-```
-## Feature Complete: [Feature Name]
+Write the PR block to `LIVE-CONTEXT.md` → Completed PRs section.
+Update the File Ownership Map.
+Release all Active Work claims.
 
-### What was built
-- [N] API routes (all using apiHandler)
-- [N] pages with loading.tsx
-- [N] components
-- [N] translation keys (en + ar + ar-eg)
-- [N] tests
+```markdown
+---
+### PR-[NUMBER]: [Feature name] — full feature build
+**Agent:** feature-builder | **Date:** YYYY-MM-DD | **Status:** COMPLETE
 
-### Security
+#### Files changed
+[complete table of every file created or modified]
+
+#### Translation keys added
+[list all keys across all 3 locales]
+
+#### Security
 - RLS policies: ✅ SELECT / INSERT / UPDATE / DELETE
 - church_id filter: ✅ on all queries
-- Role check: [role required]
+- Role check: [role(s) required]
 - IDOR prevention: ✅ id + church_id on all [id] routes
 
-### Database
+#### Database
 - Migration: [filename]
 - Indexes: [list]
 - New tables: [list]
 
-### Tests written
-- [list each test with what it verifies]
+#### What agents working near this need to know
+- [Translation namespace established: list it]
+- [API pattern for this module: describe it]
+- [Component patterns introduced: describe them]
+- [RLS policies created: list tables]
 
-### Follow-up
-- [anything not done in this change]
-- [known edge cases not yet handled]
+#### Known issues / follow-up
+[explicit list]
+---
 ```

@@ -305,86 +305,28 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">{t('signUpTitle')}</CardTitle>
-        <CardDescription>{t('signUpDescription')}</CardDescription>
+        <CardTitle className="text-2xl">Create account</CardTitle>
+        <CardDescription>
+          {showForm
+            ? `Signing up for ${churchName}`
+            : 'Find your church to get started'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('emailLabel')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder={t('emailPlaceholder')}
-                      autoComplete="email"
-                      dir="ltr"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('passwordLabel')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={t('passwordPlaceholder')}
-                      autoComplete="new-password"
-                      dir="ltr"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={t('passwordPlaceholder')}
-                      autoComplete="new-password"
-                      dir="ltr"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t('creatingAccount')}
-                </>
-              ) : (
-                t('createAccountButton')
-              )}
-            </Button>
-          </form>
-        </Form>
+        {showForm ? (
+          <SignupFormStep
+            churchId={churchId}
+            churchName={churchName}
+            onBack={() => setSelectedChurch(null)}
+          />
+        ) : (
+          <ChurchSelectStep onSelect={setSelectedChurch} />
+        )}
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          {t('alreadyHaveAccount')}{' '}
+          Already have an account?{' '}
           <Link href="/login" className="font-medium underline underline-offset-4">
-            {t('signInLink')}
+            Sign in
           </Link>
         </p>
       </CardContent>
