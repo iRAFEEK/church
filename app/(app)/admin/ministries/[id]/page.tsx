@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { MinistryMemberManager } from '@/components/ministries/MinistryMemberManager'
@@ -77,9 +78,11 @@ export default async function MinistryDetailPage({ params }: Params) {
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
           {ministry.photo_url && (
-            <img
+            <Image
               src={ministry.photo_url}
               alt={ministry.name}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-xl object-cover border border-zinc-200"
             />
           )}

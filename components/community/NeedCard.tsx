@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Clock, Package } from 'lucide-react'
@@ -26,11 +27,13 @@ export function NeedCard({ need }: NeedCardProps) {
     <Link href={`/community/needs/${need.id}`}>
       <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
         {need.image_url && (
-          <div className="h-40 overflow-hidden bg-muted">
-            <img
+          <div className="relative h-40 overflow-hidden bg-muted">
+            <Image
               src={need.image_url}
               alt={title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 50vw, 300px"
             />
           </div>
         )}
@@ -61,9 +64,11 @@ export function NeedCard({ need }: NeedCardProps) {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1 min-w-0">
               {need.church?.logo_url && (
-                <img
+                <Image
                   src={need.church.logo_url}
                   alt=""
+                  width={16}
+                  height={16}
                   className="h-4 w-4 rounded-full object-cover shrink-0"
                 />
               )}

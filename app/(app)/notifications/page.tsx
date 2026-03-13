@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
 import {
   Bell, BellOff, CheckCheck, ChevronLeft, ChevronRight, Filter,
   Calendar, UserPlus, AlertTriangle, Clock, Info, Loader2,
-  Send, X, Image, Link as LinkIcon, ExternalLink,
+  Send, X, Image as ImageIcon, Link as LinkIcon, ExternalLink,
   HandHelping, MessageCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -341,7 +342,7 @@ export default function NotificationsPage() {
                         <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0 mt-1.5">
-                        {n.payload?.imageUrl && <Image className="h-3.5 w-3.5 text-muted-foreground" />}
+                        {n.payload?.imageUrl && <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />}
                         {n.payload?.linkUrl && <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />}
                         {isUnread && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
                       </div>
@@ -402,12 +403,13 @@ export default function NotificationsPage() {
 
                 <div className="space-y-4 mt-2">
                   {sn.payload?.imageUrl && (
-                    <div className="rounded-lg overflow-hidden border aspect-video bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                    <div className="relative rounded-lg overflow-hidden border aspect-video bg-muted">
+                      <Image
                         src={sn.payload.imageUrl}
                         alt={sn.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, 500px"
                       />
                     </div>
                   )}

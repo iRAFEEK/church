@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useLocale } from 'next-intl'
 import { Building2, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -117,10 +118,11 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
               {/* Logo / icon */}
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
                 {church.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={church.logo_url}
                     alt={church.name}
+                    width={20}
+                    height={20}
                     className="h-5 w-5 rounded object-cover"
                   />
                 ) : (

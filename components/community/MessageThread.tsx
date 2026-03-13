@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -124,7 +125,7 @@ export function MessageThread({ needId, responseId, myChurchId }: MessageThreadP
                 {!isMine && (
                   <div className="flex items-center gap-1.5 mb-1">
                     {msg.sender_church?.logo_url && (
-                      <img src={msg.sender_church.logo_url} alt="" className="h-4 w-4 rounded-full object-cover" />
+                      <Image src={msg.sender_church.logo_url} alt="" width={16} height={16} className="h-4 w-4 rounded-full object-cover" />
                     )}
                     <span className="text-xs font-medium">{churchName}</span>
                   </div>
