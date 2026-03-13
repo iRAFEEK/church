@@ -1,72 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateMinistrySchema } from '@/lib/schemas/ministry'
 
-type Params = { params: Promise<{ id: string }> }
-
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Try with ministry_members, fall back without if table doesn't exist yet
-  let data, error
-  const result = await supabase
+// GET /api/ministries/[id] — get ministry detail with members
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const { data, error } = await supabase
     .from('ministries')
-    .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url), groups(id,name,name_ar,type,is_active), ministry_members(id,role_in_ministry,joined_at,is_active,profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status))')
-    .eq('id', id)
+    .select(`
+      id, name, name_ar, description, description_ar, is_active, photo_url, church_id, created_at,
+      leader:leader_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url),
+      groups(id, name, name_ar, type, is_active),
+      ministry_members(id, role_in_ministry, joined_at, is_active,
+        profile:profile_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url, phone, status)
+      )
+    `)
+    .eq('id', params!.id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (result.error?.message?.includes('ministry_members')) {
-    const fallback = await supabase
-      .from('ministries')
-      .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url), groups(id,name,name_ar,type,is_active)')
-      .eq('id', id)
-      .single()
-    data = fallback.data ? { ...fallback.data, ministry_members: [] } : null
-    error = fallback.error
-  } else {
-    data = result.data
-    error = result.error
+  if (error || !data) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
   }
+  return Response.json({ data })
+})
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json({ data })
-}
-
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await req.json()
-
-  // Only pass known columns to avoid errors if migration not applied
-  const allowed = ['name', 'name_ar', 'description', 'description_ar', 'leader_id', 'is_active', 'photo_url']
-  const updates: Record<string, unknown> = {}
-  for (const key of allowed) {
-    if (key in body) updates[key] = body[key]
-  }
+// PATCH /api/ministries/[id] — update ministry (admins+)
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const body = validate(UpdateMinistrySchema, await req.json())
 
   const { data, error } = await supabase
     .from('ministries')
-    .update(updates)
-    .eq('id', id)
-    .select()
+    .update(body)
+    .eq('id', params!.id)
+    .eq('church_id', profile.church_id)
+    .select('id, name, name_ar, description, description_ar, leader_id, is_active, photo_url')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ data })
-}
+  if (error || !data) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+  return Response.json({ data })
+}, { requireRoles: ['super_admin', 'ministry_leader'] })
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// DELETE /api/ministries/[id] — delete ministry (super_admin only)
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const { error } = await supabase
+    .from('ministries')
+    .delete()
+    .eq('id', params!.id)
+    .eq('church_id', profile.church_id)
 
-  const { error } = await supabase.from('ministries').delete().eq('id', id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
-}
+  if (error) throw error
+  return Response.json({ success: true })
+}, { requireRoles: ['super_admin'] })
