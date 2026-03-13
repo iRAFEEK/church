@@ -78,7 +78,10 @@ export async function fetchAdminDashboard(
     attendanceRateRes,
     upcomingEventsRes,
     attendanceTrendRes,
-    visitorPipelineRes,
+    visitorNewRes,
+    visitorAssignedRes,
+    visitorContactedRes,
+    visitorConvertedRes,
     atRiskRes,
     slaVisitorsRes,
     unfilledSlotsRes,
@@ -141,11 +144,33 @@ export async function fetchAdminDashboard(
       .eq('church_id', churchId)
       .gte('gatherings.scheduled_at', weeksAgo(12)),
 
-    // 8. Visitor pipeline
+    // 8a. Visitor pipeline — new count
     supabase
       .from('visitors')
-      .select('status')
-      .eq('church_id', churchId),
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'new'),
+
+    // 8b. Visitor pipeline — assigned count
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'assigned'),
+
+    // 8c. Visitor pipeline — contacted count
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'contacted'),
+
+    // 8d. Visitor pipeline — converted count
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'converted'),
 
     // 9. At-risk members (attention)
     supabase
@@ -243,17 +268,12 @@ export async function fetchAdminDashboard(
       rate: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
     }))
 
-  // Process visitor pipeline
-  const visitors = (visitorPipelineRes.data || []) as any[]
-  const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
-  for (const v of visitors) {
-    if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
-  }
+  // Process visitor pipeline (head:true counts — no data transfer)
   const visitorPipeline: VisitorPipelineItem[] = [
-    { status: 'new', count: pipelineCounts.new },
-    { status: 'assigned', count: pipelineCounts.assigned },
-    { status: 'contacted', count: pipelineCounts.contacted },
-    { status: 'converted', count: pipelineCounts.converted },
+    { status: 'new', count: visitorNewRes.count ?? 0 },
+    { status: 'assigned', count: visitorAssignedRes.count ?? 0 },
+    { status: 'contacted', count: visitorContactedRes.count ?? 0 },
+    { status: 'converted', count: visitorConvertedRes.count ?? 0 },
   ]
 
   // Process attention items
@@ -534,7 +554,10 @@ export async function fetchMinistryLeaderDashboard(
     slaBreachedRes,
     upcomingEventsRes,
     attendanceTrendRes,
-    visitorPipelineRes,
+    visitorNewRes,
+    visitorAssignedRes,
+    visitorContactedRes,
+    visitorConvertedRes,
     atRiskRes,
     slaVisitorsRes,
     unfilledSlotsRes,
@@ -590,11 +613,33 @@ export async function fetchMinistryLeaderDashboard(
       .in('group_id', groupIds)
       .gte('gatherings.scheduled_at', weeksAgo(12)),
 
-    // 7. Visitor pipeline (church-wide)
+    // 7a. Visitor pipeline — new count (church-wide)
     supabase
       .from('visitors')
-      .select('status')
-      .eq('church_id', churchId),
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'new'),
+
+    // 7b. Visitor pipeline — assigned count (church-wide)
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'assigned'),
+
+    // 7c. Visitor pipeline — contacted count (church-wide)
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'contacted'),
+
+    // 7d. Visitor pipeline — converted count (church-wide)
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', churchId)
+      .eq('status', 'converted'),
 
     // 8. At-risk members in my groups
     supabase
@@ -700,17 +745,12 @@ export async function fetchMinistryLeaderDashboard(
       rate: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
     }))
 
-  // Process visitor pipeline (church-wide)
-  const visitors = (visitorPipelineRes.data || []) as any[]
-  const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
-  for (const v of visitors) {
-    if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
-  }
+  // Process visitor pipeline (head:true counts — no data transfer)
   const visitorPipeline: VisitorPipelineItem[] = [
-    { status: 'new', count: pipelineCounts.new },
-    { status: 'assigned', count: pipelineCounts.assigned },
-    { status: 'contacted', count: pipelineCounts.contacted },
-    { status: 'converted', count: pipelineCounts.converted },
+    { status: 'new', count: visitorNewRes.count ?? 0 },
+    { status: 'assigned', count: visitorAssignedRes.count ?? 0 },
+    { status: 'contacted', count: visitorContactedRes.count ?? 0 },
+    { status: 'converted', count: visitorConvertedRes.count ?? 0 },
   ]
 
   // Process attention items
@@ -1003,13 +1043,12 @@ export async function fetchLeaderDashboard(
       .eq('assigned_to', profileId)
       .in('status', ['new', 'assigned']),
 
-    // Recent gatherings (last 12 weeks)
+    // Recent gatherings
     supabase
       .from('gatherings')
       .select('id, group_id, scheduled_at, topic, status, groups!inner(name, name_ar), attendance(id, status)')
       .in('group_id', groupIds)
       .eq('status', 'completed')
-      .gte('scheduled_at', weeksAgo(12))
       .order('scheduled_at', { ascending: false })
       .limit(4),
   ])
@@ -1363,13 +1402,12 @@ export async function fetchMemberDashboard(
     servingSignupsRes,
     announcementsRes,
   ] = await Promise.all([
-    // Personal attendance (last 12 weeks)
+    // Personal attendance
     supabase
       .from('attendance')
-      .select('status, gatherings!inner(status, scheduled_at)')
+      .select('status, gatherings!inner(status)')
       .eq('profile_id', profileId)
-      .eq('church_id', churchId)
-      .gte('gatherings.scheduled_at', weeksAgo(12)),
+      .eq('church_id', churchId),
 
     // Milestones
     supabase
