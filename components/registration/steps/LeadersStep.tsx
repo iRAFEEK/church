@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { UserPlus, X, Users, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,13 +49,13 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <motion.div
+        <m.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="h-14 w-14 rounded-full bg-indigo-500/10 flex items-center justify-center mx-auto mb-4"
         >
           <Users className="h-7 w-7 text-indigo-500" />
-        </motion.div>
+        </m.div>
         <h2 className="text-2xl font-bold tracking-tight">{t('headline')}</h2>
         <p className="text-muted-foreground text-sm">{t('subheadline')}</p>
       </div>
@@ -72,7 +72,7 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
         <div className="space-y-2">
           <AnimatePresence>
             {leaders.map((leader, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -99,7 +99,7 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
                 >
                   <X className="h-4 w-4" />
                 </button>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>
@@ -108,7 +108,7 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
       {/* Add leader form */}
       <AnimatePresence>
         {showForm ? (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -183,9 +183,9 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Button
               variant="outline"
               className="w-full h-12 rounded-xl border-dashed gap-2"
@@ -194,7 +194,7 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
               <UserPlus className="h-4 w-4" />
               {t('addLeaderButton')}
             </Button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
