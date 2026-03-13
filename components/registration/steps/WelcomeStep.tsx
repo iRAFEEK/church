@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { Users, UserPlus, UsersRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -21,7 +21,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
     <div className="text-center space-y-8">
       {/* Logo */}
-      <motion.div
+      <m.div
         initial={{ scale: 0.5, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -30,10 +30,10 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         <div className="h-20 w-20 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
           <span className="text-primary-foreground text-3xl font-bold">E</span>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Headline */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
@@ -45,14 +45,14 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto">
           {t('subheadline')}
         </p>
-      </motion.div>
+      </m.div>
 
       {/* Feature cards */}
       <div className="flex flex-col gap-3 max-w-xs mx-auto">
         {features.map((feature, i) => {
           const Icon = feature.icon
           return (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -63,13 +63,13 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 <Icon className="h-5 w-5" />
               </div>
               <p className="text-sm font-medium text-start">{t(`feature${i + 1}`)}</p>
-            </motion.div>
+            </m.div>
           )
         })}
       </div>
 
       {/* CTA */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.5 }}
@@ -81,7 +81,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         >
           {t('cta')}
         </Button>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

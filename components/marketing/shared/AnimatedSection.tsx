@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -28,7 +28,7 @@ export function AnimatedSection({
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       initial={{ opacity: 0, ...directionMap[direction] }}
       animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
@@ -36,6 +36,6 @@ export function AnimatedSection({
       className={cn(className)}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }

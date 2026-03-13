@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { MessageSquareHeart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -25,13 +25,13 @@ export function PersonalizeStep({
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <motion.div
+        <m.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="h-14 w-14 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4"
         >
           <MessageSquareHeart className="h-7 w-7 text-rose-500" />
-        </motion.div>
+        </m.div>
         <h2 className="text-2xl font-bold tracking-tight">{t('headline')}</h2>
         <p className="text-muted-foreground text-sm">{t('subheadline')}</p>
       </div>

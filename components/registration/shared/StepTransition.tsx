@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useLocale } from 'next-intl'
 
 interface StepTransitionProps {
@@ -16,7 +16,7 @@ export function StepTransition({ children, direction, stepKey }: StepTransitionP
   const xOffset = isRTL ? -direction * 200 : direction * 200
 
   return (
-    <motion.div
+    <m.div
       key={stepKey}
       initial={{ x: xOffset, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
@@ -24,6 +24,6 @@ export function StepTransition({ children, direction, stepKey }: StepTransitionP
       transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }
