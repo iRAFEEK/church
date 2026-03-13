@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
@@ -199,7 +200,7 @@ export function NeedForm({ initial }: NeedFormProps) {
             <Label>{t('imageUpload')}</Label>
             {form.image_url ? (
               <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted mt-1">
-                <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                <Image src={form.image_url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 500px" />
                 <Button
                   variant="destructive"
                   size="icon"

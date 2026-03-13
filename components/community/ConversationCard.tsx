@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLocale } from 'next-intl'
 import { timeAgo } from '@/lib/utils/time-ago'
 
@@ -42,7 +43,7 @@ export function ConversationCard({
       {/* Church logo */}
       <div className="shrink-0 mt-0.5">
         {otherChurch.logo_url ? (
-          <img src={otherChurch.logo_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <Image src={otherChurch.logo_url} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
         ) : (
           <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
             {churchName?.charAt(0) || '?'}
