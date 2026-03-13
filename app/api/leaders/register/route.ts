@@ -82,7 +82,8 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       )
     }
-    return NextResponse.json({ error: authError?.message || 'Failed to create user' }, { status: 500 })
+    console.error('[/api/leaders/register POST]', authError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Update the auto-created profile with details and role
@@ -104,7 +105,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 })
+    console.error('[/api/leaders/register POST]', updateError)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Send password reset email so the leader can set their own password

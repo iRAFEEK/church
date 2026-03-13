@@ -24,8 +24,11 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (postableOnly) query = query.eq('is_header', false)
 
   const { data, error } = await query
-  if (error) throw error
-  return Response.json({ data }, {
+  if (error) {
+    console.error('[/api/finance/accounts GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  return NextResponse.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
 }, { requirePermissions: ['can_view_finances'] })
@@ -53,7 +56,10 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
     .select('id, code, name, name_ar, account_type, account_sub_type, currency, is_header, is_active, parent_id, display_order')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/accounts POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`accounts-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })

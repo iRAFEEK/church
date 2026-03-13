@@ -57,7 +57,10 @@ export async function GET(req: NextRequest) {
     .eq('church_id', profile.church_id)
     .or(filters.join(','))
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/leader/service-needs GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Filter to upcoming events only and enrich
   const now = new Date().toISOString()

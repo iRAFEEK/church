@@ -60,7 +60,10 @@ export async function POST(
       .select()
       .single()
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('[/api/serving/slots/[id]/signup POST]', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
     revalidateTag(`dashboard-${profile.church_id}`)
     return NextResponse.json({ data }, { status: 200 })
   }
@@ -75,7 +78,10 @@ export async function POST(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/serving/slots/[id]/signup POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }
@@ -101,7 +107,10 @@ export async function DELETE(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/serving/slots/[id]/signup DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   if (!data) return NextResponse.json({ error: 'No active signup found' }, { status: 404 })
 
   if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)

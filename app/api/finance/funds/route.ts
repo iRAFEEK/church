@@ -18,7 +18,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (activeOnly) query = query.eq('is_active', true)
 
   const { data, error, count } = await query
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/funds GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return Response.json({ data, count }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
@@ -59,7 +62,10 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
     .select('id, name, name_ar, code, description, description_ar, current_balance, target_amount, color, is_active, is_default, is_restricted, display_order')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/funds POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })

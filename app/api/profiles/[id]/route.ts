@@ -106,7 +106,10 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/profiles/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   revalidateTag(`dashboard-${currentProfile.church_id}`)
   return NextResponse.json(data)

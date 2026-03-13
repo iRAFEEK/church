@@ -36,7 +36,10 @@ export async function GET(req: NextRequest) {
     .eq('profile_id', user.id)
     .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/my-service-assignments GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Flatten and filter to upcoming events
   const now = new Date().toISOString()

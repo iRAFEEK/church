@@ -39,7 +39,10 @@ export async function GET(
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/templates/[id] GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   if (!template) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Sort segments by sort_order
@@ -89,7 +92,10 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/templates/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data })
 }
 
@@ -121,6 +127,9 @@ export async function DELETE(
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/templates/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

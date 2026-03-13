@@ -16,6 +16,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
     .order('marked_at', { ascending: false })
     .limit(50)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/profiles/[id]/attendance GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ data })
 }

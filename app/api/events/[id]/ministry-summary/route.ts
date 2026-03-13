@@ -33,7 +33,10 @@ export async function GET(
     .eq('event_id', eventId)
     .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/ministry-summary GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Group by ministry/group
   const grouped: Record<string, any> = {}

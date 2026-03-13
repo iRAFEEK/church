@@ -30,10 +30,14 @@ export async function GET(
       .eq('chapter_id', chapterId)
       .eq('church_id', profile.church_id)
 
-    if (hlError) return NextResponse.json({ error: hlError.message }, { status: 500 })
+    if (hlError) {
+      console.error('[/api/bible/[bibleId]/chapters/[chapterId] GET]', hlError)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
 
     return NextResponse.json({ data: { chapter, highlights } }, { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=300' } })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[/api/bible/[bibleId]/chapters/[chapterId] GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

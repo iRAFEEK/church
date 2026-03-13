@@ -32,7 +32,10 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/groups/[id]/members POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_members'] })
@@ -52,7 +55,10 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('profile_id', profile_id)
     .eq('church_id', profile.church_id)
 
-  if (error) throw error
-  revalidateTag(`dashboard-${profile.church_id}`)
-  return { success: true }
-}, { requirePermissions: ['can_manage_members'] })
+  if (error) {
+    console.error('[/api/groups/[id]/members DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
+  return NextResponse.json({ success: true })
+}

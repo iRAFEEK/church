@@ -13,7 +13,10 @@ export const PATCH = apiHandler(async ({ supabase, user, params }) => {
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/notifications/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return { data }
 })

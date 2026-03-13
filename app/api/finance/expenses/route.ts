@@ -35,7 +35,10 @@ export const GET = apiHandler(async ({ req, supabase, user, profile, resolvedPer
   if (ministryId) query = query.eq('ministry_id', ministryId)
 
   const { data, error, count } = await query
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/expenses GET]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   return Response.json({
     data,
@@ -80,7 +83,10 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     `)
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/expenses POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_submit_expenses'] })

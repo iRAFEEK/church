@@ -19,7 +19,10 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/donations/[id] GET]', error)
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
 
   return Response.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
@@ -67,7 +70,10 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .select('id, amount, base_amount, currency, donation_date, payment_method, receipt_number, notes, created_at')
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('[/api/finance/donations/[id] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
   return NextResponse.json({ data })
@@ -83,7 +89,14 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) throw error
+  const perms = await resolveApiPermissions(supabase, profile)
+  if (!perms.can_manage_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { error } = await supabase.from('donations').delete().eq('id', id).eq('church_id', profile.church_id)
+  if (error) {
+    console.error('[/api/finance/donations/[id] DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
   return NextResponse.json({ success: true })

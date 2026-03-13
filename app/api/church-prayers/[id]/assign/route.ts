@@ -47,7 +47,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     .select('id, content, assigned_to, is_anonymous, submitted_by')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church-prayers/[id]/assign POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Notify the assigned member
@@ -103,6 +106,9 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/church-prayers/[id]/assign DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

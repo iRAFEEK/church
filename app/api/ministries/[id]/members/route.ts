@@ -32,8 +32,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     .single()
 
   if (error) {
-    logger.error('Ministry member upsert failed', { module: 'ministries', churchId: profile.church_id, error })
-    return NextResponse.json({ error: error.message, details: error }, { status: 500 })
+    console.error('[/api/ministries/[id]/members POST]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Auto role upgrade: if assigned as leader, upgrade profile role
@@ -63,7 +63,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/ministries/[id]/members PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Auto role upgrade if promoted to leader
   if (role_in_ministry === 'leader') {
@@ -89,7 +92,10 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('ministry_id', ministry_id)
     .eq('profile_id', profile_id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/ministries/[id]/members DELETE]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }
 

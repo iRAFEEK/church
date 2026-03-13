@@ -39,7 +39,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[/api/events/[id]/service-needs/[needId]/assignments/[assignmentId] PATCH]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 
   // Notify assigner when member confirms/declines
   if (status && assignment.assigned_by) {
