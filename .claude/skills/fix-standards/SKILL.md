@@ -1,3 +1,8 @@
+---
+name: fix-standards
+description: Pre-fix checklist and coding standards for the Ekklesia church management app. Read this before any fix, refactor, or code change — covers apiHandler, church_id, i18n, TypeScript, RTL, and change scope rules.
+---
+
 # Skill: Fix Standards — Ekklesia
 
 This is a church management platform serving real communities. Wrong code means wrong donation records, members locked out, or private prayer requests exposed. Standards are non-negotiable. Read this before touching any file.

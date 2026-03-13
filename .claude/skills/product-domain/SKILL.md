@@ -1,3 +1,8 @@
+---
+name: product-domain
+description: Product domain knowledge for the Ekklesia church management app — roles, permissions, multi-tenancy, feature flags, visitor flow, finance, notifications, Bible module, and analytics.
+---
+
 # Skill: Product Domain — Ekklesia
 
 Church management platform for Arabic-speaking churches, primarily in Egypt. Arabic is the primary language. Target devices are budget Android/iOS phones (360-390px screens) on 3G networks. Non-profit context — every feature serves a real church community.
