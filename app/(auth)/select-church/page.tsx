@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Building2, Check, Loader2, Search, Plus } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import Image from 'next/image'
+import { Building2, Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -108,10 +107,11 @@ export default function SelectChurchPage() {
                     {/* Logo / fallback */}
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
                       {church.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={church.logo_url}
                           alt={church.name}
+                          width={32}
+                          height={32}
                           className="h-8 w-8 rounded object-cover"
                         />
                       ) : (

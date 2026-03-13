@@ -2,6 +2,7 @@ import { requirePermission } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -73,8 +74,8 @@ export default async function ChurchNeedDetailPage({ params, searchParams }: { p
       {/* Main content */}
       <div className="space-y-4">
         {need.image_url && (
-          <div className="w-full h-64 rounded-lg overflow-hidden bg-muted">
-            <img src={need.image_url} alt={title} className="w-full h-full object-cover" />
+          <div className="relative w-full h-64 rounded-lg overflow-hidden bg-muted">
+            <Image src={need.image_url} alt={title} fill className="object-cover" sizes="(max-width: 640px) 100vw, 600px" />
           </div>
         )}
 
@@ -132,7 +133,7 @@ export default async function ChurchNeedDetailPage({ params, searchParams }: { p
           <CardContent>
             <div className="flex items-center gap-3">
               {church?.logo_url && (
-                <img src={church.logo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                <Image src={church.logo_url} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
               )}
               <div>
                 <p className="font-medium">{churchName}</p>

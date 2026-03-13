@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { SearchInput } from '@/components/ui/search-input'
@@ -86,9 +87,11 @@ export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
               <Link key={m.id} href={`/admin/ministries/${m.id}`} className="block">
                 <div className="flex items-center gap-4 px-4 py-3 hover:bg-zinc-50 transition-colors">
                   {m.photo_url ? (
-                    <img
+                    <Image
                       src={m.photo_url}
                       alt={m.name}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-lg object-cover border border-zinc-200 shrink-0"
                     />
                   ) : (

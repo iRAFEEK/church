@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -123,10 +124,11 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
               {/* Logo / fallback icon */}
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
                 {church.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={church.logo_url}
                     alt={church.name}
+                    width={32}
+                    height={32}
                     className="h-8 w-8 rounded object-cover"
                   />
                 ) : (

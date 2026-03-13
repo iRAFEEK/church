@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -228,10 +229,13 @@ export function MinistryForm({ ministry }: Props) {
 
           {photoPreview ? (
             <div className="relative">
-              <img
+              <Image
                 src={photoPreview}
                 alt="Ministry photo preview"
+                width={400}
+                height={192}
                 className="w-full h-48 object-cover rounded-xl border border-zinc-200"
+                unoptimized
               />
               <Button
                 type="button"
@@ -302,7 +306,7 @@ export function MinistryForm({ ministry }: Props) {
           {photoPreview && (
             <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-100">
               <p className="text-xs text-zinc-400 font-medium mb-2">{t('photo')}</p>
-              <img src={photoPreview} alt="" className="h-24 rounded-lg object-cover" />
+              <Image src={photoPreview} alt="" width={96} height={96} className="h-24 rounded-lg object-cover" unoptimized />
             </div>
           )}
           <ReviewItem

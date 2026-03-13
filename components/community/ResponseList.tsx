@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -77,9 +78,11 @@ export function ResponseList({ needId, responses, isOwner, myChurchId, initialEx
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   {r.responder_church?.logo_url && (
-                    <img
+                    <Image
                       src={r.responder_church.logo_url}
                       alt=""
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full object-cover shrink-0 mt-0.5"
                     />
                   )}

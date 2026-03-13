@@ -1,6 +1,7 @@
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -109,8 +110,8 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
           return (
             <Card key={c.id} className="overflow-hidden hover:shadow-md transition-shadow">
               {c.image_url && (
-                <div className="h-32 overflow-hidden bg-muted">
-                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                <div className="relative h-32 overflow-hidden bg-muted">
+                  <Image src={c.image_url} alt={c.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 400px" />
                 </div>
               )}
               <CardHeader className="pb-2">
