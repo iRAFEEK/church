@@ -12,12 +12,17 @@ import { ResponseList } from '@/components/community/ResponseList'
 import { NEED_URGENCY_COLORS, NEED_STATUS_COLORS } from '@/lib/design/tokens'
 import type { ChurchNeedResponseWithChurch } from '@/types'
 
-export default async function ChurchNeedDetailPage({ params }: { params: Promise<{ id: string }> }) {
+interface DetailSearchParams {
+  openThread?: string
+}
+
+export default async function ChurchNeedDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<DetailSearchParams> }) {
   const user = await requirePermission('can_view_church_needs')
   const t = await getTranslations('churchNeeds')
   const locale = await getLocale()
   const isAr = locale.startsWith('ar')
   const { id } = await params
+  const sp = await searchParams
 
   const admin = await createAdminClient()
 
@@ -194,6 +199,8 @@ export default async function ChurchNeedDetailPage({ params }: { params: Promise
               needId={id}
               responses={(responses || []) as ChurchNeedResponseWithChurch[]}
               isOwner={isOwner}
+              myChurchId={user.profile.church_id}
+              initialExpandedThread={sp.openThread}
             />
           </div>
         )}

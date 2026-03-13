@@ -818,6 +818,7 @@
       "event_service_response": "رد الخدمة",
       "need_response_received": "عرض مساعدة وارد",
       "need_response_status_changed": "تحديث عرض المساعدة",
+      "need_message": "رسالة احتياج",
       "assignment": "تعيين",
       "general": "عام"
     },

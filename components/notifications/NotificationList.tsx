@@ -1,7 +1,7 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
-import { Users, Calendar, AlertTriangle, UserPlus, Clock, Info, HandHelping } from 'lucide-react'
+import { Users, Calendar, AlertTriangle, UserPlus, Clock, Info, HandHelping, MessageCircle } from 'lucide-react'
 import { timeAgo } from '@/lib/utils/time-ago'
 
 interface Notification {
@@ -32,6 +32,7 @@ const typeIcons: Record<string, React.ElementType> = {
   event_reminder: Calendar,
   need_response_received: HandHelping,
   need_response_status_changed: HandHelping,
+  need_message: MessageCircle,
   general: Info,
 }
 

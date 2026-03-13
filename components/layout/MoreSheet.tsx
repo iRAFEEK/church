@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { getNavForUser, getNavSections, getSecondaryNavItems } from '@/lib/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { analytics } from '@/lib/analytics'
 import type { Profile, PermissionKey } from '@/types'
 import { getAvatarUrl } from '@/lib/utils/storage'
 
@@ -68,6 +69,12 @@ export function MoreSheet({
 
   async function handleSignOut() {
     onOpenChange(false)
+    analytics.auth.loggedOut({
+      church_id: profile.church_id,
+      role: profile.role,
+      locale: locale as string,
+    })
+    analytics.reset()
     const supabase = createClient()
     await supabase.auth.signOut()
     toast.success(sidebarT('signedOut'))

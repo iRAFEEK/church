@@ -1095,3 +1095,17 @@ export interface ChurchNeedResponse {
 export interface ChurchNeedResponseWithChurch extends ChurchNeedResponse {
   responder_church: Pick<Church, 'id' | 'name' | 'name_ar' | 'country' | 'logo_url'>
 }
+
+export interface ChurchNeedMessage {
+  id: string
+  response_id: string
+  sender_user_id: string
+  sender_church_id: string
+  message: string
+  message_ar: string | null
+  created_at: string
+}
+
+export interface ChurchNeedMessageWithSender extends ChurchNeedMessage {
+  sender_church: Pick<Church, 'id' | 'name' | 'name_ar' | 'logo_url'>
+}

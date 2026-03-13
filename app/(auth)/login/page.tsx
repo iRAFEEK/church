@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
+import { analytics } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -83,9 +84,26 @@ export default function LoginPage() {
     if (data.user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed')
+        .select('onboarding_completed, church_id, role')
         .eq('id', data.user.id)
         .single()
+
+      // Identify user + track login event
+      if (profile?.church_id) {
+        const locale = document.cookie.match(/lang=(\w+)/)?.[1] ?? 'ar'
+        analytics.identify({
+          user_id: data.user.id,
+          church_id: profile.church_id,
+          role: profile.role ?? 'member',
+          locale,
+        })
+        analytics.auth.loggedIn({
+          church_id: profile.church_id,
+          role: profile.role ?? 'member',
+          locale,
+          method: 'email',
+        })
+      }
 
       if (profile && !profile.onboarding_completed) {
         router.push('/onboarding')

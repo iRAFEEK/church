@@ -818,6 +818,7 @@
       "event_service_response": "رد الخدمة",
       "need_response_received": "عرض مساعدة وارد",
       "need_response_status_changed": "تحديث عرض المساعدة",
+      "need_message": "رسالة احتياج",
       "assignment": "تعيين",
       "general": "عام"
     },
@@ -2035,6 +2036,17 @@
       "in_progress": "قيد التنفيذ",
       "fulfilled": "تم التلبية",
       "closed": "مغلق"
-    }
+    },
+    "allNeeds": "كل الاحتياجات",
+    "yourNeeds": "احتياجاتك",
+    "noYourNeeds": "لم تنشر أي احتياجات بعد",
+    "messages": "الرسائل",
+    "noMessages": "لا توجد رسائل بعد. ابدأ المحادثة.",
+    "typeMessage": "اكتب رسالة...",
+    "messagesLoadError": "فشل تحميل الرسائل",
+    "messagesTab": "الرسائل",
+    "noConversations": "لا توجد محادثات بعد",
+    "noConversationsDesc": "ستظهر المحادثات هنا عند التواصل مع الكنائس بخصوص الاحتياجات",
+    "cancel": "إلغاء"
   }
 }
