@@ -30,6 +30,11 @@ const ConfigSchema = z.object({
     host: z.string().url().optional(),
     serverKey: z.string().min(1).optional(),
   }),
+  sentry: z.object({
+    dsn: z.string().min(1).optional(),
+    org: z.string().min(1).optional(),
+    project: z.string().min(1).optional(),
+  }),
 })
 
 export type AppConfig = z.infer<typeof ConfigSchema>
@@ -61,6 +66,11 @@ function loadConfig(): AppConfig {
       publicKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
       host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
       serverKey: process.env.POSTHOG_PROJECT_API_KEY,
+    },
+    sentry: {
+      dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
     },
   })
 
