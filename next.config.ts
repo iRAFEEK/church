@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 import withBundleAnalyzerInit from '@next/bundle-analyzer';
 import withPWAInit from '@ducanh2912/next-pwa';
@@ -31,4 +32,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(withPWA(withNextIntl(nextConfig)));
+const composedConfig = withBundleAnalyzer(withPWA(withNextIntl(nextConfig)));
+
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(composedConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: true,
+      widenClientFileUpload: true,
+      disableLogger: true,
+    })
+  : composedConfig;
