@@ -1,26 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateExpenseSchema } from '@/lib/schemas/expense'
 
 // GET /api/finance/expenses
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_submit_expenses && !perms.can_approve_expenses) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const GET = apiHandler(async ({ req, supabase, user, profile, resolvedPermissions }) => {
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '25'), 100)
@@ -43,7 +27,7 @@ export async function GET(req: NextRequest) {
     .range(from, to)
 
   // If user can only submit (not approve), show only their own
-  if (!perms.can_approve_expenses || mine) {
+  if (!resolvedPermissions.can_approve_expenses || mine) {
     query = query.eq('requested_by', user.id)
   }
 
@@ -51,9 +35,9 @@ export async function GET(req: NextRequest) {
   if (ministryId) query = query.eq('ministry_id', ministryId)
 
   const { data, error, count } = await query
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
 
-  return NextResponse.json({
+  return Response.json({
     data,
     count,
     page,
@@ -62,42 +46,41 @@ export async function GET(req: NextRequest) {
   }, {
     headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   })
-}
+}, { requirePermissions: ['can_submit_expenses'] })
 
 // POST /api/finance/expenses — submit expense request
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_submit_expenses) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
+  const validated = validate(CreateExpenseSchema, body)
 
   const { data, error } = await supabase
     .from('expense_requests')
     .insert({
-      ...body,
+      description: validated.description,
+      description_ar: validated.description_ar,
+      amount: validated.amount,
+      currency: validated.currency,
+      vendor_name: validated.vendor_name,
+      vendor_name_ar: validated.vendor_name_ar,
+      payment_method: validated.payment_method,
+      is_reimbursement: validated.is_reimbursement,
+      ministry_id: validated.ministry_id,
+      fund_id: validated.fund_id,
+      account_id: validated.account_id,
+      receipt_url: validated.receipt_url,
+      notes: validated.notes,
       church_id: profile.church_id,
       requested_by: user.id,
       status: 'submitted',
     })
     .select(`
-      *,
+      id, description, description_ar, amount, currency, status, vendor_name, vendor_name_ar, request_number, payment_method, is_reimbursement, notes, created_at,
       requester:requested_by ( id, first_name, last_name, first_name_ar, last_name_ar, photo_url ),
       ministry:ministry_id ( id, name, name_ar )
     `)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return Response.json({ data }, { status: 201 })
+}, { requirePermissions: ['can_submit_expenses'] })

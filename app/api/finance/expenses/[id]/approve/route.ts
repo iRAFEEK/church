@@ -1,31 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
 
 // POST /api/finance/expenses/[id]/approve
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
+  const id = params!.id
 
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_approve_expenses) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-  const { data, error } = await supabase
+  // Fetch the expense to check self-approval
+  const { data: expense, error: fetchError } = await supabase
     .from('expense_requests')
-    .update({ status: 'approved', approved_by: user.id, approved_at: new Date().toISOString() })
+    .select('id, requested_by')
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .eq('status', 'submitted')
-    .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (fetchError || !expense) {
+    return Response.json({ error: 'Expense not found or not in submitted status' }, { status: 404 })
+  }
+
+  // Prevent self-approval
+  if (expense.requested_by === profile.id) {
+    return Response.json({ error: 'Cannot approve own expense' }, { status: 403 })
+  }
+
+  const { data, error } = await supabase
+    .from('expense_requests')
+    .update({
+      status: 'approved',
+      approved_by: user.id,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('church_id', profile.church_id)
+    .eq('status', 'submitted')
+    .select('id, description, amount, currency, status, approved_by, approved_at')
+    .single()
+
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_approve_expenses'] })

@@ -1,52 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateCampaignSchema } from '@/lib/schemas/campaign'
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+// GET /api/finance/campaigns/[id]
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data, error } = await supabase
     .from('campaigns')
-    .select('*, fund:fund_id (id, name, name_ar)')
+    .select('id, name, name_ar, description, description_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, image_url, created_at, fund:fund_id (id, name, name_ar)')
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-  return NextResponse.json({ data }, {
+  if (error) throw error
+  return Response.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
-}
+}, { requirePermissions: ['can_view_finances'] })
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_campaigns) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+// PATCH /api/finance/campaigns/[id]
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
   const body = await req.json()
+  const validated = validate(UpdateCampaignSchema, body)
+
+  // Build explicit update object
+  const updateData: Record<string, unknown> = {}
+  if (validated.name !== undefined) updateData.name = validated.name
+  if (validated.name_ar !== undefined) updateData.name_ar = validated.name_ar
+  if (validated.description !== undefined) updateData.description = validated.description
+  if (validated.description_ar !== undefined) updateData.description_ar = validated.description_ar
+  if (validated.goal_amount !== undefined) updateData.goal_amount = validated.goal_amount
+  if (validated.currency !== undefined) updateData.currency = validated.currency
+  if (validated.fund_id !== undefined) updateData.fund_id = validated.fund_id
+  if (validated.start_date !== undefined) updateData.start_date = validated.start_date
+  if (validated.end_date !== undefined) updateData.end_date = validated.end_date
+  if (validated.is_public !== undefined) updateData.is_public = validated.is_public
+  if (validated.status !== undefined) updateData.status = validated.status
+  if (validated.image_url !== undefined) updateData.image_url = validated.image_url
+
   const { data, error } = await supabase
     .from('campaigns')
-    .update(body)
+    .update(updateData)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, name, name_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, created_at')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_campaigns'] })

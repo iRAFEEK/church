@@ -1,22 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { RejectExpenseSchema } from '@/lib/schemas/expense'
 
 // POST /api/finance/expenses/[id]/reject
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_approve_expenses) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+export const POST = apiHandler(async ({ req, supabase, user, profile, params }) => {
+  const id = params!.id
   const body = await req.json()
+  const validated = validate(RejectExpenseSchema, body)
 
   const { data, error } = await supabase
     .from('expense_requests')
@@ -24,15 +15,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       status: 'rejected',
       approved_by: user.id,
       approved_at: new Date().toISOString(),
-      rejection_reason: body.reason || null,
+      rejection_reason: validated.reason || null,
     })
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .eq('status', 'submitted')
-    .select()
+    .select('id, description, amount, currency, status, rejection_reason, approved_by, approved_at')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_approve_expenses'] })
