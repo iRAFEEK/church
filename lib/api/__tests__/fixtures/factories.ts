@@ -1,6 +1,7 @@
 // Shared test factories for the Ekklesia project.
 // Produces type-compatible objects for use in mocked API route tests.
 
+import { vi } from 'vitest'
 import type { PermissionKey } from '@/types'
 import { HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 

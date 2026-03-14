@@ -209,7 +209,7 @@ describe('getConsecutiveAbsences', () => {
 
     expect(result).toBe(2)
     // Verify .limit() was called with the custom lookback value
-    const gatheringsChain = tableChains['gatherings']
+    const gatheringsChain = tableChains['gatherings'] as unknown as Record<string, ReturnType<typeof vi.fn>>
     expect(gatheringsChain.limit).toHaveBeenCalledWith(2)
   })
 })

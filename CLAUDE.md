@@ -54,13 +54,17 @@ This project has a full multi-agent engineering system in `.claude/`.
 |---|---|
 | fix, work on, implement, build, any task | `coding-agent.md` |
 | build a feature end-to-end | `feature-builder.md` |
-| audit, find, analyze, what's wrong | relevant specialist agent |
-| performance, slow, 3G, loading | `04-performance.md` |
-| security, auth, IDOR, data leak | `03-security.md` |
-| database, RLS, index, migration | `05-database.md` |
+| deep codebase investigation | `00-archaeologist.md` |
+| architecture, patterns, structure | `01-architecture.md` |
 | quality, bug, any, null, error | `02-quality.md` |
+| security, auth, IDOR, data leak | `03-security.md` |
+| performance, slow, 3G, loading | `04-performance.md` |
+| database, RLS, index, migration | `05-database.md` |
 | tests, coverage, debt | `06-tests-debt.md` |
 | full audit, everything | all agents via `07-cto.md` orchestrator |
+| optimize recently changed files | `optimize-after-feature.md` |
+| seed test data for a feature | `seed-feature.md` |
+| UX review or design spec | `ux-designer.md` |
 
 ### Non-negotiable rules (enforced by all agents)
 
@@ -77,10 +81,10 @@ This project has a full multi-agent engineering system in `.claude/`.
 
 | Skill file | When to read |
 |---|---|
-| `skill-fix-standards.md` | Before any fix, refactor, or code change |
-| `skill-component-patterns.md` | Before writing any React component |
-| `skill-data-patterns.md` | Before writing any API route, query, or DB work |
-| `skill-product-domain.md` | Before working on any feature (understand the domain) |
+| `fix-standards/SKILL.md` | Before any fix, refactor, or code change |
+| `component-patterns/SKILL.md` | Before writing any React component |
+| `data-patterns/SKILL.md` | Before writing any API route, query, or DB work |
+| `product-domain/SKILL.md` | Before working on any feature (understand the domain) |
 | `code-quality/SKILL.md` | For code quality and structure patterns |
 | `optimization/SKILL.md` | For performance optimization patterns |
 | `ux-design/SKILL.md` | For UX design patterns and standards |
@@ -619,6 +623,7 @@ Last measured: 2026-03-11
 - [x] Feature seeding agent (.claude/agents/seed-feature.md + seed-feature.sh)
 - [x] PostHog analytics (full instrumentation: events catalog, provider, identification, error tracking, audit script, analytics skill)
 - [x] Comprehensive test suite — 913 tests across 56 files (auth, permissions, messaging, API routes, smoke tests, utilities, middleware, church registration)
+- [x] Security hardening Week 1: rate limiting in apiHandler (strict/normal/relaxed tiers), 2 IDOR fixes (bible bookmarks/highlights migrated to apiHandler with church_id), dev-login endpoint deleted, RTL violation fixed (0 remaining), 33 TypeScript errors fixed (0 remaining)
 
 ### In Progress
 
@@ -630,7 +635,7 @@ Last measured: 2026-03-11
 - [ ] Vercel Analytics + Speed Insights
 - [ ] Real device testing: Android, Arabic mode, airplane mode, PWA install
 - [ ] PWA icons — real brand icons (192px, 512px, maskable) — currently placeholders
-- [ ] Migrate remaining ~80 API routes to `apiHandler` wrapper
+- [ ] Migrate remaining ~54 API routes to `apiHandler` wrapper
 - [ ] Capacitor for native app wrapper + FCM push notifications
 - [ ] Finance module: bank reconciliation, recurring donations, donation receipts
 - [ ] Supabase CLI type generation (replace manual types/database.ts)
@@ -810,6 +815,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-03-13 | Security hardening (Week 1) | Rate limiting added to apiHandler (strict/normal/relaxed tiers via lib/api/rate-limit.ts). 2 IDOR vulnerabilities fixed: bible bookmarks/highlights [id] routes migrated from manual auth to apiHandler with church_id + profile_id filters. dev-login endpoint deleted. RTL violation fixed (ps-9, start-3 in onboarding). 33 TypeScript errors in test files fixed (mock type casts, missing vitest imports). Smoke tests updated to reflect route migrations. 0 tsc errors, 0 RTL violations, 913/913 tests passing. | lib/api/handler.ts, lib/api/rate-limit.ts, app/api/bible/bookmarks/[id]/route.ts, app/api/bible/highlights/[id]/route.ts, app/api/auth/dev-login/ (deleted), app/onboarding/page.tsx, 16 test files, lib/api/__tests__/smoke-manual-auth.test.ts, lib/api/__tests__/smoke-id-routes.test.ts |
 | 2026-03-13 | Comprehensive test expansion | 913 tests (56 files) — from 455 tests (22 files). P0: auth, rate-limit, absence, middleware. P1: features, audit, config, scope, navigation, messaging (templates, audience, scopes, dispatcher, providers, triggers), church registration flow. P2: smoke tests (manual auth 54 entries, public routes 6 entries, apiHandler 35+38 entries), API route behavioral tests (finance, serving, events, profiles, notifications, visitors, community needs, announcements, bible, templates, church-prayers), dashboard queries, utilities | lib/__tests__/*.test.ts (7 files), lib/api/__tests__/*.test.ts (5 files), lib/messaging/__tests__/*.test.ts (6 files), app/api/**/__tests__/*.test.ts (13 files), lib/utils/__tests__/*.test.ts (2 files), lib/analytics/__tests__/events.test.ts, lib/dashboard/__tests__/queries.test.ts, __tests__/middleware.test.ts |
 | 2026-03-12 | PostHog analytics | Full PostHog instrumentation: events catalog (50+ events), provider, user identification, error boundary tracking, analytics skill, audit script | lib/analytics/**, components/shared/PostHogProvider.tsx, .claude/skills/analytics/SKILL.md, .claude/scripts/analytics-audit.sh |
 | 2026-03-12 | Feature seeding agent | Seeding agent for realistic test data + edge cases per feature, runner script, supabase/seeds/ directory | .claude/agents/seed-feature.md, .claude/scripts/seed-feature.sh |

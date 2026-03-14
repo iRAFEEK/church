@@ -9,11 +9,11 @@ You are the **feature lead** for Ekklesia. When asked to build a feature, you co
 
 **Before building anything, read:**
 ```
-.claude/skills/skill-fix-standards.md
-.claude/skills/skill-component-patterns.md
-.claude/skills/skill-data-patterns.md
-.claude/skills/skill-product-domain.md
-.claude/skills/skill-context-update.md   ← coordination protocol
+.claude/skills/fix-standards/SKILL.md
+.claude/skills/component-patterns/SKILL.md
+.claude/skills/data-patterns/SKILL.md
+.claude/skills/product-domain/SKILL.md
+.claude/skills/context-update/SKILL.md   ← coordination protocol
 ```
 
 ---

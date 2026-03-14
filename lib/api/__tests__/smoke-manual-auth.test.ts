@@ -199,17 +199,9 @@ const MANUAL_AUTH_ROUTES: Array<{ method: string; path: string; module: string; 
   { method: 'POST', path: '/api/churches/join', module: '@/app/api/churches/join/route' },
   { method: 'POST', path: '/api/churches/switch', module: '@/app/api/churches/switch/route' },
 
-  // Bible bookmarks [id]
-  { method: 'PATCH', path: `/api/bible/bookmarks/${FAKE_ID}`, module: '@/app/api/bible/bookmarks/[id]/route', params: { id: FAKE_ID } },
-  { method: 'DELETE', path: `/api/bible/bookmarks/${FAKE_ID}`, module: '@/app/api/bible/bookmarks/[id]/route', params: { id: FAKE_ID } },
-
-  // Bible highlights
+  // Bible highlights (list + create still use manual auth)
   { method: 'GET', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
   { method: 'POST', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
-
-  // Bible highlights [id]
-  { method: 'PATCH', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route', params: { id: FAKE_ID } },
-  { method: 'DELETE', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route', params: { id: FAKE_ID } },
 
   // Bible [bibleId] data routes
   { method: 'GET', path: `/api/bible/${FAKE_ID}/books`, module: '@/app/api/bible/[bibleId]/books/route', params: { bibleId: FAKE_ID } },

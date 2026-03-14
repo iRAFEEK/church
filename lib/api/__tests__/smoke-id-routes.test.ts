@@ -42,7 +42,7 @@ const makeReq = (path: string, method = 'GET', body?: object) => {
     opts.body = JSON.stringify(body)
     opts.headers = { 'Content-Type': 'application/json' }
   }
-  return new NextRequest(`http://localhost${path}`, opts)
+  return new NextRequest(`http://localhost${path}`, opts as import('next/dist/server/web/spec-extension/request').RequestInit)
 }
 
 // All [id] routes using apiHandler
@@ -122,6 +122,14 @@ const ID_ROUTES: Array<{ method: string; path: string; module: string; handler?:
   // Groups [id] members
   { method: 'POST', path: `/api/groups/${FAKE_ID}/members`, module: '@/app/api/groups/[id]/members/route' },
   { method: 'DELETE', path: `/api/groups/${FAKE_ID}/members`, module: '@/app/api/groups/[id]/members/route' },
+
+  // Bible bookmarks [id] (migrated to apiHandler)
+  { method: 'PATCH', path: `/api/bible/bookmarks/${FAKE_ID}`, module: '@/app/api/bible/bookmarks/[id]/route' },
+  { method: 'DELETE', path: `/api/bible/bookmarks/${FAKE_ID}`, module: '@/app/api/bible/bookmarks/[id]/route' },
+
+  // Bible highlights [id] (migrated to apiHandler)
+  { method: 'PATCH', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route' },
+  { method: 'DELETE', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route' },
 ]
 
 describe('Smoke — all [id] apiHandler routes return 401, not 500, when unauthenticated', () => {

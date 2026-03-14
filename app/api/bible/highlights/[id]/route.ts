@@ -1,63 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // PATCH /api/bible/highlights/[id] — update highlight color
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
+  const body = await req.json()
 
-    const body = await req.json()
-    const { data, error } = await supabase
-      .from('bible_highlights')
-      .update({ color: body.color })
-      .eq('id', id)
-      .eq('profile_id', user.id)
-      .select()
-      .single()
+  const { data, error } = await supabase
+    .from('bible_highlights')
+    .update({ color: body.color })
+    .eq('id', id)
+    .eq('profile_id', profile.id)
+    .eq('church_id', profile.church_id)
+    .select()
+    .single()
 
-    if (error) {
-      console.error('[/api/bible/highlights/[id] PATCH]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
-    if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error) throw error
+  if (!data) return Response.json({ error: 'Not found' }, { status: 404 })
 
-    return NextResponse.json({ data })
-  } catch (error: any) {
-    console.error('[/api/bible/highlights/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  return { data }
+})
 
 // DELETE /api/bible/highlights/[id] — remove highlight
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
-    const { error } = await supabase
-      .from('bible_highlights')
-      .delete()
-      .eq('id', id)
-      .eq('profile_id', user.id)
+  const { error } = await supabase
+    .from('bible_highlights')
+    .delete()
+    .eq('id', id)
+    .eq('profile_id', profile.id)
+    .eq('church_id', profile.church_id)
 
-    if (error) {
-      console.error('[/api/bible/highlights/[id] DELETE]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('[/api/bible/highlights/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  if (error) throw error
+  return { success: true }
+})

@@ -1,5 +1,5 @@
 ---
-name: data-patterns
+name: ekklesia-data-patterns
 description: Data fetching and API route patterns for the Ekklesia app — Supabase queries, apiHandler, Zod validation, pagination, caching, permissions, and finance double-entry rules.
 ---
 

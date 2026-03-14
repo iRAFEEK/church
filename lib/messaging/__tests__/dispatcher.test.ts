@@ -92,7 +92,7 @@ function setupProfileAndChurchQuery(
   // When channels are provided: call 1 = profiles (getProfileContactInfo), call 2 = churches
   // When channels are NOT provided: call 1 = profiles (resolveChannels), call 2 = profiles (getProfileContactInfo), call 3 = churches
   let callCount = 0
-  mockFrom.mockImplementation((table: string) => {
+  ;(mockFrom.mockImplementation as Function)((table: string) => {
     if (table === 'notifications_log') {
       return { insert: mockInsert }
     }
@@ -222,7 +222,7 @@ describe('sendNotification', () => {
     // resolveChannels will query profiles for notification_pref
     // Return 'email' pref so channels = ['email', 'in_app']
     let profileCallCount = 0
-    mockFrom.mockImplementation((table: string) => {
+    ;(mockFrom.mockImplementation as Function)((table: string) => {
       if (table === 'notifications_log') {
         return { insert: mockInsert }
       }
@@ -263,7 +263,7 @@ describe('sendNotification', () => {
 
   it("'none' preference still sends in-app", async () => {
     let profileCallCount = 0
-    mockFrom.mockImplementation((table: string) => {
+    ;(mockFrom.mockImplementation as Function)((table: string) => {
       if (table === 'notifications_log') {
         return { insert: mockInsert }
       }
@@ -346,7 +346,7 @@ describe('sendNotification', () => {
     expect(logInsertCalls.length).toBe(3)
 
     const insertedChannels = logInsertCalls.map(
-      (call: [Record<string, unknown>]) => call[0].channel
+      (call: unknown[]) => (call[0] as Record<string, unknown>).channel
     )
     expect(insertedChannels).toContain('whatsapp')
     expect(insertedChannels).toContain('email')

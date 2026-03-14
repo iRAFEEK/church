@@ -100,9 +100,9 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
     <div className="space-y-6">
       {/* Search input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="pl-9"
+          className="ps-9"
           placeholder="Search by church name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

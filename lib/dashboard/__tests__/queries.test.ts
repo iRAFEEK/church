@@ -90,9 +90,9 @@ describe('fetchAdminDashboard', () => {
     const sb = makeDashboardSupabase()
     await fetchAdminDashboard(sb as any, PROFILE_ID, CHURCH_ID)
 
-    const eqCalls = sb._chain.eq.mock.calls as any[][]
+    const eqCalls = sb._chain.eq.mock.calls as [string, string][]
     const churchIdFilters = eqCalls.filter(
-      ([col, val]: [string, string]) => col === 'church_id' && val === CHURCH_ID
+      ([col, val]) => col === 'church_id' && val === CHURCH_ID
     )
     // Multiple tables are filtered by church_id
     expect(churchIdFilters.length).toBeGreaterThanOrEqual(5)
@@ -148,9 +148,9 @@ describe('fetchLeaderDashboard', () => {
     expect(queriedTables).toContain('groups')
 
     // The .or() call should reference the profileId for leader/co-leader scoping
-    const orCalls = sb._chain.or.mock.calls as any[][]
+    const orCalls = sb._chain.or.mock.calls as [string][]
     const leaderFilter = orCalls.find(
-      ([filter]: [string]) =>
+      ([filter]) =>
         typeof filter === 'string' && filter.includes(PROFILE_ID)
     )
     expect(leaderFilter).toBeDefined()
@@ -192,9 +192,9 @@ describe('fetchMemberDashboard', () => {
     const sb = makeDashboardSupabase()
     await fetchMemberDashboard(sb as any, PROFILE_ID, CHURCH_ID)
 
-    const eqCalls = sb._chain.eq.mock.calls as any[][]
+    const eqCalls = sb._chain.eq.mock.calls as [string, string][]
     const profileFilters = eqCalls.filter(
-      ([col, val]: [string, string]) => col === 'profile_id' && val === PROFILE_ID
+      ([col, val]) => col === 'profile_id' && val === PROFILE_ID
     )
     // attendance, milestones, group_members, notifications, registrations, signups
     expect(profileFilters.length).toBeGreaterThanOrEqual(4)
@@ -269,9 +269,9 @@ describe('all dashboard functions', () => {
     ])
 
     for (const sb of [sbAdmin, sbLeader, sbMember, sbMinistry]) {
-      const eqCalls = sb._chain.eq.mock.calls as any[][]
+      const eqCalls = sb._chain.eq.mock.calls as [string, string][]
       const hasChurchFilter = eqCalls.some(
-        ([col, val]: [string, string]) => col === 'church_id' && val === CHURCH_ID
+        ([col, val]) => col === 'church_id' && val === CHURCH_ID
       )
       expect(hasChurchFilter).toBe(true)
     }

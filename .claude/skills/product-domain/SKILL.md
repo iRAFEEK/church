@@ -1,5 +1,5 @@
 ---
-name: product-domain
+name: ekklesia-product-domain
 description: Product domain knowledge for the Ekklesia church management app — roles, permissions, multi-tenancy, feature flags, visitor flow, finance, notifications, Bible module, and analytics.
 ---
 

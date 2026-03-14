@@ -80,7 +80,7 @@ const makeReq = (path: string, method = 'GET', body?: object) => {
     opts.body = JSON.stringify(body)
     opts.headers = { 'Content-Type': 'application/json' }
   }
-  return new NextRequest(`http://localhost${path}`, opts)
+  return new NextRequest(`http://localhost${path}`, opts as import('next/dist/server/web/spec-extension/request').RequestInit)
 }
 
 const visitorBody = {

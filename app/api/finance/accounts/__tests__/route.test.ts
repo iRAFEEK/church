@@ -125,7 +125,7 @@ describe('/api/finance/accounts', () => {
       // When active=false, the route should NOT call .eq('is_active', true)
       const eqCalls = supabase._chain.eq.mock.calls as string[][]
       const activeCall = eqCalls.find(
-        (args) => args[0] === 'is_active' && args[1] === true
+        (args) => args[0] === 'is_active' && (args[1] as unknown) === true
       )
       expect(activeCall).toBeUndefined()
     })
@@ -139,7 +139,7 @@ describe('/api/finance/accounts', () => {
 
       const eqCalls = supabase._chain.eq.mock.calls as string[][]
       const headerCall = eqCalls.find(
-        (args) => args[0] === 'is_header' && args[1] === true
+        (args) => args[0] === 'is_header' && (args[1] as unknown) === true
       )
       expect(headerCall).toBeTruthy()
     })

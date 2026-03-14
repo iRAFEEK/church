@@ -275,7 +275,7 @@ describe('notifyVisitorSLA', () => {
         return makeChain(table)
       },
     }
-    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as unknown as Awaited<ReturnType<typeof createClient>>)
 
     await notifyVisitorSLA('v1', 'c1')
 
@@ -320,7 +320,7 @@ describe('notifyVisitorSLA', () => {
         return makeChain(table)
       },
     }
-    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as unknown as Awaited<ReturnType<typeof createClient>>)
 
     await notifyVisitorSLA('v1', 'c1')
 
@@ -357,7 +357,7 @@ describe('notifyEventServiceRequest', () => {
         }
       },
     }
-    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as unknown as Awaited<ReturnType<typeof createClient>>)
 
     await notifyEventServiceRequest('e1', 'sn1', 'c1')
 
@@ -461,7 +461,7 @@ describe('notifyNeedMessage', () => {
         }
       },
     }
-    vi.mocked(createAdminClient).mockResolvedValueOnce(customSupabase as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createAdminClient).mockResolvedValueOnce(customSupabase as unknown as Awaited<ReturnType<typeof createAdminClient>>)
 
     await notifyNeedMessage('n1', 'r1', 'sender-c', 'owner-c', 'Thank you!')
 
@@ -529,7 +529,7 @@ describe('notifyGatheringReminder', () => {
         return makeChain(table)
       },
     }
-    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createClient).mockResolvedValueOnce(customSupabase as unknown as Awaited<ReturnType<typeof createClient>>)
 
     await notifyGatheringReminder('g1', 'c1')
 
@@ -554,8 +554,8 @@ describe('error resilience', () => {
         throw new Error('DB connection failed')
       },
     }
-    vi.mocked(createClient).mockResolvedValue(throwingClient as ReturnType<typeof makeMockSupabase>)
-    vi.mocked(createAdminClient).mockResolvedValue(throwingClient as ReturnType<typeof makeMockSupabase>)
+    vi.mocked(createClient).mockResolvedValue(throwingClient as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createAdminClient).mockResolvedValue(throwingClient as unknown as Awaited<ReturnType<typeof createAdminClient>>)
 
     // None of these should throw
     await expect(notifyWelcomeVisitor('v1', 'c1')).resolves.toBeUndefined()

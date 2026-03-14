@@ -48,11 +48,11 @@ Then claim your files in the Active Work table before touching anything:
 ### Step 1 — Read your skill files (every time, no exceptions)
 
 ```
-.claude/skills/skill-fix-standards.md
-.claude/skills/skill-component-patterns.md
-.claude/skills/skill-data-patterns.md
-.claude/skills/skill-product-domain.md
-.claude/skills/skill-context-update.md   ← NEW — the PR writing protocol
+.claude/skills/fix-standards/SKILL.md
+.claude/skills/component-patterns/SKILL.md
+.claude/skills/data-patterns/SKILL.md
+.claude/skills/product-domain/SKILL.md
+.claude/skills/context-update/SKILL.md   ← the PR writing protocol
 ```
 
 ### Step 2 — Understand the task
