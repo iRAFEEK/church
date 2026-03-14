@@ -21,5 +21,9 @@ export default async function FinanceSettingsPage() {
     online_giving_enabled: data?.online_giving_enabled ?? false,
   }
 
-  return <SettingsForm initialData={initialData} />
+  return (
+    <div className="pb-24">
+      <SettingsForm initialData={initialData} />
+    </div>
+  )
 }

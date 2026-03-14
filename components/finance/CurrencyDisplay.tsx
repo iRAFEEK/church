@@ -3,7 +3,7 @@
 interface CurrencyDisplayProps {
   amount: number
   currency?: string
-  locale: string
+  locale?: string
   className?: string
   showSign?: boolean
 }
@@ -11,12 +11,11 @@ interface CurrencyDisplayProps {
 export function CurrencyDisplay({
   amount,
   currency = 'USD',
-  locale,
+  locale = 'en-US',
   className = '',
   showSign = false,
 }: CurrencyDisplayProps) {
-  const numberLocale = locale.startsWith('ar') ? 'ar-EG' : 'en-US'
-  const formatted = new Intl.NumberFormat(numberLocale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
@@ -26,7 +25,7 @@ export function CurrencyDisplay({
   const sign = showSign && amount !== 0 ? (amount > 0 ? '+' : '−') : ''
 
   return (
-    <span className={`tabular-nums ${className}`} dir="ltr">
+    <span className={className} dir="ltr">
       {sign}{formatted}
     </span>
   )

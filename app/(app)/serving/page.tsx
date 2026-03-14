@@ -8,7 +8,7 @@ import { ServingAreaCard } from '@/components/serving/ServingAreaCard'
 import { ServingSlotCard } from '@/components/serving/ServingSlotCard'
 import { ServingMemberView } from '@/components/serving/ServingMemberView'
 import { MyServiceAssignments } from '@/components/events/MyServiceAssignments'
-import { Plus } from 'lucide-react'
+import { Plus, LayoutGrid, CalendarDays } from 'lucide-react'
 
 export default async function ServingPage({
   searchParams,
@@ -26,7 +26,7 @@ export default async function ServingPage({
   // Non-admin: render client-side member signup view + event assignments
   if (!admin) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 pb-24">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{t('memberPageTitle')}</h1>
           <p className="text-sm text-zinc-500 mt-1">{t('memberPageSubtitle')}</p>
@@ -71,7 +71,7 @@ export default async function ServingPage({
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{t('adminPageTitle')}</h1>
@@ -114,7 +114,19 @@ export default async function ServingPage({
 
       {activeTab === 'areas' ? (
         !areas || areas.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">{t('noAreas')}</div>
+          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+            <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+              <LayoutGrid className="h-8 w-8 text-zinc-400" />
+            </div>
+            <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('noAreas')}</h3>
+            <p className="text-sm text-zinc-500 mb-6 max-w-[260px]">{t('noAreasBody')}</p>
+            <Link href="/admin/serving/areas/new">
+              <Button size="sm">
+                <Plus className="h-4 w-4 me-1.5" />
+                {t('newArea')}
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="divide-y rounded-lg border">
             {areas.map((area) => (
@@ -124,7 +136,19 @@ export default async function ServingPage({
         )
       ) : (
         !slots || slots.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">{t('noSlots')}</div>
+          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+            <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+              <CalendarDays className="h-8 w-8 text-zinc-400" />
+            </div>
+            <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('noSlots')}</h3>
+            <p className="text-sm text-zinc-500 mb-6 max-w-[260px]">{t('noSlotsBody')}</p>
+            <Link href="/admin/serving/slots/new">
+              <Button size="sm">
+                <Plus className="h-4 w-4 me-1.5" />
+                {t('newSlot')}
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="divide-y rounded-lg border">
             {slots.map((slot) => (

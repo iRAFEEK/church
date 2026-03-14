@@ -77,7 +77,7 @@ export function EventsSearchFilter({ ministries, groups, isAdmin, onFilterChange
       <select
         value={ministryId}
         onChange={e => setMinistryId(e.target.value)}
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
       >
         <option value="">{t('allMinistries')}</option>
         {ministries.map(m => (
@@ -88,7 +88,7 @@ export function EventsSearchFilter({ ministries, groups, isAdmin, onFilterChange
       <select
         value={groupId}
         onChange={e => setGroupId(e.target.value)}
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
       >
         <option value="">{t('allGroups')}</option>
         {groups.map(g => (

@@ -163,6 +163,7 @@ export function MessageThread({ needId, responseId, myChurchId }: MessageThreadP
           className="shrink-0 self-end h-10 w-10"
           onClick={handleSend}
           disabled={sending || !newMessage.trim()}
+          aria-label={t('sendMessage')}
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>

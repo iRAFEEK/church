@@ -182,9 +182,9 @@ export function GroupForm({ ministries, leaders, group }: Props) {
             <Input
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              dir="ltr"
+              dir="auto"
               placeholder={t('nameEnPlaceholder')}
-              className="text-lg min-h-[48px]"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div>
@@ -193,7 +193,8 @@ export function GroupForm({ ministries, leaders, group }: Props) {
               value={form.name_ar}
               onChange={e => set('name_ar', e.target.value)}
               placeholder={t('nameArPlaceholder')}
-              className="min-h-[48px]"
+              dir="auto"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div>
@@ -326,7 +327,8 @@ export function GroupForm({ ministries, leaders, group }: Props) {
               value={form.meeting_location}
               onChange={e => set('meeting_location', e.target.value)}
               placeholder={t('meetingLocationPlaceholder')}
-              className="min-h-[48px]"
+              dir="auto"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">

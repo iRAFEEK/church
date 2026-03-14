@@ -92,7 +92,7 @@ export default async function MinistryDetailPage({ params }: Params) {
   const groups = ministry.groups || []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">

@@ -62,7 +62,7 @@ export default async function ChurchNeedDetailPage({ params, searchParams }: { p
   const churchName = isAr ? (church?.name_ar || church?.name) : church?.name
 
   return (
-    <div className="space-y-6 p-6 max-w-3xl mx-auto">
+    <div className="space-y-6 px-4 py-4 md:px-6 max-w-3xl mx-auto pb-24">
       {/* Back button */}
       <Button variant="ghost" size="sm" asChild>
         <Link href="/community/needs">

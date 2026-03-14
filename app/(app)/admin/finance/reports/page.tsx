@@ -99,7 +99,7 @@ export default async function FinancialReportsPage() {
   ]
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold">{t('financialReports')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -112,7 +112,7 @@ export default async function FinancialReportsPage() {
         <Card>
           <CardContent className="pt-4 pb-4">
             <p className="text-xs text-muted-foreground">{t('totalGivingYTD')}</p>
-            <p className="text-xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency(totalDonationsYTD, 'USD', locale)}</p>
+            <p className="text-xl font-bold mt-1">{formatCurrency(totalDonationsYTD, 'USD', locale)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -124,7 +124,7 @@ export default async function FinancialReportsPage() {
         <Card>
           <CardContent className="pt-4 pb-4">
             <p className="text-xs text-muted-foreground">{t('totalFundBalances')}</p>
-            <p className="text-xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency((funds || []).reduce((s, f) => s + (f.current_balance || 0), 0), 'USD', locale)}</p>
+            <p className="text-xl font-bold mt-1">{formatCurrency((funds || []).reduce((s, f) => s + (f.current_balance || 0), 0), 'USD', locale)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -152,7 +152,7 @@ export default async function FinancialReportsPage() {
                   <div key={method} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <span>{t(METHOD_KEYS[method] || 'other')}</span>
-                      <span className="font-medium"><span className="tabular-nums" dir="ltr">{formatCurrency(amount, 'USD', locale)}</span> ({pct.toFixed(0)}%)</span>
+                      <span className="font-medium">{formatCurrency(amount, 'USD', locale)} ({pct.toFixed(0)}%)</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-1.5">
                       <div className="bg-primary h-1.5 rounded-full" style={{ width: `${pct}%` }} />
@@ -174,7 +174,7 @@ export default async function FinancialReportsPage() {
               {t('fundBalanceSummary')}
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin/finance/funds"><ArrowRight className="w-4 h-4 rtl:rotate-180" /></Link>
+              <Link href="/admin/finance/funds"><ArrowRight className="w-4 h-4" /></Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -182,7 +182,7 @@ export default async function FinancialReportsPage() {
               {(funds || []).map((f) => (
                 <div key={f.id} className="flex items-center justify-between text-sm">
                   <span>{isAr ? f.name_ar || f.name : f.name}</span>
-                  <span className="font-bold tabular-nums" dir="ltr">{formatCurrency(f.current_balance || 0, 'USD', locale)}</span>
+                  <span className="font-bold">{formatCurrency(f.current_balance || 0, 'USD', locale)}</span>
                 </div>
               ))}
             </div>

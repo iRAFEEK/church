@@ -185,7 +185,7 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
     }
 
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
         <PageHeader title={t('title')} subtitle={t('subtitle')} canManage={canManage} postLabel={t('postNeed')} />
         <NeedsTabs activeTab={activeTab} unreadCount={totalUnread} />
 
@@ -240,7 +240,7 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
     const totalPages = Math.ceil((count || 0) / pageSize)
 
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
         <PageHeader title={t('title')} subtitle={t('subtitle')} canManage={canManage} postLabel={t('postNeed')} />
         <NeedsTabs activeTab={activeTab} unreadCount={totalUnread} />
 
@@ -305,7 +305,7 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
   const totalPages = Math.ceil((count || 0) / pageSize)
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       <PageHeader title={t('title')} subtitle={t('subtitle')} canManage={canManage} postLabel={t('postNeed')} />
       <NeedsTabs activeTab={activeTab} />
       <NeedFilters countries={countries} />

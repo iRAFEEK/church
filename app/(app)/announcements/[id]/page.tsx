@@ -29,7 +29,7 @@ export default async function AnnouncementReadPage({ params }: { params: Promise
   const body = isAr ? (announcement.body_ar || announcement.body) : announcement.body
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <div className="flex items-center gap-2">
           {announcement.is_pinned && <Pin className="h-5 w-5 text-primary" />}

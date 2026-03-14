@@ -34,7 +34,7 @@ export default async function FundsPage() {
   const restrictedFunds = activeFunds.filter((f) => f.is_restricted)
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('funds')}</h1>
@@ -53,11 +53,11 @@ export default async function FundsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4 pb-4">
             <p className="text-xs text-muted-foreground">{t('totalBalance')}</p>
-            <p className="text-xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency(totalBalance, 'USD', locale)}</p>
+            <p className="text-xl font-bold mt-1">{formatCurrency(totalBalance, 'USD', locale)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -123,12 +123,12 @@ export default async function FundsPage() {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">{t('currentBalance')}</span>
-                    <span className="text-xl font-bold tabular-nums" dir="ltr">{formatCurrency(fund.current_balance, 'USD', locale)}</span>
+                    <span className="text-xl font-bold">{formatCurrency(fund.current_balance, 'USD', locale)}</span>
                   </div>
                   {fund.target_amount && (
                     <>
                       <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                        <span>{t('target')}: <span className="tabular-nums" dir="ltr">{formatCurrency(fund.target_amount, 'USD', locale)}</span></span>
+                        <span>{t('target')}: {formatCurrency(fund.target_amount, 'USD', locale)}</span>
                         <span>{pct?.toFixed(0)}%</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2 mt-1">

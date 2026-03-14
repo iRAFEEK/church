@@ -29,11 +29,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     .maybeSingle()
 
   return (
+    <div className="pb-24">
     <EventDetailClient
       event={event}
       eventId={id}
       isRegistered={!!registration}
     />
+    </div>
   )
 }
 

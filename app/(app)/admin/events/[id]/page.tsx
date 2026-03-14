@@ -52,7 +52,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>

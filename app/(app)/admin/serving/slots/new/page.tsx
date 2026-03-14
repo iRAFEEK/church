@@ -11,7 +11,7 @@ export default async function NewServingSlotPage() {
   const t = await getTranslations('serving')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('newSlot')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{t('newSlotSubtitle')}</p>

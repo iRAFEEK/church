@@ -94,7 +94,7 @@ export default function OutreachMemberDetailPage() {
   const initials = name ? name.split(' ').map(n => n[0]).join('').slice(0, 2) : '?'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center gap-3">
         <Link href="/admin/outreach">
           <Button variant="ghost" size="sm">

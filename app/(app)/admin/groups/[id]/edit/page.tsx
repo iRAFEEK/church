@@ -35,7 +35,7 @@ export default async function EditGroupPage({ params }: Params) {
   ])
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('editGroupPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{group.name_ar || group.name}</p>

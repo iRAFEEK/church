@@ -16,11 +16,9 @@ export function HeroSection() {
         <div className="absolute top-1/4 start-1/4 w-[500px] h-[500px] opacity-[0.06] rounded-full blur-3xl bg-amber-500" />
         <div className="absolute bottom-1/4 end-1/4 w-[400px] h-[400px] opacity-[0.04] rounded-full blur-3xl bg-blue-500" />
         {/* Subtle cross watermark */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
-          <div className="relative">
-            <div className="w-1 h-64 bg-current mx-auto" />
-            <div className="w-48 h-1 bg-current absolute top-1/4 start-1/2 -translate-x-1/2" />
-          </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03]">
+          <div className="w-1 h-64 bg-current mx-auto" />
+          <div className="w-48 h-1 bg-current -mt-48 mx-auto" />
         </div>
       </div>
 

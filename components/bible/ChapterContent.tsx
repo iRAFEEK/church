@@ -232,35 +232,35 @@ export function ChapterContent({
           <button
             type="button"
             onClick={handleBookmark}
-            className={`flex items-center justify-center min-h-[44px] min-w-[44px] px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
               isCurrentBookmarked ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-muted-foreground'
             }`}
           >
-            <Bookmark className={`h-4 w-4 ${isCurrentBookmarked ? 'fill-current' : ''}`} />
+            <Bookmark className={`h-3.5 w-3.5 ${isCurrentBookmarked ? 'fill-current' : ''}`} />
           </button>
 
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-3 py-2 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
           >
-            <Copy className="h-4 w-4" />
+            <Copy className="h-3.5 w-3.5" />
           </button>
 
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center justify-center min-h-[44px] min-w-[44px] px-3 py-2 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
           >
-            <Share2 className="h-4 w-4" />
+            <Share2 className="h-3.5 w-3.5" />
           </button>
 
           <button
             type="button"
             onClick={() => setSelectedVerse(null)}
-            className="ms-auto flex items-center justify-center min-h-[44px] min-w-[44px] p-2 rounded-md text-muted-foreground hover:bg-muted transition-colors"
+            className="ms-auto p-1.5 rounded-md text-muted-foreground hover:bg-muted transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
@@ -276,7 +276,7 @@ export function ChapterContent({
 
       {/* Copyright */}
       {copyright && (
-        <p className="text-[10px] text-muted-foreground/50 px-2 pt-4 border-t mt-8">
+        <p className="text-xs text-muted-foreground/50 px-2 pt-4 border-t mt-8">
           {copyright}
         </p>
       )}

@@ -89,7 +89,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('donations')}</h1>
@@ -97,14 +97,14 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
             {count} {t('donationRecords')}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
             <Link href="/admin/finance/donations/batch">
               <Users className="w-4 h-4 me-2" />
               {t('batchEntry')}
             </Link>
           </Button>
-          <Button size="sm" asChild>
+          <Button size="sm" asChild className="w-full sm:w-auto">
             <Link href="/admin/finance/donations/new">
               <Plus className="w-4 h-4 me-2" />
               {t('newDonation')}
@@ -118,7 +118,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <CardContent className="pt-4 pb-4 flex gap-6">
           <div>
             <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
-            <p className="text-lg font-bold tabular-nums" dir="ltr">{formatCurrency(totalThisMonth, 'USD', locale)}</p>
+            <p className="text-lg font-bold">{formatCurrency(totalThisMonth, 'USD', locale)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('totalRecords')}</p>
@@ -130,22 +130,22 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
       {/* Filters */}
       <Card>
         <CardContent className="pt-4 pb-4">
-          <form className="flex flex-wrap gap-3 items-center">
-            <select name="fund_id" defaultValue={params.fund_id || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
+          <form className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
+            <select name="fund_id" defaultValue={params.fund_id || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background">
               <option value="">{t('allFunds')}</option>
               {(funds || []).map((f) => (
                 <option key={f.id} value={f.id}>{isAr ? f.name_ar || f.name : f.name}</option>
               ))}
             </select>
-            <select name="method" defaultValue={params.method || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
+            <select name="method" defaultValue={params.method || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background">
               <option value="">{t('allMethods')}</option>
               {Object.entries(METHOD_KEYS).map(([k, tKey]) => (
                 <option key={k} value={k}>{t(tKey)}</option>
               ))}
             </select>
-            <input type="date" name="date_from" defaultValue={params.date_from || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
-            <input type="date" name="date_to" defaultValue={params.date_to || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
-            <Button type="submit" variant="outline" size="sm">
+            <input type="date" name="date_from" defaultValue={params.date_from || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background" />
+            <input type="date" name="date_to" defaultValue={params.date_to || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background" />
+            <Button type="submit" variant="outline" size="sm" className="h-11 w-full sm:w-auto">
               <Filter className="w-4 h-4 me-1" />
               {t('apply')}
             </Button>
@@ -176,7 +176,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <p className="font-bold text-sm text-green-700 tabular-nums" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
+                    <p className="font-bold text-sm text-green-700" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
                     <Badge variant="secondary" className="text-xs">
                       {t(METHOD_KEYS[d.payment_method] || 'other')}
                     </Badge>
@@ -224,7 +224,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                         {d.is_tithe && <Badge variant="outline" className="text-xs">{t('tithe')}</Badge>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-bold text-green-700 tabular-nums" dir="ltr">
+                    <td className="px-4 py-3 font-bold text-green-700">
                       {formatCurrency(d.amount, d.currency, locale)}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">

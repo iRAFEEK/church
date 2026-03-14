@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Plus, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
+import { Plus, Clock, DollarSign } from 'lucide-react'
+import { ExpenseApprovalActions } from '@/components/finance/ExpenseApprovalActions'
 import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; status?: string; ministry_id?: string; mine?: string }
@@ -88,7 +89,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">
@@ -124,22 +125,22 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       {/* Filters */}
       <Card>
         <CardContent className="pt-3 pb-3">
-          <form className="flex flex-wrap gap-3 items-center">
-            <select name="status" defaultValue={params.status || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
+          <form className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
+            <select name="status" defaultValue={params.status || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background">
               <option value="">{t('allStatuses')}</option>
               {Object.entries(STATUS_KEYS).map(([k, tKey]) => (
                 <option key={k} value={k}>{t(tKey)}</option>
               ))}
             </select>
             {canApprove && (
-              <select name="ministry_id" defaultValue={params.ministry_id || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
+              <select name="ministry_id" defaultValue={params.ministry_id || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background">
                 <option value="">{t('allMinistries')}</option>
                 {(ministries || []).map((m) => (
                   <option key={m.id} value={m.id}>{isAr ? m.name_ar || m.name : m.name}</option>
                 ))}
               </select>
             )}
-            <Button type="submit" variant="outline" size="sm">{t('filter')}</Button>
+            <Button type="submit" variant="outline" size="sm" className="h-11 w-full sm:w-auto">{t('filter')}</Button>
           </form>
         </CardContent>
       </Card>
@@ -185,20 +186,9 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-bold text-lg tabular-nums" dir="ltr">{formatCurrency(e.amount, e.currency, locale)}</span>
+                    <span className="font-bold text-lg">{formatCurrency(e.amount, e.currency, locale)}</span>
                     {canApprove && e.status === 'submitted' && (
-                      <div className="flex gap-1">
-                        <form action={`/api/finance/expenses/${e.id}/approve`} method="POST">
-                          <Button type="submit" size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </Button>
-                        </form>
-                        <form action={`/api/finance/expenses/${e.id}/reject`} method="POST">
-                          <Button type="submit" size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        </form>
-                      </div>
+                      <ExpenseApprovalActions expenseId={e.id} />
                     )}
                   </div>
                 </div>

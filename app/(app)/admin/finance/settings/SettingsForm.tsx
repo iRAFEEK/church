@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Settings, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 const CURRENCIES = ['USD', 'LBP', 'EGP', 'JOD', 'EUR', 'GBP', 'SAR', 'AED', 'KWD', 'BHD', 'QAR', 'OMR']
 
@@ -22,7 +22,6 @@ interface SettingsData {
 
 export function SettingsForm({ initialData }: { initialData: SettingsData }) {
   const t = useTranslations('finance')
-  const locale = useLocale()
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [form, setForm] = useState<SettingsData>(initialData)
@@ -61,8 +60,8 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
     }
   }
 
-  const dtf = new Intl.DateTimeFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { month: 'long' })
-  const MONTH_NAMES = Array.from({ length: 12 }, (_, i) => dtf.format(new Date(2024, i, 1)))
+  const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December']
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">

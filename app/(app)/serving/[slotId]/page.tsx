@@ -118,7 +118,7 @@ export default function SlotDetailMemberPage() {
   const isFull = slot.max_volunteers && activeSignups >= slot.max_volunteers
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
         {areaName && <p className="text-sm text-zinc-500 mt-1">{areaName}</p>}

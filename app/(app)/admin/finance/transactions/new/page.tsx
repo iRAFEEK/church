@@ -14,9 +14,11 @@ export default async function NewTransactionPage() {
   const postableAccounts = accounts.filter(a => !a.is_header)
 
   return (
-    <TransactionForm
-      accounts={postableAccounts}
-      funds={funds}
-    />
+    <div className="pb-24">
+      <TransactionForm
+        accounts={postableAccounts}
+        funds={funds}
+      />
+    </div>
   )
 }

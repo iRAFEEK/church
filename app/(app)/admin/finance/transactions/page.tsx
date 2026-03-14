@@ -27,7 +27,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const t = await getTranslations('finance')
 
   const page = parseInt(sp.page || '1')
-  const limit = 50
+  const limit = 25
   const offset = (page - 1) * limit
 
   let query = supabase
@@ -44,7 +44,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const { data: transactions, count } = await query
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-4 md:px-6 space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('transactions')}</h1>
@@ -60,28 +60,28 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       </div>
 
       {/* Filters */}
-      <form className="flex flex-wrap gap-3 items-end">
+      <form className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-end">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">{t('status')}</label>
-          <select name="status" defaultValue={sp.status || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-            <option value="">{t('allStatuses')}</option>
-            <option value="draft">{t('draft')}</option>
-            <option value="pending">{t('pending')}</option>
-            <option value="approved">{t('approved')}</option>
-            <option value="posted">{t('posted')}</option>
-            <option value="void">{t('void')}</option>
+          <select name="status" defaultValue={sp.status || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background">
+            <option value="">All</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="posted">Posted</option>
+            <option value="void">Void</option>
           </select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">{t('from')}</label>
-          <input type="date" name="date_from" defaultValue={sp.date_from || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
+          <input type="date" name="date_from" defaultValue={sp.date_from || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">{t('to')}</label>
-          <input type="date" name="date_to" defaultValue={sp.date_to || ''} className="text-sm border rounded px-2 py-1.5 bg-background" />
+          <input type="date" name="date_to" defaultValue={sp.date_to || ''} className="w-full sm:w-auto h-11 text-sm border rounded px-2 py-1.5 bg-background" />
         </div>
-        <Button type="submit" variant="outline" size="sm">{t('filter')}</Button>
-        <Button type="reset" variant="ghost" size="sm" asChild><Link href="/admin/finance/transactions">{t('clear')}</Link></Button>
+        <Button type="submit" variant="outline" size="sm" className="h-11 w-full sm:w-auto">{t('filter')}</Button>
+        <Button type="reset" variant="ghost" size="sm" className="h-11 w-full sm:w-auto" asChild><Link href="/admin/finance/transactions">{t('clear')}</Link></Button>
       </form>
 
       <div className="border rounded-lg overflow-hidden">
@@ -96,9 +96,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                   <p className="text-xs text-muted-foreground mt-0.5 font-mono">{txn.reference_number || txn.id.slice(0, 8)} · {txn.transaction_date}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <p className="font-mono text-sm font-semibold tabular-nums" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}</p>
+                  <p className="font-mono text-sm font-semibold" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}</p>
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
-                    {t(txn.status)}
+                    {txn.status}
                   </span>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                 <td className="px-4 py-2 max-w-xs truncate">{txn.description || '—'}</td>
                 <td className="px-4 py-2">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
-                    {t(txn.status)}
+                    {txn.status}
                   </span>
                 </td>
                 <td className="px-4 py-2 text-end font-mono tabular-nums">
@@ -155,15 +155,15 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <div className="flex gap-2 justify-center">
           {page > 1 && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`?page=${page - 1}`}>{t('previous')}</Link>
+              <Link href={`?page=${page - 1}`}>Previous</Link>
             </Button>
           )}
           <span className="text-sm text-muted-foreground py-1.5">
-            {t('pageOf', { page, total: Math.ceil(count / limit) })}
+            Page {page} of {Math.ceil(count / limit)}
           </span>
           {page < Math.ceil(count / limit) && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`?page=${page + 1}`}>{t('next')}</Link>
+              <Link href={`?page=${page + 1}`}>Next</Link>
             </Button>
           )}
         </div>

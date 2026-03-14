@@ -14,14 +14,12 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Type, Image as ImageIcon, Settings, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-function getMinistrySteps(t: (key: string) => string) {
-  return [
-    { title: t('stepNameDescription'), titleAr: t('stepNameDescription') },
-    { title: t('stepPhoto'), titleAr: t('stepPhoto') },
-    { title: t('stepSettings'), titleAr: t('stepSettings') },
-    { title: t('stepReview'), titleAr: t('stepReview') },
-  ]
-}
+const STEPS = [
+  { title: 'Name & Description', titleAr: 'الاسم والوصف' },
+  { title: 'Photo', titleAr: 'الصورة' },
+  { title: 'Settings', titleAr: 'الإعدادات' },
+  { title: 'Review', titleAr: 'مراجعة' },
+]
 
 type Props = {
   ministry?: {
@@ -41,7 +39,6 @@ export function MinistryForm({ ministry }: Props) {
   const [step, setStep] = useState(0)
   const t = useTranslations('ministryForm')
   const locale = useLocale()
-  const STEPS = getMinistrySteps(t)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
@@ -186,9 +183,9 @@ export function MinistryForm({ ministry }: Props) {
             <Input
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              dir="ltr"
+              dir="auto"
               placeholder={t('nameEnPlaceholder')}
-              className="text-lg min-h-[48px]"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div>
@@ -197,7 +194,8 @@ export function MinistryForm({ ministry }: Props) {
               value={form.name_ar}
               onChange={e => set('name_ar', e.target.value)}
               placeholder={t('nameArPlaceholder')}
-              className="min-h-[48px]"
+              dir="auto"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div>
@@ -205,8 +203,9 @@ export function MinistryForm({ ministry }: Props) {
             <Textarea
               value={form.description}
               onChange={e => set('description', e.target.value)}
-              dir="ltr"
+              dir="auto"
               rows={3}
+              className="text-base"
               placeholder={t('descriptionEnPlaceholder')}
             />
           </div>
@@ -216,6 +215,8 @@ export function MinistryForm({ ministry }: Props) {
               value={form.description_ar}
               onChange={e => set('description_ar', e.target.value)}
               rows={3}
+              dir="auto"
+              className="text-base"
               placeholder={t('descriptionArPlaceholder')}
             />
           </div>
@@ -246,6 +247,7 @@ export function MinistryForm({ ministry }: Props) {
                 variant="destructive"
                 className="absolute top-2 end-2 h-8 w-8 p-0"
                 onClick={removePhoto}
+                aria-label={t('photoRemove')}
               >
                 <X className="h-4 w-4" />
               </Button>

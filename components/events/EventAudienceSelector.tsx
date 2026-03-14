@@ -75,7 +75,7 @@ export function EventAudienceSelector({ value, onChange }: Props) {
         >
           <Globe className="h-5 w-5" />
           <span className="text-sm font-medium">{t('allMembers')}</span>
-          <span className="text-[10px] text-muted-foreground">{t('allMembersDesc')}</span>
+          <span className="text-xs text-muted-foreground">{t('allMembersDesc')}</span>
         </button>
         <button
           type="button"
@@ -89,7 +89,7 @@ export function EventAudienceSelector({ value, onChange }: Props) {
         >
           <Target className="h-5 w-5" />
           <span className="text-sm font-medium">{t('specific')}</span>
-          <span className="text-[10px] text-muted-foreground">{t('specificDesc')}</span>
+          <span className="text-xs text-muted-foreground">{t('specificDesc')}</span>
         </button>
       </div>
 
@@ -164,7 +164,7 @@ export function EventAudienceSelector({ value, onChange }: Props) {
                 />
                 <div>
                   <Label className="text-sm">{t('hideToggle')}</Label>
-                  <p className="text-[10px] text-muted-foreground">{t('hideToggleDesc')}</p>
+                  <p className="text-xs text-muted-foreground">{t('hideToggleDesc')}</p>
                 </div>
               </div>
             </>

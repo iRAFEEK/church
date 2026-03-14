@@ -1,29 +1,28 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { useTranslations } from 'next-intl'
 
-const METHOD_CONFIG: Record<string, { key: string; variant: 'default' | 'secondary' | 'outline' }> = {
-  cash:           { key: 'cash',          variant: 'secondary' },
-  check:          { key: 'check',         variant: 'outline' },
-  bank_transfer:  { key: 'bankTransfer',  variant: 'outline' },
-  credit_card:    { key: 'creditCard',    variant: 'default' },
-  online:         { key: 'online',        variant: 'default' },
-  mobile_payment: { key: 'mobilePayment', variant: 'default' },
-  in_kind:        { key: 'inKind',        variant: 'secondary' },
-  other:          { key: 'other',         variant: 'secondary' },
+const METHOD_CONFIG: Record<string, { label: string; label_ar: string; variant: 'default' | 'secondary' | 'outline' }> = {
+  cash:           { label: 'Cash',          label_ar: 'نقداً',         variant: 'secondary' },
+  check:          { label: 'Check',         label_ar: 'شيك',           variant: 'outline' },
+  bank_transfer:  { label: 'Bank Transfer', label_ar: 'تحويل بنكي',    variant: 'outline' },
+  credit_card:    { label: 'Card',          label_ar: 'بطاقة',         variant: 'default' },
+  online:         { label: 'Online',        label_ar: 'إلكتروني',      variant: 'default' },
+  mobile_payment: { label: 'Mobile',        label_ar: 'موبايل',        variant: 'default' },
+  in_kind:        { label: 'In-Kind',       label_ar: 'عيني',          variant: 'secondary' },
+  other:          { label: 'Other',         label_ar: 'أخرى',          variant: 'secondary' },
 }
 
 interface PaymentMethodBadgeProps {
   method: string
+  locale?: string
 }
 
-export function PaymentMethodBadge({ method }: PaymentMethodBadgeProps) {
-  const t = useTranslations('finance')
-  const config = METHOD_CONFIG[method] ?? { key: 'other', variant: 'secondary' as const }
+export function PaymentMethodBadge({ method, locale = 'en' }: PaymentMethodBadgeProps) {
+  const config = METHOD_CONFIG[method] ?? { label: method, label_ar: method, variant: 'secondary' as const }
   return (
     <Badge variant={config.variant}>
-      {t(config.key)}
+      {locale.startsWith('ar') ? config.label_ar : config.label}
     </Badge>
   )
 }

@@ -118,7 +118,7 @@ export function PrayerAssignDialog({ prayerId, onAssigned }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-9 px-2 text-blue-600 hover:text-blue-700">
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-blue-600 hover:text-blue-700">
           <UserPlus className="h-3.5 w-3.5 me-1" />
           <span className="text-xs">{t('assign')}</span>
         </Button>
@@ -162,12 +162,12 @@ export function PrayerAssignDialog({ prayerId, onAssigned }: Props) {
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={member.photo_url || undefined} />
-                      <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{name}</p>
                       {member.email && (
-                        <p className="text-[11px] text-muted-foreground truncate" dir="ltr">{member.email}</p>
+                        <p className="text-xs text-muted-foreground truncate" dir="ltr">{member.email}</p>
                       )}
                     </div>
                     {isAssigning && <Loader2 className="h-4 w-4 animate-spin" />}

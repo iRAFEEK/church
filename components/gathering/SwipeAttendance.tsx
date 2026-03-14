@@ -282,28 +282,28 @@ export function SwipeAttendance({
               className="flex flex-col items-center gap-1 p-3 rounded-xl bg-green-50 hover:bg-green-100 active:scale-95 transition-all"
             >
               <Check className="h-6 w-6 text-green-600" />
-              <span className="text-[10px] font-medium text-green-700">{t('statusPresent')}</span>
+              <span className="text-xs font-medium text-green-700">{t('statusPresent')}</span>
             </button>
             <button
               onClick={() => markStatus('late')}
               className="flex flex-col items-center gap-1 p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 active:scale-95 transition-all"
             >
               <Clock className="h-6 w-6 text-yellow-600" />
-              <span className="text-[10px] font-medium text-yellow-700">{t('statusLate')}</span>
+              <span className="text-xs font-medium text-yellow-700">{t('statusLate')}</span>
             </button>
             <button
               onClick={() => markStatus('excused')}
               className="flex flex-col items-center gap-1 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-95 transition-all"
             >
               <ShieldCheck className="h-6 w-6 text-blue-600" />
-              <span className="text-[10px] font-medium text-blue-700">{t('statusExcused')}</span>
+              <span className="text-xs font-medium text-blue-700">{t('statusExcused')}</span>
             </button>
             <button
               onClick={() => markStatus('absent')}
               className="flex flex-col items-center gap-1 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 active:scale-95 transition-all"
             >
               <X className="h-6 w-6 text-zinc-500" />
-              <span className="text-[10px] font-medium text-zinc-600">{t('statusAbsent')}</span>
+              <span className="text-xs font-medium text-zinc-600">{t('statusAbsent')}</span>
             </button>
           </div>
         </div>

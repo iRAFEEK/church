@@ -170,6 +170,7 @@ export default function LoginPage() {
                       placeholder={t('emailPlaceholder')}
                       autoComplete="email"
                       dir="ltr"
+                      className="text-base"
                       {...field}
                     />
                   </FormControl>
@@ -189,6 +190,7 @@ export default function LoginPage() {
                       placeholder={t('passwordPlaceholder')}
                       autoComplete="current-password"
                       dir="ltr"
+                      className="text-base"
                       {...field}
                     />
                   </FormControl>
@@ -220,61 +222,65 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <div className="mt-6 border-t pt-4">
-          <p className="text-sm font-medium mb-3">{t('testAccounts')}</p>
-          <div className="grid gap-2">
-            {TEST_ACCOUNTS.map((account) => (
-              <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{account.label}</p>
-                  <p className="text-muted-foreground font-mono truncate">{account.email}</p>
-                  <p className="text-muted-foreground font-mono">pw: {account.password}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 text-xs h-7 px-2"
-                  disabled={devLoading !== null}
-                  onClick={() => devLogin(account.email)}
-                >
-                  {devLoading === account.email ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    t('devLoginButton')
-                  )}
-                </Button>
+        {process.env.NODE_ENV === 'development' && (
+          <>
+            <div className="mt-6 border-t pt-4">
+              <p className="text-sm font-medium mb-3">{t('testAccounts')}</p>
+              <div className="grid gap-2">
+                {TEST_ACCOUNTS.map((account) => (
+                  <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{account.label}</p>
+                      <p className="text-muted-foreground font-mono truncate">{account.email}</p>
+                      <p className="text-muted-foreground font-mono">pw: {account.password}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 text-xs h-7 px-2"
+                      disabled={devLoading !== null}
+                      onClick={() => devLogin(account.email)}
+                    >
+                      {devLoading === account.email ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        t('devLoginButton')
+                      )}
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="mt-4 border-t pt-4">
-          <p className="text-sm font-medium mb-3">{t('crossChurchAccounts')}</p>
-          <div className="grid gap-2">
-            {CROSS_CHURCH_ACCOUNTS.map((account) => (
-              <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{account.label}</p>
-                  <p className="text-muted-foreground font-mono truncate">{account.email}</p>
-                  <p className="text-muted-foreground font-mono">pw: {account.password}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 text-xs h-7 px-2"
-                  disabled={devLoading !== null}
-                  onClick={() => devLogin(account.email)}
-                >
-                  {devLoading === account.email ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    t('devLoginButton')
-                  )}
-                </Button>
+            <div className="mt-4 border-t pt-4">
+              <p className="text-sm font-medium mb-3">{t('crossChurchAccounts')}</p>
+              <div className="grid gap-2">
+                {CROSS_CHURCH_ACCOUNTS.map((account) => (
+                  <div key={account.email} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{account.label}</p>
+                      <p className="text-muted-foreground font-mono truncate">{account.email}</p>
+                      <p className="text-muted-foreground font-mono">pw: {account.password}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 text-xs h-7 px-2"
+                      disabled={devLoading !== null}
+                      onClick={() => devLogin(account.email)}
+                    >
+                      {devLoading === account.email ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        t('devLoginButton')
+                      )}
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )

@@ -143,7 +143,7 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
           {open ? (
             <X className="h-5 w-5 transition-transform duration-200" />
           ) : (
-            <Plus className="h-5 w-5 transition-transform duration-200" />
+            <HelpCircle className="h-5 w-5 transition-transform duration-200" />
           )}
         </button>
       </div>

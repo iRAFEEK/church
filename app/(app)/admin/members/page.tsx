@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserCheck } from 'lucide-react'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { MembersSearchInput } from './MembersSearchInput'
-import type { Profile } from '@/types'
 
 interface SearchParams {
   q?: string
@@ -41,7 +40,7 @@ export default async function MembersPage({
   // Build query
   let query = supabase
     .from('profiles')
-    .select('*', { count: 'exact' })
+    .select('id, church_id, first_name, last_name, first_name_ar, last_name_ar, email, phone, photo_url, role, status, joined_church_at', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('created_at', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
@@ -84,7 +83,7 @@ export default async function MembersPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -102,7 +101,7 @@ export default async function MembersPage({
             <select
               name="role"
               defaultValue={roleFilter ?? ''}
-              className="w-full sm:w-auto h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllRoles')}</option>
               <option value="member">{t('roleMember')}</option>
@@ -114,7 +113,7 @@ export default async function MembersPage({
             <select
               name="status"
               defaultValue={statusFilter ?? ''}
-              className="w-full sm:w-auto h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllStatuses')}</option>
               <option value="active">{t('statusActive')}</option>
@@ -132,11 +131,11 @@ export default async function MembersPage({
         <Card>
           {/* Mobile card list — hidden on md+ */}
           <div className="md:hidden divide-y">
-            {members.map((member: Profile) => {
+            {members.map((member) => {
               const nameAr = `${member.first_name_ar ?? ''} ${member.last_name_ar ?? ''}`.trim()
               const nameEn = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
               const displayName = nameAr || nameEn || member.email || '—'
-              const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+              const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
               const cardContent = (
                 <div className="flex items-center gap-3 px-4 py-3 active:bg-muted/30 transition-colors">
@@ -188,11 +187,11 @@ export default async function MembersPage({
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {members.map((member: Profile) => {
+                {members.map((member) => {
                   const nameAr = `${member.first_name_ar ?? ''} ${member.last_name_ar ?? ''}`.trim()
                   const nameEn = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
                   const displayName = nameAr || nameEn || member.email || '—'
-                  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
                   return (
                     <tr key={member.id} className="hover:bg-muted/30 transition-colors">

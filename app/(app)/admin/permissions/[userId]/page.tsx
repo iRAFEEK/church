@@ -145,7 +145,7 @@ export default function UserPermissionPage() {
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary">{roleLabel}</Badge>
                 {overrideCount > 0 && (
-                  <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                     {overrideCount} {isAr ? 'تخصيص' : 'custom'}
                   </Badge>
                 )}

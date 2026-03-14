@@ -11,7 +11,7 @@ export default function BudgetDetailLoading() {
         </div>
       </div>
       {/* KPI cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse border rounded-lg p-5 text-center space-y-2">
             <div className="h-4 bg-zinc-100 rounded w-20 mx-auto" />

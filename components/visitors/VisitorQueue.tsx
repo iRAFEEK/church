@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { SearchInput } from '@/components/ui/search-input'
 import { toast } from 'sonner'
+import { UserPlus } from 'lucide-react'
 import { formatDistanceToNow } from '@/lib/utils'
 
 type Leader = {
@@ -166,7 +167,7 @@ export function VisitorQueue({
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               filter === f
                 ? 'bg-zinc-900 text-white'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
@@ -183,7 +184,13 @@ export function VisitorQueue({
       {/* Table */}
       <div className="rounded-xl border border-zinc-200 overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="py-12 text-center text-zinc-400 text-sm">{t('queueEmpty')}</div>
+          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+            <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+              <UserPlus className="h-8 w-8 text-zinc-400" />
+            </div>
+            <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('queueEmptyTitle')}</h3>
+            <p className="text-sm text-zinc-500 max-w-[260px]">{t('queueEmptyBody')}</p>
+          </div>
         ) : (
           <div className="divide-y divide-zinc-100">
             {filtered.map(v => (

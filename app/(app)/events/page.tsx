@@ -109,7 +109,7 @@ export default async function EventsPage() {
   const nextCursor = events.length === PAGE_SIZE ? events[events.length - 1].starts_at : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">
@@ -120,15 +120,15 @@ export default async function EventsPage() {
           </p>
         </div>
         {canManageEvents && (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Link href="/admin/events/from-template">
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Copy className="h-4 w-4 me-1" />
                 {t('fromTemplate')}
               </Button>
             </Link>
             <Link href="/admin/events/new">
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 me-1" />
                 {t('newEvent')}
               </Button>

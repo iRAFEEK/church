@@ -161,12 +161,12 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 pb-24">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/profile">
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
         <h1 className="text-2xl font-bold">{t('pageTitle')}</h1>
@@ -201,14 +201,14 @@ export default function ProfileEditPage() {
                   <FormField control={form.control} name="first_name_ar" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('firstNameAr')}</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormControl><Input dir="auto" className="text-base" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="last_name_ar" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('lastNameAr')}</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormControl><Input dir="auto" className="text-base" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -226,14 +226,14 @@ export default function ProfileEditPage() {
                   <FormField control={form.control} name="first_name" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('firstNameEn')}</FormLabel>
-                      <FormControl><Input dir="ltr" {...field} /></FormControl>
+                      <FormControl><Input dir="ltr" className="text-base" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="last_name" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('lastNameEn')}</FormLabel>
-                      <FormControl><Input dir="ltr" {...field} /></FormControl>
+                      <FormControl><Input dir="ltr" className="text-base" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -246,7 +246,7 @@ export default function ProfileEditPage() {
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('phone')}</FormLabel>
-                  <FormControl><Input type="tel" dir="ltr" placeholder={t('phonePlaceholder')} {...field} /></FormControl>
+                  <FormControl><Input type="tel" dir="ltr" className="text-base" placeholder={t('phonePlaceholder')} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -281,7 +281,7 @@ export default function ProfileEditPage() {
               <FormField control={form.control} name="occupation_ar" render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('occupationAr')}</FormLabel>
-                  <FormControl><Input placeholder={t('occupationArPlaceholder')} {...field} /></FormControl>
+                  <FormControl><Input placeholder={t('occupationArPlaceholder')} dir="auto" className="text-base" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -300,7 +300,7 @@ export default function ProfileEditPage() {
                       <SelectItem value="whatsapp">{t('notifWhatsapp')}</SelectItem>
                       <SelectItem value="sms">{t('notifSms')}</SelectItem>
                       <SelectItem value="email">{t('notifEmail')}</SelectItem>
-                      <SelectItem value="push">Push Notifications</SelectItem>
+                      <SelectItem value="push">{t('notifPush')}</SelectItem>
                       <SelectItem value="all">{t('notifAll')}</SelectItem>
                       <SelectItem value="none">{t('notifNone')}</SelectItem>
                     </SelectContent>

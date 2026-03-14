@@ -21,8 +21,8 @@ type Account = {
   display_order: number | null
 }
 
-function fmt(n: number, currency = 'USD', locale = 'en') {
-  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
+function fmt(n: number, currency = 'USD') {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -33,13 +33,13 @@ const TYPE_COLOR: Record<string, string> = {
   expense:   'bg-red-100 text-red-700',
 }
 
-function AccountRow({ account, depth = 0, locale = 'en' }: { account: Account & { children?: Account[] }, depth?: number, locale?: string }) {
+function AccountRow({ account, depth = 0 }: { account: Account & { children?: Account[] }, depth?: number }) {
   return (
     <>
       <tr className={`hover:bg-muted/30 ${account.is_header ? 'bg-muted/20' : ''}`}>
         <td className="px-4 py-2">
-          <div className="flex items-center gap-1" style={{ paddingInlineStart: `${depth * 16}px` }}>
-            {account.is_header && <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0 rtl:rotate-180" />}
+          <div className="flex items-center gap-1" style={{ paddingLeft: `${depth * 16}px` }}>
+            {account.is_header && <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />}
             <span className={`font-mono text-xs ${account.is_header ? 'font-semibold' : ''}`}>{account.code}</span>
           </div>
         </td>
@@ -54,8 +54,8 @@ function AccountRow({ account, depth = 0, locale = 'en' }: { account: Account & 
             {account.account_type}
           </span>
         </td>
-        <td className="px-4 py-2 text-end font-mono tabular-nums text-sm" dir="ltr">
-          {!account.is_header ? fmt(account.current_balance || 0, account.currency || 'USD', locale) : '—'}
+        <td className="px-4 py-2 text-end font-mono tabular-nums text-sm">
+          {!account.is_header ? fmt(account.current_balance || 0, account.currency || 'USD') : '—'}
         </td>
         <td className="px-4 py-2 text-center">
           {account.is_active
@@ -65,7 +65,7 @@ function AccountRow({ account, depth = 0, locale = 'en' }: { account: Account & 
         </td>
       </tr>
       {account.children?.map(child => (
-        <AccountRow key={child.id} account={child} depth={depth + 1} locale={locale} />
+        <AccountRow key={child.id} account={child} depth={depth + 1} />
       ))}
     </>
   )
@@ -102,7 +102,7 @@ export default async function AccountsPage() {
   const typeGroups = ['asset', 'liability', 'equity', 'income', 'expense']
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-4 md:px-6 space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{t('chartOfAccounts')}</h1>
@@ -137,8 +137,8 @@ export default async function AccountsPage() {
                     <p className="text-xs text-muted-foreground font-mono mt-0.5">{a.code}</p>
                   </div>
                   {!a.is_header && (
-                    <p className="text-sm font-mono font-semibold shrink-0 tabular-nums" dir="ltr">
-                      {fmt(a.current_balance || 0, a.currency || 'USD', locale)}
+                    <p className="text-sm font-mono font-semibold shrink-0" dir="ltr">
+                      {fmt(a.current_balance || 0, a.currency || 'USD')}
                     </p>
                   )}
                 </div>
@@ -173,7 +173,7 @@ export default async function AccountsPage() {
                       </span>
                     </td>
                   </tr>
-                  {groupRoots.map(a => <AccountRow key={a.id} account={a} depth={0} locale={locale} />)}
+                  {groupRoots.map(a => <AccountRow key={a.id} account={a} depth={0} />)}
                 </>
               )
             })}

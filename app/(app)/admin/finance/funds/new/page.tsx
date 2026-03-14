@@ -49,7 +49,7 @@ export default function NewFundPage() {
   }
 
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-6">
+    <div className="px-4 py-4 md:px-6 max-w-xl mx-auto space-y-6 pb-24">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/admin/finance/funds"><ArrowLeft className="w-4 h-4" /></Link>

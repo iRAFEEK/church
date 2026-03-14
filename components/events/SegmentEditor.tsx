@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Plus, Trash2, GripVertical, Pencil, Clock, ListOrdered } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Ministry } from '@/types'
@@ -163,17 +164,19 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                     type="button"
                     onClick={() => moveSegment(i, -1)}
                     disabled={i === 0}
-                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    className="p-0.5 text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    aria-label={t('moveUp')}
                   >
-                    <GripVertical className="h-4 w-4 rotate-180" />
+                    <GripVertical className="h-3 w-3 rotate-180" />
                   </button>
                   <button
                     type="button"
                     onClick={() => moveSegment(i, 1)}
                     disabled={i === segments.length - 1}
-                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    className="p-0.5 text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    aria-label={t('moveDown')}
                   >
-                    <GripVertical className="h-4 w-4" />
+                    <GripVertical className="h-3 w-3" />
                   </button>
                 </div>
 
@@ -203,16 +206,33 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                     type="button"
                     onClick={() => openEditDialog(i)}
                     className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
+                    aria-label={t('editSegment')}
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(i)}
-                    className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
+                        aria-label={t('removeSegment')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('confirmRemoveSegmentTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('confirmRemoveSegmentBody')}</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('cancelRemove')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleRemove(i)} className="bg-red-600 hover:bg-red-700">
+                          {t('confirmRemove')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             )
@@ -235,7 +255,8 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Worship, Sermon, Offering"
-                dir="ltr"
+                dir="auto"
+                className="text-base"
               />
             </div>
             <div>
@@ -244,6 +265,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                 value={titleAr}
                 onChange={(e) => setTitleAr(e.target.value)}
                 dir="rtl"
+                className="text-base"
               />
             </div>
             <div>
@@ -278,7 +300,8 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                dir="ltr"
+                dir="auto"
+                className="text-base"
                 placeholder="e.g., Pastor to prepare communion intro"
               />
             </div>
@@ -289,6 +312,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                 onChange={(e) => setNotesAr(e.target.value)}
                 rows={2}
                 dir="rtl"
+                className="text-base"
               />
             </div>
           </div>

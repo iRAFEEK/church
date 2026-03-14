@@ -22,7 +22,7 @@ export default async function LeaderVisitorsPage() {
   const slaHours = user.church.visitor_sla_hours || 48
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('leaderPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{t('leaderPageSubtitle')}</p>

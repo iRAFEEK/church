@@ -69,7 +69,7 @@ export function PushPermissionPrompt() {
           <div className="flex gap-2 mt-3">
             <Button
               size="sm"
-              className="h-9 text-xs"
+              className="h-7 text-xs"
               onClick={handleEnable}
               disabled={isLoading}
             >
@@ -78,7 +78,7 @@ export function PushPermissionPrompt() {
             <Button
               size="sm"
               variant="ghost"
-              className="h-9 text-xs text-muted-foreground"
+              className="h-7 text-xs text-muted-foreground"
               onClick={() => setDismissedThisSession(true)}
             >
               {t('laterButton')}

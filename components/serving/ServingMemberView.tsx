@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Calendar, Clock, Users, X } from 'lucide-react'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { Calendar, Clock, Users, X, HandHelping } from 'lucide-react'
 import { toast } from 'sonner'
 
 function ServingShimmer() {
@@ -123,7 +124,6 @@ export function ServingMemberView() {
   }
 
   const handleCancel = async (slotId: string) => {
-    if (!confirm(t('confirmDelete'))) return
     setSigningUp(slotId)
     try {
       const res = await fetch(`/api/serving/slots/${slotId}/signup`, { method: 'DELETE' })
@@ -149,7 +149,15 @@ export function ServingMemberView() {
   if (loading) return <ServingShimmer />
 
   if (Object.keys(slotsByArea).length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">{t('noOpenSlots')}</div>
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+        <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+          <HandHelping className="h-8 w-8 text-zinc-400" />
+        </div>
+        <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('noOpenSlots')}</h3>
+        <p className="text-sm text-zinc-500 max-w-[260px]">{t('noOpenSlotsBody')}</p>
+      </div>
+    )
   }
 
   return (
@@ -192,16 +200,31 @@ export function ServingMemberView() {
                     </div>
                     <div>
                       {isSignedUp ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCancel(slot.id)}
-                          disabled={signingUp === slot.id}
-                          className="transition-all"
-                        >
-                          <X className="h-4 w-4 me-1" />
-                          {signingUp === slot.id ? t('cancelling') : t('cancelSignup')}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={signingUp === slot.id}
+                              className="transition-all"
+                            >
+                              <X className="h-4 w-4 me-1" />
+                              {signingUp === slot.id ? t('cancelling') : t('cancelSignup')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('confirmCancelTitle')}</AlertDialogTitle>
+                              <AlertDialogDescription>{t('confirmCancel')}</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('keepSignup')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleCancel(slot.id)} className="bg-red-600 hover:bg-red-700">
+                                {t('cancelSignup')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       ) : (
                         <Button
                           size="sm"

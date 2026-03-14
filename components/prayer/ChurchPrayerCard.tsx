@@ -83,19 +83,19 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={prayer.submitter.photo_url || undefined} />
-                <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
               </Avatar>
               <span className="text-xs text-muted-foreground">{submitterName}</span>
             </div>
           )}
           <span className="text-xs text-muted-foreground">· {date}</span>
           {prayer.status === 'answered' && (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
               {t('filterAnswered')}
             </Badge>
           )}
           {prayer.assignee && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] flex items-center gap-1">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs flex items-center gap-1">
               {t('assignedTo')}: {isAr
                 ? `${prayer.assignee.first_name_ar || prayer.assignee.first_name || ''} ${prayer.assignee.last_name_ar || prayer.assignee.last_name || ''}`.trim()
                 : `${prayer.assignee.first_name || ''} ${prayer.assignee.last_name || ''}`.trim()
@@ -118,7 +118,7 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-2 text-green-600 hover:text-green-700"
+                className="h-7 px-2 text-green-600 hover:text-green-700"
                 onClick={() => onMarkAnswered(prayer.id)}
               >
                 <Check className="h-3.5 w-3.5 me-1" />
@@ -129,7 +129,7 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-2"
+                className="h-7 px-2"
                 onClick={() => onArchive(prayer.id)}
               >
                 <Archive className="h-3.5 w-3.5" />
@@ -139,7 +139,7 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-2 text-destructive hover:text-destructive"
+                className="h-7 px-2 text-destructive hover:text-destructive"
                 onClick={() => onDelete(prayer.id)}
               >
                 <Trash2 className="h-3.5 w-3.5" />

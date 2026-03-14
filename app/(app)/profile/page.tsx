@@ -107,7 +107,7 @@ export default async function ProfilePage() {
   const initials = (displayNameAr || displayNameEn).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 pb-24">
       {/* Profile Header */}
       <Card>
         <CardContent className="pt-6">

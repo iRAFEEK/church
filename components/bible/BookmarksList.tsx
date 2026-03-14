@@ -40,14 +40,14 @@ export function BookmarksList({ bookmarks, onNavigate, onDelete }: BookmarksList
               {bm.note && (
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{bm.note}</p>
               )}
-              <p className="text-[10px] text-muted-foreground/60 mt-1">
+              <p className="text-xs text-muted-foreground/60 mt-1">
                 {new Date(bm.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}
               </p>
             </button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
               onClick={async () => {
                 try {
                   await fetch(`/api/bible/bookmarks/${bm.id}`, { method: 'DELETE' })

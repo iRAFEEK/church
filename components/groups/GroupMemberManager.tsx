@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent as AlertContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle as AlertTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { getAvatarUrl } from '@/lib/utils/storage'
@@ -147,12 +148,25 @@ export function GroupMemberManager({
                     {t('viewLink')}
                   </Link>
                   {canManage && (
-                    <button
-                      onClick={() => removeMember(m)}
-                      className="text-xs text-red-500 hover:text-red-700"
-                    >
-                      {t('removeButton')}
-                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button className="text-xs text-red-500 hover:text-red-700">
+                          {t('removeButton')}
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertContent>
+                        <AlertDialogHeader>
+                          <AlertTitle>{t('confirmRemoveTitle')}</AlertTitle>
+                          <AlertDialogDescription>{t('confirmRemoveBody')}</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('cancelButton')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => removeMember(m)} className="bg-red-600 hover:bg-red-700">
+                            {t('removeButton')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertContent>
+                    </AlertDialog>
                   )}
                 </div>
               </div>
@@ -186,7 +200,7 @@ export function GroupMemberManager({
                     key={p.id}
                     onClick={() => addMember(p)}
                     disabled={loading}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-start"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-end"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={getAvatarUrl(p.photo_url, 32)} />

@@ -39,7 +39,7 @@ export default async function MyGroupPage() {
     .order('name')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center gap-3">
         <Users className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">{t('adminPageTitle')}</h1>

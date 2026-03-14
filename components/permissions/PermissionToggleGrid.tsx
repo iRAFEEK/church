@@ -42,7 +42,7 @@ export function PermissionToggleGrid({
                 {label}
               </Label>
               {isDefault && defaults && (
-                <span className="text-[10px] text-muted-foreground/60 ms-2">
+                <span className="text-xs text-muted-foreground/60 ms-2">
                   {isRTL ? 'افتراضي' : 'Default'}
                 </span>
               )}

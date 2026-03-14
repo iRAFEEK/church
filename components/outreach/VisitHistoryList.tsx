@@ -63,7 +63,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                   })}
                 </span>
                 {visit.needs_followup && (
-                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-[10px]">
+                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
                     <AlertCircle className="h-3 w-3 me-1" />
                     {t('needsFollowup')}
                   </Badge>

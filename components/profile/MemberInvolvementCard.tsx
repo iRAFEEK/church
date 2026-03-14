@@ -151,7 +151,7 @@ export function MemberInvolvementCard({ profileId }: MemberInvolvementCardProps)
                             {' · '}{t('joinedAt')} {new Date(m.joined_at).toLocaleDateString(locale, { month: 'short', year: 'numeric' })}
                           </p>
                         </div>
-                        <Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">
+                        <Badge variant={m.is_active ? 'default' : 'secondary'} className="text-xs">
                           {m.is_active ? t('activeLabel') : t('inactiveLabel')}
                         </Badge>
                       </div>
@@ -183,7 +183,7 @@ export function MemberInvolvementCard({ profileId }: MemberInvolvementCardProps)
                             )}
                           </p>
                         </div>
-                        <Badge variant={g.is_active ? 'default' : 'secondary'} className="text-[10px]">
+                        <Badge variant={g.is_active ? 'default' : 'secondary'} className="text-xs">
                           {g.is_active ? t('activeLabel') : t('inactiveLabel')}
                         </Badge>
                       </div>
@@ -234,7 +234,7 @@ function StatCard({ icon, label, value, color, sub }: { icon: React.ReactNode; l
       </div>
       <p className="text-2xl font-bold text-zinc-900">{value}</p>
       <p className="text-xs text-zinc-500 mt-0.5">{label}</p>
-      {sub && <p className="text-[10px] text-zinc-400 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-zinc-400 mt-1">{sub}</p>}
     </div>
   )
 }
@@ -268,7 +268,7 @@ function AssignmentStatusBadge({ status, t }: { status: string; t: ReturnType<ty
     declined: t('statusDeclined'),
   }
   return (
-    <Badge variant="outline" className={`text-[10px] ${colors[status] || ''}`}>
+    <Badge variant="outline" className={`text-xs ${colors[status] || ''}`}>
       {labels[status] || status}
     </Badge>
   )
@@ -286,7 +286,7 @@ function ServingStatusBadge({ status, t }: { status: string; t: ReturnType<typeo
     cancelled: t('statusCancelled'),
   }
   return (
-    <Badge variant="outline" className={`text-[10px] ${colors[status] || ''}`}>
+    <Badge variant="outline" className={`text-xs ${colors[status] || ''}`}>
       {labels[status] || status}
     </Badge>
   )
@@ -306,7 +306,7 @@ function RegistrationBadge({ status, t }: { status: string; t: ReturnType<typeof
     checked_in: t('statusCheckedIn'),
   }
   return (
-    <Badge variant="outline" className={`text-[10px] ${colors[status] || ''}`}>
+    <Badge variant="outline" className={`text-xs ${colors[status] || ''}`}>
       {labels[status] || status}
     </Badge>
   )

@@ -1,10 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { Globe } from 'lucide-react'
+import { Globe, Menu } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from '@/components/ui/sheet'
 
 interface LandingNavProps {
   churchName: string
@@ -14,6 +21,7 @@ interface LandingNavProps {
 export function LandingNav({ churchName, logoUrl }: LandingNavProps) {
   const t = useTranslations('landing')
   const locale = useLocale()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   function toggleLanguage() {
     const next = locale.startsWith('ar') ? 'en' : 'ar'
@@ -44,7 +52,7 @@ export function LandingNav({ churchName, logoUrl }: LandingNavProps) {
           <span className="font-semibold text-lg hidden sm:inline">{churchName}</span>
         </a>
 
-        {/* Section links */}
+        {/* Desktop section links */}
         <div className="hidden md:flex items-center gap-6">
           {sections.map((section) => (
             <a
@@ -62,9 +70,38 @@ export function LandingNav({ churchName, logoUrl }: LandingNavProps) {
           <Button variant="ghost" size="icon" onClick={toggleLanguage} title="Toggle language">
             <Globe className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" asChild className="hidden md:inline-flex">
             <Link href="/login">{t('navLogin')}</Link>
           </Button>
+
+          {/* Mobile hamburger menu */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72">
+              <SheetTitle className="sr-only">{t('navAbout')}</SheetTitle>
+              <div className="flex flex-col gap-4 mt-8">
+                {sections.map((section) => (
+                  <a
+                    key={section.id}
+                    href={`#${section.id}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-sm font-medium text-foreground py-2 px-3 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    {section.label}
+                  </a>
+                ))}
+                <div className="border-t border-border pt-4 mt-2">
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href="/login">{t('navLogin')}</Link>
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>

@@ -49,7 +49,7 @@ export default async function ServingAreaDetailPage({ params }: { params: Promis
     : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{name}</h1>

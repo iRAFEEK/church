@@ -31,7 +31,7 @@ export default async function MinistriesPage() {
   const { data: ministries } = await ministriesQuery
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>

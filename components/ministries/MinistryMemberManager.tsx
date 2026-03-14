@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -106,14 +107,21 @@ export function MinistryMemberManager({
     }
   }
 
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ member: Member; role: string } | null>(null)
+
   async function changeRole(member: Member, newRole: string) {
     if (!member.profile) return
 
     if (newRole === 'leader') {
-      const confirmed = window.confirm(t('roleUpgradeConfirm'))
-      if (!confirmed) return
+      setPendingRoleChange({ member, role: newRole })
+      return
     }
 
+    await executeRoleChange(member, newRole)
+  }
+
+  async function executeRoleChange(member: Member, newRole: string) {
+    if (!member.profile) return
     try {
       const res = await fetch(`/api/ministries/${ministryId}/members`, {
         method: 'PATCH',
@@ -207,7 +215,7 @@ export function MinistryMemberManager({
                 <div className="flex gap-2 shrink-0 items-center">
                   {canManage && (
                     <Select value={m.role_in_ministry} onValueChange={v => changeRole(m, v)}>
-                      <SelectTrigger className="h-9 text-xs w-24">
+                      <SelectTrigger className="h-7 text-xs w-24">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -217,20 +225,29 @@ export function MinistryMemberManager({
                       </SelectContent>
                     </Select>
                   )}
-                  <Button variant="ghost" size="sm" className="h-9 text-xs text-zinc-500 hover:text-zinc-700" asChild>
-                    <Link href={`/admin/members/${p.id}`}>
-                      {t('viewLink')}
-                    </Link>
-                  </Button>
+                  <Link href={`/admin/members/${p.id}`} className="text-xs text-zinc-500 hover:text-zinc-700">
+                    {t('viewLink')}
+                  </Link>
                   {canManage && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => removeMember(m)}
-                    >
-                      {t('removeButton')}
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button className="text-xs text-red-500 hover:text-red-700">
+                          {t('removeButton')}
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('confirmRemoveTitle')}</AlertDialogTitle>
+                          <AlertDialogDescription>{t('confirmRemoveBody')}</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('notifyCancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => removeMember(m)} className="bg-red-600 hover:bg-red-700">
+                            {t('removeButton')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </div>
               </div>
@@ -264,7 +281,7 @@ export function MinistryMemberManager({
                     key={p.id}
                     onClick={() => addMember(p)}
                     disabled={loading}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-start"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-end"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={p.photo_url || undefined} />
@@ -333,6 +350,27 @@ export function MinistryMemberManager({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Role Upgrade Confirmation */}
+      <AlertDialog open={!!pendingRoleChange} onOpenChange={(open) => { if (!open) setPendingRoleChange(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('roleUpgradeTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('roleUpgradeConfirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('notifyCancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingRoleChange) {
+                executeRoleChange(pendingRoleChange.member, pendingRoleChange.role)
+                setPendingRoleChange(null)
+              }
+            }}>
+              {t('roleUpgradeConfirmBtn')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

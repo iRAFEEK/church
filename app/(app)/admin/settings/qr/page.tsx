@@ -19,7 +19,7 @@ export default async function QRPage() {
   const joinUrl = `${appUrl}/join?church=${church?.id}`
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
+    <div className="max-w-lg mx-auto space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">

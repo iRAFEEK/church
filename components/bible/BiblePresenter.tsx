@@ -383,7 +383,7 @@ export function BiblePresenter({
       </div>
 
       {/* Bottom controls bar */}
-      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
+      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -391,7 +391,7 @@ export function BiblePresenter({
             className="text-white hover:bg-white/20"
             onClick={() => window.close()}
           >
-            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <span className="text-white text-sm">
             {currentVerse + 1} / {verses.length}
@@ -406,7 +406,7 @@ export function BiblePresenter({
             onClick={goPrev}
             disabled={currentVerse === 0}
           >
-            <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
@@ -415,7 +415,7 @@ export function BiblePresenter({
             onClick={goNext}
             disabled={currentVerse === verses.length - 1}
           >
-            <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
 
@@ -470,7 +470,7 @@ export function BiblePresenter({
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-white font-semibold text-sm">{t('search')}</h3>
                 <div className="flex items-center gap-2">
-                  <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 text-zinc-400 rounded">S</kbd>
+                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 text-zinc-400 rounded">S</kbd>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -540,7 +540,7 @@ export function BiblePresenter({
             <div className="flex items-center justify-between p-4 border-b border-zinc-700">
               <h3 className="text-white font-semibold text-sm">{t('goTo')}</h3>
               <div className="flex items-center gap-2">
-                <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 text-zinc-400 rounded">G</kbd>
+                <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 text-zinc-400 rounded">G</kbd>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -552,10 +552,10 @@ export function BiblePresenter({
               </div>
             </div>
 
-            {/* Three-column navigation */}
-            <div className="flex flex-1 min-h-0">
+            {/* Three-column navigation — stacks on mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 flex-1 min-h-0">
               {/* Book column */}
-              <div className="flex-1 border-e border-zinc-700 flex flex-col min-w-0">
+              <div className="border-b sm:border-b-0 sm:border-e border-zinc-700 flex flex-col min-w-0 max-h-[30vh] sm:max-h-none">
                 <div className="p-2 border-b border-zinc-800">
                   <input
                     ref={bookFilterRef}
@@ -593,7 +593,7 @@ export function BiblePresenter({
               </div>
 
               {/* Chapter column */}
-              <div className="flex-1 border-e border-zinc-700 flex flex-col min-w-0">
+              <div className="border-b sm:border-b-0 sm:border-e border-zinc-700 flex flex-col min-w-0 max-h-[25vh] sm:max-h-none">
                 <div className="p-2 border-b border-zinc-800">
                   <p className="text-xs text-zinc-500 px-1">{t('chapter')}</p>
                 </div>
@@ -624,7 +624,7 @@ export function BiblePresenter({
               </div>
 
               {/* Verse column */}
-              <div className="flex-1 flex flex-col min-w-0">
+              <div className="flex flex-col min-w-0 max-h-[25vh] sm:max-h-none">
                 <div className="p-2 border-b border-zinc-800">
                   <p className="text-xs text-zinc-500 px-1">{t('verse')}</p>
                 </div>

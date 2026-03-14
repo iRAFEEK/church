@@ -33,17 +33,15 @@ interface EventFormProps {
   }
 }
 
-function getSteps(t: (key: string) => string) {
-  return [
-    { title: t('stepTitleAndType'), titleAr: t('stepTitleAndType') },
-    { title: t('stepWhen'), titleAr: t('stepWhen') },
-    { title: t('stepWhere'), titleAr: t('stepWhere') },
-    { title: t('stepDetails'), titleAr: t('stepDetails') },
-    { title: t('stepAudience'), titleAr: t('stepAudience') },
-    { title: t('stepServiceNeeds'), titleAr: t('stepServiceNeeds') },
-    { title: t('stepReview'), titleAr: t('stepReview') },
-  ]
-}
+const STEPS = [
+  { title: 'Title & Type', titleAr: 'العنوان والنوع' },
+  { title: 'When?', titleAr: 'متى؟' },
+  { title: 'Where?', titleAr: 'أين؟' },
+  { title: 'Details', titleAr: 'التفاصيل' },
+  { title: 'Audience', titleAr: 'الجمهور' },
+  { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
+  { title: 'Review', titleAr: 'مراجعة' },
+]
 
 const EVENT_TYPE_ICONS: Record<string, string> = {
   service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
@@ -56,7 +54,6 @@ export function EventForm({ event }: EventFormProps) {
   const tc = useTranslations('common')
   const locale = useLocale()
   const isRTL = locale.startsWith('ar')
-  const STEPS = getSteps(t)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 
@@ -333,7 +330,8 @@ export function EventForm({ event }: EventFormProps) {
             <Input
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className="text-lg min-h-[48px]"
+              dir="auto"
+              className="text-base min-h-[48px]"
             />
           </div>
           <div>
@@ -363,6 +361,7 @@ export function EventForm({ event }: EventFormProps) {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
               dir="ltr"
+              className="text-base"
             />
           </div>
           <div>
@@ -372,6 +371,7 @@ export function EventForm({ event }: EventFormProps) {
               onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
               rows={3}
               dir="rtl"
+              className="text-base"
             />
           </div>
           <div className="space-y-4 pt-2">

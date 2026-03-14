@@ -22,7 +22,7 @@ export default async function EditTemplatePage({ params }: { params: Promise<{ i
   if (!template) notFound()
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg mx-auto space-y-4 pb-24">
       <h1 className="text-xl font-bold text-zinc-900">{t('editTemplate')}</h1>
       <TemplateForm template={template} />
     </div>

@@ -38,7 +38,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
   const activeSignups = slot.serving_signups?.filter((s: { id: string; status: string }) => s.status !== 'cancelled') || []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>

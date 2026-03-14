@@ -8,7 +8,7 @@ export default async function NewTemplatePage() {
   const t = await getTranslations('templates')
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg mx-auto space-y-4 pb-24">
       <h1 className="text-xl font-bold text-zinc-900">{t('newTemplate')}</h1>
       <TemplateForm />
     </div>

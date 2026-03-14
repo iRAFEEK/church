@@ -17,16 +17,16 @@ interface AnnouncementFormProps {
   announcement?: Announcement
 }
 
+const STEPS = [
+  { title: 'Content', titleAr: 'المحتوى' },
+  { title: 'Translation', titleAr: 'الترجمة' },
+  { title: 'Settings', titleAr: 'الإعدادات' },
+]
+
 export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
   const router = useRouter()
   const t = useTranslations('announcements')
   const tc = useTranslations('common')
-
-  const STEPS = [
-    { title: t('stepContent'), titleAr: t('stepContent') },
-    { title: t('stepTranslation'), titleAr: t('stepTranslation') },
-    { title: t('stepSettings'), titleAr: t('stepSettings') },
-  ]
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)

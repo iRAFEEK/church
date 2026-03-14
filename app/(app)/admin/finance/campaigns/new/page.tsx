@@ -7,5 +7,9 @@ export default async function NewCampaignPage() {
 
   const funds = await getCachedFunds(profile.church_id)
 
-  return <CampaignForm funds={funds || []} />
+  return (
+    <div className="pb-24">
+      <CampaignForm funds={funds || []} />
+    </div>
+  )
 }
