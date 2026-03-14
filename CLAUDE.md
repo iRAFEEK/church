@@ -622,8 +622,9 @@ Last measured: 2026-03-11
 - [x] UX designer agent system (skill + agent + runner script)
 - [x] Feature seeding agent (.claude/agents/seed-feature.md + seed-feature.sh)
 - [x] PostHog analytics (full instrumentation: events catalog, provider, identification, error tracking, audit script, analytics skill)
-- [x] Comprehensive test suite — 913 tests across 56 files (auth, permissions, messaging, API routes, smoke tests, utilities, middleware, church registration)
+- [x] Comprehensive test suite — 952 tests across 56 files (auth, permissions, messaging, API routes, smoke tests, utilities, middleware, church registration)
 - [x] Security hardening Week 1: rate limiting in apiHandler (strict/normal/relaxed tiers), 2 IDOR fixes (bible bookmarks/highlights migrated to apiHandler with church_id), dev-login endpoint deleted, RTL violation fixed (0 remaining), 33 TypeScript errors fixed (0 remaining)
+- [x] API standardization Week 2: migrated 63 routes to apiHandler (109/116 total, 94%). Added Zod schemas for ministries, templates, outreach. Fixed missing church_id filters on announcements [id], leaders/register, profiles attendance/involvement/milestones, push unsubscribe. Only churches/search remains manual (needs profile-optional). 952 tests passing.
 
 ### In Progress
 
@@ -635,7 +636,7 @@ Last measured: 2026-03-11
 - [ ] Vercel Analytics + Speed Insights
 - [ ] Real device testing: Android, Arabic mode, airplane mode, PWA install
 - [ ] PWA icons — real brand icons (192px, 512px, maskable) — currently placeholders
-- [ ] Migrate remaining ~54 API routes to `apiHandler` wrapper
+- [ ] Migrate churches/search to apiHandler (needs profile-optional support)
 - [ ] Capacitor for native app wrapper + FCM push notifications
 - [ ] Finance module: bank reconciliation, recurring donations, donation receipts
 - [ ] Supabase CLI type generation (replace manual types/database.ts)
@@ -815,6 +816,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-03-13 | API standardization (Week 2) | Migrated 63 routes to apiHandler in 2 batches. Batch 1: events (10), serving (4), templates (4), church-prayers (4), outreach (3), visitors (2), profiles (6), push (3), bible (11). Batch 2: ministries (5), announcements [id] (3), church settings (2), churches join/switch/my-churches (3), leader routes (2), misc (5). Added Zod schemas: ministry.ts, template.ts, outreach.ts + extended event.ts, prayer.ts, visitor.ts. Fixed missing church_id filters on 8 routes. 109/116 routes on apiHandler (94%). 952 tests passing. | 82 route files, lib/schemas/ministry.ts, lib/schemas/template.ts, lib/schemas/outreach.ts, smoke test files |
 | 2026-03-13 | Security hardening (Week 1) | Rate limiting added to apiHandler (strict/normal/relaxed tiers via lib/api/rate-limit.ts). 2 IDOR vulnerabilities fixed: bible bookmarks/highlights [id] routes migrated from manual auth to apiHandler with church_id + profile_id filters. dev-login endpoint deleted. RTL violation fixed (ps-9, start-3 in onboarding). 33 TypeScript errors in test files fixed (mock type casts, missing vitest imports). Smoke tests updated to reflect route migrations. 0 tsc errors, 0 RTL violations, 913/913 tests passing. | lib/api/handler.ts, lib/api/rate-limit.ts, app/api/bible/bookmarks/[id]/route.ts, app/api/bible/highlights/[id]/route.ts, app/api/auth/dev-login/ (deleted), app/onboarding/page.tsx, 16 test files, lib/api/__tests__/smoke-manual-auth.test.ts, lib/api/__tests__/smoke-id-routes.test.ts |
 | 2026-03-13 | Comprehensive test expansion | 913 tests (56 files) — from 455 tests (22 files). P0: auth, rate-limit, absence, middleware. P1: features, audit, config, scope, navigation, messaging (templates, audience, scopes, dispatcher, providers, triggers), church registration flow. P2: smoke tests (manual auth 54 entries, public routes 6 entries, apiHandler 35+38 entries), API route behavioral tests (finance, serving, events, profiles, notifications, visitors, community needs, announcements, bible, templates, church-prayers), dashboard queries, utilities | lib/__tests__/*.test.ts (7 files), lib/api/__tests__/*.test.ts (5 files), lib/messaging/__tests__/*.test.ts (6 files), app/api/**/__tests__/*.test.ts (13 files), lib/utils/__tests__/*.test.ts (2 files), lib/analytics/__tests__/events.test.ts, lib/dashboard/__tests__/queries.test.ts, __tests__/middleware.test.ts |
 | 2026-03-12 | PostHog analytics | Full PostHog instrumentation: events catalog (50+ events), provider, user identification, error boundary tracking, analytics skill, audit script | lib/analytics/**, components/shared/PostHogProvider.tsx, .claude/skills/analytics/SKILL.md, .claude/scripts/analytics-audit.sh |
