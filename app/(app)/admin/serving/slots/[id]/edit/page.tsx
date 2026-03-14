@@ -15,7 +15,7 @@ export default async function EditServingSlotPage({ params }: { params: Promise<
 
   const { data: slot } = await supabase
     .from('serving_slots')
-    .select('*')
+    .select('id, serving_area_id, church_id, title, title_ar, date, start_time, end_time, max_volunteers, notes, notes_ar')
     .eq('id', id)
     .single()
 

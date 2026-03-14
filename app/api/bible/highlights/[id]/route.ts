@@ -1,9 +1,11 @@
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateHighlightSchema } from '@/lib/schemas/bible'
 
 // PATCH /api/bible/highlights/[id] — update highlight color
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const id = params!.id
-  const body = await req.json()
+  const body = validate(UpdateHighlightSchema, await req.json())
 
   const { data, error } = await supabase
     .from('bible_highlights')

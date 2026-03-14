@@ -1,4 +1,6 @@
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { EventRegistrationSchema } from '@/lib/schemas/event'
 
 // POST /api/events/[id]/register — register for an event
 export const POST = apiHandler(async ({ req, supabase, user, profile, params }) => {
@@ -47,7 +49,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     }
   }
 
-  const body = await req.json().catch(() => ({}))
+  const body = validate(EventRegistrationSchema, await req.json().catch(() => ({})))
 
   // Fetch profile details for name/phone/email defaults
   const { data: profileData } = await supabase

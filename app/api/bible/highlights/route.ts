@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateHighlightSchema } from '@/lib/schemas/bible'
 
 // GET /api/bible/highlights — list user's highlights, optional ?chapter_id= filter
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
@@ -25,8 +27,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
 // POST /api/bible/highlights — create or upsert a highlight
 export const POST = apiHandler(async ({ req, supabase, profile }) => {
-  const body = await req.json()
-  const { bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, color } = body
+  const { bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, color } = validate(CreateHighlightSchema, await req.json())
 
   const { data, error } = await supabase
     .from('bible_highlights')

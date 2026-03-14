@@ -14,7 +14,7 @@ export default async function EditTemplatePage({ params }: { params: Promise<{ i
 
   const { data: template } = await supabase
     .from('event_templates')
-    .select('*')
+    .select('id, church_id, name, name_ar, event_type, title, title_ar, description, description_ar, location, capacity, is_public, registration_required, notes, notes_ar, recurrence_type, recurrence_day, default_start_time, default_end_time, custom_fields')
     .eq('id', id)
     .eq('church_id', user.profile.church_id)
     .single()

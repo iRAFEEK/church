@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateBookmarkSchema } from '@/lib/schemas/bible'
 
 // GET /api/bible/bookmarks — list user's bookmarks
 export const GET = apiHandler(async ({ supabase, profile }) => {
@@ -17,8 +19,7 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
 
 // POST /api/bible/bookmarks — create a bookmark
 export const POST = apiHandler(async ({ req, supabase, profile }) => {
-  const body = await req.json()
-  const { bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note } = body
+  const { bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note } = validate(CreateBookmarkSchema, await req.json())
 
   const { data, error } = await supabase
     .from('bible_bookmarks')

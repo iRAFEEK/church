@@ -1,5 +1,7 @@
 import { apiHandler } from '@/lib/api/handler'
-import { countAudience, type AudienceTarget } from '@/lib/messaging/audience'
+import { validate } from '@/lib/api/validate'
+import { AudiencePreviewSchema } from '@/lib/schemas/notification-send'
+import { countAudience } from '@/lib/messaging/audience'
 import { getSendableScopes, validateTargetsAgainstScopes } from '@/lib/messaging/scopes'
 import { NextResponse } from 'next/server'
 
@@ -10,7 +12,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { targets } = (await req.json()) as { targets: AudienceTarget[] }
+  const { targets } = validate(AudiencePreviewSchema, await req.json())
   if (!targets?.length) {
     return NextResponse.json({ profileCount: 0, visitorCount: 0, total: 0 })
   }

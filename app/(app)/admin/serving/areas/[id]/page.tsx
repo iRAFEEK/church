@@ -20,20 +20,21 @@ export default async function ServingAreaDetailPage({ params }: { params: Promis
 
   const supabase = await createClient()
 
-  const { data: area } = await supabase
-    .from('serving_areas')
-    .select('*, ministries(name, name_ar)')
-    .eq('id', id)
-    .single()
+  const [{ data: area }, { data: rawSlots }] = await Promise.all([
+    supabase
+      .from('serving_areas')
+      .select('*, ministries(name, name_ar)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('serving_slots')
+      .select('*, serving_areas(name, name_ar), serving_signups(id, status)')
+      .eq('serving_area_id', id)
+      .eq('church_id', user.profile.church_id)
+      .order('date', { ascending: false }),
+  ])
 
   if (!area) notFound()
-
-  const { data: rawSlots } = await supabase
-    .from('serving_slots')
-    .select('*, serving_areas(name, name_ar), serving_signups(id, status)')
-    .eq('serving_area_id', id)
-    .eq('church_id', user.profile.church_id)
-    .order('date', { ascending: false })
 
   const slots = (rawSlots || []).map((slot: any) => ({
     ...slot,

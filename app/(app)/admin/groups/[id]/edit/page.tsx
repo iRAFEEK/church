@@ -18,7 +18,7 @@ export default async function EditGroupPage({ params }: Params) {
 
   const { data: group } = await supabase
     .from('groups')
-    .select('*')
+    .select('id, name, name_ar, type, ministry_id, leader_id, co_leader_id, meeting_day, meeting_time, meeting_location, meeting_location_ar, meeting_frequency, max_members, is_open')
     .eq('id', id)
     .single()
 

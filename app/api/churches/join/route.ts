@@ -1,14 +1,10 @@
-import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { JoinChurchSchema } from '@/lib/schemas/church'
 
 // POST /api/churches/join — join a church (during onboarding or subsequently)
 export const POST = apiHandler(async ({ req, supabase, user }) => {
-  const body = await req.json()
-  const { church_id } = body
-
-  if (!church_id) {
-    return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
-  }
+  const { church_id } = validate(JoinChurchSchema, await req.json())
 
   // Verify target church exists and is active
   const { data: church, error: churchError } = await supabase
@@ -19,7 +15,7 @@ export const POST = apiHandler(async ({ req, supabase, user }) => {
     .single()
 
   if (churchError || !church) {
-    return NextResponse.json({ error: 'Church not found' }, { status: 404 })
+    return Response.json({ error: 'Church not found' }, { status: 404 })
   }
 
   // Check if this is during onboarding (first join) or a subsequent join
@@ -30,7 +26,7 @@ export const POST = apiHandler(async ({ req, supabase, user }) => {
     .single()
 
   if (!profile) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    return Response.json({ error: 'Profile not found' }, { status: 404 })
   }
 
   if (!profile.onboarding_completed) {

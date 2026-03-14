@@ -60,19 +60,28 @@ export default async function GroupLeaderPage({ params }: Params) {
   const activeMembers = (group.group_members || []).filter((m: { is_active: boolean }) => m.is_active)
   const atRiskMembers = activeMembers.filter((m: { profile: { status: string } | null }) => m.profile?.status === 'at_risk')
 
-  const { data: allMembers } = isLeaderOrAdmin ? await supabase
-    .from('profiles')
-    .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
-    .eq('status', 'active')
-    .order('first_name') : { data: [] }
-
-  // Fetch recent gatherings
-  const { data: gatherings } = await supabase
-    .from('gatherings')
-    .select('id, scheduled_at, topic, status, attendance(count)')
-    .eq('group_id', id)
-    .order('scheduled_at', { ascending: false })
-    .limit(8)
+  // Fetch allMembers, gatherings, and prayers in parallel (all depend on id only)
+  const [{ data: allMembers }, { data: gatherings }, { data: activePrayers }] = await Promise.all([
+    isLeaderOrAdmin
+      ? supabase
+          .from('profiles')
+          .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
+          .eq('status', 'active')
+          .order('first_name')
+      : Promise.resolve({ data: [] as { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null; status: string }[] }),
+    supabase
+      .from('gatherings')
+      .select('id, scheduled_at, topic, status, attendance(count)')
+      .eq('group_id', id)
+      .order('scheduled_at', { ascending: false })
+      .limit(8),
+    supabase
+      .from('prayer_requests')
+      .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
+      .eq('group_id', id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }),
+  ])
 
   // Upcoming gathering
   const upcoming = (gatherings || []).find(g => g.status === 'scheduled')
@@ -83,14 +92,6 @@ export default async function GroupLeaderPage({ params }: Params) {
   const avgAttendance = completed.length > 0
     ? Math.round((totalAttendees / completed.length / Math.max(activeMembers.length, 1)) * 100)
     : null
-
-  // Active prayer requests for the group
-  const { data: activePrayers } = await supabase
-    .from('prayer_requests')
-    .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
-    .eq('group_id', id)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
 
   const dateLocale = locale.startsWith('ar') ? 'ar-LB' : 'en-US'
 

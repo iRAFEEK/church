@@ -1,5 +1,7 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateChurchSettingsSchema } from '@/lib/schemas/church'
 import { createAdminClient } from '@/lib/supabase/server'
 
 // GET /api/church/settings
@@ -16,12 +18,7 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
 
 // PATCH /api/church/settings
 export const PATCH = apiHandler(async ({ req, profile }) => {
-  const body = await req.json()
-  const allowed = [
-    'default_currency', 'supported_currencies', 'fiscal_year_start_month',
-    'financial_approval_required', 'donation_receipt_enabled', 'online_giving_enabled',
-  ]
-  const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
+  const update = validate(UpdateChurchSettingsSchema, await req.json())
 
   // Use admin client to bypass RLS (churches UPDATE policy is super_admin-only,
   // but permission check above already enforces can_manage_finances)

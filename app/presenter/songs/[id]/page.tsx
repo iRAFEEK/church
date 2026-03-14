@@ -12,7 +12,7 @@ export default async function PresenterPage({ params }: { params: Promise<{ id: 
 
   const { data: song } = await supabase
     .from('songs')
-    .select('*')
+    .select('id, church_id, title, title_ar, lyrics, lyrics_ar, display_settings, tags, artist, artist_ar, is_active, created_at, updated_at, created_by')
     .eq('id', id)
     .single()
 

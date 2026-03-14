@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { SwitchChurchSchema } from '@/lib/schemas/church'
 
 // POST /api/churches/switch — switch active church
 export const POST = apiHandler(async ({ req, supabase, user }) => {
-  const body = await req.json()
-  const { church_id } = body
-
-  if (!church_id) {
-    return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
-  }
+  const { church_id } = validate(SwitchChurchSchema, await req.json())
 
   // Read the user's role for the TARGET church from user_churches
   // This is the authoritative source of per-church roles

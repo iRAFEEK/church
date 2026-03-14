@@ -23,7 +23,7 @@ export default async function AnnouncementDetailPage({ params }: { params: Promi
   const supabase = await createClient()
   const { data: announcement } = await supabase
     .from('announcements')
-    .select('*')
+    .select('id, church_id, title, title_ar, body, body_ar, status, is_pinned, published_at, expires_at, created_by, created_at, updated_at')
     .eq('id', id)
     .single()
 
