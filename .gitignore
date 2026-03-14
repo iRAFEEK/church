@@ -58,3 +58,4 @@ public/firebase-messaging-sw.js
 .claude/recon-ekklesia.md
 
 .env.local
+.claude/worktrees/
