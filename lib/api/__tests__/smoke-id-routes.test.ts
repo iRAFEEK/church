@@ -34,6 +34,16 @@ vi.mock('@/lib/absence', () => ({
   checkAndFlagAtRisk: vi.fn(),
 }))
 
+vi.mock('@/lib/bible/queries', () => ({
+  getBooks: vi.fn().mockResolvedValue([]),
+  getChapters: vi.fn().mockResolvedValue([]),
+  getAllChaptersMap: vi.fn().mockResolvedValue({}),
+  getChapterContent: vi.fn().mockResolvedValue(null),
+  getChapterVerses: vi.fn().mockResolvedValue([]),
+  searchBible: vi.fn().mockResolvedValue([]),
+  getBibles: vi.fn().mockResolvedValue([]),
+}))
+
 const FAKE_ID = '00000000-0000-0000-0000-000000000001'
 
 const makeReq = (path: string, method = 'GET', body?: object) => {
@@ -130,6 +140,76 @@ const ID_ROUTES: Array<{ method: string; path: string; module: string; handler?:
   // Bible highlights [id] (migrated to apiHandler)
   { method: 'PATCH', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route' },
   { method: 'DELETE', path: `/api/bible/highlights/${FAKE_ID}`, module: '@/app/api/bible/highlights/[id]/route' },
+
+  // Events [id] (migrated to apiHandler)
+  { method: 'GET', path: `/api/events/${FAKE_ID}`, module: '@/app/api/events/[id]/route' },
+  { method: 'PATCH', path: `/api/events/${FAKE_ID}`, module: '@/app/api/events/[id]/route' },
+  { method: 'DELETE', path: `/api/events/${FAKE_ID}`, module: '@/app/api/events/[id]/route' },
+
+  // Events [id] sub-routes (migrated to apiHandler)
+  { method: 'GET', path: `/api/events/${FAKE_ID}/segments`, module: '@/app/api/events/[id]/segments/route' },
+  { method: 'PUT', path: `/api/events/${FAKE_ID}/segments`, module: '@/app/api/events/[id]/segments/route' },
+  { method: 'GET', path: `/api/events/${FAKE_ID}/registrations`, module: '@/app/api/events/[id]/registrations/route' },
+  { method: 'PATCH', path: `/api/events/${FAKE_ID}/registrations`, module: '@/app/api/events/[id]/registrations/route' },
+  { method: 'POST', path: `/api/events/${FAKE_ID}/register`, module: '@/app/api/events/[id]/register/route' },
+  { method: 'GET', path: `/api/events/${FAKE_ID}/service-needs`, module: '@/app/api/events/[id]/service-needs/route' },
+  { method: 'PUT', path: `/api/events/${FAKE_ID}/service-needs`, module: '@/app/api/events/[id]/service-needs/route' },
+  { method: 'GET', path: `/api/events/${FAKE_ID}/ministry-summary`, module: '@/app/api/events/[id]/ministry-summary/route' },
+
+  // Serving [id] (migrated to apiHandler)
+  { method: 'GET', path: `/api/serving/areas/${FAKE_ID}`, module: '@/app/api/serving/areas/[id]/route' },
+  { method: 'PATCH', path: `/api/serving/areas/${FAKE_ID}`, module: '@/app/api/serving/areas/[id]/route' },
+  { method: 'DELETE', path: `/api/serving/areas/${FAKE_ID}`, module: '@/app/api/serving/areas/[id]/route' },
+  { method: 'GET', path: `/api/serving/slots/${FAKE_ID}`, module: '@/app/api/serving/slots/[id]/route' },
+  { method: 'PATCH', path: `/api/serving/slots/${FAKE_ID}`, module: '@/app/api/serving/slots/[id]/route' },
+  { method: 'DELETE', path: `/api/serving/slots/${FAKE_ID}`, module: '@/app/api/serving/slots/[id]/route' },
+  { method: 'POST', path: `/api/serving/slots/${FAKE_ID}/signup`, module: '@/app/api/serving/slots/[id]/signup/route' },
+  { method: 'DELETE', path: `/api/serving/slots/${FAKE_ID}/signup`, module: '@/app/api/serving/slots/[id]/signup/route' },
+
+  // Templates [id] (migrated to apiHandler)
+  { method: 'GET', path: `/api/templates/${FAKE_ID}`, module: '@/app/api/templates/[id]/route' },
+  { method: 'PATCH', path: `/api/templates/${FAKE_ID}`, module: '@/app/api/templates/[id]/route' },
+  { method: 'DELETE', path: `/api/templates/${FAKE_ID}`, module: '@/app/api/templates/[id]/route' },
+  { method: 'PUT', path: `/api/templates/${FAKE_ID}/needs`, module: '@/app/api/templates/[id]/needs/route' },
+  { method: 'GET', path: `/api/templates/${FAKE_ID}/segments`, module: '@/app/api/templates/[id]/segments/route' },
+  { method: 'PUT', path: `/api/templates/${FAKE_ID}/segments`, module: '@/app/api/templates/[id]/segments/route' },
+
+  // Church prayers [id] (migrated to apiHandler)
+  { method: 'PATCH', path: `/api/church-prayers/${FAKE_ID}`, module: '@/app/api/church-prayers/[id]/route' },
+  { method: 'DELETE', path: `/api/church-prayers/${FAKE_ID}`, module: '@/app/api/church-prayers/[id]/route' },
+  { method: 'POST', path: `/api/church-prayers/${FAKE_ID}/assign`, module: '@/app/api/church-prayers/[id]/assign/route' },
+  { method: 'DELETE', path: `/api/church-prayers/${FAKE_ID}/assign`, module: '@/app/api/church-prayers/[id]/assign/route' },
+
+  // Outreach visits [id] (migrated to apiHandler)
+  { method: 'PATCH', path: `/api/outreach/visits/${FAKE_ID}`, module: '@/app/api/outreach/visits/[id]/route' },
+  { method: 'DELETE', path: `/api/outreach/visits/${FAKE_ID}`, module: '@/app/api/outreach/visits/[id]/route' },
+
+  // Visitors [id] (migrated to apiHandler)
+  { method: 'GET', path: `/api/visitors/${FAKE_ID}`, module: '@/app/api/visitors/[id]/route' },
+  { method: 'PATCH', path: `/api/visitors/${FAKE_ID}`, module: '@/app/api/visitors/[id]/route' },
+
+  // Profiles [id] (migrated to apiHandler)
+  { method: 'GET', path: `/api/profiles/${FAKE_ID}`, module: '@/app/api/profiles/[id]/route' },
+  { method: 'PATCH', path: `/api/profiles/${FAKE_ID}`, module: '@/app/api/profiles/[id]/route' },
+  { method: 'GET', path: `/api/profiles/${FAKE_ID}/attendance`, module: '@/app/api/profiles/[id]/attendance/route' },
+  { method: 'GET', path: `/api/profiles/${FAKE_ID}/involvement`, module: '@/app/api/profiles/[id]/involvement/route' },
+  { method: 'GET', path: `/api/profiles/${FAKE_ID}/milestones`, module: '@/app/api/profiles/[id]/milestones/route' },
+  { method: 'POST', path: `/api/profiles/${FAKE_ID}/milestones`, module: '@/app/api/profiles/[id]/milestones/route' },
+
+  // Push subscribe/unsubscribe (migrated to apiHandler)
+  { method: 'POST', path: '/api/push/subscribe', module: '@/app/api/push/subscribe/route' },
+  { method: 'DELETE', path: '/api/push/unsubscribe', module: '@/app/api/push/unsubscribe/route' },
+
+  // Bible [bibleId] data routes (migrated to apiHandler)
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/books`, module: '@/app/api/bible/[bibleId]/books/route' },
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/search`, module: '@/app/api/bible/[bibleId]/search/route' },
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/chapters-map`, module: '@/app/api/bible/[bibleId]/chapters-map/route' },
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/chapters/${FAKE_ID}`, module: '@/app/api/bible/[bibleId]/chapters/[chapterId]/route' },
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/books/${FAKE_ID}/chapters`, module: '@/app/api/bible/[bibleId]/books/[bookId]/chapters/route' },
+  { method: 'GET', path: `/api/bible/${FAKE_ID}/chapters/${FAKE_ID}/verses`, module: '@/app/api/bible/[bibleId]/chapters/[chapterId]/verses/route' },
+
+  // Bible bibles list (migrated to apiHandler)
+  { method: 'GET', path: '/api/bible/bibles', module: '@/app/api/bible/bibles/route' },
 ]
 
 describe('Smoke — all [id] apiHandler routes return 401, not 500, when unauthenticated', () => {

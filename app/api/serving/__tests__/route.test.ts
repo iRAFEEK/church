@@ -82,11 +82,11 @@ function mockAuth(role = 'super_admin', churchId = 'church-serving-test') {
     data: { user: { id: 'user-1', email: 'test@test.com' } },
     error: null,
   })
-  // First .single() call returns the profile
-  mockChain.single.mockResolvedValueOnce({
-    data: { id: 'user-1', church_id: churchId, role, permissions: null },
-    error: null,
-  })
+  // apiHandler calls .single() 3 times: profile, user_churches, role_permission_defaults
+  mockChain.single
+    .mockResolvedValueOnce({ data: { id: 'user-1', church_id: churchId, role, permissions: null }, error: null })
+    .mockResolvedValueOnce({ data: { role }, error: null })
+    .mockResolvedValueOnce({ data: { permissions: null }, error: null })
 }
 
 function mockUnauth() {

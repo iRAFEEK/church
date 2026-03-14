@@ -1,29 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateTemplateSchema } from '@/lib/schemas/template'
 
 // GET /api/templates/[id] — get template with needs and segments
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data: template, error } = await supabase
     .from('event_templates')
     .select(`
-      *,
+      id, church_id, name, name_ar, event_type, title, title_ar,
+      description, description_ar, location, capacity, is_public,
+      registration_required, notes, notes_ar, is_active,
+      recurrence_type, recurrence_day, default_start_time, default_end_time,
+      custom_fields, created_by, created_at, updated_at,
       event_template_needs(
         id, ministry_id, group_id, volunteers_needed, notes, notes_ar, role_presets,
         ministry:ministry_id(id, name, name_ar),
@@ -39,87 +29,49 @@ export async function GET(
     .eq('church_id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/templates/[id] GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  if (!template) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error) throw error
+  if (!template) return Response.json({ error: 'Not found' }, { status: 404 })
 
   // Sort segments by sort_order
-  if (template.event_template_segments) {
-    template.event_template_segments.sort((a: any, b: any) => a.sort_order - b.sort_order)
-  }
+  const segments = Array.isArray(template.event_template_segments)
+    ? [...template.event_template_segments].sort(
+        (a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order
+      )
+    : []
 
-  return NextResponse.json({
+  return {
     data: {
       ...template,
       needs: template.event_template_needs || [],
-      segments: template.event_template_segments || [],
+      segments,
       event_template_needs: undefined,
       event_template_segments: undefined,
     },
-  })
-}
+  }
+})
 
 // PATCH /api/templates/[id] — update template fields
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
+  const body = validate(UpdateTemplateSchema, await req.json())
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_templates) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const body = await req.json()
   const { data, error } = await supabase
     .from('event_templates')
     .update(body)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, name, name_ar, event_type, title, title_ar, is_active, updated_at')
     .single()
 
-  if (error) {
-    console.error('[/api/templates/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return { data }
+}, {
+  requirePermissions: ['can_manage_templates'],
+})
 
 // DELETE /api/templates/[id] — soft-delete template
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_templates) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { error } = await supabase
     .from('event_templates')
@@ -127,9 +79,8 @@ export async function DELETE(
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/templates/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ success: true })
-}
+  if (error) throw error
+  return { success: true }
+}, {
+  requirePermissions: ['can_manage_templates'],
+})

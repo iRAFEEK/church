@@ -1,24 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // POST /api/serving/slots/[id]/signup — sign up for a slot
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: slotId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
+  const slotId = params!.id
 
   // Check if already signed up
   const { data: existing } = await supabase
@@ -26,24 +12,31 @@ export async function POST(
     .select('id, status')
     .eq('slot_id', slotId)
     .eq('profile_id', user.id)
+    .eq('church_id', profile.church_id)
     .single()
 
   if (existing && existing.status !== 'cancelled') {
     return NextResponse.json({ error: 'Already signed up' }, { status: 409 })
   }
 
-  // Check capacity
+  // Check capacity — also verify slot belongs to this church
   const { data: slot } = await supabase
     .from('serving_slots')
     .select('max_volunteers')
     .eq('id', slotId)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (slot?.max_volunteers) {
+  if (!slot) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  if (slot.max_volunteers) {
     const { count } = await supabase
       .from('serving_signups')
       .select('id', { count: 'exact', head: true })
       .eq('slot_id', slotId)
+      .eq('church_id', profile.church_id)
       .neq('status', 'cancelled')
 
     if ((count || 0) >= slot.max_volunteers) {
@@ -57,15 +50,13 @@ export async function POST(
       .from('serving_signups')
       .update({ status: 'signed_up', signed_up_at: new Date().toISOString(), cancelled_at: null })
       .eq('id', existing.id)
-      .select()
+      .eq('church_id', profile.church_id)
+      .select('id, slot_id, profile_id, church_id, status, signed_up_at')
       .single()
 
-    if (error) {
-      console.error('[/api/serving/slots/[id]/signup POST]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    if (error) throw error
     revalidateTag(`dashboard-${profile.church_id}`)
-    return NextResponse.json({ data }, { status: 200 })
+    return { data }
   }
 
   const { data, error } = await supabase
@@ -75,44 +66,34 @@ export async function POST(
       church_id: profile.church_id,
       profile_id: user.id,
     })
-    .select()
+    .select('id, slot_id, profile_id, church_id, status, signed_up_at')
     .single()
 
-  if (error) {
-    console.error('[/api/serving/slots/[id]/signup POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return Response.json({ data }, { status: 201 })
+})
 
 // DELETE /api/serving/slots/[id]/signup — cancel own signup
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: slotId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: userProfile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
+export const DELETE = apiHandler(async ({ supabase, user, profile, params }) => {
+  const slotId = params!.id
 
   const { data, error } = await supabase
     .from('serving_signups')
     .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
     .eq('slot_id', slotId)
     .eq('profile_id', user.id)
+    .eq('church_id', profile.church_id)
     .neq('status', 'cancelled')
-    .select()
+    .select('id')
     .single()
 
-  if (error) {
-    console.error('[/api/serving/slots/[id]/signup DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (error && error.code === 'PGRST116') {
+    return NextResponse.json({ error: 'No active signup found' }, { status: 404 })
   }
+  if (error) throw error
   if (!data) return NextResponse.json({ error: 'No active signup found' }, { status: 404 })
 
-  if (userProfile) revalidateTag(`dashboard-${userProfile.church_id}`)
-  return NextResponse.json({ success: true })
-}
+  revalidateTag(`dashboard-${profile.church_id}`)
+  return { success: true }
+})

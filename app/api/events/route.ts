@@ -1,22 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateEventSchema } from '@/lib/schemas/event'
 
 // GET /api/events — list events for user's church
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const upcoming = searchParams.get('upcoming') === 'true'
@@ -40,7 +28,7 @@ export async function GET(req: NextRequest) {
     const { data: needsData } = await needsQuery
     eventIdFilter = [...new Set((needsData || []).map(n => n.event_id))]
     if (eventIdFilter.length === 0) {
-      return NextResponse.json({ data: [], count: 0, nextCursor: null, page, pageSize, totalPages: 0 })
+      return { data: [], count: 0, nextCursor: null, page, pageSize, totalPages: 0 }
     }
   }
 
@@ -79,46 +67,25 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error, count } = await query
-  if (error) {
-    console.error('[/api/events GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   const nextCursor = data && data.length === pageSize
     ? data[data.length - 1].starts_at
     : null
 
-  return NextResponse.json({
+  return {
     data,
     count,
     nextCursor,
     page,
     pageSize,
     totalPages: Math.ceil((count || 0) / pageSize),
-  }, {
-    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
-  })
-}
-
-// POST /api/events — create new event (admin only)
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
+})
 
-  const body = await req.json()
+// POST /api/events — create new event
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
+  const body = validate(CreateEventSchema, await req.json())
   const { visibility_targets, ...eventData } = body
 
   const { data, error } = await supabase
@@ -128,18 +95,15 @@ export async function POST(req: NextRequest) {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select()
+    .select('id, title, title_ar, event_type, starts_at, ends_at, status, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/events POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Save visibility targets if restricted
   if (data && visibility_targets && visibility_targets.length > 0) {
     await supabase.from('event_visibility_targets').insert(
-      visibility_targets.map((t: { target_type: string; target_id: string }) => ({
+      visibility_targets.map((t) => ({
         event_id: data.id,
         target_type: t.target_type,
         target_id: t.target_id,
@@ -148,5 +112,5 @@ export async function POST(req: NextRequest) {
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data }, { status: 201 })
-}
+  return Response.json({ data }, { status: 201 })
+}, { requirePermissions: ['can_manage_events'] })

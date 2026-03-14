@@ -1,48 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { z } from 'zod'
-
-const updateSchema = z.object({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  first_name_ar: z.string().optional(),
-  last_name_ar: z.string().optional(),
-  phone: z.string().optional().nullable(),
-  date_of_birth: z.string().optional().nullable(),
-  gender: z.enum(['male', 'female']).optional().nullable(),
-  occupation: z.string().optional().nullable(),
-  occupation_ar: z.string().optional().nullable(),
-  photo_url: z.string().optional().nullable(),
-  role: z.enum(['member', 'group_leader', 'ministry_leader', 'super_admin']).optional(),
-  status: z.enum(['active', 'inactive', 'at_risk', 'visitor']).optional(),
-  notification_pref: z.enum(['whatsapp', 'sms', 'email', 'all', 'none']).optional(),
-  preferred_language: z.string().optional(),
-  onboarding_completed: z.boolean().optional(),
-})
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateProfileSchema } from '@/lib/schemas/profile'
 
 // GET /api/profiles/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
+  const id = params!.id
 
   // Users can read own profile; admins can read any in church
   const isSelf = id === user.id
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(currentProfile.role)
+  const isAdmin = ['ministry_leader', 'super_admin'].includes(profile.role)
 
   if (!isSelf && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -50,67 +18,47 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, first_name, last_name, first_name_ar, last_name_ar, email, phone, role, status, gender, photo_url, date_of_birth, occupation, occupation_ar, address, address_ar, city, city_ar, address_notes, notification_pref, preferred_language, preferred_bible_id, joined_church_at, onboarding_completed, church_id, created_at, updated_at')
     .eq('id', id)
-    .eq('church_id', currentProfile.church_id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (error || !data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error || !data) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
 
-  return NextResponse.json(data)
-}
+  return data
+})
 
 // PATCH /api/profiles/[id]
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+export const PATCH = apiHandler(async ({ req, supabase, user, profile, params }) => {
+  const id = params!.id
 
   const isSelf = id === user.id
-  const isAdmin = ['ministry_leader', 'super_admin'].includes(currentProfile.role)
+  const isAdmin = ['ministry_leader', 'super_admin'].includes(profile.role)
 
   if (!isSelf && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const parsed = updateSchema.safeParse(body)
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
-  }
+  const body = await req.json()
+  const parsed = validate(UpdateProfileSchema, body)
 
   // Non-admins cannot change role
-  if (!isAdmin && parsed.data.role) {
-    delete parsed.data.role
+  if (!isAdmin && parsed.role) {
+    delete parsed.role
   }
 
   const { data, error } = await supabase
     .from('profiles')
-    .update(parsed.data)
+    .update(parsed)
     .eq('id', id)
-    .eq('church_id', currentProfile.church_id)
+    .eq('church_id', profile.church_id)
     .select()
     .single()
 
-  if (error) {
-    console.error('[/api/profiles/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  revalidateTag(`dashboard-${currentProfile.church_id}`)
-  return NextResponse.json(data)
-}
+  revalidateTag(`dashboard-${profile.church_id}`)
+  return data
+})

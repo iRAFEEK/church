@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const milestoneSchema = z.object({
@@ -11,77 +12,46 @@ const milestoneSchema = z.object({
 })
 
 // GET /api/profiles/[id]/milestones
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data, error } = await supabase
     .from('profile_milestones')
-    .select('*')
+    .select('id, type, title, title_ar, date, notes, created_at')
     .eq('profile_id', id)
+    .eq('church_id', profile.church_id)
     .order('date', { ascending: false })
 
-  if (error) {
-    console.error('[/api/profiles/[id]/milestones GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json(data)
-}
+  return data
+})
 
 // POST /api/profiles/[id]/milestones
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const POST = apiHandler(async ({ req, supabase, user, profile, params }) => {
+  const id = params!.id
 
   const isSelf = id === user.id
-  const isLeader = ['group_leader', 'ministry_leader', 'super_admin'].includes(currentProfile.role)
+  const isLeader = ['group_leader', 'ministry_leader', 'super_admin'].includes(profile.role)
 
   if (!isSelf && !isLeader) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const parsed = milestoneSchema.safeParse(body)
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
-  }
+  const body = await req.json()
+  const parsed = validate(milestoneSchema, body)
 
   const { data, error } = await supabase
     .from('profile_milestones')
     .insert({
       profile_id: id,
-      church_id: currentProfile.church_id,
-      ...parsed.data,
+      church_id: profile.church_id,
+      ...parsed,
     })
     .select()
     .single()
 
-  if (error) {
-    console.error('[/api/profiles/[id]/milestones POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   return NextResponse.json(data, { status: 201 })
-}
+})

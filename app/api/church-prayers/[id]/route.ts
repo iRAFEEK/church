@@ -1,32 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
-
-type Params = { params: Promise<{ id: string }> }
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // PATCH /api/church-prayers/[id] — update prayer status
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
+  const body = validate(UpdatePrayerRequestSchema, await req.json())
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_prayers) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const body = await req.json()
-  const updates: Record<string, any> = {}
-
+  const updates: Record<string, unknown> = {}
   if (body.status) {
     updates.status = body.status
     if (body.status === 'answered') {
@@ -36,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (body.resolved_notes !== undefined) updates.resolved_notes = body.resolved_notes
 
   // Use admin client to bypass RLS
-  let dbClient: any
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     dbClient = await createAdminClient()
   } catch {
@@ -52,32 +35,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .select()
     .single()
 
-  if (error) {
-    console.error('[/api/church-prayers/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return { data }
+}, { requirePermissions: ['can_view_prayers'] })
 
 // DELETE /api/church-prayers/[id] — delete a prayer request
-export async function DELETE(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
+export const DELETE = apiHandler(async ({ supabase, user, profile, params, resolvedPermissions }) => {
+  const id = params!.id
 
   // Use admin client to bypass RLS
-  let dbClient: any
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     dbClient = await createAdminClient()
   } catch {
@@ -95,7 +62,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
   if (!prayer) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  if (prayer.submitted_by !== user.id && !perms.can_view_prayers) {
+  if (prayer.submitted_by !== user.id && !resolvedPermissions.can_view_prayers) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -105,9 +72,6 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/church-prayers/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ success: true })
-}
+  if (error) throw error
+  return { success: true }
+})
