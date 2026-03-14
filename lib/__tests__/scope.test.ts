@@ -192,11 +192,11 @@ describe('resolveUserScope', () => {
     expect(supabase.from).toHaveBeenCalledTimes(4)
 
     // Verify the table names passed
-    const calls = supabase.from.mock.calls.map((c: unknown[]) => c[0])
+    const calls = (supabase.from.mock.calls as unknown[][]).map((c) => c[0])
     expect(calls).toContain('ministry_members')
     expect(calls).toContain('group_members')
     expect(calls).toContain('serving_area_leaders')
     // ministry_members appears twice (leader query + worship check)
-    expect(calls.filter((t: string) => t === 'ministry_members')).toHaveLength(2)
+    expect(calls.filter((t) => t === 'ministry_members')).toHaveLength(2)
   })
 })

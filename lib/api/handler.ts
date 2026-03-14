@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 import { logger } from '@/lib/logger'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import type { PermissionKey, UserRole, PermissionMap } from '@/types'
 
 export type ApiContext = {
@@ -19,11 +20,21 @@ export type ApiContext = {
 
 type ApiHandler = (ctx: ApiContext) => Promise<NextResponse | Response | object>
 
+type RateLimitTier = 'none' | 'relaxed' | 'normal' | 'strict'
+
+const RATE_LIMIT_CONFIG: Record<Exclude<RateLimitTier, 'none'>, { limit: number; windowSeconds: number }> = {
+  relaxed: { limit: 100, windowSeconds: 60 },   // Read-heavy routes
+  normal: { limit: 30, windowSeconds: 60 },      // Standard mutations
+  strict: { limit: 10, windowSeconds: 60 },       // Sensitive (auth, registration, push)
+}
+
 type HandlerOptions = {
   requireAuth?: boolean
   requireRoles?: UserRole[]
   requirePermissions?: PermissionKey[]
   cache?: string
+  /** Rate limit tier. Defaults to 'normal' for mutations (POST/PATCH/PUT/DELETE), 'relaxed' for GET. Use 'none' to disable. */
+  rateLimit?: RateLimitTier
 }
 
 // ARCH: Return type uses `any` for the second parameter to satisfy Next.js 15's strict
@@ -36,6 +47,19 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
     const routeName = new URL(req.url).pathname
 
     try {
+      // Rate limiting — runs before auth to protect against brute force
+      const rateLimitTier = options.rateLimit ??
+        (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) ? 'normal' : 'relaxed')
+
+      if (rateLimitTier !== 'none') {
+        const config = RATE_LIMIT_CONFIG[rateLimitTier]
+        const rateLimited = checkRateLimit(req, {
+          ...config,
+          prefix: `${rateLimitTier}:${routeName}`,
+        })
+        if (rateLimited) return rateLimited
+      }
+
       const supabase = await createClient()
       const { requireAuth = true, requireRoles, requirePermissions } = options
 

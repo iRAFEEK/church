@@ -16,7 +16,7 @@ const mockRedirect = vi.fn((url: string) => {
   throw new Error(`REDIRECT:${url}`)
 })
 vi.mock('next/navigation', () => ({
-  redirect: (...args: unknown[]) => mockRedirect(...args),
+  redirect: (...args: unknown[]) => mockRedirect(...(args as [string])),
 }))
 
 // Build a chainable Supabase mock that can be configured per-test

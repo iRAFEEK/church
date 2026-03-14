@@ -28,7 +28,7 @@ const CHURCH_ID = 'church-uuid-1'
 const VISITOR_ID = 'visitor-uuid-1'
 
 function makeRequest(url: string, init?: RequestInit) {
-  return new NextRequest(new URL(url, 'http://localhost:3000'), init)
+  return new NextRequest(new URL(url, 'http://localhost:3000'), init as import('next/dist/server/web/spec-extension/request').RequestInit)
 }
 
 function buildAdminSupabase(overrides: {

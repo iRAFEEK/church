@@ -149,7 +149,7 @@ describe('GET /api/templates', () => {
 
     // Verify church_id was passed as a filter
     const fromCalls = mockFrom.mock.calls
-    const templateCalls = fromCalls.filter(([t]: [string]) => t === 'event_templates')
+    const templateCalls = fromCalls.filter((call: unknown[]) => call[0] === 'event_templates')
     expect(templateCalls.length).toBeGreaterThan(0)
   })
 })

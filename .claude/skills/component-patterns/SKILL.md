@@ -1,5 +1,5 @@
 ---
-name: component-patterns
+name: ekklesia-component-patterns
 description: React component patterns for the Ekklesia app — Server vs Client components, forms, loading states, empty states, RTL, i18n, mobile-first layout, and shadcn/ui usage.
 ---
 

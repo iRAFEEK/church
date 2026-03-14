@@ -1,5 +1,5 @@
 ---
-name: fix-standards
+name: ekklesia-fix-standards
 description: Pre-fix checklist and coding standards for the Ekklesia church management app. Read this before any fix, refactor, or code change — covers apiHandler, church_id, i18n, TypeScript, RTL, and change scope rules.
 ---
 

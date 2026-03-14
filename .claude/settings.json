@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \"\nconst https = require\\(''https''\\);\nconst sql = \\\\`\nCREATE OR REPLACE FUNCTION strip_tashkeel\\(input TEXT\\) RETURNS TEXT AS \\\\$\\\\$\nDECLARE\n  result TEXT;\nBEGIN\n  result := regexp_replace\\(\n    input,\n    ''[\\\\u064B-\\\\u065F\\\\u0610-\\\\u061A\\\\u0670\\\\u06D6-\\\\u06DC\\\\u06DF-\\\\u06E4\\\\u06E7-\\\\u06E8\\\\u06EA-\\\\u06ED\\\\u0640]'',\n    '''',\n    ''g''\n  \\);\n  result := replace\\(result, ''\\\\u0671'', ''\\\\u0627''\\);\n  result := replace\\(result, ''\\\\u0623'', ''\\\\u0627''\\);\n  result := replace\\(result, ''\\\\u0625'', ''\\\\u0627''\\);\n  result := replace\\(result, ''\\\\u0622'', ''\\\\u0627''\\);\n  RETURN result;\nEND;\n\\\\$\\\\$ LANGUAGE plpgsql IMMUTABLE;\n\\\\`;\n\n// We need to use the pg package or supabase management API\n// Let''s try via the supabase-js .from approach - we can''t run raw SQL via REST\n// Instead, let''s create a temporary wrapper\nconsole.log\\(''Need to find another way to run raw SQL...''\\);\n\")",
       "Bash(cat:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
@@ -9,19 +8,6 @@
       "Bash(done)",
       "Bash(npx tsx:*)",
       "WebFetch(domain:bible.helloao.org)"
-    ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'echo \"$CLAUDE_TOOL_INPUT\" | grep -q \"CLAUDE.md\" && bash .claude/scripts/post-feature-optimize.sh || true'"
-          }
-        ]
-      }
     ]
   }
 }
