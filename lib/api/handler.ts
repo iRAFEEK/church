@@ -30,6 +30,8 @@ const RATE_LIMIT_CONFIG: Record<Exclude<RateLimitTier, 'none'>, { limit: number;
 
 type HandlerOptions = {
   requireAuth?: boolean
+  /** When true, auth is required but profile can be null (e.g., during onboarding before joining a church) */
+  profileOptional?: boolean
   requireRoles?: UserRole[]
   requirePermissions?: PermissionKey[]
   cache?: string
@@ -80,8 +82,12 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
           .eq('id', u.id)
           .single()
 
-        if (!p) return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
+        if (!p && !options.profileOptional) return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
 
+        if (!p) {
+          // profileOptional: user is authenticated but has no profile yet
+          // Skip role/permission resolution, profile stays null
+        } else {
         // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
         // This prevents privilege escalation if profiles.role is stale after church switch
         const { data: membership } = await supabase
@@ -108,6 +114,7 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
           (roleDefaults?.permissions ?? null) as PermissionMap | null,
           profile.permissions
         )
+        }
       }
 
       // Role check

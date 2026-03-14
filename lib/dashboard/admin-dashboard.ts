@@ -17,6 +17,89 @@ import {
   formatWeekLabel,
 } from './shared-queries'
 
+// ─── Row shapes for Supabase join queries (no Database generic) ───
+
+interface AttendanceWithGatheringRow {
+  status: string
+  group_id?: string
+  gatherings?: { scheduled_at: string; status: string } | null
+}
+
+interface VisitorStatusRow {
+  status: string
+}
+
+interface ProfileRow {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  first_name_ar?: string | null
+  last_name_ar?: string | null
+}
+
+interface VisitorRow {
+  id: string
+  first_name: string
+  last_name: string
+}
+
+interface SlotWithSignupsRow {
+  id: string
+  title: string | null
+  title_ar: string | null
+  max_volunteers: number | null
+  serving_signups?: Array<{ id: string; status: string }> | null
+}
+
+interface GatheringRow {
+  id: string
+  scheduled_at: string
+  topic: string | null
+  topic_ar?: string | null
+  groups?: { id: string; name: string; name_ar: string | null } | null
+}
+
+interface EventRow {
+  id: string
+  title: string | null
+  title_ar: string | null
+  starts_at: string
+}
+
+interface SlotWithAreaRow {
+  id: string
+  title: string | null
+  title_ar: string | null
+  date: string
+  serving_areas?: { name: string; name_ar: string | null } | null
+}
+
+interface GroupWithHealthRow {
+  id: string
+  name: string
+  name_ar: string | null
+  leader_id: string | null
+  profiles?: {
+    first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+  } | null
+  group_members?: Array<{
+    id: string; is_active: boolean
+    profiles?: { status: string } | null
+  }> | null
+}
+
+interface GroupMemberProfileRow {
+  profile_id: string
+}
+
+interface AtRiskGroupMemberRow {
+  profiles?: {
+    id: string; first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+  } | null
+}
+
 // ─── Admin Dashboard ──────────────────────────────
 
 export async function fetchAdminDashboard(
@@ -171,20 +254,20 @@ export async function fetchAdminDashboard(
   ])
 
   // Process attendance rate
-  const attendanceRecords = (attendanceRateRes.data || []) as any[]
-  const completedAttendance = attendanceRecords.filter((a: any) => a.gatherings?.status === 'completed')
-  const presentCount = completedAttendance.filter((a: any) => a.status === 'present' || a.status === 'late').length
+  const attendanceRecords = (attendanceRateRes.data || []) as unknown as AttendanceWithGatheringRow[]
+  const completedAttendance = attendanceRecords.filter((a) => a.gatherings?.status === 'completed')
+  const presentCount = completedAttendance.filter((a) => a.status === 'present' || a.status === 'late').length
   const attendanceRate = completedAttendance.length > 0
     ? Math.round((presentCount / completedAttendance.length) * 100)
     : 0
 
   // Process attendance trend
-  const trendRecords = (attendanceTrendRes.data || []) as any[]
-  const completedTrend = trendRecords.filter((a: any) => a.gatherings?.status === 'completed')
+  const trendRecords = (attendanceTrendRes.data || []) as unknown as AttendanceWithGatheringRow[]
+  const completedTrend = trendRecords.filter((a) => a.gatherings?.status === 'completed')
   const weeklyMap = new Map<number, { present: number; total: number; date: Date }>()
 
   for (const rec of completedTrend) {
-    const date = new Date(rec.gatherings.scheduled_at)
+    const date = new Date(rec.gatherings!.scheduled_at)
     const weekNum = getWeekNumber(date)
     if (!weeklyMap.has(weekNum)) {
       weeklyMap.set(weekNum, { present: 0, total: 0, date })
@@ -202,7 +285,7 @@ export async function fetchAdminDashboard(
     }))
 
   // Process visitor pipeline
-  const visitors = (visitorPipelineRes.data || []) as any[]
+  const visitors = (visitorPipelineRes.data || []) as VisitorStatusRow[]
   const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
   for (const v of visitors) {
     if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
@@ -217,7 +300,7 @@ export async function fetchAdminDashboard(
   // Process attention items
   const attentionItems: AttentionItem[] = []
 
-  for (const v of (slaVisitorsRes.data || []) as any[]) {
+  for (const v of (slaVisitorsRes.data || []) as VisitorRow[]) {
     attentionItems.push({
       type: 'visitor_sla',
       id: v.id,
@@ -227,7 +310,7 @@ export async function fetchAdminDashboard(
     })
   }
 
-  for (const m of (atRiskRes.data || []) as any[]) {
+  for (const m of (atRiskRes.data || []) as ProfileRow[]) {
     attentionItems.push({
       type: 'at_risk_member',
       id: m.id,
@@ -237,8 +320,8 @@ export async function fetchAdminDashboard(
     })
   }
 
-  for (const slot of (unfilledSlotsRes.data || []) as any[]) {
-    const activeSignups = (slot.serving_signups || []).filter((s: any) => s.status !== 'cancelled').length
+  for (const slot of (unfilledSlotsRes.data || []) as SlotWithSignupsRow[]) {
+    const activeSignups = (slot.serving_signups || []).filter((s) => s.status !== 'cancelled').length
     if (slot.max_volunteers && activeSignups < slot.max_volunteers) {
       attentionItems.push({
         type: 'unfilled_slot',
@@ -288,7 +371,7 @@ export async function fetchAdminDashboard(
   // Process upcoming this week
   const upcomingThisWeek: UpcomingItem[] = []
 
-  for (const g of (upcomingGatheringsRes.data || []) as any[]) {
+  for (const g of (upcomingGatheringsRes.data || []) as unknown as GatheringRow[]) {
     upcomingThisWeek.push({
       type: 'gathering',
       id: g.id,
@@ -299,7 +382,7 @@ export async function fetchAdminDashboard(
     })
   }
 
-  for (const e of (upcomingEventsListRes.data || []) as any[]) {
+  for (const e of (upcomingEventsListRes.data || []) as EventRow[]) {
     upcomingThisWeek.push({
       type: 'event',
       id: e.id,
@@ -310,7 +393,7 @@ export async function fetchAdminDashboard(
     })
   }
 
-  for (const s of (upcomingSlotsRes.data || []) as any[]) {
+  for (const s of (upcomingSlotsRes.data || []) as unknown as SlotWithAreaRow[]) {
     upcomingThisWeek.push({
       type: 'serving_slot',
       id: s.id,
@@ -324,11 +407,11 @@ export async function fetchAdminDashboard(
   upcomingThisWeek.sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
 
   // Process group health
-  const groups = (groupsRes.data || []) as any[]
+  const groups = (groupsRes.data || []) as unknown as GroupWithHealthRow[]
   const groupHealth: GroupHealthRow[] = []
 
   // Fetch all group attendance for last 8 weeks in a single query, then split into current/prev
-  const groupIds = groups.map((g: any) => g.id)
+  const groupIds = groups.map((g) => g.id)
   let groupAttendanceMap = new Map<string, { present: number; total: number }>()
   let prevGroupAttendanceMap = new Map<string, number>()
 
@@ -342,8 +425,8 @@ export async function fetchAdminDashboard(
       .gte('gatherings.scheduled_at', weeksAgo(8))
 
     const prevMap = new Map<string, { present: number; total: number }>()
-    for (const rec of (allGroupAttendance || []) as any[]) {
-      if (rec.gatherings?.status !== 'completed') continue
+    for (const rec of (allGroupAttendance || []) as unknown as AttendanceWithGatheringRow[]) {
+      if (rec.gatherings?.status !== 'completed' || !rec.group_id) continue
       const isRecent = rec.gatherings.scheduled_at >= fourWeeksAgo
 
       if (isRecent) {
@@ -366,9 +449,9 @@ export async function fetchAdminDashboard(
   }
 
   for (const g of groups) {
-    const leader = g.profiles as any
-    const activeMembers = (g.group_members || []).filter((m: any) => m.is_active)
-    const atRiskCount = activeMembers.filter((m: any) => m.profiles?.status === 'at_risk').length
+    const leader = g.profiles
+    const activeMembers = (g.group_members || []).filter((m) => m.is_active)
+    const atRiskCount = activeMembers.filter((m) => m.profiles?.status === 'at_risk').length
     const attData = groupAttendanceMap.get(g.id)
     const currentRate = attData && attData.total > 0 ? Math.round((attData.present / attData.total) * 100) : null
     const prevRate = prevGroupAttendanceMap.get(g.id) ?? null
@@ -623,25 +706,25 @@ export async function fetchMinistryLeaderDashboard(
 
   // Process active members (distinct count)
   const distinctMemberIds = new Set(
-    ((memberCountRes.data || []) as any[]).map((m: any) => m.profile_id)
+    ((memberCountRes.data || []) as GroupMemberProfileRow[]).map((m) => m.profile_id)
   )
   const activeMembers = distinctMemberIds.size
 
   // Process attendance rate
-  const attendanceRecords = (attendanceRateRes.data || []) as any[]
-  const completedAttendance = attendanceRecords.filter((a: any) => a.gatherings?.status === 'completed')
-  const presentCount = completedAttendance.filter((a: any) => a.status === 'present' || a.status === 'late').length
+  const attendanceRecords = (attendanceRateRes.data || []) as unknown as AttendanceWithGatheringRow[]
+  const completedAttendance = attendanceRecords.filter((a) => a.gatherings?.status === 'completed')
+  const presentCount = completedAttendance.filter((a) => a.status === 'present' || a.status === 'late').length
   const attendanceRate = completedAttendance.length > 0
     ? Math.round((presentCount / completedAttendance.length) * 100)
     : 0
 
   // Process attendance trend
-  const trendRecords = (attendanceTrendRes.data || []) as any[]
-  const completedTrend = trendRecords.filter((a: any) => a.gatherings?.status === 'completed')
+  const trendRecords = (attendanceTrendRes.data || []) as unknown as AttendanceWithGatheringRow[]
+  const completedTrend = trendRecords.filter((a) => a.gatherings?.status === 'completed')
   const weeklyMap = new Map<number, { present: number; total: number; date: Date }>()
 
   for (const rec of completedTrend) {
-    const date = new Date(rec.gatherings.scheduled_at)
+    const date = new Date(rec.gatherings!.scheduled_at)
     const weekNum = getWeekNumber(date)
     if (!weeklyMap.has(weekNum)) {
       weeklyMap.set(weekNum, { present: 0, total: 0, date })
@@ -659,7 +742,7 @@ export async function fetchMinistryLeaderDashboard(
     }))
 
   // Process visitor pipeline (church-wide)
-  const visitors = (visitorPipelineRes.data || []) as any[]
+  const visitors = (visitorPipelineRes.data || []) as VisitorStatusRow[]
   const pipelineCounts: Record<string, number> = { new: 0, assigned: 0, contacted: 0, converted: 0 }
   for (const v of visitors) {
     if (pipelineCounts[v.status] !== undefined) pipelineCounts[v.status]++
@@ -674,7 +757,7 @@ export async function fetchMinistryLeaderDashboard(
   // Process attention items
   const attentionItems: AttentionItem[] = []
 
-  for (const v of (slaVisitorsRes.data || []) as any[]) {
+  for (const v of (slaVisitorsRes.data || []) as VisitorRow[]) {
     attentionItems.push({
       type: 'visitor_sla',
       id: v.id,
@@ -686,7 +769,7 @@ export async function fetchMinistryLeaderDashboard(
 
   // At-risk from scoped groups
   const seenAtRisk = new Set<string>()
-  for (const m of (atRiskRes.data || []) as any[]) {
+  for (const m of (atRiskRes.data || []) as unknown as AtRiskGroupMemberRow[]) {
     const p = m.profiles
     if (!p || seenAtRisk.has(p.id)) continue
     seenAtRisk.add(p.id)
@@ -699,8 +782,8 @@ export async function fetchMinistryLeaderDashboard(
     })
   }
 
-  for (const slot of (unfilledSlotsRes.data || []) as any[]) {
-    const activeSignups = (slot.serving_signups || []).filter((s: any) => s.status !== 'cancelled').length
+  for (const slot of (unfilledSlotsRes.data || []) as SlotWithSignupsRow[]) {
+    const activeSignups = (slot.serving_signups || []).filter((s) => s.status !== 'cancelled').length
     if (slot.max_volunteers && activeSignups < slot.max_volunteers) {
       attentionItems.push({
         type: 'unfilled_slot',
@@ -715,7 +798,7 @@ export async function fetchMinistryLeaderDashboard(
   // Process upcoming this week
   const upcomingThisWeek: UpcomingItem[] = []
 
-  for (const g of (upcomingGatheringsRes.data || []) as any[]) {
+  for (const g of (upcomingGatheringsRes.data || []) as unknown as GatheringRow[]) {
     upcomingThisWeek.push({
       type: 'gathering',
       id: g.id,
@@ -726,7 +809,7 @@ export async function fetchMinistryLeaderDashboard(
     })
   }
 
-  for (const e of (upcomingEventsListRes.data || []) as any[]) {
+  for (const e of (upcomingEventsListRes.data || []) as EventRow[]) {
     upcomingThisWeek.push({
       type: 'event',
       id: e.id,
@@ -737,7 +820,7 @@ export async function fetchMinistryLeaderDashboard(
     })
   }
 
-  for (const s of (upcomingSlotsRes.data || []) as any[]) {
+  for (const s of (upcomingSlotsRes.data || []) as unknown as SlotWithAreaRow[]) {
     upcomingThisWeek.push({
       type: 'serving_slot',
       id: s.id,
@@ -751,7 +834,7 @@ export async function fetchMinistryLeaderDashboard(
   upcomingThisWeek.sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())
 
   // Process group health (scoped)
-  const groups = (groupsRes.data || []) as any[]
+  const groups = (groupsRes.data || []) as unknown as GroupWithHealthRow[]
   const groupHealth: GroupHealthRow[] = []
 
   let groupAttendanceMap = new Map<string, { present: number; total: number }>()
@@ -763,8 +846,8 @@ export async function fetchMinistryLeaderDashboard(
       .in('group_id', groupIds)
       .gte('gatherings.scheduled_at', weeksAgo(4))
 
-    for (const rec of (groupAttendance || []) as any[]) {
-      if (rec.gatherings?.status !== 'completed') continue
+    for (const rec of (groupAttendance || []) as unknown as AttendanceWithGatheringRow[]) {
+      if (rec.gatherings?.status !== 'completed' || !rec.group_id) continue
       if (!groupAttendanceMap.has(rec.group_id)) {
         groupAttendanceMap.set(rec.group_id, { present: 0, total: 0 })
       }
@@ -785,8 +868,8 @@ export async function fetchMinistryLeaderDashboard(
       .lte('gatherings.scheduled_at', weeksAgo(4))
 
     const prevMap = new Map<string, { present: number; total: number }>()
-    for (const rec of (prevAttendance || []) as any[]) {
-      if (rec.gatherings?.status !== 'completed') continue
+    for (const rec of (prevAttendance || []) as unknown as AttendanceWithGatheringRow[]) {
+      if (rec.gatherings?.status !== 'completed' || !rec.group_id) continue
       if (!prevMap.has(rec.group_id)) prevMap.set(rec.group_id, { present: 0, total: 0 })
       const entry = prevMap.get(rec.group_id)!
       entry.total++
@@ -798,9 +881,9 @@ export async function fetchMinistryLeaderDashboard(
   }
 
   for (const g of groups) {
-    const leader = g.profiles as any
-    const activeGroupMembers = (g.group_members || []).filter((m: any) => m.is_active)
-    const atRiskCount = activeGroupMembers.filter((m: any) => m.profiles?.status === 'at_risk').length
+    const leader = g.profiles
+    const activeGroupMembers = (g.group_members || []).filter((m) => m.is_active)
+    const atRiskCount = activeGroupMembers.filter((m) => m.profiles?.status === 'at_risk').length
     const attData = groupAttendanceMap.get(g.id)
     const currentRate = attData && attData.total > 0 ? Math.round((attData.present / attData.total) * 100) : null
     const prevRate = prevGroupAttendanceMap.get(g.id) ?? null

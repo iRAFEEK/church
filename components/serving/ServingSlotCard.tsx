@@ -5,8 +5,23 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, Users } from 'lucide-react'
 
+interface ServingSlot {
+  id: string
+  title: string
+  title_ar?: string | null
+  date: string
+  start_time?: string | null
+  end_time?: string | null
+  max_volunteers?: number | null
+  signup_count: number
+  serving_areas?: {
+    name: string
+    name_ar?: string | null
+  } | null
+}
+
 interface ServingSlotCardProps {
-  slot: any
+  slot: ServingSlot
   admin?: boolean
 }
 

@@ -122,17 +122,23 @@ async function CampaignDonations({ campaignId, currency }: { campaignId: string;
     .order('donation_date', { ascending: false })
     .limit(50)
 
+  interface CampaignDonation {
+    id: string; amount: number; currency: string | null; donation_date: string; is_anonymous: boolean
+    donor?: { full_name: string | null; full_name_ar: string | null } | null
+  }
+  const typedDonations = (donations || []) as unknown as CampaignDonation[]
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Users className="w-4 h-4" />
-          Donations ({donations?.length ?? 0})
+          Donations ({typedDonations.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y max-h-80 overflow-y-auto">
-          {(donations as any[] || []).map((d: any) => (
+          {typedDonations.map((d) => (
             <div key={d.id} className="px-4 py-2.5 flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">
@@ -145,7 +151,7 @@ async function CampaignDonations({ campaignId, currency }: { campaignId: string;
               </p>
             </div>
           ))}
-          {(!donations || donations.length === 0) && (
+          {typedDonations.length === 0 && (
             <p className="px-4 py-6 text-sm text-muted-foreground text-center">No donations yet</p>
           )}
         </div>
@@ -162,17 +168,23 @@ async function CampaignPledges({ campaignId, currency }: { campaignId: string; c
     .eq('campaign_id', campaignId)
     .order('created_at', { ascending: false })
 
+  interface CampaignPledge {
+    id: string; total_amount: number; fulfilled_amount: number | null; currency: string | null; status: string
+    donor?: { full_name: string | null } | null
+  }
+  const typedPledges = (pledges || []) as unknown as CampaignPledge[]
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Target className="w-4 h-4" />
-          Pledges ({pledges?.length ?? 0})
+          Pledges ({typedPledges.length})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y max-h-80 overflow-y-auto">
-          {(pledges as any[] || []).map((p: any) => {
+          {typedPledges.map((p) => {
             const fulfilled = p.fulfilled_amount || 0
             const pledgePct = p.total_amount > 0 ? Math.min(100, (fulfilled / p.total_amount) * 100) : 0
             return (
@@ -189,7 +201,7 @@ async function CampaignPledges({ campaignId, currency }: { campaignId: string; c
               </div>
             )
           })}
-          {(!pledges || pledges.length === 0) && (
+          {typedPledges.length === 0 && (
             <p className="px-4 py-6 text-sm text-muted-foreground text-center">No pledges yet</p>
           )}
         </div>

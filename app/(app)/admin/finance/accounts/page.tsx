@@ -65,7 +65,7 @@ function AccountRow({ account, depth = 0 }: { account: Account & { children?: Ac
         </td>
       </tr>
       {account.children?.map(child => (
-        <AccountRow key={child.id} account={child as any} depth={depth + 1} />
+        <AccountRow key={child.id} account={child} depth={depth + 1} />
       ))}
     </>
   )
@@ -173,7 +173,7 @@ export default async function AccountsPage() {
                       </span>
                     </td>
                   </tr>
-                  {groupRoots.map(a => <AccountRow key={a.id} account={a as any} depth={0} />)}
+                  {groupRoots.map(a => <AccountRow key={a.id} account={a} depth={0} />)}
                 </>
               )
             })}

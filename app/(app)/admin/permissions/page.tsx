@@ -165,7 +165,7 @@ export default async function PermissionsSummaryPage({
           </CardHeader>
           {/* Mobile card list */}
           <div className="md:hidden divide-y">
-            {members.map((m: any) => {
+            {members.map((m) => {
               const nameAr = `${m.first_name_ar ?? ''} ${m.last_name_ar ?? ''}`.trim()
               const nameEn = `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim()
               const name = isRTL ? (nameAr || nameEn) : (nameEn || nameAr)
@@ -220,7 +220,7 @@ export default async function PermissionsSummaryPage({
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {members.map((m: any) => {
+                {members.map((m) => {
                   const nameAr = `${m.first_name_ar ?? ''} ${m.last_name_ar ?? ''}`.trim()
                   const nameEn = `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim()
                   const name = isRTL ? (nameAr || nameEn) : (nameEn || nameAr)

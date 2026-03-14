@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { RejectExpenseSchema } from '@/lib/schemas/expense'
 
@@ -24,7 +25,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     .single()
 
   if (error) {
-    console.error('[/api/finance/expenses/[id]/reject POST]', error)
+    logger.error('[/api/finance/expenses/[id]/reject POST]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

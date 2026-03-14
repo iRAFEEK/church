@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { BulkAttendanceSchema } from '@/lib/schemas/gathering'
 import { NextResponse } from 'next/server'
@@ -38,7 +39,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .select('id, gathering_id, group_id, church_id, profile_id, status, excuse_reason, marked_by, marked_at')
 
   if (error) {
-    console.error('[/api/gatherings/[id]/attendance POST]', error)
+    logger.error('[/api/gatherings/[id]/attendance POST]', { module: 'gatherings', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${gathering.church_id}`)

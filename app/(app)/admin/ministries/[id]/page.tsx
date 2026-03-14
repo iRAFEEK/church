@@ -23,7 +23,33 @@ export default async function MinistryDetailPage({ params }: Params) {
   const supabase = await createClient()
 
   // Fire ministry query and allMembers query in parallel
-  let ministry: any = null
+  interface MinistryDetail {
+    id: string
+    name: string
+    name_ar: string | null
+    description: string | null
+    description_ar: string | null
+    is_active: boolean
+    photo_url: string | null
+    leader_id: string | null
+    leader: {
+      id: string; first_name: string | null; last_name: string | null;
+      first_name_ar: string | null; last_name_ar: string | null;
+      photo_url: string | null; phone: string | null
+    } | null
+    ministry_members: Array<{
+      id: string; role_in_ministry: string; joined_at: string; is_active: boolean;
+      profile: {
+        id: string; first_name: string | null; last_name: string | null;
+        first_name_ar: string | null; last_name_ar: string | null;
+        photo_url: string | null; phone: string | null; status: string
+      } | null
+    }>
+    groups: Array<{
+      id: string; name: string; name_ar: string | null; type: string; is_active: boolean
+    }>
+  }
+  let ministry: MinistryDetail | null = null
   const [result, { data: allMembers }] = await Promise.all([
     supabase
       .from('ministries')
@@ -51,9 +77,9 @@ export default async function MinistryDetailPage({ params }: Params) {
       .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone), groups(id,name,name_ar,type,is_active)')
       .eq('id', id)
       .single()
-    ministry = fallback.data ? { ...fallback.data, ministry_members: [] } : null
+    ministry = fallback.data ? { ...fallback.data, ministry_members: [] } as MinistryDetail : null
   } else {
-    ministry = result.data
+    ministry = result.data as MinistryDetail | null
   }
 
   if (!ministry) notFound()
@@ -62,15 +88,8 @@ export default async function MinistryDetailPage({ params }: Params) {
     (m: { is_active: boolean }) => m.is_active
   )
 
-  const leader = ministry.leader as {
-    id: string; first_name: string | null; last_name: string | null;
-    first_name_ar: string | null; last_name_ar: string | null;
-    photo_url: string | null; phone: string | null
-  } | null
-
-  const groups = (ministry.groups || []) as {
-    id: string; name: string; name_ar: string | null; type: string; is_active: boolean
-  }[]
+  const leader = ministry.leader
+  const groups = ministry.groups || []
 
   return (
     <div className="space-y-6">

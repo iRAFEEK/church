@@ -6,8 +6,8 @@ import { NextRequest } from 'next/server'
  * These endpoints are intentionally accessible without authentication
  * (visitor form submission, church registration).
  *
- * GET /api/churches/search is auth-gated in the current implementation,
- * so its test verifies it returns 401 (confirming the auth gate works).
+ * Auth-gated routes (churches/search, bible/bibles) are tested here
+ * to confirm they return 401 for unauthenticated requests.
  */
 
 // Mock supabase to return no user (simulating unauthenticated request)
@@ -64,6 +64,7 @@ vi.mock('next/cache', () => ({
 vi.mock('@/lib/api/rate-limit', () => ({
   rateLimitPublic: vi.fn(() => null),
   rateLimitSensitive: vi.fn(() => null),
+  checkRateLimit: vi.fn(() => null),
 }))
 
 vi.mock('@/lib/messaging/triggers', () => ({
@@ -152,12 +153,12 @@ describe('Smoke — public routes do NOT return 401', () => {
     }
   })
 
-  it('GET /api/bible/bibles (public, uses createAdminClient) does NOT return 401', async () => {
+  it('GET /api/bible/bibles returns 401 (auth-gated via apiHandler)', async () => {
+    // This route uses apiHandler (requireAuth: true by default) + createAdminClient for data.
+    // Unauthenticated requests should get 401.
     const { GET } = await import('@/app/api/bible/bibles/route')
     const res = await GET(makeReq('/api/bible/bibles'))
 
-    // This route uses createAdminClient (no user auth), so it should never return 401
-    expect(res.status).not.toBe(401)
-    expect([200, 500]).toContain(res.status)
+    expect(res.status).toBe(401)
   })
 })

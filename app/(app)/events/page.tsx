@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 import { Plus, Copy } from 'lucide-react'
 import { EventsPageClient } from '@/components/events/EventsPageClient'
+import type { Ministry, Group } from '@/types'
 
 const PAGE_SIZE = 20
 
@@ -55,8 +56,8 @@ export default async function EventsPage() {
   // Filter restricted events for non-admin users
   if (!canManageEvents) {
     const restrictedEventIds = events
-      .filter((e: any) => e.visibility === 'restricted')
-      .map((e: any) => e.id)
+      .filter((e) => e.visibility === 'restricted')
+      .map((e) => e.id)
 
     if (restrictedEventIds.length > 0) {
       // Fetch visibility targets for restricted events
@@ -89,7 +90,7 @@ export default async function EventsPage() {
         targetsByEvent.get(t.event_id)!.push(t)
       }
 
-      events = events.filter((e: any) => {
+      events = events.filter((e) => {
         if (e.visibility !== 'restricted') return true
         const eventTargets = targetsByEvent.get(e.id) || []
         const userIsTargeted = eventTargets.some(t =>
@@ -137,12 +138,12 @@ export default async function EventsPage() {
       </div>
 
       <EventsPageClient
-        initialEvents={events as any}
+        initialEvents={events}
         initialCursor={nextCursor}
         isAdmin={canManageEvents}
         upcoming={!canManageEvents}
-        ministries={(ministriesResult.data || []) as any}
-        groups={(groupsResult.data || []) as any}
+        ministries={(ministriesResult.data || []) as Ministry[]}
+        groups={(groupsResult.data || []) as Group[]}
       />
     </div>
   )

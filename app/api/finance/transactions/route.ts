@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { CreateTransactionSchema } from '@/lib/schemas/transaction'
 
@@ -30,7 +31,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   const { data, error, count } = await query
   if (error) {
-    console.error('[/api/finance/transactions GET]', error)
+    logger.error('[/api/finance/transactions GET]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   return Response.json({ data, count, page, pageSize }, {

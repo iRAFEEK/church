@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -34,7 +35,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/groups/[id]/members POST]', error)
+    logger.error('[/api/groups/[id]/members POST]', { module: 'groups', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
@@ -57,7 +58,7 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) {
-    console.error('[/api/groups/[id]/members DELETE]', error)
+    logger.error('[/api/groups/[id]/members DELETE]', { module: 'groups', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

@@ -11,6 +11,62 @@ import {
   formatWeekLabel,
 } from './shared-queries'
 
+// ─── Row shapes for Supabase join queries (no Database generic) ───
+
+interface MinistryMemberRow {
+  ministry_id: string
+  ministries?: { name: string; name_ar: string | null } | null
+}
+
+interface LegacyMinistryRow {
+  id: string
+  name: string
+  name_ar: string | null
+}
+
+interface GroupIdRow {
+  id: string
+}
+
+interface AttendanceWithGatheringRow {
+  status: string
+  gatherings?: { scheduled_at: string; status: string } | null
+}
+
+interface EventServiceNeedRow {
+  events?: { id: string; title: string; title_ar: string | null; starts_at: string; status: string } | null
+}
+
+interface ServiceAssignmentRow {
+  event_service_needs?: {
+    notes: string | null
+    notes_ar: string | null
+    events?: { title: string; title_ar: string | null; starts_at: string } | null
+  } | null
+}
+
+interface AtRiskGroupMemberRow {
+  profiles?: {
+    id: string; first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+  } | null
+}
+
+interface GroupWithHealthRow {
+  id: string
+  name: string
+  name_ar: string | null
+  leader_id: string | null
+  profiles?: {
+    first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+  } | null
+  group_members?: Array<{
+    id: string; is_active: boolean
+    profiles?: { status: string } | null
+  }> | null
+}
+
 // ─── Dedicated Ministry Leader Dashboard ─────────
 
 export async function fetchMinistryLeaderDashboardV2(
@@ -35,8 +91,8 @@ export async function fetchMinistryLeaderDashboardV2(
     .eq('leader_id', profileId)
 
   const allMinistries = [
-    ...(myMinistries || []).map((m: any) => ({ id: m.ministry_id, name: m.ministries?.name, nameAr: m.ministries?.name_ar })),
-    ...(legacyMinistries || []).map((m: any) => ({ id: m.id, name: m.name, nameAr: m.name_ar })),
+    ...((myMinistries || []) as unknown as MinistryMemberRow[]).map((m) => ({ id: m.ministry_id, name: m.ministries?.name, nameAr: m.ministries?.name_ar })),
+    ...((legacyMinistries || []) as LegacyMinistryRow[]).map((m) => ({ id: m.id, name: m.name, nameAr: m.name_ar })),
   ]
   const uniqueMinistries = Array.from(new Map(allMinistries.map(m => [m.id, m])).values())
   const ministryIds = uniqueMinistries.map(m => m.id)
@@ -52,7 +108,7 @@ export async function fetchMinistryLeaderDashboardV2(
       .eq('church_id', churchId)
       .eq('is_active', true)
       .in('ministry_id', ministryIds)
-    groupIds = (groups || []).map((g: any) => g.id)
+    groupIds = ((groups || []) as GroupIdRow[]).map((g) => g.id)
   }
 
   const emptyResult: MinistryLeaderDashboardData = {
@@ -104,12 +160,12 @@ export async function fetchMinistryLeaderDashboardV2(
   ])
 
   // Attendance trend
-  const trendRecords = ((attendanceRes as any).data || []) as any[]
-  const completedTrend = trendRecords.filter((a: any) => a.gatherings?.status === 'completed')
+  const trendRecords = ((attendanceRes as { data: AttendanceWithGatheringRow[] | null }).data || [])
+  const completedTrend = trendRecords.filter((a) => a.gatherings?.status === 'completed')
   const weekMap = new Map<number, { present: number; total: number; date: Date }>()
   let totalPresent = 0, totalAll = 0
   for (const rec of completedTrend) {
-    const date = new Date(rec.gatherings.scheduled_at)
+    const date = new Date(rec.gatherings!.scheduled_at)
     const wn = getWeekNumber(date)
     if (!weekMap.has(wn)) weekMap.set(wn, { present: 0, total: 0, date })
     const w = weekMap.get(wn)!
@@ -122,13 +178,13 @@ export async function fetchMinistryLeaderDashboardV2(
 
   // Events
   const seenEventIds = new Set<string>()
-  const upcomingEvents = ((eventsRes as any).data || [])
-    .map((n: any) => n.events)
-    .filter((e: any) => { if (!e || seenEventIds.has(e.id)) return false; seenEventIds.add(e.id); return true })
-    .map((e: any) => ({ id: e.id, title: e.title, titleAr: e.title_ar, startsAt: e.starts_at }))
+  const upcomingEvents = (((eventsRes as { data: EventServiceNeedRow[] | null }).data || []))
+    .map((n) => n.events)
+    .filter((e): e is NonNullable<EventServiceNeedRow['events']> => { if (!e || seenEventIds.has(e.id)) return false; seenEventIds.add(e.id); return true })
+    .map((e) => ({ id: e.id, title: e.title, titleAr: e.title_ar, startsAt: e.starts_at }))
 
   // Assignments
-  const serviceAssignments = ((assignmentsRes.data || []) as any[]).map((a: any) => ({
+  const serviceAssignments = ((assignmentsRes.data || []) as unknown as ServiceAssignmentRow[]).map((a) => ({
     eventTitle: a.event_service_needs?.events?.title || '',
     eventTitleAr: a.event_service_needs?.events?.title_ar || null,
     role: a.event_service_needs?.notes || '',
@@ -139,7 +195,7 @@ export async function fetchMinistryLeaderDashboardV2(
   // Attention
   const attentionItems: AttentionItem[] = []
   const seenIds = new Set<string>()
-  for (const m of ((atRiskRes as any).data || []) as any[]) {
+  for (const m of ((atRiskRes as { data: AtRiskGroupMemberRow[] | null }).data || [])) {
     const p = m.profiles
     if (!p || seenIds.has(p.id)) continue
     seenIds.add(p.id)
@@ -153,11 +209,11 @@ export async function fetchMinistryLeaderDashboardV2(
   }
 
   // Group health
-  const groups = ((groupsRes as any).data || []) as any[]
-  const groupHealth: GroupHealthRow[] = groups.map((g: any) => {
-    const leader = g.profiles as any
-    const activeMembers = (g.group_members || []).filter((m: any) => m.is_active)
-    const atRiskCount = activeMembers.filter((m: any) => m.profiles?.status === 'at_risk').length
+  const groups = ((groupsRes as { data: GroupWithHealthRow[] | null }).data || [])
+  const groupHealth: GroupHealthRow[] = groups.map((g) => {
+    const leader = g.profiles
+    const activeMembers = (g.group_members || []).filter((m) => m.is_active)
+    const atRiskCount = activeMembers.filter((m) => m.profiles?.status === 'at_risk').length
     return {
       id: g.id,
       name: g.name,
@@ -174,7 +230,7 @@ export async function fetchMinistryLeaderDashboardV2(
   return {
     ministryName: primaryMinistry?.name || '',
     ministryNameAr: primaryMinistry?.nameAr || null,
-    memberCount: (memberCountRes as any).count || 0,
+    memberCount: (memberCountRes as { count: number | null }).count || 0,
     groupCount: groupIds.length,
     attendanceRate: totalAll > 0 ? Math.round((totalPresent / totalAll) * 100) : 0,
     attendanceTrend,

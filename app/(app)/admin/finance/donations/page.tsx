@@ -9,6 +9,15 @@ import { Plus, Download, HandCoins, Users, Filter } from 'lucide-react'
 import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; fund_id?: string; method?: string; date_from?: string; date_to?: string }
+
+interface DonationRow {
+  id: string; amount: number; currency: string; base_amount: number | null; donation_date: string
+  payment_method: string; receipt_number: string | null; is_anonymous: boolean; is_tithe: boolean
+  donor?: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null
+  fund?: { id: string; name: string; name_ar: string | null } | null
+  campaign?: { id: string; name: string; name_ar: string | null } | null
+}
+
 const PAGE_SIZE = 25
 
 const METHOD_KEYS: Record<string, string> = {
@@ -75,7 +84,8 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
       .order('name'),
   ])
 
-  const totalThisMonth = (stats || []).reduce((s: number, d: any) => s + (d.base_amount || 0), 0)
+  const typedDonations = (donations || []) as unknown as DonationRow[]
+  const totalThisMonth = (stats || []).reduce((s: number, d: { base_amount?: number }) => s + (d.base_amount || 0), 0)
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
   return (
@@ -148,7 +158,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <CardContent className="p-0">
           {/* Mobile card list */}
           <div className="md:hidden divide-y">
-            {(donations as any[] || []).map((d) => {
+            {typedDonations.map((d) => {
               const donorName = d.is_anonymous
                 ? t('anonymous')
                 : d.donor
@@ -174,7 +184,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                 </div>
               )
             })}
-            {(donations || []).length === 0 && (
+            {typedDonations.length === 0 && (
               <p className="px-4 py-8 text-center text-muted-foreground text-sm">
                 {t('noDonationsFound')}
               </p>
@@ -195,7 +205,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                 </tr>
               </thead>
               <tbody>
-                {(donations as any[] || []).map((d) => (
+                {typedDonations.map((d) => (
                   <tr key={d.id} className="border-b hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -229,7 +239,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                     <td className="px-4 py-3 text-muted-foreground text-xs">{d.receipt_number || '—'}</td>
                   </tr>
                 ))}
-                {(donations || []).length === 0 && (
+                {typedDonations.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                       {t('noDonationsFound')}

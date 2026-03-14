@@ -2,6 +2,7 @@ import { getCurrentUserWithRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
 import { BookmarksPageClient } from './BookmarksPageClient'
+import type { BibleBookmark } from '@/types'
 
 export default async function BookmarksPage() {
   const { profile, church } = await getCurrentUserWithRole()
@@ -11,8 +12,8 @@ export default async function BookmarksPage() {
   const { data: bookmarks } = await supabase
     .from('bible_bookmarks')
     .select('id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note, created_at')
-    .eq('profile_id', (profile as any).id)
-    .eq('church_id', (church as any).id)
+    .eq('profile_id', profile.id)
+    .eq('church_id', church.id)
     .order('created_at', { ascending: false })
 
   return (
@@ -22,7 +23,7 @@ export default async function BookmarksPage() {
         <p className="text-muted-foreground text-sm">{t('viewBookmarks')}</p>
       </div>
 
-      <BookmarksPageClient initialBookmarks={(bookmarks || []) as any} />
+      <BookmarksPageClient initialBookmarks={(bookmarks || []) as BibleBookmark[]} />
     </div>
   )
 }

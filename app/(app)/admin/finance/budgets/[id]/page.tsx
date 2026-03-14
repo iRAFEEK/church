@@ -24,7 +24,15 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
 
   if (!budget) notFound()
 
-  const lineItems: any[] = budget.line_items || []
+  interface BudgetLineItem {
+    id: string
+    account_id: string
+    budgeted_amount: number
+    actual_amount: number | null
+    notes: string | null
+    account?: { code: string; name: string; name_ar: string | null } | null
+  }
+  const lineItems: BudgetLineItem[] = (budget.line_items || []) as unknown as BudgetLineItem[]
   const totalBudgeted = lineItems.reduce((s, l) => s + l.budgeted_amount, 0)
   const totalActual = lineItems.reduce((s, l) => s + (l.actual_amount || 0), 0)
   const variance = totalBudgeted - totalActual

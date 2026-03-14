@@ -629,18 +629,18 @@ Last measured: 2026-03-11
 - [x] Code reviewer agent: 525-line read-only agent with 32 automated checks across 8 categories, auto-triggered via Stop hook
 - [x] Week 3 hardening: Zod validation on 18 remaining mutation routes (bible, push, churches, notifications, gatherings, events). 4 new schemas (bible, church, push, notification-send). 27 loading.tsx skeleton files. 14 select('*') narrowed to specific columns. 3 sequential await → Promise.all conversions. 952 tests passing, 0 TS errors.
 - [x] Week 4 code quality: P1: 36 routes bounded with .limit() (no unbounded list queries remain). P2: 25 routes narrowed from select('*') to specific columns (0 select('*') in API routes). P3: 33 routes added revalidateTag after mutations. P4: ~80 any types replaced with proper types across 26 files (lib/, components/, API routes). 952 tests passing, 0 TS errors.
+- [x] Week 5 polish: P1: 62 console.error/warn/log → structured logger across 34 files. P2: churches/search migrated to apiHandler with new profileOptional support (all routes now on apiHandler). P3: ~100 more any types replaced across 25 files (dashboard queries, finance pages, serving, events, community). Only 11 intentional any remaining. 952 tests passing, 0 TS errors.
 
 ### In Progress
 
 ### Pending / Not Started
 - [ ] Production deployment hardening
-- [ ] Apply migrations 022-034 to production Supabase project
+- [ ] Apply migrations 022-043 to production Supabase project
 - [ ] Lighthouse baseline on production URL
 - [ ] Sentry error monitoring (free tier)
 - [ ] Vercel Analytics + Speed Insights
 - [ ] Real device testing: Android, Arabic mode, airplane mode, PWA install
 - [ ] PWA icons — real brand icons (192px, 512px, maskable) — currently placeholders
-- [ ] Migrate churches/search to apiHandler (needs profile-optional support)
 - [ ] Capacitor for native app wrapper + FCM push notifications
 - [ ] Finance module: bank reconciliation, recurring donations, donation receipts
 - [ ] Supabase CLI type generation (replace manual types/database.ts)
@@ -833,6 +833,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-03-14 | Week 5 polish | P1: 62 console calls → structured logger across 34 files. P2: churches/search migrated to apiHandler with profileOptional (all routes on apiHandler). P3: ~100 more any types replaced across 25 files. Only 11 intentional any remaining. 952 tests, 0 TS errors. | 34 app/api/**/route.ts, lib/api/handler.ts, lib/api/cron-auth.ts, 18 app/**/page.tsx, 4 components/**/*.tsx, 4 lib/dashboard/*.ts, 1 test file |
 | 2026-03-14 | Week 4 code quality | P1: 36 routes bounded with .limit() — zero unbounded list queries remain. P2: 25 routes narrowed from select('*') to specific columns — zero select('*') in API routes. P3: 33 mutation routes added revalidateTag for cache invalidation. P4: ~80 any types replaced with proper types across 26 files (dashboard queries, auth, scope, features, messaging providers, Bible, events, serving components). 952 tests, 0 TS errors. | 54 app/api/**/route.ts, 14 components/**/*.tsx, 8 lib/**/*.ts, 1 test file |
 | 2026-03-14 | Week 3 hardening | P1: Zod validation on 18 mutation routes (4 new schemas: bible, church, push, notification-send). P2: 27 missing loading.tsx skeleton files. P3: 3 sequential await → Promise.all. P4: 14 select('*') narrowed. Code reviewer agent (32 checks, auto-trigger hook). 952 tests, 0 TS errors. | lib/schemas/{bible,church,push,notification-send}.ts, 18 app/api/**/route.ts, 27 loading.tsx files, 16 page.tsx files, .claude/agents/code-reviewer.md |
 | 2026-03-13 | API standardization (Week 2) | Migrated 63 routes to apiHandler in 2 batches. Batch 1: events (10), serving (4), templates (4), church-prayers (4), outreach (3), visitors (2), profiles (6), push (3), bible (11). Batch 2: ministries (5), announcements [id] (3), church settings (2), churches join/switch/my-churches (3), leader routes (2), misc (5). Added Zod schemas: ministry.ts, template.ts, outreach.ts + extended event.ts, prayer.ts, visitor.ts. Fixed missing church_id filters on 8 routes. 109/116 routes on apiHandler (94%). 952 tests passing. | 82 route files, lib/schemas/ministry.ts, lib/schemas/template.ts, lib/schemas/outreach.ts, smoke test files |

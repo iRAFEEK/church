@@ -9,6 +9,16 @@ import { Plus, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
 import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; status?: string; ministry_id?: string; mine?: string }
+
+interface ExpenseRow {
+  id: string; description: string; description_ar: string | null; amount: number; currency: string
+  status: string; vendor_name: string | null; vendor_name_ar: string | null
+  request_number: string | null; rejection_reason: string | null; created_at: string
+  requester?: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null
+  ministry?: { id: string; name: string; name_ar: string | null } | null
+  fund?: { id: string; name: string; name_ar: string | null } | null
+}
+
 const PAGE_SIZE = 25
 
 const STATUS_CONFIG: Record<string, { icon: string; class: string }> = {
@@ -73,7 +83,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
       .order('name'),
   ])
 
-  const pendingSubmitted = (expenses || []).filter((e: any) => e.status === 'submitted').length
+  const typedExpenses = (expenses || []) as unknown as ExpenseRow[]
+  const pendingSubmitted = typedExpenses.filter((e) => e.status === 'submitted').length
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE)
 
   return (
@@ -135,7 +146,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
 
       {/* Expenses list */}
       <div className="space-y-3">
-        {(expenses as any[] || []).map((e) => {
+        {typedExpenses.map((e) => {
           const sc = STATUS_CONFIG[e.status] || STATUS_CONFIG.draft
           const requesterName = e.requester
             ? `${isAr ? e.requester.first_name_ar || e.requester.first_name : e.requester.first_name} ${isAr ? e.requester.last_name_ar || e.requester.last_name : e.requester.last_name}`
@@ -199,7 +210,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           )
         })}
 
-        {(expenses || []).length === 0 && (
+        {typedExpenses.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />

@@ -247,7 +247,7 @@ function Empty({ text }: { text: string }) {
   )
 }
 
-function RoleBadge({ role, t }: { role: string; t: any }) {
+function RoleBadge({ role, t }: { role: string; t: ReturnType<typeof useTranslations> }) {
   const labels: Record<string, string> = {
     member: t('roleMember'),
     leader: t('roleLeader'),
@@ -256,7 +256,7 @@ function RoleBadge({ role, t }: { role: string; t: any }) {
   return <span>{labels[role] || role}</span>
 }
 
-function AssignmentStatusBadge({ status, t }: { status: string; t: any }) {
+function AssignmentStatusBadge({ status, t }: { status: string; t: ReturnType<typeof useTranslations> }) {
   const colors: Record<string, string> = {
     assigned: 'bg-yellow-100 text-yellow-800',
     confirmed: 'bg-green-100 text-green-800',
@@ -274,7 +274,7 @@ function AssignmentStatusBadge({ status, t }: { status: string; t: any }) {
   )
 }
 
-function ServingStatusBadge({ status, t }: { status: string; t: any }) {
+function ServingStatusBadge({ status, t }: { status: string; t: ReturnType<typeof useTranslations> }) {
   const colors: Record<string, string> = {
     signed_up: 'bg-blue-100 text-blue-800',
     confirmed: 'bg-green-100 text-green-800',
@@ -292,7 +292,7 @@ function ServingStatusBadge({ status, t }: { status: string; t: any }) {
   )
 }
 
-function RegistrationBadge({ status, t }: { status: string; t: any }) {
+function RegistrationBadge({ status, t }: { status: string; t: ReturnType<typeof useTranslations> }) {
   const colors: Record<string, string> = {
     registered: 'bg-blue-100 text-blue-800',
     confirmed: 'bg-green-100 text-green-800',
@@ -316,7 +316,7 @@ function AssignmentSection({ title, items, isRTL, t, locale }: {
   title: string
   items: MemberInvolvementData['serviceAssignments']
   isRTL: boolean
-  t: any
+  t: ReturnType<typeof useTranslations>
   locale: string
 }) {
   if (items.length === 0) return null
@@ -357,7 +357,7 @@ function ServingSection({ title, items, isRTL, t, locale }: {
   title: string
   items: MemberInvolvementData['servingSignups']
   isRTL: boolean
-  t: any
+  t: ReturnType<typeof useTranslations>
   locale: string
 }) {
   if (items.length === 0) return null

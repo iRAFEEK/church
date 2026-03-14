@@ -54,7 +54,7 @@ export default async function TemplatesPage() {
         </div>
       ) : (
         <div className="divide-y rounded-lg border">
-          {templates.map((tmpl: any) => {
+          {templates.map((tmpl) => {
             const name = isRTL ? (tmpl.name_ar || tmpl.name) : tmpl.name
             const needsCount = tmpl.event_template_needs?.length || 0
             const segmentsCount = tmpl.event_template_segments?.length || 0

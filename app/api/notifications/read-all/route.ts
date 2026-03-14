@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 
 // PATCH /api/notifications/read-all — mark all notifications as read
 export const PATCH = apiHandler(async ({ supabase, user }) => {
@@ -11,7 +12,7 @@ export const PATCH = apiHandler(async ({ supabase, user }) => {
     .is('read_at', null)
 
   if (error) {
-    console.error('[/api/notifications/read-all PATCH]', error)
+    logger.error('[/api/notifications/read-all PATCH]', { module: 'notifications', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { updateUserPermissionsSchema } from '@/lib/schemas/permission'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -143,7 +144,7 @@ export const PUT = apiHandler(async ({ req, supabase, profile, user, params }) =
   }
 
   if (updateError) {
-    console.error('[/api/permissions/user/[id] PUT]', updateError)
+    logger.error('[/api/permissions/user/[id] PUT]', { module: 'permissions', error: updateError })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

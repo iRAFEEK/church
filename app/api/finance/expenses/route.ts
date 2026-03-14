@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { CreateExpenseSchema } from '@/lib/schemas/expense'
 
@@ -36,7 +37,7 @@ export const GET = apiHandler(async ({ req, supabase, user, profile, resolvedPer
 
   const { data, error, count } = await query
   if (error) {
-    console.error('[/api/finance/expenses GET]', error)
+    logger.error('[/api/finance/expenses GET]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 
@@ -84,7 +85,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     .single()
 
   if (error) {
-    console.error('[/api/finance/expenses POST]', error)
+    logger.error('[/api/finance/expenses POST]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

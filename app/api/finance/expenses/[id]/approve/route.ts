@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 
 // POST /api/finance/expenses/[id]/approve
 export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
@@ -15,7 +16,7 @@ export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
     .single()
 
   if (fetchError || !expense) {
-    console.error('[/api/finance/expenses/[id]/approve POST]', fetchError)
+    logger.error('[/api/finance/expenses/[id]/approve POST]', { module: 'finance', error: fetchError })
     return Response.json({ error: 'Not found or not in submitted status' }, { status: 404 })
   }
 
@@ -38,7 +39,7 @@ export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
     .single()
 
   if (approveError) {
-    console.error('[/api/finance/expenses/[id]/approve POST]', approveError)
+    logger.error('[/api/finance/expenses/[id]/approve POST]', { module: 'finance', error: approveError })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

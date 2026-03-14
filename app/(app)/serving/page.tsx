@@ -59,9 +59,9 @@ export default async function ServingPage({
       .order('date', { ascending: false }),
   ])
 
-  const slots = (rawSlots || []).map((slot: any) => ({
+  const slots = (rawSlots || []).map((slot) => ({
     ...slot,
-    signup_count: slot.serving_signups?.filter((s: any) => s.status !== 'cancelled').length || 0,
+    signup_count: (slot.serving_signups as Array<{ id: string; status: string }> | null)?.filter((s) => s.status !== 'cancelled').length || 0,
     serving_signups: undefined,
   }))
 
@@ -117,7 +117,7 @@ export default async function ServingPage({
           <div className="text-center py-12 text-muted-foreground">{t('noAreas')}</div>
         ) : (
           <div className="divide-y rounded-lg border">
-            {areas.map((area: any) => (
+            {areas.map((area) => (
               <ServingAreaCard key={area.id} area={area} admin />
             ))}
           </div>
@@ -127,7 +127,7 @@ export default async function ServingPage({
           <div className="text-center py-12 text-muted-foreground">{t('noSlots')}</div>
         ) : (
           <div className="divide-y rounded-lg border">
-            {slots.map((slot: any) => (
+            {slots.map((slot) => (
               <ServingSlotCard key={slot.id} slot={slot} admin />
             ))}
           </div>

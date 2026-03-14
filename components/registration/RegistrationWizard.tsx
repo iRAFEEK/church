@@ -124,7 +124,7 @@ export function RegistrationWizard() {
       // Move to completion step
       setDirection(1)
       setStep(6)
-    } catch (err: any) {
+    } catch {
       toast.error(t('errorGeneric'))
     } finally {
       setIsSubmitting(false)

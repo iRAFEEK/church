@@ -35,7 +35,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
     ? (isAr ? (slot.serving_areas.name_ar || slot.serving_areas.name) : slot.serving_areas.name)
     : null
   const notes = isAr ? (slot.notes_ar || slot.notes) : slot.notes
-  const activeSignups = slot.serving_signups?.filter((s: any) => s.status !== 'cancelled') || []
+  const activeSignups = slot.serving_signups?.filter((s: { id: string; status: string }) => s.status !== 'cancelled') || []
 
   return (
     <div className="space-y-6">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 const RETENTION_DAYS = 90
 
@@ -20,14 +21,12 @@ export async function GET(req: NextRequest) {
     .lt('created_at', cutoff)
 
   if (error) {
-    console.error('[notification-cleanup] Failed to delete old notifications:', error)
+    logger.error('[notification-cleanup] Failed to delete old notifications', { module: 'cron', error })
     return NextResponse.json({ error: 'Failed to delete notifications' }, { status: 500 })
   }
 
   const deleted = count ?? 0
-  console.log(
-    `[notification-cleanup] Deleted ${deleted} notifications older than ${RETENTION_DAYS} days (cutoff: ${cutoff})`
-  )
+  logger.info(`[notification-cleanup] Deleted ${deleted} notifications older than ${RETENTION_DAYS} days`, { module: 'cron', deleted, retentionDays: RETENTION_DAYS, cutoff })
 
   return NextResponse.json({
     deleted,
