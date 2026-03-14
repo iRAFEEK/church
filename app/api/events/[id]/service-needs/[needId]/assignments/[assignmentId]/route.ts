@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateAssignmentSchema } from '@/lib/schemas/event'
@@ -36,5 +37,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     )
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data: assignment }
 })

@@ -10,7 +10,7 @@ export const PATCH = apiHandler(async ({ supabase, user, params }) => {
     .update({ read_at: new Date().toISOString(), status: 'read' })
     .eq('id', id)
     .eq('profile_id', user.id)
-    .select()
+    .select('id, church_id, profile_id, type, channel, title, body, status, read_at, created_at')
     .single()
 
   if (error) {

@@ -39,8 +39,24 @@ export function ServingMemberView() {
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
 
-  const [slots, setSlots] = useState<any[]>([])
-  const [areas, setAreas] = useState<any[]>([])
+  interface MemberSlot {
+    id: string
+    title: string
+    title_ar: string | null
+    date: string
+    start_time: string | null
+    end_time: string | null
+    max_volunteers: number | null
+    signup_count: number
+    serving_area_id: string
+  }
+  interface MemberArea {
+    id: string
+    name: string
+    name_ar: string | null
+  }
+  const [slots, setSlots] = useState<MemberSlot[]>([])
+  const [areas, setAreas] = useState<MemberArea[]>([])
   const [mySignups, setMySignups] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [signingUp, setSigningUp] = useState<string | null>(null)
@@ -60,10 +76,10 @@ export function ServingMemberView() {
       setAreas(areasData.data || [])
 
       const signupMap: Record<string, boolean> = {}
-      const detailPromises = (slotsData.data || []).map(async (slot: any) => {
+      const detailPromises = (slotsData.data || []).map(async (slot: MemberSlot) => {
         const res = await fetch(`/api/serving/slots/${slot.id}`, { signal })
         const detail = await res.json()
-        if (detail.data?.serving_signups?.some((s: any) => s.status !== 'cancelled')) {
+        if (detail.data?.serving_signups?.some((s: { status: string }) => s.status !== 'cancelled')) {
           signupMap[slot.id] = true
         }
       })
@@ -123,7 +139,7 @@ export function ServingMemberView() {
   }
 
   // Group slots by area
-  const slotsByArea: Record<string, any[]> = {}
+  const slotsByArea: Record<string, MemberSlot[]> = {}
   for (const slot of slots) {
     const areaId = slot.serving_area_id
     if (!slotsByArea[areaId]) slotsByArea[areaId] = []
@@ -139,7 +155,7 @@ export function ServingMemberView() {
   return (
     <div className="space-y-6">
       {Object.entries(slotsByArea).map(([areaId, areaSlots]) => {
-        const area = areas.find((a: any) => a.id === areaId)
+        const area = areas.find((a) => a.id === areaId)
         const areaName = area
           ? (isAr ? (area.name_ar || area.name) : area.name)
           : ''
@@ -148,7 +164,7 @@ export function ServingMemberView() {
           <div key={areaId} className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <h2 className="text-lg font-semibold">{areaName}</h2>
             <div className="divide-y rounded-lg border">
-              {areaSlots.map((slot: any) => {
+              {areaSlots.map((slot) => {
                 const title = isAr ? (slot.title_ar || slot.title) : slot.title
                 const isFull = slot.max_volunteers && slot.signup_count >= slot.max_volunteers
                 const isSignedUp = mySignups[slot.id]

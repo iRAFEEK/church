@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateOutreachVisitSchema } from '@/lib/schemas/outreach'
@@ -45,9 +46,10 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       followup_date: body.followup_date || null,
       followup_notes: body.followup_notes || null,
     })
-    .select()
+    .select('id, church_id, profile_id, visited_by, visit_date, notes, needs_followup, followup_date, followup_notes, created_at')
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_outreach'] })

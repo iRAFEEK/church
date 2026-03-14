@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateTemplateSchema } from '@/lib/schemas/template'
@@ -18,6 +19,7 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
     .eq('church_id', profile.church_id)
     .eq('is_active', true)
     .order('name', { ascending: true })
+    .limit(100)
 
   if (error) throw error
 
@@ -86,6 +88,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     if (segError) throw segError
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data: template }, { status: 201 })
 }, {
   requirePermissions: ['can_manage_templates'],

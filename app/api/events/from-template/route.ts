@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateFromTemplateSchema } from '@/lib/schemas/event'
@@ -87,5 +88,6 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     await supabase.from('event_segments').insert(segRows)
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data: event }, { status: 201 })
 }, { requirePermissions: ['can_manage_events'] })

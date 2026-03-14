@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { updateRoleDefaultsSchema } from '@/lib/schemas/permission'
@@ -65,5 +66,6 @@ export const PUT = apiHandler(async ({ req, supabase, profile, user }) => {
     new_value: permissions,
   })
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { ok: true }
 }, { requireRoles: ['super_admin'] })

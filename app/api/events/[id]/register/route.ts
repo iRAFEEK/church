@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { EventRegistrationSchema } from '@/lib/schemas/event'
@@ -74,5 +75,6 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
 })

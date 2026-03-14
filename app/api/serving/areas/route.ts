@@ -9,9 +9,10 @@ export const GET = apiHandler(async ({ supabase, profile, resolvedPermissions })
 
   let query = supabase
     .from('serving_areas')
-    .select('*, ministries(name, name_ar)')
+    .select('id, church_id, ministry_id, name, name_ar, description, description_ar, is_active, created_at, updated_at, ministries(name, name_ar)')
     .eq('church_id', profile.church_id)
     .order('name', { ascending: true })
+    .limit(100)
 
   if (!isAdmin) {
     query = query.eq('is_active', true)
@@ -30,7 +31,7 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const { data, error } = await supabase
     .from('serving_areas')
     .insert({ ...validated, church_id: profile.church_id })
-    .select()
+    .select('id, church_id, ministry_id, name, name_ar, description, description_ar, is_active, created_at')
     .single()
 
   if (error) throw error

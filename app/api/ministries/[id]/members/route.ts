@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import {
@@ -34,6 +35,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     await autoUpgradeRole(supabase, body.profile_id)
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 
@@ -60,6 +62,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     await autoUpgradeRole(supabase, body.profile_id)
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 
@@ -79,6 +82,7 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
   if (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ success: true })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 

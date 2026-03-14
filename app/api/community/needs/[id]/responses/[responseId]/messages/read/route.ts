@@ -8,7 +8,8 @@ export const PATCH = apiHandler(async ({ profile, params }) => {
   const admin = await createAdminClient()
 
   const { error } = await admin
-    .from('church_need_message_reads' as any)
+    // Table not in generated types — see migration 043
+    .from('church_need_message_reads' as string & keyof never)
     .upsert(
       { response_id: responseId, church_id: profile.church_id, last_read_at: new Date().toISOString() },
       { onConflict: 'response_id,church_id' }

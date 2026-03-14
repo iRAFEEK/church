@@ -13,7 +13,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('id', id)
     .eq('profile_id', profile.id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, profile_id, church_id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note, created_at')
     .single()
 
   if (error) throw error

@@ -60,7 +60,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select()
+    .select('id, church_id, created_by, title, title_ar, description, description_ar, image_url, category, quantity, urgency, status, contact_name, contact_phone, contact_email, expires_at, created_at')
     .single()
 
   if (error) throw error

@@ -30,7 +30,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
       role_in_group,
       is_active: true,
     }, { onConflict: 'group_id,profile_id' })
-    .select()
+    .select('id, group_id, profile_id, church_id, role_in_group, is_active, joined_at')
     .single()
 
   if (error) {

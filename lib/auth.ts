@@ -1,7 +1,8 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import type { Profile, Church, AuthUser, PermissionKey } from '@/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Profile, Church, AuthUser, PermissionKey, PermissionMap } from '@/types'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 
 /**
@@ -196,8 +197,9 @@ export async function requirePermission(...permissions: PermissionKey[]): Promis
  * Fetches role defaults and resolves permissions.
  */
 export async function resolveApiPermissions(
-  supabase: any,
-  profile: { role: string; church_id: string; permissions?: any },
+  // Structural type to accept both real SupabaseClient and test mocks
+  supabase: Pick<SupabaseClient, 'from'>,
+  profile: { role: string; church_id: string; permissions?: PermissionMap | null },
   userId?: string
 ): Promise<Record<PermissionKey, boolean>> {
   // If userId provided, cross-check role from user_churches (defense in depth)

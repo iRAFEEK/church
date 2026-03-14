@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { ReplaceTemplateNeedsSchema } from '@/lib/schemas/template'
@@ -33,6 +34,7 @@ export const PUT = apiHandler(async ({ req, supabase, profile, params }) => {
     if (error) throw error
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, {
   requirePermissions: ['can_manage_templates'],

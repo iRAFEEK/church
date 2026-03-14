@@ -23,7 +23,7 @@ export function PushPermissionPrompt() {
   useEffect(() => {
     // Detect iOS PWA: push only works when installed to home screen on iOS
     const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent)
-    const isStandalone = ('standalone' in navigator) && (navigator as any).standalone === true
+    const isStandalone = ('standalone' in navigator) && (navigator as unknown as { standalone: boolean }).standalone === true
     if (isIos && !isStandalone) {
       setIsIosNotStandalone(true)
     }

@@ -100,7 +100,7 @@ export function MinistryEventsList({ ministryId }: MinistryEventsListProps) {
   )
 }
 
-function EventCard({ event, isRTL, te }: { event: MinistryEvent; isRTL: boolean; te: any }) {
+function EventCard({ event, isRTL, te }: { event: MinistryEvent; isRTL: boolean; te: ReturnType<typeof useTranslations> }) {
   const title = isRTL ? (event.title_ar || event.title) : event.title
   const date = new Date(event.starts_at)
 

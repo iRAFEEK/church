@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateSongSchema } from '@/lib/schemas/song'
@@ -40,9 +41,10 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select()
+    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_by, created_at, updated_at')
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_songs'] })

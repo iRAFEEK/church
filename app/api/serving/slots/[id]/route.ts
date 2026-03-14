@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateServingSlotSchema } from '@/lib/schemas/serving'
@@ -50,6 +51,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   }
   if (error) throw error
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_serving'] })
 
@@ -68,5 +70,6 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, { requirePermissions: ['can_manage_serving'] })

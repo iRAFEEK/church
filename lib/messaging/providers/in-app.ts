@@ -13,7 +13,7 @@ class InAppProvider implements MessageProvider {
 
   async send(payload: MessagePayload): Promise<MessageResult> {
     try {
-      let supabase: any
+      let supabase: Awaited<ReturnType<typeof createAdminClient>>
       try {
         supabase = await createAdminClient()
       } catch {

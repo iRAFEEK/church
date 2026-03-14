@@ -148,9 +148,9 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                           )}
                           <span className="text-sm text-zinc-700 flex-1 truncate">
                             {pName.trim()}
-                            {(assignment as any).role && (
+                            {assignment.role && (
                               <span className="text-zinc-400 ms-1.5">
-                                ({isRTL ? ((assignment as any).role_ar || (assignment as any).role) : (assignment as any).role})
+                                ({isRTL ? (assignment.role_ar || assignment.role) : assignment.role})
                               </span>
                             )}
                           </span>

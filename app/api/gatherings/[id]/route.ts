@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateGatheringSchema } from '@/lib/schemas/gathering'
@@ -54,7 +55,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .update(validated)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, group_id, church_id, scheduled_at, location, location_ar, topic, topic_ar, notes, status, created_at')
     .single()
 
   if (error) {
@@ -67,5 +68,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     await checkAndFlagAtRisk(id)
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 })

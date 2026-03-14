@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import type { Messaging } from 'firebase/messaging'
 import { getFirebaseMessaging, isFirebaseClientConfigured } from '@/lib/firebase/client'
 
 export type PushPermissionState = 'default' | 'granted' | 'denied' | 'unsupported'
@@ -76,7 +77,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
   }
 
-  function setupTokenRefresh(messaging: any) {
+  function setupTokenRefresh(messaging: Messaging) {
     // FCM tokens are rotated periodically — re-register when they change
     const { onTokenRefresh } = require('firebase/messaging')
     if (typeof onTokenRefresh !== 'function') return

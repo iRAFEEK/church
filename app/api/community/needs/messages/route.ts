@@ -35,24 +35,27 @@ export const GET = apiHandler(async ({ profile }) => {
   // 2. Get latest message per response + all messages for unread counting
   const [{ data: allMessages }, { data: reads }] = await Promise.all([
     admin
-      .from('church_need_messages' as any)
+      // Table not in generated types — see migration 043
+      .from('church_need_messages' as string & keyof never)
       .select('id, response_id, message, message_ar, sender_church_id, created_at')
       .in('response_id', responseIds)
       .order('created_at', { ascending: false }),
     admin
-      .from('church_need_message_reads' as any)
+      // Table not in generated types — see migration 043
+      .from('church_need_message_reads' as string & keyof never)
       .select('response_id, last_read_at')
       .eq('church_id', myChurchId)
       .in('response_id', responseIds),
   ])
 
-  const readMap = new Map(((reads || []) as any[]).map((r: any) => [r.response_id, r.last_read_at]))
+  const readMap = new Map(((reads || []) as Array<{ response_id: string; last_read_at: string }>).map((r) => [r.response_id, r.last_read_at]))
 
   // Group messages by response_id, take latest
-  const latestByResponse = new Map<string, any>()
+  interface NeedMessage { id: string; response_id: string; message: string; message_ar: string | null; sender_church_id: string; created_at: string }
+  const latestByResponse = new Map<string, NeedMessage>()
   const unreadByResponse = new Map<string, number>()
 
-  for (const msg of ((allMessages || []) as any[])) {
+  for (const msg of ((allMessages || []) as NeedMessage[])) {
     if (!latestByResponse.has(msg.response_id)) {
       latestByResponse.set(msg.response_id, msg)
     }

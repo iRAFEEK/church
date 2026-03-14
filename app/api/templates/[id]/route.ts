@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateTemplateSchema } from '@/lib/schemas/template'
@@ -64,6 +65,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, {
   requirePermissions: ['can_manage_templates'],
@@ -80,6 +82,7 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, {
   requirePermissions: ['can_manage_templates'],

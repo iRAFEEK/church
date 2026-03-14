@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateAssignmentSchema, DeleteAssignmentSchema } from '@/lib/schemas/event'
@@ -88,6 +89,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, resolvedPe
     logger.error('notifyEventServiceAssigned fire-and-forget failed', { module: 'events', churchId: profile.church_id, error: err })
   )
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data: assignment }, { status: 201 })
 })
 
@@ -104,5 +106,6 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 })

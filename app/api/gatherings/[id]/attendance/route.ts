@@ -35,7 +35,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
   const { data, error } = await supabase
     .from('attendance')
     .upsert(rows, { onConflict: 'gathering_id,profile_id' })
-    .select()
+    .select('id, gathering_id, group_id, church_id, profile_id, status, excuse_reason, marked_by, marked_at')
 
   if (error) {
     console.error('[/api/gatherings/[id]/attendance POST]', error)

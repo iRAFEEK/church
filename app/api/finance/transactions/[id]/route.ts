@@ -7,7 +7,7 @@ import { UpdateTransactionSchema } from '@/lib/schemas/transaction'
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const { data, error } = await supabase
     .from('financial_transactions')
-    .select('*, line_items:transaction_line_items(*, account:accounts(code, name))')
+    .select('id, church_id, fiscal_year_id, transaction_number, transaction_date, description, description_ar, reference, status, total_amount, currency, fund_id, bank_account_id, ministry_id, event_id, batch_id, donor_id, payment_method, check_number, submitted_by, created_at, line_items:transaction_line_items(id, transaction_id, account_id, fund_id, description, debit_amount, credit_amount, currency, sort_order, account:accounts(code, name))')
     .eq('id', params!.id)
     .eq('church_id', profile.church_id)
     .single()

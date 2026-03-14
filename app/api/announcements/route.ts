@@ -50,7 +50,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       created_by: user.id,
       published_at: validated.status === 'published' ? now : null,
     })
-    .select()
+    .select('id, church_id, title, title_ar, body, body_ar, status, is_pinned, expires_at, published_at, created_by, created_at')
     .single()
 
   if (error) throw error

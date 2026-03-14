@@ -12,8 +12,21 @@ import { toast } from 'sonner'
 import { Heart, Calendar, Users, FileText } from 'lucide-react'
 import type { ServingArea } from '@/types'
 
+interface SlotData {
+  id: string
+  serving_area_id: string
+  title: string
+  title_ar: string | null
+  date: string
+  start_time: string | null
+  end_time: string | null
+  max_volunteers: number | null
+  notes: string | null
+  notes_ar: string | null
+}
+
 interface ServingSlotFormProps {
-  slot?: any
+  slot?: SlotData
   defaultAreaId?: string
 }
 
