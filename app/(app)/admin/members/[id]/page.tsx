@@ -43,13 +43,13 @@ export default async function MemberDetailPage({
   const [{ data: member }, { data: milestones }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('*')
+      .select('id, church_id, first_name, last_name, first_name_ar, last_name_ar, phone, email, date_of_birth, gender, occupation, occupation_ar, photo_url, role, status, joined_church_at, address, address_ar, city, city_ar, address_notes')
       .eq('id', id)
       .eq('church_id', currentUser.church_id)
       .single(),
     supabase
       .from('profile_milestones')
-      .select('*')
+      .select('id, type, title, title_ar, date, notes, profile_id, church_id, created_at')
       .eq('profile_id', id)
       .order('date', { ascending: false }),
   ])

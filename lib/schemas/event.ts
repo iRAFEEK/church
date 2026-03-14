@@ -76,6 +76,13 @@ export const UpdateAssignmentSchema = z.object({
   message: 'At least one field must be provided',
 })
 
+// Event registration — POST /api/events/[id]/register (optional body)
+export const EventRegistrationSchema = z.object({
+  name: z.string().max(200).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  email: z.string().email().max(200).optional().nullable(),
+})
+
 // From template — POST /api/events/from-template
 export const CreateFromTemplateSchema = z.object({
   template_id: z.string().uuid(),

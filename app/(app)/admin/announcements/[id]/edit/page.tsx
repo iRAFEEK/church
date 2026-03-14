@@ -15,7 +15,7 @@ export default async function EditAnnouncementPage({ params }: { params: Promise
 
   const { data: announcement } = await supabase
     .from('announcements')
-    .select('*')
+    .select('id, church_id, title, title_ar, body, body_ar, status, is_pinned, expires_at, published_at, created_by, created_at, updated_at')
     .eq('id', id)
     .single()
 

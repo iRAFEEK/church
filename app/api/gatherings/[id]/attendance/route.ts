@@ -1,5 +1,7 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { BulkAttendanceSchema } from '@/lib/schemas/gathering'
 import { NextResponse } from 'next/server'
 
 // POST: bulk upsert attendance records
@@ -7,12 +9,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
   const gathering_id = params?.id
   if (!gathering_id) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  const { records } = await req.json()
-  // records: Array<{ profile_id: string, status: AttendanceStatus, excuse_reason?: string }>
-
-  if (!Array.isArray(records) || records.length === 0) {
-    return NextResponse.json({ error: 'records array required' }, { status: 400 })
-  }
+  const { records } = validate(BulkAttendanceSchema, await req.json())
 
   // Get gathering to pull group_id and church_id — verify church_id matches
   const { data: gathering } = await supabase
@@ -24,7 +21,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
 
   if (!gathering) return NextResponse.json({ error: 'Gathering not found' }, { status: 404 })
 
-  const rows = records.map((r: { profile_id: string; status: string; excuse_reason?: string }) => ({
+  const rows = records.map((r) => ({
     gathering_id,
     group_id: gathering.group_id,
     church_id: gathering.church_id,

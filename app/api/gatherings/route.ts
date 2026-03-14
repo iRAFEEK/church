@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateGatheringSchema } from '@/lib/schemas/gathering'
 
 export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
-  const body = await req.json()
+  const body = validate(CreateGatheringSchema, await req.json())
 
   const { data, error } = await supabase
     .from('gatherings')

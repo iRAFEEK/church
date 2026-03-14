@@ -1,5 +1,7 @@
 import { apiHandler } from '@/lib/api/handler'
-import { resolveAudience, type AudienceTarget } from '@/lib/messaging/audience'
+import { validate } from '@/lib/api/validate'
+import { SendNotificationSchema } from '@/lib/schemas/notification-send'
+import { resolveAudience } from '@/lib/messaging/audience'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { whatsappProvider } from '@/lib/messaging/providers/whatsapp'
 import { getSendableScopes, validateTargetsAgainstScopes } from '@/lib/messaging/scopes'
@@ -12,23 +14,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await req.json()
-  const { titleEn, titleAr, bodyEn, bodyAr, targets, imageUrl, linkUrl } = body as {
-    titleEn?: string
-    titleAr: string
-    bodyEn?: string
-    bodyAr: string
-    targets: AudienceTarget[]
-    imageUrl?: string
-    linkUrl?: string
-  }
-
-  if (!titleAr || !bodyAr) {
-    return NextResponse.json({ error: 'Arabic title and body are required' }, { status: 400 })
-  }
-  if (!targets?.length) {
-    return NextResponse.json({ error: 'At least one target is required' }, { status: 400 })
-  }
+  const { titleEn, titleAr, bodyEn, bodyAr, targets, imageUrl, linkUrl } = validate(SendNotificationSchema, await req.json())
 
   const validation = validateTargetsAgainstScopes(targets, scopes)
   if (!validation.valid) {

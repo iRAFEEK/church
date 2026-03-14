@@ -15,7 +15,7 @@ export default async function EditServingAreaPage({ params }: { params: Promise<
 
   const { data: area } = await supabase
     .from('serving_areas')
-    .select('*')
+    .select('id, church_id, ministry_id, name, name_ar, description, description_ar, is_active, created_at, updated_at')
     .eq('id', id)
     .single()
 

@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { createAdminClient } from '@/lib/supabase/server'
+import { validate } from '@/lib/api/validate'
+import { RegisterLeaderSchema } from '@/lib/schemas/church'
 
 // POST /api/leaders/register — register a new leader (admin only)
 export const POST = apiHandler(async ({ req, profile }) => {
-  const body = await req.json()
-  const { email, first_name, last_name, first_name_ar, last_name_ar, phone } = body
-
-  if (!email || !first_name || !last_name) {
-    return NextResponse.json({ error: 'Email, first name, and last name are required' }, { status: 400 })
-  }
+  const { email, first_name, last_name, first_name_ar, last_name_ar, phone } = validate(RegisterLeaderSchema, await req.json())
 
   const adminSupabase = await createAdminClient()
 

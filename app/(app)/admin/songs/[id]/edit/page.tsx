@@ -15,7 +15,7 @@ export default async function EditSongPage({ params }: { params: Promise<{ id: s
 
   const { data: song } = await supabase
     .from('songs')
-    .select('*')
+    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_at, updated_at, created_by')
     .eq('id', id)
     .single()
 

@@ -46,17 +46,18 @@ export default async function ServingPage({
   const activeTab = tab || 'areas'
   const supabase = await createClient()
 
-  const { data: areas } = await supabase
-    .from('serving_areas')
-    .select('*, ministries(name, name_ar)')
-    .eq('church_id', user.profile.church_id)
-    .order('name', { ascending: true })
-
-  const { data: rawSlots } = await supabase
-    .from('serving_slots')
-    .select('*, serving_areas(name, name_ar), serving_signups(id, status)')
-    .eq('church_id', user.profile.church_id)
-    .order('date', { ascending: false })
+  const [{ data: areas }, { data: rawSlots }] = await Promise.all([
+    supabase
+      .from('serving_areas')
+      .select('*, ministries(name, name_ar)')
+      .eq('church_id', user.profile.church_id)
+      .order('name', { ascending: true }),
+    supabase
+      .from('serving_slots')
+      .select('*, serving_areas(name, name_ar), serving_signups(id, status)')
+      .eq('church_id', user.profile.church_id)
+      .order('date', { ascending: false }),
+  ])
 
   const slots = (rawSlots || []).map((slot: any) => ({
     ...slot,

@@ -82,7 +82,7 @@ export default function ProfileEditPage() {
 
       const { data: p } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, church_id, first_name, last_name, first_name_ar, last_name_ar, phone, email, date_of_birth, gender, occupation, occupation_ar, photo_url, role, status, notification_pref, preferred_language')
         .eq('id', user.id)
         .single()
 

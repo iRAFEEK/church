@@ -14,7 +14,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
   const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, registration_required, registration_closes_at, status')
     .eq('id', id)
     .single()
 

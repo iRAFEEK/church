@@ -1,5 +1,7 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateAnnouncementSchema } from '@/lib/schemas/announcement'
 
 // GET /api/announcements/[id]
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
@@ -21,9 +23,10 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 // PATCH /api/announcements/[id] — update (admin only)
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const id = params!.id
-  const body = await req.json()
+  const body = validate(UpdateAnnouncementSchema, await req.json())
 
   // If publishing, set published_at
+  let published_at: string | undefined
   if (body.status === 'published') {
     const { data: existing } = await supabase
       .from('announcements')
@@ -33,13 +36,13 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
       .single()
 
     if (existing && !existing.published_at) {
-      body.published_at = new Date().toISOString()
+      published_at = new Date().toISOString()
     }
   }
 
   const { data, error } = await supabase
     .from('announcements')
-    .update(body)
+    .update({ ...body, ...(published_at ? { published_at } : {}) })
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .select('id, title, title_ar, body, body_ar, status, is_pinned, published_at, expires_at, created_at')

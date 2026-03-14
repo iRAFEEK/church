@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateGroupGatheringSchema } from '@/lib/schemas/gathering'
 import { getNextGatheringDate } from '@/lib/gatherings'
 
 export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
@@ -29,7 +31,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
   const group_id = params?.id
   if (!group_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const body = await req.json()
+  const body = validate(CreateGroupGatheringSchema, await req.json())
 
   // If manual override provided, use it; otherwise auto-calculate
   let scheduledAt = body.scheduled_at

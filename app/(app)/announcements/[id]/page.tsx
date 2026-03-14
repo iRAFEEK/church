@@ -18,7 +18,7 @@ export default async function AnnouncementReadPage({ params }: { params: Promise
   const supabase = await createClient()
   const { data: announcement } = await supabase
     .from('announcements')
-    .select('*')
+    .select('id, title, title_ar, body, body_ar, status, is_pinned, published_at, expires_at')
     .eq('id', id)
     .eq('status', 'published')
     .single()
