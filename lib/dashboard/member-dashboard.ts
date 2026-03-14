@@ -1,6 +1,62 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { MemberDashboardData } from '@/types/dashboard'
 
+// ─── Row shapes for Supabase join queries (no Database generic) ───
+
+interface AttendanceWithGatheringRow {
+  status: string
+  gatherings?: { status: string } | null
+}
+
+interface GroupMemberWithGroupRow {
+  groups?: {
+    id: string
+    name: string
+    name_ar: string | null
+    leader_id: string | null
+    profiles?: {
+      first_name: string | null; last_name: string | null
+      first_name_ar: string | null; last_name_ar: string | null
+    } | null
+  } | null
+}
+
+interface GatheringRow {
+  group_id: string
+  scheduled_at: string
+}
+
+interface RegistrationRow {
+  event_id: string
+}
+
+interface EventRow {
+  id: string
+  title: string
+  title_ar: string | null
+  starts_at: string
+}
+
+interface ServingSignupRow {
+  serving_slots?: {
+    id: string
+    title: string
+    title_ar: string | null
+    date: string
+    serving_areas?: { name: string; name_ar: string | null } | null
+  } | null
+}
+
+interface AnnouncementRow {
+  id: string
+  title: string
+  title_ar: string | null
+  body: string | null
+  body_ar: string | null
+  published_at: string
+  is_pinned: boolean
+}
+
 // ─── Member Dashboard ─────────────────────────────
 
 export async function fetchMemberDashboard(
@@ -72,6 +128,7 @@ export async function fetchMemberDashboard(
       .eq('profile_id', profileId)
       .neq('status', 'cancelled')
       .gte('serving_slots.date', now.toISOString().split('T')[0])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase typing doesn't support nested column in .order()
       .order('serving_slots.date' as any, { ascending: true })
       .limit(3),
 
@@ -88,16 +145,16 @@ export async function fetchMemberDashboard(
   ])
 
   // Process attendance rate
-  const completedAtt = ((attendanceRes.data || []) as any[]).filter(
-    (a: any) => a.gatherings?.status === 'completed'
+  const completedAtt = ((attendanceRes.data || []) as unknown as AttendanceWithGatheringRow[]).filter(
+    (a) => a.gatherings?.status === 'completed'
   )
-  const presentAtt = completedAtt.filter((a: any) => a.status === 'present' || a.status === 'late')
+  const presentAtt = completedAtt.filter((a) => a.status === 'present' || a.status === 'late')
   const attendanceRate = completedAtt.length > 0
     ? Math.round((presentAtt.length / completedAtt.length) * 100)
     : null
 
   // Process my groups
-  const myGroupIds = ((myGroupsRes.data || []) as any[]).map((m: any) => m.groups?.id).filter(Boolean)
+  const myGroupIds = ((myGroupsRes.data || []) as unknown as GroupMemberWithGroupRow[]).map((m) => m.groups?.id).filter(Boolean) as string[]
 
   // Get next gathering per group
   let nextGatheringMap = new Map<string, string>()
@@ -110,15 +167,15 @@ export async function fetchMemberDashboard(
       .gte('scheduled_at', now.toISOString())
       .order('scheduled_at', { ascending: true })
 
-    for (const g of (nextGatherings || []) as any[]) {
+    for (const g of (nextGatherings || []) as GatheringRow[]) {
       if (!nextGatheringMap.has(g.group_id)) {
         nextGatheringMap.set(g.group_id, g.scheduled_at)
       }
     }
   }
 
-  const myGroups = ((myGroupsRes.data || []) as any[])
-    .map((m: any) => {
+  const myGroups = ((myGroupsRes.data || []) as unknown as GroupMemberWithGroupRow[])
+    .map((m) => {
       const g = m.groups
       if (!g) return null
       const leader = g.profiles
@@ -135,10 +192,10 @@ export async function fetchMemberDashboard(
 
   // Process registrations
   const registeredEventIds = new Set(
-    ((myRegistrationsRes.data || []) as any[]).map((r: any) => r.event_id)
+    ((myRegistrationsRes.data || []) as RegistrationRow[]).map((r) => r.event_id)
   )
 
-  const upcomingEvents = ((upcomingEventsRes.data || []) as any[]).map((e: any) => ({
+  const upcomingEvents = ((upcomingEventsRes.data || []) as EventRow[]).map((e) => ({
     id: e.id,
     title: e.title,
     titleAr: e.title_ar,
@@ -147,7 +204,7 @@ export async function fetchMemberDashboard(
   }))
 
   // Process serving signups
-  const servingSlots = ((servingSignupsRes.data || []) as any[]).map((s: any) => ({
+  const servingSlots = ((servingSignupsRes.data || []) as unknown as ServingSignupRow[]).map((s) => ({
     id: s.serving_slots?.id || '',
     title: s.serving_slots?.title || '',
     titleAr: s.serving_slots?.title_ar || null,
@@ -157,7 +214,7 @@ export async function fetchMemberDashboard(
   }))
 
   // Process announcements
-  const recentAnnouncements = ((announcementsRes.data || []) as any[]).map((a: any) => ({
+  const recentAnnouncements = ((announcementsRes.data || []) as AnnouncementRow[]).map((a) => ({
     id: a.id,
     title: a.title,
     titleAr: a.title_ar,

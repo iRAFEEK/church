@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { updateRoleDefaultsSchema } from '@/lib/schemas/permission'
 import { HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
@@ -52,7 +53,7 @@ export const PUT = apiHandler(async ({ req, supabase, profile, user }) => {
     }, { onConflict: 'church_id,role' })
 
   if (error) {
-    console.error('[/api/permissions/role-defaults PUT]', error)
+    logger.error('[/api/permissions/role-defaults PUT]', { module: 'permissions', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

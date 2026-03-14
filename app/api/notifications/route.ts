@@ -1,4 +1,5 @@
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { NextResponse } from 'next/server'
 
 // GET /api/notifications — get current user's notifications (paginated)
@@ -28,7 +29,7 @@ export const GET = apiHandler(async ({ req, supabase, user }) => {
 
   const { data, error, count } = await query
   if (error) {
-    console.error('[/api/notifications GET]', error)
+    logger.error('[/api/notifications GET]', { module: 'notifications', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

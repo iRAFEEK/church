@@ -54,7 +54,7 @@ export default async function FinanceDashboardPage() {
       <Suspense fallback={<FinanceSkeleton />}>
         <DashboardContent
           churchId={profile.church_id}
-          defaultCurrency={(church as any)?.default_currency || 'USD'}
+          defaultCurrency={(church as { default_currency?: string })?.default_currency || 'USD'}
         />
       </Suspense>
     </div>
@@ -85,7 +85,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
     supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfMonth).lte('donation_date', today),
     supabase.from('donations').select('base_amount').eq('church_id', churchId).gte('donation_date', startOfYear).lte('donation_date', today),
     supabase.from('donations').select('*, donor:donor_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url), fund:fund_id(id, name, name_ar)').eq('church_id', churchId).order('donation_date', { ascending: false }).limit(5),
-    supabase.from('expense_requests').select('id, amount, currency, description, status, requested_by, created_at, requester:requested_by(id, first_name, last_name, first_name_ar, last_name_ar)').eq('church_id', churchId).in('status', ['submitted', 'approved']).order('created_at', { ascending: false }),
+    supabase.from('expense_requests').select('id, amount, currency, description, description_ar, status, requested_by, created_at, requester:requested_by(id, first_name, last_name, first_name_ar, last_name_ar)').eq('church_id', churchId).in('status', ['submitted', 'approved']).order('created_at', { ascending: false }),
     supabase.from('campaigns').select('id, name, name_ar, goal_amount, raised_amount, currency').eq('church_id', churchId).eq('status', 'active').order('start_date', { ascending: false }).limit(4),
   ])
 
@@ -279,7 +279,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
               <p className="text-muted-foreground text-sm">{t('noPendingRequests')}</p>
             ) : (
               <div className="space-y-2">
-                {(pendingExpenses as any[]).slice(0, 5).map((e) => (
+                {(pendingExpenses || []).slice(0, 5).map((e) => (
                   <div key={e.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium line-clamp-1">{isAr ? e.description_ar || e.description : e.description}</p>

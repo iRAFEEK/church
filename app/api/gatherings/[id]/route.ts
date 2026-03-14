@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { UpdateGatheringSchema } from '@/lib/schemas/gathering'
 import { checkAndFlagAtRisk } from '@/lib/absence'
@@ -27,7 +28,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/gatherings/[id] GET]', error)
+    logger.error('[/api/gatherings/[id] GET]', { module: 'gatherings', error })
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -59,7 +60,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/gatherings/[id] PATCH]', error)
+    logger.error('[/api/gatherings/[id] PATCH]', { module: 'gatherings', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 

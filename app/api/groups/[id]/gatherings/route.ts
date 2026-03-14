@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { CreateGroupGatheringSchema } from '@/lib/schemas/gathering'
 import { getNextGatheringDate } from '@/lib/gatherings'
@@ -21,7 +22,7 @@ export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
     .limit(limit)
 
   if (error) {
-    console.error('[/api/groups/[id]/gatherings GET]', error)
+    logger.error('[/api/groups/[id]/gatherings GET]', { module: 'groups', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
@@ -67,7 +68,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, user, params }) 
     .single()
 
   if (error) {
-    console.error('[/api/groups/[id]/gatherings POST]', error)
+    logger.error('[/api/groups/[id]/gatherings POST]', { module: 'groups', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

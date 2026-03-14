@@ -39,12 +39,14 @@ export default async function GatheringPage({ params }: Params) {
   if (!gathering) notFound()
 
   // Get all active group members for the roster
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: groupMembers } = await supabase
     .from('group_members')
     .select('profile_id, profile:profile_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url, status)')
     .eq('group_id', group_id)
-    .eq('is_active', true) as { data: any[] | null }
+    .eq('is_active', true) as { data: Array<{
+      profile_id: string
+      profile: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null; status: string } | null
+    }> | null }
 
   const group = gathering.group as { id: string; name: string; name_ar: string | null; leader_id: string | null; co_leader_id: string | null }
   const isLeader = group.leader_id === user.profile.id || group.co_leader_id === user.profile.id

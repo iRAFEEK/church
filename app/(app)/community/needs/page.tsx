@@ -94,8 +94,8 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
       admin.from('church_need_message_reads' as any).select('response_id, last_read_at').eq('church_id', myChurchId).in('response_id', responseIds),
       admin.from('church_need_messages' as any).select('response_id, created_at').in('response_id', responseIds),
     ])
-    const readMap = new Map(((readStatuses || []) as any[]).map((r: any) => [r.response_id, r.last_read_at]))
-    for (const msg of (messageCounts || []) as any[]) {
+    const readMap = new Map(((readStatuses || []) as Array<{ response_id: string; last_read_at: string }>).map((r) => [r.response_id, r.last_read_at]))
+    for (const msg of (messageCounts || []) as Array<{ response_id: string; created_at: string }>) {
       const lastRead = readMap.get(msg.response_id)
       if (!lastRead || new Date(msg.created_at) > new Date(lastRead)) {
         totalUnread++
@@ -126,14 +126,18 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
         admin.from('church_needs').select('id, title, title_ar, church_id').in('id', allMyResponses.map(r => r.need_id)),
       ])
 
-      const readMap = new Map(((readStatuses2 || []) as any[]).map((r: any) => [r.response_id, r.last_read_at]))
+      const readMap = new Map(((readStatuses2 || []) as Array<{ response_id: string; last_read_at: string }>).map((r) => [r.response_id, r.last_read_at]))
       const needMap = new Map((needsData || []).map(n => [n.id, n]))
 
       // Group messages by response, take latest
-      const latestByResponse = new Map<string, any>()
+      interface NeedMessage {
+        id: string; response_id: string; message: string; message_ar: string | null
+        created_at: string; sender_church_id: string
+      }
+      const latestByResponse = new Map<string, NeedMessage>()
       const unreadByResponse = new Map<string, number>()
 
-      for (const msg of (allMessages || []) as any[]) {
+      for (const msg of (allMessages || []) as NeedMessage[]) {
         if (!latestByResponse.has(msg.response_id)) {
           latestByResponse.set(msg.response_id, msg)
         }

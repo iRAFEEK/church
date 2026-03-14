@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
+import { logger } from '@/lib/logger'
 
 /**
  * Verify cron job authorization using timing-safe comparison.
@@ -12,7 +13,7 @@ import { timingSafeEqual } from 'crypto'
 export function verifyCronAuth(req: NextRequest): NextResponse | null {
   const cronSecret = process.env.CRON_SECRET
   if (!cronSecret) {
-    console.error('[CRON] CRON_SECRET is not configured')
+    logger.error('[CRON] CRON_SECRET is not configured', { module: 'cron' })
     return NextResponse.json({ error: 'Not configured' }, { status: 500 })
   }
 

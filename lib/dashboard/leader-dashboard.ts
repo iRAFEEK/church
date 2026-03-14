@@ -12,6 +12,71 @@ import {
   getCoLedMinistryGroupIds,
 } from './shared-queries'
 
+// ─── Row shapes for Supabase join queries (no Database generic) ───
+
+interface GroupRow {
+  id: string
+  name: string
+  name_ar: string | null
+}
+
+interface GroupMemberRow {
+  group_id: string
+}
+
+interface GatheringRow {
+  id: string
+  group_id: string
+  scheduled_at: string
+  topic: string | null
+}
+
+interface AtRiskGroupMemberRow {
+  profiles?: {
+    id: string; first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+    photo_url: string | null; status: string
+  } | null
+}
+
+interface PrayerRequestRow {
+  id: string
+  content: string
+  is_private: boolean
+  status: string
+  created_at: string
+  submitted_by: string
+  profiles?: {
+    first_name: string | null; last_name: string | null
+    first_name_ar: string | null; last_name_ar: string | null
+  } | null
+}
+
+interface PrayerGroupIdRow {
+  group_id: string
+}
+
+interface AttendanceWithGatheringRow {
+  group_id?: string
+  status: string
+  gatherings?: { status: string; scheduled_at: string } | null
+}
+
+interface RecentGatheringRow {
+  id: string
+  group_id: string
+  scheduled_at: string
+  topic: string | null
+  status: string
+  groups?: { name: string; name_ar: string | null } | null
+  attendance?: Array<{ id: string; status: string }> | null
+}
+
+interface LastAttendanceRow {
+  marked_at: string
+  gatherings?: { scheduled_at: string } | null
+}
+
 // ─── Leader Dashboard ─────────────────────────────
 
 export async function fetchLeaderDashboard(
@@ -32,7 +97,7 @@ export async function fetchLeaderDashboard(
   const directGroupIds = new Set((leaderGroups || []).map(g => g.id))
   const additionalGroupIds = coLedGroupIds.filter(id => !directGroupIds.has(id))
 
-  let additionalGroups: { id: string; name: string; name_ar: string }[] = []
+  let additionalGroups: { id: string; name: string; name_ar: string | null }[] = []
   if (additionalGroupIds.length > 0) {
     const { data } = await supabase
       .from('groups')
@@ -40,7 +105,7 @@ export async function fetchLeaderDashboard(
       .eq('church_id', churchId)
       .eq('is_active', true)
       .in('id', additionalGroupIds)
-    additionalGroups = (data || []) as any[]
+    additionalGroups = (data || []) as GroupRow[]
   }
 
   const groups = [...(leaderGroups || []), ...additionalGroups]
@@ -118,7 +183,7 @@ export async function fetchLeaderDashboard(
 
   // Process member counts
   const memberCounts = new Map<string, number>()
-  for (const m of (memberCountsRes.data || []) as any[]) {
+  for (const m of (memberCountsRes.data || []) as GroupMemberRow[]) {
     memberCounts.set(m.group_id, (memberCounts.get(m.group_id) || 0) + 1)
   }
 
@@ -133,7 +198,7 @@ export async function fetchLeaderDashboard(
   const fourWeeksAgoStr = weeksAgo(4)
   const groupRateMap = new Map<string, { present: number; total: number }>()
   const weeklyTrendMap = new Map<number, { present: number; total: number; date: Date }>()
-  for (const rec of (groupAttendance || []) as any[]) {
+  for (const rec of (groupAttendance || []) as unknown as AttendanceWithGatheringRow[]) {
     if (rec.gatherings?.status !== 'completed') continue
     // Weekly trend (all 12 weeks)
     const date = new Date(rec.gatherings.scheduled_at)
@@ -143,7 +208,7 @@ export async function fetchLeaderDashboard(
     weekEntry.total++
     if (rec.status === 'present' || rec.status === 'late') weekEntry.present++
     // Per-group rate (last 4 weeks only)
-    if (rec.gatherings.scheduled_at >= fourWeeksAgoStr) {
+    if (rec.gatherings.scheduled_at >= fourWeeksAgoStr && rec.group_id) {
       if (!groupRateMap.has(rec.group_id)) groupRateMap.set(rec.group_id, { present: 0, total: 0 })
       const entry = groupRateMap.get(rec.group_id)!
       entry.total++
@@ -166,13 +231,13 @@ export async function fetchLeaderDashboard(
     .eq('status', 'active')
 
   const prayerCountMap = new Map<string, number>()
-  for (const p of (prayerCounts || []) as any[]) {
+  for (const p of (prayerCounts || []) as PrayerGroupIdRow[]) {
     prayerCountMap.set(p.group_id, (prayerCountMap.get(p.group_id) || 0) + 1)
   }
 
   // Build next gathering map (first upcoming per group)
-  const nextGatheringMap = new Map<string, any>()
-  for (const g of (nextGatheringsRes.data || []) as any[]) {
+  const nextGatheringMap = new Map<string, GatheringRow>()
+  for (const g of (nextGatheringsRes.data || []) as unknown as GatheringRow[]) {
     if (!nextGatheringMap.has(g.group_id)) {
       nextGatheringMap.set(g.group_id, g)
     }
@@ -197,8 +262,8 @@ export async function fetchLeaderDashboard(
 
   // Process at-risk members — batch fetch last attendance for all at once
   const seenIds = new Set<string>()
-  const uniqueAtRisk: any[] = []
-  for (const m of (atRiskRes.data || []) as any[]) {
+  const uniqueAtRisk: NonNullable<AtRiskGroupMemberRow['profiles']>[] = []
+  for (const m of (atRiskRes.data || []) as unknown as AtRiskGroupMemberRow[]) {
     const p = m.profiles
     if (!p || seenIds.has(p.id)) continue
     seenIds.add(p.id)
@@ -219,7 +284,7 @@ export async function fetchLeaderDashboard(
   )
 
   const atRiskMembers: AtRiskMember[] = uniqueAtRisk.map((p, i) => {
-    const row = lastAttResults[i].data?.[0] as any
+    const row = lastAttResults[i].data?.[0] as LastAttendanceRow | undefined
     const lastSeen = row?.gatherings?.scheduled_at || null
     const daysAbsent = lastSeen
       ? Math.floor((Date.now() - new Date(lastSeen).getTime()) / (1000 * 60 * 60 * 24))
@@ -236,7 +301,7 @@ export async function fetchLeaderDashboard(
   })
 
   // Process prayers
-  const recentPrayers: RecentPrayer[] = ((prayersRes.data || []) as any[]).map(p => ({
+  const recentPrayers: RecentPrayer[] = ((prayersRes.data || []) as unknown as PrayerRequestRow[]).map(p => ({
     id: p.id,
     content: p.content,
     isPrivate: p.is_private,
@@ -247,8 +312,8 @@ export async function fetchLeaderDashboard(
   }))
 
   // Process recent gatherings
-  const recentGatherings = ((recentGatheringsRes.data || []) as any[]).map(g => {
-    const att = (g.attendance || []) as any[]
+  const recentGatherings = ((recentGatheringsRes.data || []) as unknown as RecentGatheringRow[]).map(g => {
+    const att = g.attendance || []
     return {
       id: g.id,
       groupId: g.group_id,
@@ -257,7 +322,7 @@ export async function fetchLeaderDashboard(
       scheduledAt: g.scheduled_at,
       topic: g.topic,
       status: g.status,
-      presentCount: att.filter((a: any) => a.status === 'present' || a.status === 'late').length,
+      presentCount: att.filter((a) => a.status === 'present' || a.status === 'late').length,
       totalCount: att.length,
     }
   })

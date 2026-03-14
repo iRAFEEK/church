@@ -16,7 +16,20 @@ export default function SlotDetailMemberPage() {
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
 
-  const [slot, setSlot] = useState<any>(null)
+  interface SlotDetail {
+    id: string
+    title: string
+    title_ar?: string | null
+    date: string
+    start_time?: string | null
+    end_time?: string | null
+    max_volunteers?: number | null
+    notes?: string | null
+    notes_ar?: string | null
+    serving_areas?: { name: string; name_ar?: string | null } | null
+    serving_signups?: Array<{ id: string; status: string }> | null
+  }
+  const [slot, setSlot] = useState<SlotDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSignedUp, setIsSignedUp] = useState(false)
   const [acting, setActing] = useState(false)
@@ -29,7 +42,7 @@ export default function SlotDetailMemberPage() {
         if (res.ok && !controller.signal.aborted) {
           const { data } = await res.json()
           setSlot(data)
-          setIsSignedUp(data.serving_signups?.some((s: any) => s.status !== 'cancelled') || false)
+          setIsSignedUp(data.serving_signups?.some((s: { status: string }) => s.status !== 'cancelled') || false)
         }
       } catch (e) {
         if (e instanceof Error && e.name !== 'AbortError') {
@@ -101,7 +114,7 @@ export default function SlotDetailMemberPage() {
     ? (isAr ? (slot.serving_areas.name_ar || slot.serving_areas.name) : slot.serving_areas.name)
     : null
   const notes = isAr ? (slot.notes_ar || slot.notes) : slot.notes
-  const activeSignups = slot.serving_signups?.filter((s: any) => s.status !== 'cancelled').length || 0
+  const activeSignups = slot.serving_signups?.filter((s) => s.status !== 'cancelled').length || 0
   const isFull = slot.max_volunteers && activeSignups >= slot.max_volunteers
 
   return (

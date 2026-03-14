@@ -1,4 +1,5 @@
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 
 // PATCH /api/notifications/[id] — mark a notification as read
 export const PATCH = apiHandler(async ({ supabase, user, params }) => {
@@ -14,7 +15,7 @@ export const PATCH = apiHandler(async ({ supabase, user, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/notifications/[id] PATCH]', error)
+    logger.error('[/api/notifications/[id] PATCH]', { module: 'notifications', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 

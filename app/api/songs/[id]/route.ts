@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { UpdateSongSchema } from '@/lib/schemas/song'
 
@@ -14,7 +15,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/songs/[id] GET]', error)
+    logger.error('[/api/songs/[id] GET]', { module: 'songs', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -35,7 +36,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/songs/[id] PATCH]', error)
+    logger.error('[/api/songs/[id] PATCH]', { module: 'songs', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)
@@ -51,7 +52,7 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) {
-    console.error('[/api/songs/[id] DELETE]', error)
+    logger.error('[/api/songs/[id] DELETE]', { module: 'songs', error })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

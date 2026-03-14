@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { UpdateCampaignSchema } from '@/lib/schemas/campaign'
 
@@ -15,7 +16,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/finance/campaigns/[id] GET]', error)
+    logger.error('[/api/finance/campaigns/[id] GET]', { module: 'finance', error })
     return Response.json({ error: 'Not found' }, { status: 404 })
   }
   return Response.json({ data }, {
@@ -53,7 +54,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .single()
 
   if (error) {
-    console.error('[/api/finance/campaigns/[id] PATCH]', error)
+    logger.error('[/api/finance/campaigns/[id] PATCH]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

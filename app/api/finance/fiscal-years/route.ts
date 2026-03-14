@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { CreateFiscalYearSchema } from '@/lib/schemas/fiscal-year'
 
@@ -12,7 +13,7 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
     .order('start_date', { ascending: false })
 
   if (error) {
-    console.error('[/api/finance/fiscal-years GET]', error)
+    logger.error('[/api/finance/fiscal-years GET]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   return Response.json({ data }, {
@@ -70,7 +71,7 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
     .single()
 
   if (error) {
-    console.error('[/api/finance/fiscal-years POST]', error)
+    logger.error('[/api/finance/fiscal-years POST]', { module: 'finance', error })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
   revalidateTag(`dashboard-${profile.church_id}`)

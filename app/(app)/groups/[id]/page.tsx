@@ -211,8 +211,7 @@ export default async function GroupLeaderPage({ params }: Params) {
           <PrayerList
             gatheringId=""
             groupId={id}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            prayers={(activePrayers || []) as any}
+            prayers={(activePrayers || []) as unknown as Parameters<typeof PrayerList>[0]['prayers']}
             currentUserId={user.profile.id}
             isLeader={isLeaderOrAdmin}
           />
