@@ -5,15 +5,18 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { getLocale, getTranslations } from 'next-intl/server'
 
-function fmt(n: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
+function fmt(n: number, currency = 'USD', locale = 'en') {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
 export default async function BudgetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { profile } = await requirePermission('can_view_finances')
   const supabase = await createClient()
+  const locale = await getLocale()
+  const t = await getTranslations('finance')
 
   const { data: budget } = await supabase
     .from('budgets')
@@ -42,7 +45,7 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/budgets"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/budgets"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <div>
           <h1 className="text-xl font-bold">{budget.name}</h1>
@@ -54,21 +57,21 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-5 text-center">
-            <p className="text-sm text-muted-foreground">Budgeted / المخطط</p>
-            <p className="text-2xl font-bold mt-1">{fmt(totalBudgeted, currency)}</p>
+            <p className="text-sm text-muted-foreground">{t('budgeted')}</p>
+            <p className="text-2xl font-bold mt-1 tabular-nums" dir="ltr">{fmt(totalBudgeted, currency, locale)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5 text-center">
-            <p className="text-sm text-muted-foreground">Actual / الفعلي</p>
-            <p className={`text-2xl font-bold mt-1 ${totalActual > totalBudgeted ? 'text-red-600' : ''}`}>
-              {fmt(totalActual, currency)}
+            <p className="text-sm text-muted-foreground">{t('actual')}</p>
+            <p className={`text-2xl font-bold mt-1 tabular-nums ${totalActual > totalBudgeted ? 'text-red-600' : ''}`} dir="ltr">
+              {fmt(totalActual, currency, locale)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5 text-center">
-            <p className="text-sm text-muted-foreground">Variance / الفرق</p>
+            <p className="text-sm text-muted-foreground">{t('variance')}</p>
             <div className="flex items-center justify-center gap-1 mt-1">
               {variance > 0
                 ? <TrendingUp className="w-5 h-5 text-green-600" />
@@ -76,8 +79,8 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
                 ? <TrendingDown className="w-5 h-5 text-red-600" />
                 : <Minus className="w-5 h-5 text-muted-foreground" />
               }
-              <p className={`text-2xl font-bold ${variance > 0 ? 'text-green-600' : variance < 0 ? 'text-red-600' : ''}`}>
-                {fmt(Math.abs(variance), currency)}
+              <p className={`text-2xl font-bold tabular-nums ${variance > 0 ? 'text-green-600' : variance < 0 ? 'text-red-600' : ''}`} dir="ltr">
+                {fmt(Math.abs(variance), currency, locale)}
               </p>
             </div>
           </CardContent>
@@ -87,7 +90,7 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
       {/* Line Items Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Budget vs. Actuals / الميزانية مقابل الفعلي</CardTitle>
+          <CardTitle className="text-base">{t('budgetVsActuals')}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {/* Mobile card list */}
@@ -104,9 +107,9 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
                       <p className="text-xs text-muted-foreground font-mono mt-0.5">{line.account?.code}</p>
                     </div>
                     <div className="flex flex-col items-end gap-0.5 shrink-0">
-                      <p className="text-sm font-mono font-semibold" dir="ltr">{fmt(line.budgeted_amount, currency)}</p>
-                      <p className={`text-xs font-mono ${over ? 'text-red-600' : 'text-green-600'}`} dir="ltr">
-                        {lineVariance >= 0 ? '+' : ''}{fmt(lineVariance, currency)}
+                      <p className="text-sm font-mono font-semibold tabular-nums" dir="ltr">{fmt(line.budgeted_amount, currency, locale)}</p>
+                      <p className={`text-xs font-mono tabular-nums ${over ? 'text-red-600' : 'text-green-600'}`} dir="ltr">
+                        {lineVariance >= 0 ? '+' : ''}{fmt(lineVariance, currency, locale)}
                       </p>
                     </div>
                   </div>
@@ -114,7 +117,7 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
               )
             })}
             {lineItems.length === 0 && (
-              <p className="px-4 py-8 text-center text-muted-foreground text-sm">No line items yet.</p>
+              <p className="px-4 py-8 text-center text-muted-foreground text-sm">{t('noLineItems')}</p>
             )}
           </div>
 
@@ -123,10 +126,10 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-start px-4 py-2 font-medium">Account</th>
-                <th className="text-end px-4 py-2 font-medium">Budgeted</th>
-                <th className="text-end px-4 py-2 font-medium">Actual</th>
-                <th className="text-end px-4 py-2 font-medium">Variance</th>
+                <th className="text-start px-4 py-2 font-medium">{t('accounts')}</th>
+                <th className="text-end px-4 py-2 font-medium">{t('budgeted')}</th>
+                <th className="text-end px-4 py-2 font-medium">{t('actual')}</th>
+                <th className="text-end px-4 py-2 font-medium">{t('variance')}</th>
                 <th className="px-4 py-2 w-20"></th>
               </tr>
             </thead>
@@ -145,14 +148,14 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
                         <p className="text-xs text-muted-foreground font-mono">{line.account?.code}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-end font-mono tabular-nums">
-                      {fmt(line.budgeted_amount, currency)}
+                    <td className="px-4 py-2 text-end font-mono tabular-nums" dir="ltr">
+                      {fmt(line.budgeted_amount, currency, locale)}
                     </td>
-                    <td className={`px-4 py-2 text-end font-mono tabular-nums ${over ? 'text-red-600' : ''}`}>
-                      {fmt(actual, currency)}
+                    <td className={`px-4 py-2 text-end font-mono tabular-nums ${over ? 'text-red-600' : ''}`} dir="ltr">
+                      {fmt(actual, currency, locale)}
                     </td>
-                    <td className={`px-4 py-2 text-end font-mono tabular-nums ${lineVariance < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {lineVariance >= 0 ? '+' : ''}{fmt(lineVariance, currency)}
+                    <td className={`px-4 py-2 text-end font-mono tabular-nums ${lineVariance < 0 ? 'text-red-600' : 'text-green-600'}`} dir="ltr">
+                      {lineVariance >= 0 ? '+' : ''}{fmt(lineVariance, currency, locale)}
                     </td>
                     <td className="px-4 py-2">
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden w-16">
@@ -168,7 +171,7 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
               {lineItems.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                    No line items yet. Add accounts to track spending.
+                    {t('noLineItems')}
                   </td>
                 </tr>
               )}
@@ -176,13 +179,13 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
             {lineItems.length > 0 && (
               <tfoot className="border-t bg-muted/30">
                 <tr className="font-semibold">
-                  <td className="px-4 py-2">Total</td>
-                  <td className="px-4 py-2 text-end font-mono">{fmt(totalBudgeted, currency)}</td>
-                  <td className={`px-4 py-2 text-end font-mono ${totalActual > totalBudgeted ? 'text-red-600' : ''}`}>
-                    {fmt(totalActual, currency)}
+                  <td className="px-4 py-2">{t('total')}</td>
+                  <td className="px-4 py-2 text-end font-mono tabular-nums" dir="ltr">{fmt(totalBudgeted, currency, locale)}</td>
+                  <td className={`px-4 py-2 text-end font-mono tabular-nums ${totalActual > totalBudgeted ? 'text-red-600' : ''}`} dir="ltr">
+                    {fmt(totalActual, currency, locale)}
                   </td>
-                  <td className={`px-4 py-2 text-end font-mono ${variance < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {variance >= 0 ? '+' : ''}{fmt(variance, currency)}
+                  <td className={`px-4 py-2 text-end font-mono tabular-nums ${variance < 0 ? 'text-red-600' : 'text-green-600'}`} dir="ltr">
+                    {variance >= 0 ? '+' : ''}{fmt(variance, currency, locale)}
                   </td>
                   <td />
                 </tr>

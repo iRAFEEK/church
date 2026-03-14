@@ -33,15 +33,17 @@ interface EventFormProps {
   }
 }
 
-const STEPS = [
-  { title: 'Title & Type', titleAr: 'العنوان والنوع' },
-  { title: 'When?', titleAr: 'متى؟' },
-  { title: 'Where?', titleAr: 'أين؟' },
-  { title: 'Details', titleAr: 'التفاصيل' },
-  { title: 'Audience', titleAr: 'الجمهور' },
-  { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
-  { title: 'Review', titleAr: 'مراجعة' },
-]
+function getSteps(t: (key: string) => string) {
+  return [
+    { title: t('stepTitleAndType'), titleAr: t('stepTitleAndType') },
+    { title: t('stepWhen'), titleAr: t('stepWhen') },
+    { title: t('stepWhere'), titleAr: t('stepWhere') },
+    { title: t('stepDetails'), titleAr: t('stepDetails') },
+    { title: t('stepAudience'), titleAr: t('stepAudience') },
+    { title: t('stepServiceNeeds'), titleAr: t('stepServiceNeeds') },
+    { title: t('stepReview'), titleAr: t('stepReview') },
+  ]
+}
 
 const EVENT_TYPE_ICONS: Record<string, string> = {
   service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
@@ -54,6 +56,7 @@ export function EventForm({ event }: EventFormProps) {
   const tc = useTranslations('common')
   const locale = useLocale()
   const isRTL = locale.startsWith('ar')
+  const STEPS = getSteps(t)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 

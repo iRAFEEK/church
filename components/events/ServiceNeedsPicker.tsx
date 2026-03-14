@@ -285,7 +285,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetName') || 'Role name'}
                         dir="ltr"
-                        className="h-8 text-xs flex-1"
+                        className="min-h-[44px] text-sm flex-1"
                       />
                       <Input
                         value={rp.role_ar}
@@ -296,7 +296,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetNameAr') || 'اسم الدور'}
                         dir="rtl"
-                        className="h-8 text-xs flex-1"
+                        className="min-h-[44px] text-sm flex-1"
                       />
                       <Input
                         type="number"
@@ -308,7 +308,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                           setRolePresets(updated)
                         }}
                         dir="ltr"
-                        className="h-8 text-xs w-16"
+                        className="min-h-[44px] text-sm w-16"
                       />
                       <button
                         type="button"

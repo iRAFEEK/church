@@ -118,7 +118,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
         <CardContent className="pt-4 pb-4 flex gap-6">
           <div>
             <p className="text-xs text-muted-foreground">{t('thisMonth')}</p>
-            <p className="text-lg font-bold">{formatCurrency(totalThisMonth, 'USD', locale)}</p>
+            <p className="text-lg font-bold tabular-nums" dir="ltr">{formatCurrency(totalThisMonth, 'USD', locale)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('totalRecords')}</p>
@@ -176,7 +176,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <p className="font-bold text-sm text-green-700" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
+                    <p className="font-bold text-sm text-green-700 tabular-nums" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</p>
                     <Badge variant="secondary" className="text-xs">
                       {t(METHOD_KEYS[d.payment_method] || 'other')}
                     </Badge>
@@ -224,7 +224,7 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
                         {d.is_tithe && <Badge variant="outline" className="text-xs">{t('tithe')}</Badge>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-bold text-green-700">
+                    <td className="px-4 py-3 font-bold text-green-700 tabular-nums" dir="ltr">
                       {formatCurrency(d.amount, d.currency, locale)}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">

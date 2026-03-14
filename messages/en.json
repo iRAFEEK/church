@@ -100,7 +100,16 @@
     "devLoginFailed": "Dev login failed",
     "selectChurchTitle": "Choose a church",
     "selectChurchDescription": "Select which church you want to sign in to. You can switch anytime from the app.",
-    "switchChurchError": "Could not switch church"
+    "switchChurchError": "Could not switch church",
+    "searchChurchPlaceholder": "Search by church name\u2026",
+    "noChurchesFound": "No churches found for \u201c{query}\u201d.",
+    "registerNewChurch": "Register a new church",
+    "typeToSearch": "Type your church name to search",
+    "changeChurch": "Change",
+    "signingUpFor": "Signing up for {church}",
+    "findChurchToStart": "Find your church to get started",
+    "validationPasswordMismatch": "Passwords do not match",
+    "yourChurches": "Your churches"
   },
   "push": {
     "title": "Enable push notifications",
@@ -150,7 +159,17 @@
     "validationPhone": "Invalid phone number",
     "toastError": "An error occurred",
     "toastSuccess": "Welcome!",
-    "toastSuccessDesc": "Your profile has been created successfully"
+    "toastSuccessDesc": "Your profile has been created successfully",
+    "findYourChurch": "Find your church",
+    "findYourChurchDesc": "Search for your church to join it on Ekklesia. You can join multiple churches.",
+    "searchChurchPlaceholder": "Search by church name\u2026",
+    "couldNotJoinChurch": "Could not join church",
+    "joinedChurch": "Joined {name}!",
+    "noChurchesFound": "No churches found for \u201c{query}\u201d.",
+    "registerNewChurch": "Register a new church",
+    "typeToSearch": "Type your church name to search",
+    "join": "Join",
+    "joined": "Joined"
   },
   "error": {
     "title": "An Error Occurred",
@@ -774,7 +793,16 @@
     "mlUpcomingEvents": "Ministry Events",
     "mlNoEvents": "No upcoming events for your ministry",
     "mlMyAssignments": "My Service Assignments",
-    "mlNoAssignments": "No active service assignments"
+    "mlNoAssignments": "No active service assignments",
+    "quickActionNewEvent": "New Event",
+    "quickActionAnnouncement": "Announcement",
+    "quickActionVisitors": "Visitors",
+    "quickActionEvents": "Events",
+    "quickActionServing": "Serving",
+    "quickActionBible": "Bible",
+    "quickActionNews": "News",
+    "quickActionAlerts": "Alerts",
+    "quickActionProfile": "Profile"
   },
   "authLayout": {
     "subtitle": "Ekklesia"
@@ -1654,7 +1682,23 @@
     "superAdminNote": "Super admins always have full permissions.",
     "userPermissionsTitle": "Permission Overrides",
     "userPermissionsDesc": "Toggle permissions on or off. Highlighted toggles differ from the role default.",
-    "memberNotFound": "Member not found."
+    "memberNotFound": "Member not found.",
+    "role_member": "Members",
+    "role_group_leader": "Group Leaders",
+    "role_ministry_leader": "Ministry Leaders",
+    "withCustomOverrides": "{count} with custom overrides",
+    "editDefaults": "Edit Defaults",
+    "searchMembers": "Search members\u2026",
+    "allRoles": "All Roles",
+    "searchButton": "Search",
+    "memberPermissions": "Member Permissions",
+    "colMember": "Member",
+    "colRole": "Role",
+    "colOverrides": "Overrides",
+    "default": "Default",
+    "edit": "Edit",
+    "noResults": "No results found",
+    "noMembers": "No members found"
   },
   "churchPrayer": {
     "pageTitle": "Prayer Requests",
@@ -1978,7 +2022,13 @@
     "overBudget": "Over budget",
     "cancel": "Cancel",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "pending": "Pending",
+    "posted": "Posted",
+    "void": "Void",
+    "raisedOfGoal": "raised of {goal} goal",
+    "account": "Account",
+    "noLineItemsShort": "No line items yet."
   },
   "churchNeeds": {
     "title": "Church Needs",
@@ -2088,5 +2138,9 @@
     "error": {
       "switch": "Could not switch church"
     }
+  },
+  "help": {
+    "walkMeThrough": "Walk me through it",
+    "gotIt": "Got it"
   }
 }

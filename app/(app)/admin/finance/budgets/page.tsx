@@ -7,8 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, BarChart3 } from 'lucide-react'
 import { getLocale, getTranslations } from 'next-intl/server'
 
-function fmt(n: number, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
+function fmt(n: number, currency = 'USD', locale = 'en') {
+  return new Intl.NumberFormat(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { style: 'currency', currency, minimumFractionDigits: 0 }).format(n)
 }
 
 export default async function BudgetsPage() {
@@ -76,8 +76,8 @@ export default async function BudgetsPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">{t('actual')}</span>
                         <span className={overBudget ? 'text-red-600 font-medium' : 'font-medium'}>
-                          {fmt(budget.total_expense || 0)}
-                          {' '}<span className="text-muted-foreground font-normal">/ {fmt(budget.total_income)}</span>
+                          <span className="tabular-nums" dir="ltr">{fmt(budget.total_expense || 0, budget.currency || 'USD', locale)}</span>
+                          {' '}<span className="text-muted-foreground font-normal">/ <span className="tabular-nums" dir="ltr">{fmt(budget.total_income, budget.currency || 'USD', locale)}</span></span>
                         </span>
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">

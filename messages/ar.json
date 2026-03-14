@@ -100,7 +100,16 @@
     "devLoginFailed": "فشل تسجيل الدخول التجريبي",
     "selectChurchTitle": "اختر كنيسة",
     "selectChurchDescription": "اختر الكنيسة التي تريد الدخول إليها. يمكنك التبديل في أي وقت من التطبيق.",
-    "switchChurchError": "تعذر تبديل الكنيسة"
+    "switchChurchError": "تعذر تبديل الكنيسة",
+    "searchChurchPlaceholder": "ابحث باسم الكنيسة\u2026",
+    "noChurchesFound": "لا توجد كنائس باسم \u00ab{query}\u00bb.",
+    "registerNewChurch": "تسجيل كنيسة جديدة",
+    "typeToSearch": "اكتب اسم كنيستك للبحث",
+    "changeChurch": "تغيير",
+    "signingUpFor": "تسجيل في {church}",
+    "findChurchToStart": "ابحث عن كنيستك للبدء",
+    "validationPasswordMismatch": "كلمتا المرور غير متطابقتين",
+    "yourChurches": "كنائسك"
   },
   "push": {
     "title": "تفعيل الإشعارات",
@@ -150,7 +159,17 @@
     "validationPhone": "رقم الهاتف غير صحيح",
     "toastError": "حدث خطأ",
     "toastSuccess": "أهلاً بك!",
-    "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح"
+    "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح",
+    "findYourChurch": "ابحث عن كنيستك",
+    "findYourChurchDesc": "ابحث عن كنيستك للانضمام إليها على إكليسيا. يمكنك الانضمام لأكثر من كنيسة.",
+    "searchChurchPlaceholder": "ابحث باسم الكنيسة\u2026",
+    "couldNotJoinChurch": "تعذر الانضمام للكنيسة",
+    "joinedChurch": "انضممت إلى {name}!",
+    "noChurchesFound": "لا توجد كنائس باسم \u00ab{query}\u00bb.",
+    "registerNewChurch": "تسجيل كنيسة جديدة",
+    "typeToSearch": "اكتب اسم كنيستك للبحث",
+    "join": "انضمام",
+    "joined": "انضممت"
   },
   "error": {
     "title": "حدث خطأ",
@@ -774,7 +793,16 @@
     "mlUpcomingEvents": "فعاليات الخدمة",
     "mlNoEvents": "لا توجد فعاليات قادمة لخدمتك",
     "mlMyAssignments": "تعييناتي في الخدمة",
-    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة"
+    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة",
+    "quickActionNewEvent": "حدث جديد",
+    "quickActionAnnouncement": "إعلان",
+    "quickActionVisitors": "الزوار",
+    "quickActionEvents": "الأحداث",
+    "quickActionServing": "الخدمة",
+    "quickActionBible": "الكتاب",
+    "quickActionNews": "إعلانات",
+    "quickActionAlerts": "تنبيهات",
+    "quickActionProfile": "ملفي"
   },
   "authLayout": {
     "subtitle": "إكليسيا"
@@ -1654,7 +1682,23 @@
     "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً.",
     "userPermissionsTitle": "تخصيصات الصلاحيات",
     "userPermissionsDesc": "تبديل الصلاحيات. الأزرار المميزة تختلف عن الإعداد الافتراضي للدور.",
-    "memberNotFound": "العضو غير موجود."
+    "memberNotFound": "العضو غير موجود.",
+    "role_member": "الأعضاء",
+    "role_group_leader": "قادة المجموعات",
+    "role_ministry_leader": "قادة الخدمات",
+    "withCustomOverrides": "{count} عضو لديه تخصيصات",
+    "editDefaults": "تعديل الافتراضيات",
+    "searchMembers": "البحث عن عضو\u2026",
+    "allRoles": "جميع الأدوار",
+    "searchButton": "بحث",
+    "memberPermissions": "صلاحيات الأعضاء",
+    "colMember": "العضو",
+    "colRole": "الدور",
+    "colOverrides": "التخصيصات",
+    "default": "افتراضي",
+    "edit": "تعديل",
+    "noResults": "لا نتائج",
+    "noMembers": "لا يوجد أعضاء"
   },
   "churchPrayer": {
     "pageTitle": "طلبات الصلاة",
@@ -1978,7 +2022,13 @@
     "overBudget": "تجاوز الميزانية",
     "cancel": "إلغاء",
     "previous": "السابق",
-    "next": "التالي"
+    "next": "التالي",
+    "pending": "معلق",
+    "posted": "مُرحّل",
+    "void": "ملغي",
+    "raisedOfGoal": "تم جمعه من هدف {goal}",
+    "account": "الحساب",
+    "noLineItemsShort": "لا توجد بنود بعد."
   },
   "churchNeeds": {
     "title": "احتياجات الكنائس",
@@ -2088,5 +2138,9 @@
     "error": {
       "switch": "تعذر التبديل إلى الكنيسة"
     }
+  },
+  "help": {
+    "walkMeThrough": "أرشدني",
+    "gotIt": "فهمت"
   }
 }

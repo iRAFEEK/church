@@ -319,19 +319,19 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-10 w-10"
                     onClick={() => setFontSize(s => Math.max(12, s - 2))}
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-4 w-4" />
                   </Button>
                   <span className="text-sm font-mono w-8 text-center">{fontSize}</span>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-10 w-10"
                     onClick={() => setFontSize(s => Math.min(36, s + 2))}
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -408,7 +408,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               disabled={!hasPrev}
               onClick={() => navigateChapter('prev')}
             >
-              <ChevronLeft className="h-4 w-4 me-1" />
+              <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
               {t('back')}
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -420,8 +420,8 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               disabled={!hasNext}
               onClick={() => navigateChapter('next')}
             >
-              {t('chapter')} →
-              <ChevronRight className="h-4 w-4 ms-1" />
+              {t('chapter')}
+              <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
             </Button>
           </div>
         </div>

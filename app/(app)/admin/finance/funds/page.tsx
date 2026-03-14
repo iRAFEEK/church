@@ -57,7 +57,7 @@ export default async function FundsPage() {
         <Card>
           <CardContent className="pt-4 pb-4">
             <p className="text-xs text-muted-foreground">{t('totalBalance')}</p>
-            <p className="text-xl font-bold mt-1">{formatCurrency(totalBalance, 'USD', locale)}</p>
+            <p className="text-xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency(totalBalance, 'USD', locale)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -123,12 +123,12 @@ export default async function FundsPage() {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">{t('currentBalance')}</span>
-                    <span className="text-xl font-bold">{formatCurrency(fund.current_balance, 'USD', locale)}</span>
+                    <span className="text-xl font-bold tabular-nums" dir="ltr">{formatCurrency(fund.current_balance, 'USD', locale)}</span>
                   </div>
                   {fund.target_amount && (
                     <>
                       <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                        <span>{t('target')}: {formatCurrency(fund.target_amount, 'USD', locale)}</span>
+                        <span>{t('target')}: <span className="tabular-nums" dir="ltr">{formatCurrency(fund.target_amount, 'USD', locale)}</span></span>
                         <span>{pct?.toFixed(0)}%</span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2 mt-1">

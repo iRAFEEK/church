@@ -11,10 +11,10 @@ import { Shield, User, Users, UserCheck, ShieldCheck, Search, Settings, Pencil }
 import { ALL_PERMISSIONS, PERMISSION_LABELS, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 import type { PermissionKey } from '@/types'
 
-const ROLE_META: Record<string, { icon: typeof User; en: string; ar: string }> = {
-  member: { icon: User, en: 'Members', ar: 'الأعضاء' },
-  group_leader: { icon: Users, en: 'Group Leaders', ar: 'قادة المجموعات' },
-  ministry_leader: { icon: UserCheck, en: 'Ministry Leaders', ar: 'قادة الخدمات' },
+const ROLE_ICONS: Record<string, typeof User> = {
+  member: User,
+  group_leader: Users,
+  ministry_leader: UserCheck,
 }
 
 interface SearchParams {
@@ -90,10 +90,9 @@ export default async function PermissionsSummaryPage({
       {/* Role Defaults Quick Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {configuredRoles.map(role => {
-          const meta = ROLE_META[role]
-          if (!meta) return null
-          const Icon = meta.icon
-          const roleLabel = isRTL ? meta.ar : meta.en
+          const Icon = ROLE_ICONS[role]
+          if (!Icon) return null
+          const roleLabel = t(`role_${role}`)
           const defaults = HARDCODED_ROLE_DEFAULTS[role as keyof typeof HARDCODED_ROLE_DEFAULTS]
           const enabledCount = ALL_PERMISSIONS.filter(k => defaults[k]).length
 
@@ -111,13 +110,13 @@ export default async function PermissionsSummaryPage({
                 </div>
                 {overrideCounts[role] && (
                   <p className="text-xs text-blue-600 mt-1.5">
-                    {overrideCounts[role]} {isRTL ? 'عضو لديه تخصيصات' : 'with custom overrides'}
+                    {t('withCustomOverrides', { count: overrideCounts[role] })}
                   </p>
                 )}
                 <Link href="/admin/settings/roles" className="mt-3 block">
                   <Button variant="outline" size="sm" className="w-full text-xs">
                     <Settings className="h-3 w-3 me-1" />
-                    {isRTL ? 'تعديل الافتراضيات' : 'Edit Defaults'}
+                    {t('editDefaults')}
                   </Button>
                 </Link>
               </CardContent>
@@ -135,7 +134,7 @@ export default async function PermissionsSummaryPage({
               <Input
                 name="q"
                 defaultValue={search}
-                placeholder={isRTL ? 'البحث عن عضو...' : 'Search members...'}
+                placeholder={t('searchMembers')}
                 className="ps-9"
               />
             </div>
@@ -144,12 +143,12 @@ export default async function PermissionsSummaryPage({
               defaultValue={roleFilter ?? ''}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">{isRTL ? 'جميع الأدوار' : 'All Roles'}</option>
-              <option value="member">{isRTL ? 'أعضاء' : 'Members'}</option>
-              <option value="group_leader">{isRTL ? 'قادة المجموعات' : 'Group Leaders'}</option>
-              <option value="ministry_leader">{isRTL ? 'قادة الخدمات' : 'Ministry Leaders'}</option>
+              <option value="">{t('allRoles')}</option>
+              <option value="member">{t('role_member')}</option>
+              <option value="group_leader">{t('role_group_leader')}</option>
+              <option value="ministry_leader">{t('role_ministry_leader')}</option>
             </select>
-            <Button type="submit" variant="outline">{isRTL ? 'بحث' : 'Search'}</Button>
+            <Button type="submit" variant="outline">{t('searchButton')}</Button>
           </form>
         </CardContent>
       </Card>
@@ -159,7 +158,7 @@ export default async function PermissionsSummaryPage({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
-              {isRTL ? 'صلاحيات الأعضاء' : 'Member Permissions'}
+              {t('memberPermissions')}
               <Badge variant="secondary" className="ms-2 text-[10px]">{members.length}</Badge>
             </CardTitle>
           </CardHeader>
@@ -172,8 +171,7 @@ export default async function PermissionsSummaryPage({
               const initials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
               const overrides = m.permissions as Record<string, boolean> | null
               const overrideKeys = overrides ? Object.keys(overrides) : []
-              const meta = ROLE_META[m.role]
-              const roleLabel = meta ? (isRTL ? meta.ar : meta.en) : m.role
+              const roleLabel = t(`role_${m.role}`)
               return (
                 <div key={m.id} className="px-4 py-3 flex items-center gap-3">
                   <Avatar className="h-9 w-9 shrink-0">
@@ -195,7 +193,7 @@ export default async function PermissionsSummaryPage({
                         {overrideKeys.length > 2 && <Badge variant="outline" className="text-[9px]">+{overrideKeys.length - 2}</Badge>}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground mt-0.5">{isRTL ? 'افتراضي' : 'Default'}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t('default')}</p>
                     )}
                   </div>
                   <Button variant="ghost" size="sm" asChild className="shrink-0">
@@ -213,9 +211,9 @@ export default async function PermissionsSummaryPage({
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
-                  <th className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'العضو' : 'Member'}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'الدور' : 'Role'}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'التخصيصات' : 'Overrides'}</th>
+                  <th className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{t('colMember')}</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colRole')}</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colOverrides')}</th>
                   <th className="pe-6 py-2.5"></th>
                 </tr>
               </thead>
@@ -227,8 +225,7 @@ export default async function PermissionsSummaryPage({
                   const initials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
                   const overrides = m.permissions as Record<string, boolean> | null
                   const overrideKeys = overrides ? Object.keys(overrides) : []
-                  const meta = ROLE_META[m.role]
-                  const roleLabel = meta ? (isRTL ? meta.ar : meta.en) : m.role
+                  const roleLabel = t(`role_${m.role}`)
 
                   return (
                     <tr key={m.id} className="hover:bg-muted/30 transition-colors">
@@ -270,14 +267,14 @@ export default async function PermissionsSummaryPage({
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">{isRTL ? 'افتراضي' : 'Default'}</span>
+                          <span className="text-xs text-muted-foreground">{t('default')}</span>
                         )}
                       </td>
                       <td className="pe-6 py-3">
                         <Button variant="ghost" size="sm" asChild>
                           <Link href={`/admin/permissions/${m.id}`}>
                             <Pencil className="h-3.5 w-3.5 me-1" />
-                            {isRTL ? 'تعديل' : 'Edit'}
+                            {t('edit')}
                           </Link>
                         </Button>
                       </td>
@@ -293,7 +290,7 @@ export default async function PermissionsSummaryPage({
           <CardContent className="py-12 text-center">
             <Users className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground text-sm">
-              {search ? (isRTL ? 'لا نتائج' : 'No results found') : (isRTL ? 'لا يوجد أعضاء' : 'No members found')}
+              {search ? t('noResults') : t('noMembers')}
             </p>
           </CardContent>
         </Card>

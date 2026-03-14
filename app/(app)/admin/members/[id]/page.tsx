@@ -84,7 +84,7 @@ export default async function MemberDetailPage({
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/members">
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
         </Button>
         <h1 className="text-xl font-bold">{t('pageTitle')}</h1>

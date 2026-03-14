@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Building2, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -25,6 +25,7 @@ interface ChurchSwitcherProps {
 export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('auth')
   const isRTL = locale.startsWith('ar')
 
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
@@ -57,7 +58,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error('Could not switch church', { description: data.error })
+        toast.error(t('switchChurchError'), { description: data.error })
         return
       }
 
@@ -99,7 +100,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
       <DropdownMenuContent align={isRTL ? 'end' : 'start'} className="w-60">
         <div className="px-2 py-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Your churches
+            {t('yourChurches')}
           </p>
         </div>
         <DropdownMenuSeparator />

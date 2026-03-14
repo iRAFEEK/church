@@ -1,6 +1,7 @@
 'use client'
 
 import { CurrencyDisplay } from './CurrencyDisplay'
+import { useLocale } from 'next-intl'
 
 interface CampaignThermometerProps {
   raised: number
@@ -17,6 +18,7 @@ export function CampaignThermometer({
   showAmounts = true,
   className = '',
 }: CampaignThermometerProps) {
+  const locale = useLocale()
   const pct = goal > 0 ? Math.min(100, (raised / goal) * 100) : 0
   const color = pct >= 100 ? 'bg-green-500' : pct >= 75 ? 'bg-blue-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-orange-500'
 
@@ -24,9 +26,9 @@ export function CampaignThermometer({
     <div className={`space-y-1 ${className}`}>
       {showAmounts && (
         <div className="flex justify-between text-xs text-muted-foreground">
-          <CurrencyDisplay amount={raised} currency={currency} />
+          <CurrencyDisplay amount={raised} currency={currency} locale={locale} />
           <span className="font-medium">{pct.toFixed(0)}%</span>
-          <CurrencyDisplay amount={goal} currency={currency} />
+          <CurrencyDisplay amount={goal} currency={currency} locale={locale} />
         </div>
       )}
       <div className="h-2 bg-muted rounded-full overflow-hidden">
