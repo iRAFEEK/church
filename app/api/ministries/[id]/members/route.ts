@@ -1,106 +1,92 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { logger } from '@/lib/logger'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import {
+  AddMinistryMemberSchema,
+  UpdateMinistryMemberSchema,
+  RemoveMinistryMemberSchema,
+} from '@/lib/schemas/ministry'
 
-type Params = { params: Promise<{ id: string }> }
-
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id: ministry_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { profile_id, role_in_ministry } = await req.json()
-  if (!profile_id) return NextResponse.json({ error: 'profile_id required' }, { status: 400 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const role = role_in_ministry || 'member'
+// POST /api/ministries/[id]/members — add member to ministry
+export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
+  const ministry_id = params!.id
+  const body = validate(AddMinistryMemberSchema, await req.json())
 
   // Upsert — re-activates if previously removed
   const { data, error } = await supabase
     .from('ministry_members')
     .upsert({
       ministry_id,
-      profile_id,
+      profile_id: body.profile_id,
       church_id: profile.church_id,
-      role_in_ministry: role,
+      role_in_ministry: body.role_in_ministry,
       is_active: true,
     }, { onConflict: 'ministry_id,profile_id' })
-    .select()
+    .select('id, ministry_id, profile_id, church_id, role_in_ministry, is_active, joined_at')
     .single()
 
   if (error) {
-    console.error('[/api/ministries/[id]/members POST]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Auto role upgrade: if assigned as leader, upgrade profile role
-  if (role === 'leader') {
-    await autoUpgradeRole(supabase, profile_id)
+  if (body.role_in_ministry === 'leader') {
+    await autoUpgradeRole(supabase, body.profile_id)
   }
 
   return NextResponse.json({ data }, { status: 201 })
-}
+}, { requireRoles: ['ministry_leader', 'super_admin'] })
 
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { id: ministry_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { profile_id, role_in_ministry } = await req.json()
-  if (!profile_id || !role_in_ministry) {
-    return NextResponse.json({ error: 'profile_id and role_in_ministry required' }, { status: 400 })
-  }
+// PATCH /api/ministries/[id]/members — update member role
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const ministry_id = params!.id
+  const body = validate(UpdateMinistryMemberSchema, await req.json())
 
   const { data, error } = await supabase
     .from('ministry_members')
-    .update({ role_in_ministry })
+    .update({ role_in_ministry: body.role_in_ministry })
     .eq('ministry_id', ministry_id)
-    .eq('profile_id', profile_id)
-    .select()
+    .eq('profile_id', body.profile_id)
+    .eq('church_id', profile.church_id)
+    .select('id, ministry_id, profile_id, church_id, role_in_ministry, is_active, joined_at')
     .single()
 
   if (error) {
-    console.error('[/api/ministries/[id]/members PATCH]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
   // Auto role upgrade if promoted to leader
-  if (role_in_ministry === 'leader') {
-    await autoUpgradeRole(supabase, profile_id)
+  if (body.role_in_ministry === 'leader') {
+    await autoUpgradeRole(supabase, body.profile_id)
   }
 
   return NextResponse.json({ data })
-}
+}, { requireRoles: ['ministry_leader', 'super_admin'] })
 
-export async function DELETE(req: NextRequest, { params }: Params) {
-  const { id: ministry_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { profile_id } = await req.json()
-  if (!profile_id) return NextResponse.json({ error: 'profile_id required' }, { status: 400 })
+// DELETE /api/ministries/[id]/members — soft-remove member
+export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
+  const ministry_id = params!.id
+  const body = validate(RemoveMinistryMemberSchema, await req.json())
 
   // Soft remove
   const { error } = await supabase
     .from('ministry_members')
     .update({ is_active: false })
     .eq('ministry_id', ministry_id)
-    .eq('profile_id', profile_id)
+    .eq('profile_id', body.profile_id)
+    .eq('church_id', profile.church_id)
 
   if (error) {
-    console.error('[/api/ministries/[id]/members DELETE]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ success: true })
-}
+}, { requireRoles: ['ministry_leader', 'super_admin'] })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function autoUpgradeRole(supabase: any, profileId: string) {
+/** Auto-upgrade profile role to ministry_leader when assigned as ministry leader */
+async function autoUpgradeRole(
+  supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>,
+  profileId: string
+) {
   const { data: memberProfile } = await supabase
     .from('profiles')
     .select('role')

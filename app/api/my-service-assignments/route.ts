@@ -1,20 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // GET /api/my-service-assignments — current user's upcoming service assignments
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ supabase, user, profile }) => {
   const { data: assignments, error } = await supabase
     .from('event_service_assignments')
     .select(`
@@ -36,15 +23,28 @@ export async function GET(req: NextRequest) {
     .eq('profile_id', user.id)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/my-service-assignments GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Flatten and filter to upcoming events
   const now = new Date().toISOString()
-  const enriched = (assignments || [])
-    .map((a: any) => {
+  type Assignment = {
+    id: string
+    service_need_id: string
+    status: string
+    notes: string | null
+    role: string | null
+    role_ar: string | null
+    created_at: string
+    service_need: {
+      id: string
+      volunteers_needed: number
+      ministry: { name: string; name_ar: string } | null
+      group: { name: string; name_ar: string } | null
+      event: { id: string; title: string; title_ar: string; starts_at: string; ends_at: string; location: string | null; status: string } | null
+    } | null
+  }
+  const enriched = ((assignments as unknown as Assignment[]) || [])
+    .map((a) => {
       const need = a.service_need
       if (!need?.event) return null
       return {
@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
         volunteers_needed: need.volunteers_needed,
       }
     })
-    .filter((a: any) => a && a.event.starts_at >= now && a.event.status !== 'cancelled')
-    .sort((a: any, b: any) => a.event.starts_at.localeCompare(b.event.starts_at))
+    .filter((a): a is NonNullable<typeof a> => a !== null && a.event.starts_at >= now && a.event.status !== 'cancelled')
+    .sort((a, b) => a.event.starts_at.localeCompare(b.event.starts_at))
 
-  return NextResponse.json({ data: enriched })
-}
+  return { data: enriched }
+})

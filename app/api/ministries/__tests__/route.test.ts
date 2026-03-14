@@ -18,25 +18,16 @@ describe('Ministries [id] route — IDOR prevention', () => {
     expect(churchIdCount).toBeGreaterThanOrEqual(3) // GET + PATCH + DELETE
   })
 
-  it('should use allowed-list field filtering on PATCH', () => {
-    // PATCH uses an explicit allowed-list pattern instead of Zod schema
-    expect(routeCode).toContain('const allowed =')
-    expect(routeCode).toContain("'name'")
-    expect(routeCode).toContain("'name_ar'")
+  it('should use Zod validation on PATCH', () => {
+    expect(routeCode).toContain('UpdateMinistrySchema')
+    expect(routeCode).toContain('validate')
+    // Should NOT use raw req.json() directly in update
+    expect(routeCode).not.toContain('.update(await req.json())')
   })
 
   it('DELETE should require super_admin role', () => {
     expect(routeCode).toContain('requireRoles')
     expect(routeCode).toContain("'super_admin'")
-  })
-
-  it('should filter update fields through allowed-list before update', () => {
-    // Uses allowed-list pattern to prevent mass assignment
-    expect(routeCode).toContain('const allowed =')
-    expect(routeCode).toContain('.update(updates)')
-    // Should NOT use raw req.json() directly in update
-    expect(routeCode).not.toContain('.update(await req.json())')
-    expect(routeCode).not.toContain('.update(body)')
   })
 
   it('should not leak error.message to client', () => {

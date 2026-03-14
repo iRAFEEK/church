@@ -1,55 +1,57 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { MinistryNotifySchema } from '@/lib/schemas/ministry'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { logger } from '@/lib/logger'
 
-type Params = { params: Promise<{ id: string }> }
+// POST /api/ministries/[id]/notify — send notification to all active ministry members
+export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
+  const ministry_id = params!.id
 
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id: ministry_id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Check if user is a leader of this ministry or super_admin
-  const { data: userProfile } = await supabase
-    .from('profiles')
-    .select('role, church_id')
-    .eq('id', user.id)
+  // Verify the ministry belongs to this church
+  const { data: ministry } = await supabase
+    .from('ministries')
+    .select('id')
+    .eq('id', ministry_id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (!userProfile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  if (!ministry) {
+    return { error: 'Not found' }
+  }
 
-  const isSuperAdmin = userProfile.role === 'super_admin'
+  // Check if user is a leader of this ministry (or super_admin/ministry_leader role already verified by apiHandler)
+  const isSuperAdmin = profile.role === 'super_admin'
+  const isMinistryLeader = profile.role === 'ministry_leader'
 
-  if (!isSuperAdmin) {
+  if (!isSuperAdmin && !isMinistryLeader) {
+    // Check ministry-level leadership
     const { data: membership } = await supabase
       .from('ministry_members')
       .select('role_in_ministry')
       .eq('ministry_id', ministry_id)
-      .eq('profile_id', user.id)
+      .eq('profile_id', profile.id)
+      .eq('church_id', profile.church_id)
       .eq('is_active', true)
       .single()
 
     if (!membership || membership.role_in_ministry !== 'leader') {
-      return NextResponse.json({ error: 'Only ministry leaders can send notifications' }, { status: 403 })
+      return { error: 'Forbidden' }
     }
   }
 
-  const { titleAr, titleEn, bodyAr, bodyEn } = await req.json()
-  if (!titleAr && !titleEn) {
-    return NextResponse.json({ error: 'Title is required' }, { status: 400 })
-  }
+  const body = validate(MinistryNotifySchema, await req.json())
 
   // Fetch all active ministry members
   const { data: members } = await supabase
     .from('ministry_members')
     .select('profile_id')
     .eq('ministry_id', ministry_id)
+    .eq('church_id', profile.church_id)
     .eq('is_active', true)
 
   if (!members || members.length === 0) {
-    return NextResponse.json({ sent: 0, targets: 0 })
+    return { sent: 0, targets: 0 }
   }
 
   let sent = 0
@@ -57,20 +59,26 @@ export async function POST(req: NextRequest, { params }: Params) {
     try {
       await sendNotification({
         profileId: member.profile_id,
-        churchId: userProfile.church_id,
+        churchId: profile.church_id,
         type: 'general',
-        titleEn: titleEn || titleAr,
-        titleAr: titleAr || titleEn,
-        bodyEn: bodyEn || bodyAr,
-        bodyAr: bodyAr || bodyEn,
+        titleEn: body.titleEn || body.titleAr || '',
+        titleAr: body.titleAr || body.titleEn || '',
+        bodyEn: body.bodyEn || body.bodyAr || '',
+        bodyAr: body.bodyAr || body.bodyEn || '',
         referenceType: 'ministry',
         referenceId: ministry_id,
       })
       sent++
     } catch (error) {
-      logger.error('Failed to notify ministry member', { module: 'ministries', churchId: userProfile.church_id, userId: member.profile_id, error })
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      logger.error('Failed to notify ministry member', {
+        module: 'ministries',
+        churchId: profile.church_id,
+        userId: member.profile_id,
+        error: message,
+      })
     }
   }
 
-  return NextResponse.json({ sent, targets: members.length })
-}
+  return { sent, targets: members.length }
+}, { requireRoles: ['ministry_leader', 'super_admin'] })

@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateMinistrySchema } from '@/lib/schemas/ministry'
 import { normalizeSearch } from '@/lib/utils/normalize'
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
+// GET /api/ministries — list ministries for the current church
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const q = searchParams.get('q')?.trim()
   const pageSize = searchParams.get('pageSize') ? parseInt(searchParams.get('pageSize')!) : undefined
 
   let query = supabase
     .from('ministries')
-    .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url), ministry_members(count)')
+    .select('id, name, name_ar, description, description_ar, is_active, photo_url, church_id, created_at, leader:leader_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url), ministry_members(count)')
+    .eq('church_id', profile.church_id)
     .order('name')
 
   if (q) {
@@ -30,44 +29,34 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query
 
   if (error) {
-    console.error('[/api/ministries GET]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data }, {
     headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   })
-}
+})
 
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await req.json()
-
-  const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const row: Record<string, unknown> = {
-    church_id: profile.church_id,
-    name: body.name,
-    name_ar: body.name_ar || null,
-    description: body.description || null,
-    description_ar: body.description_ar || null,
-    leader_id: body.leader_id || null,
-    is_active: body.is_active ?? true,
-  }
-  if (body.photo_url) row.photo_url = body.photo_url
+// POST /api/ministries — create a new ministry
+export const POST = apiHandler(async ({ req, supabase, profile }) => {
+  const body = validate(CreateMinistrySchema, await req.json())
 
   const { data, error } = await supabase
     .from('ministries')
-    .insert(row)
-    .select()
+    .insert({
+      church_id: profile.church_id,
+      name: body.name,
+      name_ar: body.name_ar ?? null,
+      description: body.description ?? null,
+      description_ar: body.description_ar ?? null,
+      leader_id: body.leader_id ?? null,
+      is_active: body.is_active,
+      ...(body.photo_url ? { photo_url: body.photo_url } : {}),
+    })
+    .select('id, name, name_ar, description, description_ar, is_active, photo_url, church_id, created_at')
     .single()
 
   if (error) {
-    console.error('[/api/ministries POST]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data }, { status: 201 })
-}
+}, { requireRoles: ['ministry_leader', 'super_admin'] })

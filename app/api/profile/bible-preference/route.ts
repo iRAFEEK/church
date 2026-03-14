@@ -1,32 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { z } from 'zod'
+import { validate } from '@/lib/api/validate'
+
+const BiblePreferenceSchema = z.object({
+  preferred_bible_id: z.string().min(1),
+})
 
 // PATCH /api/profile/bible-preference — save preferred Bible version
-export async function PATCH(req: NextRequest) {
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, user }) => {
+  const body = validate(BiblePreferenceSchema, await req.json())
 
-    const body = await req.json()
-    const { preferred_bible_id } = body
+  const { error } = await supabase
+    .from('profiles')
+    .update({ preferred_bible_id: body.preferred_bible_id })
+    .eq('id', user.id)
 
-    if (!preferred_bible_id || typeof preferred_bible_id !== 'string') {
-      return NextResponse.json({ error: 'preferred_bible_id is required' }, { status: 400 })
-    }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ preferred_bible_id })
-      .eq('id', user.id)
-
-    if (error) {
-      console.error('[/api/profile/bible-preference PATCH]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('[/api/profile/bible-preference PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+  if (error) throw error
+  return { success: true }
+})

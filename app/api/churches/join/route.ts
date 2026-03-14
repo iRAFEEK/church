@@ -1,16 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
 
-export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
+// POST /api/churches/join — join a church (during onboarding or subsequently)
+export const POST = apiHandler(async ({ req, supabase, user }) => {
+  const body = await req.json()
   const { church_id } = body
 
-  if (!church_id) return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
+  if (!church_id) {
+    return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
+  }
 
   // Verify target church exists and is active
   const { data: church, error: churchError } = await supabase
@@ -31,7 +29,9 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  if (!profile) {
+    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  }
 
   if (!profile.onboarding_completed) {
     // During onboarding: clear any auto-assigned seed church from user_churches
@@ -45,10 +45,7 @@ export async function POST(request: NextRequest) {
       .from('user_churches')
       .insert({ user_id: user.id, church_id, role: 'member' })
 
-    if (insertError) {
-      console.error('[/api/churches/join POST]', insertError)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    if (insertError) throw insertError
 
     // Set as active church on profile
     const { error: profileError } = await supabase
@@ -56,10 +53,7 @@ export async function POST(request: NextRequest) {
       .update({ church_id })
       .eq('id', user.id)
 
-    if (profileError) {
-      console.error('[/api/churches/join POST]', profileError)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    if (profileError) throw profileError
   } else {
     // Subsequent join: just add to user_churches (don't change active church)
     const { error: insertError } = await supabase
@@ -67,10 +61,9 @@ export async function POST(request: NextRequest) {
       .insert({ user_id: user.id, church_id, role: 'member' })
 
     if (insertError && !insertError.message.includes('duplicate')) {
-      console.error('[/api/churches/join POST]', insertError)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+      throw insertError
     }
   }
 
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+}, { rateLimit: 'strict' })

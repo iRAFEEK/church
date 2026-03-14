@@ -94,40 +94,12 @@ const makeReq = (path: string, method = 'GET') =>
   })
 
 const MANUAL_AUTH_ROUTES: Array<{ method: string; path: string; module: string; params?: Record<string, string> }> = [
-  // Ministries (still manual auth)
-  { method: 'GET', path: '/api/ministries', module: '@/app/api/ministries/route' },
-  { method: 'POST', path: '/api/ministries', module: '@/app/api/ministries/route' },
-
-  // Churches (still manual auth)
-  { method: 'GET', path: '/api/churches/my-churches', module: '@/app/api/churches/my-churches/route' },
-  { method: 'POST', path: '/api/churches/join', module: '@/app/api/churches/join/route' },
-  { method: 'POST', path: '/api/churches/switch', module: '@/app/api/churches/switch/route' },
+  // All user-auth routes migrated to apiHandler.
+  // Only churches/search remains manual (needs profile-optional support).
 ]
 
 describe('Smoke — manual auth routes return 401 or redirect when unauthenticated', () => {
-  for (const route of MANUAL_AUTH_ROUTES) {
-    it(`${route.method} ${route.path} → 401 or redirect`, async () => {
-      const mod = await import(route.module)
-      const handler = mod[route.method]
-      if (!handler) return
-
-      const req = makeReq(route.path, route.method)
-
-      // Dynamic route handlers receive a second arg with params
-      const hasParams = route.params || route.path.includes(FAKE_ID)
-      const paramObj = route.params || { id: FAKE_ID }
-      const args: [NextRequest, ...unknown[]] = hasParams
-        ? [req, { params: Promise.resolve(paramObj) }]
-        : [req]
-
-      try {
-        const res = await handler(...args)
-        // If we get a response, it should be 401 or 403, not 500
-        expect([401, 403]).toContain(res.status)
-      } catch (err) {
-        // If it throws, it should be a redirect to /login (not an unhandled crash)
-        expect((err as Error).message).toContain('REDIRECT')
-      }
-    })
-  }
+  it('all user-auth routes have been migrated to apiHandler', () => {
+    expect(MANUAL_AUTH_ROUTES).toHaveLength(0)
+  })
 })

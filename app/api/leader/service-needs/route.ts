@@ -1,20 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // GET /api/leader/service-needs — service needs where current user is leader
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ supabase, user, profile }) => {
   // Find ministries where user is leader
   const { data: ledMinistries } = await supabase
     .from('ministries')
@@ -29,11 +16,11 @@ export async function GET(req: NextRequest) {
     .eq('church_id', profile.church_id)
     .or(`leader_id.eq.${user.id},co_leader_id.eq.${user.id}`)
 
-  const ministryIds = (ledMinistries || []).map((m: any) => m.id)
-  const groupIds = (ledGroups || []).map((g: any) => g.id)
+  const ministryIds = (ledMinistries || []).map((m: { id: string }) => m.id)
+  const groupIds = (ledGroups || []).map((g: { id: string }) => g.id)
 
   if (ministryIds.length === 0 && groupIds.length === 0) {
-    return NextResponse.json({ data: [] })
+    return { data: [] }
   }
 
   // Build OR filter for service needs
@@ -48,7 +35,7 @@ export async function GET(req: NextRequest) {
   const { data: needs, error } = await supabase
     .from('event_service_needs')
     .select(`
-      *,
+      id, volunteers_needed, notes, role_presets, church_id,
       ministry:ministry_id(id, name, name_ar),
       group:group_id(id, name, name_ar),
       event:event_id(id, title, title_ar, starts_at, ends_at, location, status),
@@ -57,26 +44,34 @@ export async function GET(req: NextRequest) {
     .eq('church_id', profile.church_id)
     .or(filters.join(','))
 
-  if (error) {
-    console.error('[/api/leader/service-needs GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Filter to upcoming events only and enrich
   const now = new Date().toISOString()
-  const enriched = (needs || [])
-    .filter((n: any) => n.event && n.event.starts_at >= now && n.event.status !== 'cancelled')
-    .map((n: any) => ({
+  type ServiceNeed = {
+    id: string
+    volunteers_needed: number
+    notes: string | null
+    role_presets: unknown
+    church_id: string
+    ministry: { id: string; name: string; name_ar: string } | null
+    group: { id: string; name: string; name_ar: string } | null
+    event: { id: string; title: string; title_ar: string; starts_at: string; ends_at: string; location: string | null; status: string } | null
+    event_service_assignments: { id: string; status: string }[]
+  }
+  const enriched = ((needs as unknown as ServiceNeed[]) || [])
+    .filter((n) => n.event && n.event.starts_at >= now && n.event.status !== 'cancelled')
+    .map((n) => ({
       ...n,
       assigned_count: (n.event_service_assignments || []).filter(
-        (a: any) => a.status !== 'declined'
+        (a) => a.status !== 'declined'
       ).length,
       confirmed_count: (n.event_service_assignments || []).filter(
-        (a: any) => a.status === 'confirmed'
+        (a) => a.status === 'confirmed'
       ).length,
       event_service_assignments: undefined,
     }))
-    .sort((a: any, b: any) => a.event.starts_at.localeCompare(b.event.starts_at))
+    .sort((a, b) => a.event!.starts_at.localeCompare(b.event!.starts_at))
 
-  return NextResponse.json({ data: enriched })
-}
+  return { data: enriched }
+})

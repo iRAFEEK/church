@@ -1,21 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
-type Params = { params: Promise<{ id: string }> }
+interface EventRecord {
+  id: string
+  title: string
+  title_ar: string | null
+  event_type: string
+  starts_at: string
+  ends_at: string | null
+  location: string | null
+  status: string
+}
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id: ministryId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+interface ServiceNeedRow {
+  event_id: string
+  volunteers_needed: number
+  event: EventRecord | EventRecord[] | null
+}
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+// GET /api/ministries/[id]/events — get events linked to this ministry via service needs
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const ministryId = params!.id
 
   // Get events linked to this ministry via event_service_needs
   const { data: needs } = await supabase
@@ -28,16 +32,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
     .eq('ministry_id', ministryId)
     .eq('church_id', profile.church_id)
 
-  if (!needs) return NextResponse.json({ data: { upcoming: [], recent: [] } })
+  if (!needs) return { data: { upcoming: [], recent: [] } }
 
   // Deduplicate events and split into upcoming/recent
   const now = new Date().toISOString()
   const seen = new Set<string>()
-  const upcoming: any[] = []
-  const recent: any[] = []
+  const upcoming: EventRecord[] = []
+  const recent: EventRecord[] = []
 
-  for (const need of needs) {
-    const event = need.event as any
+  for (const need of needs as ServiceNeedRow[]) {
+    const rawEvent = need.event
+    // Supabase returns single-FK joins as an array — unwrap if needed
+    const event = Array.isArray(rawEvent) ? rawEvent[0] : rawEvent
     if (!event || seen.has(event.id)) continue
     seen.add(event.id)
 
@@ -51,10 +57,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
   upcoming.sort((a, b) => a.starts_at.localeCompare(b.starts_at))
   recent.sort((a, b) => b.starts_at.localeCompare(a.starts_at))
 
-  return NextResponse.json({
+  return {
     data: {
       upcoming: upcoming.slice(0, 10),
       recent: recent.slice(0, 10),
     }
-  })
-}
+  }
+})

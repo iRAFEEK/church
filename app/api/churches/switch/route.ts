@@ -1,16 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
 
-export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
+// POST /api/churches/switch — switch active church
+export const POST = apiHandler(async ({ req, supabase, user }) => {
+  const body = await req.json()
   const { church_id } = body
 
-  if (!church_id) return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
+  if (!church_id) {
+    return NextResponse.json({ error: 'church_id is required' }, { status: 400 })
+  }
 
   // Read the user's role for the TARGET church from user_churches
   // This is the authoritative source of per-church roles
@@ -36,10 +34,7 @@ export async function POST(request: NextRequest) {
     })
     .eq('id', user.id)
 
-  if (error) {
-    console.error('[/api/churches/switch POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+}, { rateLimit: 'strict' })
