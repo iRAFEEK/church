@@ -62,6 +62,7 @@ This project has a full multi-agent engineering system in `.claude/`.
 | database, RLS, index, migration | `05-database.md` |
 | tests, coverage, debt | `06-tests-debt.md` |
 | full audit, everything | all agents via `07-cto.md` orchestrator |
+| code review, review changes | `code-reviewer.md` |
 | optimize recently changed files | `optimize-after-feature.md` |
 | seed test data for a feature | `seed-feature.md` |
 | UX review or design spec | `ux-designer.md` |
@@ -741,6 +742,18 @@ supabase db execute --file supabase/seeds/[feature].sql
 
 # Run analytics coverage audit
 bash .claude/scripts/analytics-audit.sh
+
+# Code review on uncommitted changes
+bash .claude/scripts/code-review.sh
+
+# Code review on last commit
+bash .claude/scripts/code-review.sh --last-commit
+
+# Code review on all changes since diverging from main
+bash .claude/scripts/code-review.sh --diff-main
+
+# Code review on a specific directory
+bash .claude/scripts/code-review.sh app/api/finance/
 ```
 
 ---
@@ -792,6 +805,7 @@ Skills contain the condensed patterns from all previous work. An agent that skip
 | Any code work (new feature, new component, new API route, refactor, new module) | `.claude/skills/code-quality/SKILL.md` |
 | Any UI work (new page, form, list, layout decision, UX review) | `.claude/skills/ux-design/SKILL.md` |
 | Any feature with user interactions (forms, buttons, navigation) | `.claude/skills/analytics/SKILL.md` |
+| Code review (post-commit, post-feature) | `.claude/agents/code-reviewer.md` (agent, not skill) |
 | After completing ANY task | `.claude/skills/context-update/SKILL.md` |
 
 ### How to read a skill

@@ -9,5 +9,21 @@
       "Bash(npx tsx:*)",
       "WebFetch(domain:bible.helloao.org)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/code-review.sh --last-commit",
+            "timeout": 300,
+            "statusMessage": "Running code review on last commit...",
+            "async": true
+          }
+        ]
+      }
+    ]
   }
 }
