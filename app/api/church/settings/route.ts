@@ -1,42 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { createAdminClient } from '@/lib/supabase/server'
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+// GET /api/church/settings
+export const GET = apiHandler(async ({ supabase, profile }) => {
   const { data, error } = await supabase
     .from('churches')
     .select('default_currency, supported_currencies, fiscal_year_start_month, financial_approval_required, donation_receipt_enabled, online_giving_enabled')
     .eq('id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/church/settings GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data }, {
-    headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
-  })
-}
+  if (error) throw error
+  return { data }
+}, { cache: 'private, max-age=300, stale-while-revalidate=600' })
 
-export async function PATCH(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase.from('profiles').select('church_id, role, permissions').eq('id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_finances) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
+// PATCH /api/church/settings
+export const PATCH = apiHandler(async ({ req, profile }) => {
   const body = await req.json()
   const allowed = [
     'default_currency', 'supported_currencies', 'fiscal_year_start_month',
@@ -51,13 +30,10 @@ export async function PATCH(req: NextRequest) {
     .from('churches')
     .update(update)
     .eq('id', profile.church_id)
-    .select()
+    .select('default_currency, supported_currencies, fiscal_year_start_month, financial_approval_required, donation_receipt_enabled, online_giving_enabled')
     .single()
 
-  if (error) {
-    console.error('[/api/church/settings PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_finances'] })

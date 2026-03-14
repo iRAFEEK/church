@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateMinistrySchema } from '@/lib/schemas/ministry'
 
 // GET /api/ministries/[id] — get ministry detail with members
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
@@ -19,7 +20,6 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .single()
 
   if (error || !data) {
-    console.error('[/api/ministries/[id] GET]', error)
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
   return NextResponse.json({ data })
@@ -27,29 +27,21 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 
 // PATCH /api/ministries/[id] — update ministry
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
-  const body = await req.json()
-
-  // Only pass known columns to avoid errors if migration not applied
-  const allowed = ['name', 'name_ar', 'description', 'description_ar', 'leader_id', 'is_active', 'photo_url']
-  const updates: Record<string, unknown> = {}
-  for (const key of allowed) {
-    if (key in body) updates[key] = body[key]
-  }
+  const body = validate(UpdateMinistrySchema, await req.json())
 
   const { data, error } = await supabase
     .from('ministries')
-    .update(updates)
+    .update(body)
     .eq('id', params!.id)
     .eq('church_id', profile.church_id)
     .select('id, name, name_ar, description, description_ar, is_active, photo_url, church_id, created_at')
     .single()
 
   if (error) {
-    console.error('[/api/ministries/[id] PATCH]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ data })
-})
+}, { requireRoles: ['ministry_leader', 'super_admin'] })
 
 // DELETE /api/ministries/[id] — delete ministry (super_admin only)
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -60,7 +52,6 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) {
-    console.error('[/api/ministries/[id] DELETE]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
   return NextResponse.json({ success: true })

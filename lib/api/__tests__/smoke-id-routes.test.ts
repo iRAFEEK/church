@@ -104,6 +104,10 @@ const ID_ROUTES: Array<{ method: string; path: string; module: string; handler?:
   { method: 'GET', path: `/api/ministries/${FAKE_ID}`, module: '@/app/api/ministries/[id]/route' },
   { method: 'PATCH', path: `/api/ministries/${FAKE_ID}`, module: '@/app/api/ministries/[id]/route' },
   { method: 'DELETE', path: `/api/ministries/${FAKE_ID}`, module: '@/app/api/ministries/[id]/route' },
+  { method: 'POST', path: `/api/ministries/${FAKE_ID}/members`, module: '@/app/api/ministries/[id]/members/route' },
+  { method: 'DELETE', path: `/api/ministries/${FAKE_ID}/members`, module: '@/app/api/ministries/[id]/members/route' },
+  { method: 'GET', path: `/api/ministries/${FAKE_ID}/events`, module: '@/app/api/ministries/[id]/events/route' },
+  { method: 'POST', path: `/api/ministries/${FAKE_ID}/notify`, module: '@/app/api/ministries/[id]/notify/route' },
 
   // Permissions - user [id]
   { method: 'GET', path: `/api/permissions/user/${FAKE_ID}`, module: '@/app/api/permissions/user/[id]/route' },
@@ -210,6 +214,13 @@ const ID_ROUTES: Array<{ method: string; path: string; module: string; handler?:
 
   // Bible bibles list (migrated to apiHandler)
   { method: 'GET', path: '/api/bible/bibles', module: '@/app/api/bible/bibles/route' },
+
+  // Church settings (migrated to apiHandler)
+  { method: 'GET', path: '/api/church/settings', module: '@/app/api/church/settings/route' },
+  { method: 'PATCH', path: '/api/church/settings', module: '@/app/api/church/settings/route' },
+
+  // Leaders register (migrated to apiHandler)
+  { method: 'POST', path: '/api/leaders/register', module: '@/app/api/leaders/register/route' },
 ]
 
 describe('Smoke — all [id] apiHandler routes return 401, not 500, when unauthenticated', () => {

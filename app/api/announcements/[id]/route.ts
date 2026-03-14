@@ -1,55 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
 
 // GET /api/announcements/[id]
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data, error } = await supabase
     .from('announcements')
-    .select('*')
+    .select('id, title, title_ar, body, body_ar, status, is_pinned, published_at, expires_at, created_at, created_by')
     .eq('id', id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/announcements/[id] GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error) throw error
+  if (!data) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  return NextResponse.json({ data })
-}
+  return { data }
+})
 
 // PATCH /api/announcements/[id] — update (admin only)
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_announcements) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
   const body = await req.json()
 
   // If publishing, set published_at
@@ -58,6 +29,7 @@ export async function PATCH(
       .from('announcements')
       .select('published_at')
       .eq('id', id)
+      .eq('church_id', profile.church_id)
       .single()
 
     if (existing && !existing.published_at) {
@@ -69,48 +41,26 @@ export async function PATCH(
     .from('announcements')
     .update(body)
     .eq('id', id)
-    .select()
+    .eq('church_id', profile.church_id)
+    .select('id, title, title_ar, body, body_ar, status, is_pinned, published_at, expires_at, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/announcements/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_announcements'] })
 
 // DELETE /api/announcements/[id] — delete (admin only)
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_announcements) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { error } = await supabase
     .from('announcements')
     .delete()
     .eq('id', id)
+    .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/announcements/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+}, { requirePermissions: ['can_manage_announcements'] })

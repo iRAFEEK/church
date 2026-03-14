@@ -135,6 +135,10 @@ const APIHANDLER_ROUTES: Array<{ method: string; path: string; module: string }>
   // Visitors (GET migrated to apiHandler; POST is public)
   { method: 'GET', path: '/api/visitors', module: '@/app/api/visitors/route' },
 
+  // Ministries (migrated to apiHandler)
+  { method: 'GET', path: '/api/ministries', module: '@/app/api/ministries/route' },
+  { method: 'POST', path: '/api/ministries', module: '@/app/api/ministries/route' },
+
   // Profiles (migrated to apiHandler)
   { method: 'GET', path: '/api/profiles', module: '@/app/api/profiles/route' },
   { method: 'GET', path: '/api/profiles/at-risk', module: '@/app/api/profiles/at-risk/route' },
@@ -147,6 +151,20 @@ const APIHANDLER_ROUTES: Array<{ method: string; path: string; module: string }>
   { method: 'POST', path: '/api/bible/bookmarks', module: '@/app/api/bible/bookmarks/route' },
   { method: 'GET', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
   { method: 'POST', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
+
+  // Churches (migrated to apiHandler)
+  { method: 'GET', path: '/api/churches/my-churches', module: '@/app/api/churches/my-churches/route' },
+  { method: 'POST', path: '/api/churches/join', module: '@/app/api/churches/join/route' },
+  { method: 'POST', path: '/api/churches/switch', module: '@/app/api/churches/switch/route' },
+
+  // Misc routes (migrated to apiHandler)
+  { method: 'GET', path: '/api/leader/service-needs', module: '@/app/api/leader/service-needs/route' },
+  { method: 'GET', path: '/api/my-service-assignments', module: '@/app/api/my-service-assignments/route' },
+  { method: 'GET', path: '/api/role-suggestions', module: '@/app/api/role-suggestions/route' },
+  { method: 'GET', path: '/api/visitors/escalations', module: '@/app/api/visitors/escalations/route' },
+  { method: 'PATCH', path: '/api/profile/bible-preference', module: '@/app/api/profile/bible-preference/route' },
+
+
 ]
 
 describe('Smoke — all apiHandler routes return 401, not 500, when unauthenticated', () => {
