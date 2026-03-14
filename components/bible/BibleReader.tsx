@@ -14,6 +14,7 @@ import {
   ChevronLeft, ChevronRight, Loader2, BookOpen,
   Bookmark, Minus, Plus, Presentation, Type,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ChapterContent } from './ChapterContent'
 import { BibleSearch } from './BibleSearchDialog'
@@ -133,7 +134,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
         body: JSON.stringify({ preferred_bible_id: newBibleId }),
       }).catch(() => {})
     } catch {
-      // silently fail
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setVersionLoading(false)
     }
@@ -158,6 +159,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } catch {
       setChapterContent(null)
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -198,7 +200,9 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       const res = await fetch(`/api/bible/highlights?chapter_id=${chapterContent.id}`)
       const json = await res.json()
       setHighlights(json.data || [])
-    } catch {}
+    } catch {
+      toast.error('Something went wrong. Please try again.')
+    }
   }, [chapterContent])
 
   const refreshBookmarks = useCallback(async () => {
@@ -206,7 +210,9 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       const res = await fetch('/api/bible/bookmarks')
       const json = await res.json()
       setBookmarks(json.data || [])
-    } catch {}
+    } catch {
+      toast.error('Something went wrong. Please try again.')
+    }
   }, [])
 
   const currentChapterIdx = selectedChapterId ? chapters.findIndex(ch => ch.id === selectedChapterId) : -1

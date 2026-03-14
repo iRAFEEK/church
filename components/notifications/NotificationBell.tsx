@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Bell, CheckCheck } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
   Popover,
   PopoverContent,
@@ -87,7 +88,7 @@ export function NotificationBell() {
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch {
-      // silently fail
+      toast.error('Something went wrong. Please try again.')
     }
   }
 
@@ -97,7 +98,7 @@ export function NotificationBell() {
       setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString(), status: 'read' })))
       setUnreadCount(0)
     } catch {
-      // silently fail
+      toast.error('Something went wrong. Please try again.')
     }
   }
 
