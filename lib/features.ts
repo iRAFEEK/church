@@ -2,6 +2,8 @@
 // In production, flags are read from the church_features table.
 // In development, flags can be overridden via environment variables.
 
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 export type FeatureFlag =
   | 'advanced_reporting'
   | 'sms_notifications'
@@ -33,7 +35,8 @@ export function isFeatureEnabled(flag: FeatureFlag): boolean {
 // ARCH: Async check against church_features table.
 // Use this when you need per-church feature control.
 export async function isFeatureEnabledForChurch(
-  supabase: { from: (table: string) => { select: (...args: unknown[]) => unknown } },
+  // Structural type to accept both real SupabaseClient and test mocks
+  supabase: Pick<SupabaseClient, 'from'>,
   flag: FeatureFlag,
   churchId: string
 ): Promise<boolean> {
@@ -41,7 +44,7 @@ export async function isFeatureEnabledForChurch(
   if (isFeatureEnabled(flag) && DEFAULT_FLAGS[flag]) return true
 
   try {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from('church_features')
       .select('enabled')
       .eq('church_id', churchId)

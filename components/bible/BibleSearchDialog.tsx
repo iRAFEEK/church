@@ -46,7 +46,7 @@ export function BibleSearch({ bibleId, onNavigate, variant = 'default' }: BibleS
       const json = await res.json()
       const data = json.data || {}
       setResults(
-        (data.verses || []).map((v: any) => {
+        (data.verses || []).map((v: { id: string; bookId?: string; chapterId?: string; reference?: string; content?: string }) => {
           const bookId = v.bookId || v.chapterId?.split('.')[0] || ''
           const chId = v.chapterId || ''
           const verseNum = v.reference?.split(':').pop() || ''

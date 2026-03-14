@@ -13,12 +13,12 @@ export const GET = apiHandler(async ({ params }) => {
   const [needResult, countResult] = await Promise.all([
     admin
       .from('church_needs')
-      .select('*, church:church_id(id, name, name_ar, country, logo_url, denomination)')
+      .select('id, church_id, created_by, title, title_ar, description, description_ar, image_url, category, quantity, urgency, status, contact_name, contact_phone, contact_email, expires_at, fulfilled_at, created_at, updated_at, church:church_id(id, name, name_ar, country, logo_url, denomination)')
       .eq('id', id)
       .single(),
     admin
       .from('church_need_responses')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('need_id', id),
   ])
 
@@ -55,7 +55,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .from('church_needs')
     .update(updateData)
     .eq('id', id)
-    .select()
+    .select('id, church_id, title, title_ar, description, description_ar, image_url, category, quantity, urgency, status, contact_name, contact_phone, contact_email, expires_at, fulfilled_at, created_at, updated_at')
     .single()
 
   if (error) throw error

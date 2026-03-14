@@ -28,7 +28,7 @@ export const PATCH = apiHandler(async ({ req, profile, params }) => {
     .update({ status: validated.status })
     .eq('id', responseId)
     .eq('need_id', id)
-    .select()
+    .select('id, need_id, responder_church_id, responder_user_id, message, message_ar, status, created_at, updated_at')
     .single()
 
   if (error) throw error
@@ -46,7 +46,7 @@ export const PATCH = apiHandler(async ({ req, profile, params }) => {
   if (validated.status === 'completed') {
     const { count } = await admin
       .from('church_need_responses')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('need_id', id)
       .eq('status', 'accepted')
 

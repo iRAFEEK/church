@@ -8,8 +8,8 @@ import type { CustomFieldDefinition } from '@/types'
 
 interface CustomFieldsRendererProps {
   fields: CustomFieldDefinition[]
-  values: Record<string, any>
-  onChange: (values: Record<string, any>) => void
+  values: Record<string, string | number | boolean>
+  onChange: (values: Record<string, string | number | boolean>) => void
 }
 
 export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsRendererProps) {
@@ -18,7 +18,7 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
 
   if (fields.length === 0) return null
 
-  const handleChange = (fieldId: string, value: any) => {
+  const handleChange = (fieldId: string, value: string | number | boolean) => {
     onChange({ ...values, [fieldId]: value })
   }
 
@@ -36,7 +36,7 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
 
             {field.type === 'text' && (
               <Input
-                value={value || ''}
+                value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
                 className="min-h-[44px]"
               />
@@ -45,7 +45,7 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
             {field.type === 'number' && (
               <Input
                 type="number"
-                value={value || ''}
+                value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
                 dir="ltr"
                 className="min-h-[44px]"
@@ -54,7 +54,7 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
 
             {field.type === 'select' && (
               <select
-                value={value || ''}
+                value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white text-sm"
               >

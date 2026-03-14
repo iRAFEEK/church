@@ -130,7 +130,7 @@ export function BiblePresenter({
         if (controller.signal.aborted) return
         const data = json.data || {}
         setSearchResults(
-          (data.verses || []).map((v: any) => {
+          (data.verses || []).map((v: { id: string; bookId?: string; chapterId?: string; reference?: string; content?: string; verse_number?: number; text?: string }) => {
             const bookId = v.bookId || v.chapterId?.split('.')[0] || ''
             const chId = v.chapterId || ''
             const vNum = v.reference?.split(':').pop() || ''
@@ -177,7 +177,7 @@ export function BiblePresenter({
       if (!res.ok) return
       const json = await res.json()
       const data = json.data || {}
-      const newVerses: Verse[] = (data.verses || []).map((v: any) => ({
+      const newVerses: Verse[] = (data.verses || []).map((v: { id: string; verse_number: number; text: string }) => ({
         id: v.id,
         verse_number: v.verse_number,
         text: v.text,
@@ -280,7 +280,7 @@ export function BiblePresenter({
       .then(r => r.json())
       .then(json => {
         if (!controller.signal.aborted) {
-          const chs = (json.data || []).map((c: any) => ({ id: c.id, number: c.number }))
+          const chs = (json.data || []).map((c: { id: string; number: string }) => ({ id: c.id, number: c.number }))
           setGoToChapters(chs)
         }
       })
@@ -300,7 +300,7 @@ export function BiblePresenter({
       if (!res.ok) return
       const json = await res.json()
       const data = json.data || {}
-      const newVerses: Verse[] = (data.verses || []).map((v: any) => ({
+      const newVerses: Verse[] = (data.verses || []).map((v: { id: string; verse_number: number; text: string }) => ({
         id: v.id,
         verse_number: v.verse_number,
         text: v.text,

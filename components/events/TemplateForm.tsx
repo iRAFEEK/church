@@ -103,7 +103,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
         if (controller.signal.aborted) return
         if (d.data?.needs) {
           setServiceNeeds(
-            d.data.needs.map((n: any) => ({
+            d.data.needs.map((n: { ministry_id?: string; group_id?: string; volunteers_needed: number; notes?: string; notes_ar?: string; role_presets?: unknown[]; ministry?: { name: string; name_ar?: string }; group?: { name: string; name_ar?: string } }) => ({
               ministry_id: n.ministry_id || undefined,
               group_id: n.group_id || undefined,
               volunteers_needed: n.volunteers_needed,
@@ -118,7 +118,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
         }
         if (d.data?.segments) {
           setSegments(
-            d.data.segments.map((s: any) => ({
+            d.data.segments.map((s: { title: string; title_ar?: string; duration_minutes: number; ministry_id?: string; assigned_to?: string; notes?: string; notes_ar?: string; ministry?: { name: string; name_ar?: string }; profile?: { first_name?: string; last_name?: string } }) => ({
               title: s.title,
               title_ar: s.title_ar || '',
               duration_minutes: s.duration_minutes,

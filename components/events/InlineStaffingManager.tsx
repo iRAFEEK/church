@@ -162,8 +162,8 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
         const data = await res.json()
         setMembers(
           (data.data || [])
-            .filter((m: any) => m.is_active)
-            .map((m: any) => m.profile || m)
+            .filter((m: { is_active: boolean; profile?: unknown }) => m.is_active)
+            .map((m: { is_active: boolean; profile?: unknown }) => (m.profile || m) as MemberOption)
         )
       } else {
         const groupsRes = await fetch(`/api/groups?ministry_id=${teamId}`)

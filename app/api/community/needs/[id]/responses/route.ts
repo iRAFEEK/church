@@ -26,10 +26,11 @@ export const GET = apiHandler(async ({ profile, params }) => {
   let query = admin
     .from('church_need_responses')
     .select(
-      '*, responder_church:responder_church_id(id, name, name_ar, country, logo_url)'
+      'id, need_id, responder_church_id, responder_user_id, message, message_ar, status, created_at, updated_at, responder_church:responder_church_id(id, name, name_ar, country, logo_url)'
     )
     .eq('need_id', id)
     .order('created_at', { ascending: false })
+    .limit(100)
 
   // Non-owners can only see their own response
   if (!isOwner) {
@@ -77,7 +78,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
       responder_user_id: user.id,
       ...validated,
     })
-    .select()
+    .select('id, need_id, responder_church_id, responder_user_id, message, message_ar, status, created_at')
     .single()
 
   if (error) {

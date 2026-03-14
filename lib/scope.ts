@@ -1,3 +1,5 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 /**
  * Resolves the user's scope — what ministries, groups, and serving areas they lead.
  * Used for scoping data access for leaders.
@@ -11,7 +13,8 @@ export interface UserScope {
 }
 
 export async function resolveUserScope(
-  supabase: any,
+  // Structural type to accept both real SupabaseClient and test mocks
+  supabase: Pick<SupabaseClient, 'from'>,
   profileId: string,
   churchId: string
 ): Promise<UserScope> {
@@ -48,12 +51,13 @@ export async function resolveUserScope(
       .limit(50),
   ])
 
-  const ministryIds = (ministryRes.data || []).map((m: any) => m.ministry_id)
-  const groupIds = (groupRes.data || []).map((g: any) => g.group_id)
-  const servingAreaIds = (servingRes.data || []).map((s: any) => s.serving_area_id)
+  const ministryIds = (ministryRes.data || []).map((m: { ministry_id: string }) => m.ministry_id)
+  const groupIds = (groupRes.data || []).map((g: { group_id: string }) => g.group_id)
+  const servingAreaIds = (servingRes.data || []).map((s: { serving_area_id: string }) => s.serving_area_id)
 
   // Check worship membership by name pattern
-  const isWorshipMinistryMember = (worshipRes.data || []).some((m: any) => {
+  const worshipRecords = (worshipRes.data || []) as unknown as Array<{ ministry?: { name: string } | null }>
+  const isWorshipMinistryMember = worshipRecords.some((m) => {
     const name = (m.ministry?.name || '').toLowerCase()
     return name.includes('worship') || name.includes('music') || name.includes('ترانيم') || name.includes('تسبيح')
   })

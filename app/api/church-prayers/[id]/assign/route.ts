@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { AssignPrayerSchema } from '@/lib/schemas/prayer'
@@ -47,6 +48,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     // Don't fail the request if notification fails
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_view_prayers'] })
 
@@ -68,5 +70,6 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, { requirePermissions: ['can_view_prayers'] })

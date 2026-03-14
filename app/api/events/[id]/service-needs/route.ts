@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { ReplaceServiceNeedsSchema } from '@/lib/schemas/event'
@@ -157,5 +158,6 @@ export const PUT = apiHandler(async ({ req, supabase, profile, params }) => {
     }
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, { requirePermissions: ['can_manage_events'] })

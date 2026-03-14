@@ -50,21 +50,37 @@ export function formatWeekLabel(date: Date): string {
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
+// ─── Shared types for dashboard records ──────────
+
+interface AttendanceRecord {
+  status: string
+  gatherings?: { status: string; scheduled_at: string } | null
+  group_id?: string
+}
+
+interface GroupWithHealth {
+  id: string
+  name: string
+  name_ar: string | null
+  profiles?: { first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null } | null
+  group_members?: Array<{ is_active: boolean; profiles?: { status: string } | null }> | null
+}
+
 // ─── Shared: Build attendance trend from records ──
 
 export function buildAttendanceTrend(
-  records: any[],
+  records: AttendanceRecord[],
   filterStatus: string = 'completed'
 ): { trend: WeeklyAttendancePoint[]; rate: number } {
-  const completedRecords = records.filter((a: any) => a.gatherings?.status === filterStatus)
-  const presentCount = completedRecords.filter((a: any) => a.status === 'present' || a.status === 'late').length
+  const completedRecords = records.filter((a) => a.gatherings?.status === filterStatus)
+  const presentCount = completedRecords.filter((a) => a.status === 'present' || a.status === 'late').length
   const rate = completedRecords.length > 0
     ? Math.round((presentCount / completedRecords.length) * 100)
     : 0
 
   const weeklyMap = new Map<number, { present: number; total: number; date: Date }>()
   for (const rec of completedRecords) {
-    const date = new Date(rec.gatherings.scheduled_at)
+    const date = new Date(rec.gatherings!.scheduled_at)
     const weekNum = getWeekNumber(date)
     if (!weeklyMap.has(weekNum)) {
       weeklyMap.set(weekNum, { present: 0, total: 0, date })
@@ -87,14 +103,14 @@ export function buildAttendanceTrend(
 // ─── Shared: Build group health rows ──────────────
 
 export function buildGroupHealthRows(
-  groups: any[],
+  groups: GroupWithHealth[],
   groupAttendanceMap: Map<string, { present: number; total: number }>,
   prevGroupAttendanceMap: Map<string, number>
 ): GroupHealthRow[] {
-  return groups.map((g: any) => {
-    const leader = g.profiles as any
-    const activeMembers = (g.group_members || []).filter((m: any) => m.is_active)
-    const atRiskCount = activeMembers.filter((m: any) => m.profiles?.status === 'at_risk').length
+  return groups.map((g) => {
+    const leader = g.profiles
+    const activeMembers = (g.group_members || []).filter((m) => m.is_active)
+    const atRiskCount = activeMembers.filter((m) => m.profiles?.status === 'at_risk').length
     const attData = groupAttendanceMap.get(g.id)
     const currentRate = attData && attData.total > 0 ? Math.round((attData.present / attData.total) * 100) : null
     const prevRate = prevGroupAttendanceMap.get(g.id) ?? null
@@ -135,7 +151,7 @@ export async function getCoLedMinistryGroupIds(
 
   if (!coLedMinistries || coLedMinistries.length === 0) return []
 
-  const ministryIds = coLedMinistries.map((m: any) => m.ministry_id)
+  const ministryIds = coLedMinistries.map((m) => m.ministry_id)
 
   const { data: groups } = await supabase
     .from('groups')
@@ -144,5 +160,5 @@ export async function getCoLedMinistryGroupIds(
     .eq('is_active', true)
     .in('ministry_id', ministryIds)
 
-  return (groups || []).map((g: any) => g.id)
+  return (groups || []).map((g) => g.id)
 }

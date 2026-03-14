@@ -7,11 +7,19 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, X } from 'lucide-react'
 import { toast } from 'sonner'
 
+interface SignupSlot {
+  id: string
+  title: string | null
+  title_ar: string | null
+  date: string
+  serving_areas?: { name: string | null; name_ar: string | null } | null
+}
+
 export function MySignups() {
   const t = useTranslations('serving')
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
-  const [slots, setSlots] = useState<any[]>([])
+  const [slots, setSlots] = useState<SignupSlot[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
 

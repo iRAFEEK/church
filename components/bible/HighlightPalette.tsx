@@ -23,7 +23,7 @@ export function HighlightPalette({ activeColor, onSelect, onRemove }: HighlightP
           className={`h-6 w-6 rounded-full ${c.class} border-2 transition-transform hover:scale-110 ${
             activeColor === c.value ? 'border-zinc-900 scale-110' : 'border-transparent'
           }`}
-          title={t(`color${c.value.charAt(0).toUpperCase() + c.value.slice(1)}` as any)}
+          title={t(`color${c.value.charAt(0).toUpperCase() + c.value.slice(1)}` as Parameters<typeof t>[0])}
         />
       ))}
       {activeColor && (

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
@@ -41,5 +42,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     console.error('[/api/prayer/[id] PATCH]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
 })

@@ -54,7 +54,7 @@ export const PATCH = apiHandler(async ({ req, supabase, user, profile, params })
     .update(parsed)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, first_name, last_name, first_name_ar, last_name_ar, email, phone, role, status, gender, photo_url, date_of_birth, occupation, occupation_ar, address, address_ar, city, city_ar, address_notes, notification_pref, preferred_language, preferred_bible_id, joined_church_at, onboarding_completed, church_id, created_at, updated_at')
     .single()
 
   if (error) throw error

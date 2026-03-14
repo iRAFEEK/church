@@ -33,9 +33,9 @@ export async function getBooks(bibleId?: string): Promise<ApiBibleBook[]> {
     .eq('bible_id', bibleId)
     .order('sort_order')
 
-  return (data || []).map((b: any) => ({
+  return (data || []).map((b) => ({
     id: b.id,
-    bibleId,
+    bibleId: bibleId!,
     abbreviation: b.abbreviation,
     name: b.name,
     nameLong: b.name_long,
@@ -59,9 +59,9 @@ export async function getAllChaptersMap(bibleId?: string): Promise<Record<string
 
   const map: Record<string, { id: string; number: string }[]> = {}
   for (const c of data || []) {
-    const bookId = (c as any).book_id
+    const bookId = c.book_id
     if (!map[bookId]) map[bookId] = []
-    map[bookId].push({ id: (c as any).id, number: String((c as any).chapter_number) })
+    map[bookId].push({ id: c.id, number: String(c.chapter_number) })
   }
   return map
 }
@@ -78,7 +78,7 @@ export async function getChapters(bibleId: string, bookId: string): Promise<ApiB
     .eq('book_id', bookId)
     .order('chapter_number')
 
-  return (data || []).map((c: any) => ({
+  return (data || []).map((c) => ({
     id: c.id,
     bibleId,
     bookId: c.book_id,
@@ -111,7 +111,7 @@ export async function getChapterContent(bibleId: string, chapterId: string): Pro
   const chapter = chapterResult.data
   const verses = versesResult.data || []
 
-  const html = verses.map((v: any) =>
+  const html = verses.map((v) =>
     `<span data-verse-id="${escapeAttr(v.id)}" class="v">`
     + `<sup class="verse-num">${v.verse_number}</sup> ${escapeHtml(v.text)}`
     + `</span>`
@@ -156,7 +156,7 @@ export async function getChapterVerses(bibleId: string, chapterId: string): Prom
   ])
 
   return {
-    verses: (versesResult.data || []).map((v: any) => ({
+    verses: (versesResult.data || []).map((v) => ({
       id: v.id,
       verse_number: v.verse_number,
       text: v.text,
@@ -204,7 +204,7 @@ export async function searchBible(
 
   const { data } = await q.limit(limit)
 
-  const verses: ApiBibleVerse[] = (data || []).map((v: any) => ({
+  const verses: ApiBibleVerse[] = (data || []).map((v) => ({
     id: v.id,
     orgId: v.id,
     bibleId,

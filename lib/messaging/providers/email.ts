@@ -12,7 +12,7 @@ const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@ekklesia.app
  * 2. Update the export below
  */
 class ResendProvider implements MessageProvider {
-  private resend: any = null
+  private resend: { emails: { send: (params: { from: string; to: string; subject: string; html: string }) => Promise<{ data: { id: string } | null; error: { message: string } | null }> } } | null = null
 
   isConfigured(): boolean {
     return !!RESEND_API_KEY

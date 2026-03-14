@@ -94,8 +94,8 @@ export function EventForm({ event }: EventFormProps) {
           setAudience({
             visibility: 'restricted',
             hide_from_non_invited: evt.hide_from_non_invited ?? false,
-            ministry_ids: targets.filter((t: any) => t.target_type === 'ministry').map((t: any) => t.target_id),
-            group_ids: targets.filter((t: any) => t.target_type === 'group').map((t: any) => t.target_id),
+            ministry_ids: targets.filter((t: { target_type: string; target_id: string }) => t.target_type === 'ministry').map((t: { target_type: string; target_id: string }) => t.target_id),
+            group_ids: targets.filter((t: { target_type: string; target_id: string }) => t.target_type === 'group').map((t: { target_type: string; target_id: string }) => t.target_id),
           })
         }
       })
@@ -117,7 +117,7 @@ export function EventForm({ event }: EventFormProps) {
         if (controller.signal.aborted) return
         if (d.data) {
           setServiceNeeds(
-            d.data.map((n: any) => ({
+            d.data.map((n: { ministry_id?: string; group_id?: string; volunteers_needed: number; notes?: string; notes_ar?: string; ministry?: { name: string; name_ar?: string }; group?: { name: string; name_ar?: string } }) => ({
               ministry_id: n.ministry_id || undefined,
               group_id: n.group_id || undefined,
               volunteers_needed: n.volunteers_needed,

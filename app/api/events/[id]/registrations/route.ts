@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateRegistrationSchema } from '@/lib/schemas/event'
@@ -47,5 +48,6 @@ export const PATCH = apiHandler(async ({ supabase, profile, params, req }) => {
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_events'] })

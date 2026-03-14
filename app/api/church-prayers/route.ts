@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateChurchPrayerSchema } from '@/lib/schemas/prayer'
@@ -172,5 +173,6 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
     // Don't fail the request if notifications fail
   }
 
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 })

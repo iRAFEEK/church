@@ -26,7 +26,8 @@ export const GET = apiHandler(async ({ profile, params }) => {
   }
 
   const { data, error } = await admin
-    .from('church_need_messages' as any)
+    // Table not in generated types — see migration 043
+    .from('church_need_messages' as string & keyof never)
     .select('id, response_id, sender_user_id, sender_church_id, message, message_ar, created_at, sender_church:sender_church_id(id, name, name_ar, logo_url)')
     .eq('response_id', responseId)
     .order('created_at', { ascending: true })
@@ -61,7 +62,8 @@ export const POST = apiHandler(async ({ req, user, profile, params }) => {
   }
 
   const { data, error } = await admin
-    .from('church_need_messages' as any)
+    // Table not in generated types — see migration 043
+    .from('church_need_messages' as string & keyof never)
     .insert({
       response_id: responseId,
       sender_user_id: user.id,

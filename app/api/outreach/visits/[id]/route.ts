@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateOutreachVisitSchema } from '@/lib/schemas/outreach'
@@ -19,10 +20,11 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .update(updates)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select()
+    .select('id, church_id, profile_id, visited_by, visit_date, notes, needs_followup, followup_date, followup_notes, created_at, updated_at')
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_outreach'] })
 
@@ -37,5 +39,6 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
     .eq('church_id', profile.church_id)
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 }, { requirePermissions: ['can_manage_outreach'] })

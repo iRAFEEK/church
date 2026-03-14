@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateVisitorSchema } from '@/lib/schemas/visitor'
@@ -52,6 +53,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
       logger.error('notifyVisitorAssigned fire-and-forget failed', { module: 'visitors', churchId: data.church_id, error: err })
     )
 
+    revalidateTag(`dashboard-${profile.church_id}`)
     return { data }
   }
 
@@ -67,6 +69,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
     if (error) throw error
     if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    revalidateTag(`dashboard-${profile.church_id}`)
     return { data }
   }
 
@@ -121,6 +124,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
       .single()
 
     if (error) throw error
+    revalidateTag(`dashboard-${profile.church_id}`)
     return { data, profile_id: authData.user.id }
   }
 
@@ -136,5 +140,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
   if (error) throw error
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requireRoles: ['super_admin', 'ministry_leader', 'group_leader'] })

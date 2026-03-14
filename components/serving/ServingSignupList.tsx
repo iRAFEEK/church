@@ -3,8 +3,21 @@
 import { useTranslations, useLocale } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 
+interface SignupEntry {
+  id: string
+  status: string
+  signed_up_at: string
+  profiles?: {
+    first_name: string | null
+    last_name: string | null
+    first_name_ar: string | null
+    last_name_ar: string | null
+    phone: string | null
+  } | null
+}
+
 interface ServingSignupListProps {
-  signups: any[]
+  signups: SignupEntry[]
 }
 
 export function ServingSignupList({ signups }: ServingSignupListProps) {
@@ -30,7 +43,7 @@ export function ServingSignupList({ signups }: ServingSignupListProps) {
 
   return (
     <div className="divide-y rounded-lg border">
-      {active.map((signup: any) => {
+      {active.map((signup) => {
         const profile = signup.profiles
         const name = profile
           ? (isAr

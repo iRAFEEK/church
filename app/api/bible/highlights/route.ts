@@ -18,7 +18,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
     query = query.eq('chapter_id', chapterId)
   }
 
-  const { data, error } = await query.order('created_at', { ascending: false })
+  const { data, error } = await query.order('created_at', { ascending: false }).limit(500)
 
   if (error) throw error
 
@@ -45,7 +45,7 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
       },
       { onConflict: 'profile_id,verse_id,bible_id' }
     )
-    .select()
+    .select('id, profile_id, church_id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, color, created_at')
     .single()
 
   if (error) throw error

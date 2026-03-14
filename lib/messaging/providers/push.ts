@@ -71,13 +71,14 @@ class FCMPushProvider implements MessageProvider {
       const response = await messaging.sendEachForMulticast(message)
 
       // Clean up stale/expired tokens
+      type SendResult = { success: boolean; error?: { code: string; message: string } }
       const staleTokens = response.responses
-        .map((r: any, i: number) => ({ result: r, token: tokens[i] }))
-        .filter(({ result }: any) =>
+        .map((r: SendResult, i: number) => ({ result: r, token: tokens[i] }))
+        .filter(({ result }: { result: SendResult; token: string }) =>
           result.error?.code === 'messaging/registration-token-not-registered' ||
           result.error?.code === 'messaging/invalid-registration-token'
         )
-        .map(({ token }: any) => token)
+        .map(({ token }: { result: SendResult; token: string }) => token)
 
       if (staleTokens.length > 0) {
         await supabase.from('push_tokens').delete().in('token', staleTokens)

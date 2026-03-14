@@ -62,7 +62,7 @@ export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps)
       const data = await res.json()
       setGroups(data.data || [])
       // Auto-expand all
-      const keys = new Set<string>((data.data || []).map((_: any, i: number) => String(i)))
+      const keys = new Set<string>((data.data || []).map((_: unknown, i: number) => String(i)))
       setExpandedKeys(keys)
     } catch {
       setGroups([])

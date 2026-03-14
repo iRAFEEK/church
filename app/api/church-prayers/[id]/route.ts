@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
@@ -32,10 +33,11 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .is('group_id', null)
-    .select()
+    .select('id, church_id, group_id, submitted_by, content, is_private, status, assigned_to, resolved_at, resolved_notes, created_at, updated_at')
     .single()
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_view_prayers'] })
 
@@ -73,5 +75,6 @@ export const DELETE = apiHandler(async ({ supabase, user, profile, params, resol
     .eq('church_id', profile.church_id)
 
   if (error) throw error
+  revalidateTag(`dashboard-${profile.church_id}`)
   return { success: true }
 })

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateMinistrySchema } from '@/lib/schemas/ministry'
@@ -58,5 +59,6 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
   if (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+  revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })

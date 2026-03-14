@@ -14,10 +14,12 @@ let mockQueryError: any = null
 
 const selectChain = () => ({
   eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockImplementation(() => ({
-    data: mockTemplates,
-    error: mockQueryError,
-  })),
+  order: vi.fn().mockReturnValue({
+    limit: vi.fn().mockImplementation(() => ({
+      data: mockTemplates,
+      error: mockQueryError,
+    })),
+  }),
   single: vi.fn().mockImplementation(() => ({
     data: mockSingleTemplate ?? mockProfile,
     error: mockQueryError,
@@ -143,6 +145,10 @@ vi.mock('@/lib/logger', () => ({
 
 vi.mock('@/lib/api/rate-limit', () => ({
   checkRateLimit: vi.fn().mockReturnValue(null),
+}))
+
+vi.mock('next/cache', () => ({
+  revalidateTag: vi.fn(),
 }))
 
 // ---------------------------------------------------------------------------
