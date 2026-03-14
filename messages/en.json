@@ -38,7 +38,9 @@
   "sidebar": {
     "signOut": "Sign out",
     "signedOut": "Signed out",
-    "fallbackUser": "User"
+    "fallbackUser": "User",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
   },
   "topbar": {
     "myProfile": "My Profile",
@@ -100,7 +102,15 @@
     "devLoginFailed": "Dev login failed",
     "selectChurchTitle": "Choose a church",
     "selectChurchDescription": "Select which church you want to sign in to. You can switch anytime from the app.",
-    "switchChurchError": "Could not switch church"
+    "switchChurchError": "Could not switch church",
+    "signUpSuccess": "Account created successfully!",
+    "signUpForChurch": "Signing up for {church}",
+    "changeChurch": "Change",
+    "validationPasswordMatch": "Passwords do not match",
+    "searchChurchPlaceholder": "Search by church name…",
+    "noChurchesFound": "No churches found for “{query}”.",
+    "registerNewChurch": "Register a new church",
+    "searchChurchHint": "Type your church name to search"
   },
   "push": {
     "title": "Enable push notifications",
@@ -150,7 +160,8 @@
     "validationPhone": "Invalid phone number",
     "toastError": "An error occurred",
     "toastSuccess": "Welcome!",
-    "toastSuccessDesc": "Your profile has been created successfully"
+    "toastSuccessDesc": "Your profile has been created successfully",
+    "backToLogin": "Back to Login"
   },
   "error": {
     "title": "An Error Occurred",
@@ -237,7 +248,8 @@
     "languageLabel": "Display Language",
     "languageAr": "العربية (Arabic)",
     "languageEn": "English",
-    "languageNote": "Changes the language of the entire app"
+    "languageNote": "Changes the language of the entire app",
+    "notifPush": "Push Notifications"
   },
   "members": {
     "pageTitle": "Members",
@@ -287,7 +299,11 @@
     "statusActive": "Active",
     "statusAtRisk": "Needs Follow-up",
     "statusInactive": "Inactive",
-    "statusVisitor": "Visitor"
+    "statusVisitor": "Visitor",
+    "roleSuperAdmin": "Super Admin",
+    "roleMinistryLeader": "Ministry Leader",
+    "roleGroupLeader": "Group Leader",
+    "roleMember": "Member"
   },
   "visitors": {
     "adminPageTitle": "Visitors List",
@@ -338,7 +354,9 @@
     "statusContacted": "Contacted",
     "statusConverted": "Became a Member",
     "statusLost": "Lost Contact",
-    "searchPlaceholder": "Search by visitor name or phone..."
+    "searchPlaceholder": "Search by visitor name or phone...",
+    "queueEmptyTitle": "No visitors yet",
+    "queueEmptyBody": "New visitors will appear here as they register through the QR form."
   },
   "groups": {
     "backToGroups": "Groups",
@@ -462,7 +480,10 @@
     "dialogAllAdded": "All members are already in the group",
     "toastAdded": "Member added",
     "toastRemoved": "Member removed",
-    "toastError": "An error occurred"
+    "toastError": "An error occurred",
+    "cancelButton": "Cancel",
+    "confirmRemoveTitle": "Remove Member",
+    "confirmRemoveBody": "Are you sure you want to remove this member from the group?"
   },
   "ministries": {
     "pageTitle": "Ministries",
@@ -561,7 +582,11 @@
     "notifySend": "Send",
     "notifySending": "Sending...",
     "notifySent": "Notification sent to {count} members",
-    "notifyError": "Failed to send notification"
+    "notifyError": "Failed to send notification",
+    "confirmRemoveTitle": "Remove Member",
+    "confirmRemoveBody": "Are you sure you want to remove this member from the ministry?",
+    "roleUpgradeTitle": "Upgrade to Leader",
+    "roleUpgradeConfirmBtn": "Upgrade to Leader"
   },
   "gathering": {
     "newPageTitle": "New Gathering",
@@ -823,7 +848,9 @@
     "title": "Notifications",
     "empty": "No notifications yet",
     "markAllRead": "Mark all read",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "emptyTitle": "All caught up",
+    "emptyBody": "You have no notifications right now."
   },
   "notificationsPage": {
     "title": "Notifications",
@@ -983,7 +1010,9 @@
     "allGroups": "All Groups",
     "noSearchResults": "No events match your search",
     "staffing": "Staffing",
-    "rolePresetSelect": "Quick select role"
+    "rolePresetSelect": "Quick select role",
+    "confirmRemoveNeedTitle": "Remove Service Need",
+    "confirmRemoveNeedBody": "Are you sure you want to remove this service need?"
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -1057,7 +1086,14 @@
     "rolePresetNameAr": "Role Name (Arabic)",
     "rolePresetCount": "Count",
     "noRolePresets": "No roles defined",
-    "totalRoles": "Total roles"
+    "totalRoles": "Total roles",
+    "confirmRemoveSegmentTitle": "Remove Segment",
+    "confirmRemoveSegmentBody": "Are you sure you want to remove this segment from the run of show?",
+    "cancelRemove": "Cancel",
+    "confirmRemove": "Remove",
+    "moveUp": "Move Up",
+    "moveDown": "Move Down",
+    "removeSegment": "Remove Segment"
   },
   "songs": {
     "pageTitle": "Songs",
@@ -1111,7 +1147,10 @@
     "shortcutNav": "Navigate slides",
     "shortcutNext": "Next slide",
     "shortcutFullscreen": "Toggle fullscreen",
-    "shortcutClose": "Close settings"
+    "shortcutClose": "Close settings",
+    "stepTitleArtist": "Title & Artist",
+    "stepLyrics": "Lyrics",
+    "stepTagsReview": "Tags & Review"
   },
   "announcements": {
     "adminPageTitle": "Announcements",
@@ -1168,7 +1207,10 @@
     "created": "Announcement created",
     "updated": "Announcement updated",
     "create": "Create",
-    "update": "Update"
+    "update": "Update",
+    "emptyTitle": "No announcements yet",
+    "emptyBody": "Announcements you create will appear here for your church to see.",
+    "confirmDeleteTitle": "Delete Announcement"
   },
   "serving": {
     "adminPageTitle": "Serving",
@@ -1257,7 +1299,12 @@
     "selectArea": "Select an area",
     "ministry": "Ministry",
     "unknownMember": "Unknown member",
-    "unknownArea": "Other"
+    "unknownArea": "Other",
+    "confirmCancelTitle": "Cancel Sign-up",
+    "keepSignup": "Keep Sign-up",
+    "noAreasBody": "Create serving areas to organize your volunteer teams.",
+    "noSlotsBody": "Create serving slots for your team to sign up.",
+    "noOpenSlotsBody": "Check back later for new serving opportunities."
   },
   "timeAgo": {
     "now": "Just now",
@@ -1335,7 +1382,9 @@
     "shortcutClose": "Close settings",
     "shortcutGoTo": "Go to verse",
     "goTo": "Go To",
-    "searchBook": "Search books..."
+    "searchBook": "Search books...",
+    "decreaseFontSize": "Decrease font size",
+    "increaseFontSize": "Increase font size"
   },
   "notificationComposer": {
     "pageTitle": "Send Notifications",
@@ -1685,7 +1734,9 @@
     "assignSuccess": "Prayer assigned successfully",
     "unassignSuccess": "Prayer unassigned",
     "noMembersFound": "No members found",
-    "assignedToMe": "Assigned to Me"
+    "assignedToMe": "Assigned to Me",
+    "emptyTitle": "No prayer requests yet",
+    "emptyBody": "Submit a prayer request above and it will appear here."
   },
   "outreach": {
     "pageTitle": "Outreach",
@@ -1978,7 +2029,17 @@
     "overBudget": "Over budget",
     "cancel": "Cancel",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "confirmApproveTitle": "Approve Expense",
+    "confirmApproveBody": "Are you sure you want to approve this expense request? This will authorize the payment.",
+    "confirmRejectTitle": "Reject Expense",
+    "confirmRejectBody": "Are you sure you want to reject this expense request?",
+    "approveExpense": "Approve",
+    "rejectExpense": "Reject",
+    "cancelAction": "Cancel",
+    "expenseApproved": "Expense approved",
+    "expenseRejected": "Expense rejected",
+    "errorGeneral": "An error occurred"
   },
   "churchNeeds": {
     "title": "Church Needs",
@@ -2074,7 +2135,8 @@
     "messagesTab": "Messages",
     "noConversations": "No conversations yet",
     "noConversationsDesc": "Conversations appear here when you or other churches communicate about needs",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "sendMessage": "Send message"
   },
   "SelectChurch": {
     "title": "Choose a church",

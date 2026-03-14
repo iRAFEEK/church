@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 import { BIBLE_BOOKS_AR, getBookSection } from '@/lib/bible/constants'
 import type { ApiBibleBook } from '@/types'
 
@@ -191,7 +192,7 @@ export function BiblePresenter({
         setGoToChapterId(chapterId)
       }
     } catch {
-      // silently fail
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setGoToLoading(false)
     }
@@ -318,7 +319,7 @@ export function BiblePresenter({
         setShowGoTo(false)
       }
     } catch {
-      // silently fail
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setGoToLoading(false)
     }

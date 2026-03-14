@@ -38,7 +38,9 @@
   "sidebar": {
     "signOut": "تسجيل الخروج",
     "signedOut": "تم تسجيل الخروج",
-    "fallbackUser": "مستخدم"
+    "fallbackUser": "مستخدم",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "collapseSidebar": "طي الشريط الجانبي"
   },
   "topbar": {
     "myProfile": "ملفي الشخصي",
@@ -100,7 +102,15 @@
     "devLoginFailed": "الدخول التجريبي فشل",
     "selectChurchTitle": "اختار كنيسة",
     "selectChurchDescription": "اختار الكنيسة اللي عايز تدخل عليها. تقدر تغير في أي وقت من التطبيق.",
-    "switchChurchError": "مقدرناش نغير الكنيسة"
+    "switchChurchError": "مقدرناش نغير الكنيسة",
+    "signUpSuccess": "الحساب اتعمل بنجاح!",
+    "signUpForChurch": "بتسجل في {church}",
+    "changeChurch": "غيّر",
+    "validationPasswordMatch": "كلمتين السر مش زي بعض",
+    "searchChurchPlaceholder": "ابحث باسم الكنيسة…",
+    "noChurchesFound": "ملقيناش كنايس لـ “{query}”.",
+    "registerNewChurch": "سجّل كنيسة جديدة",
+    "searchChurchHint": "اكتب اسم كنيستك عشان تدور"
   },
   "push": {
     "title": "فعّل الإشعارات",
@@ -150,7 +160,8 @@
     "validationPhone": "رقم الهاتف غير صحيح",
     "toastError": "حدث خطأ",
     "toastSuccess": "أهلاً بك!",
-    "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح"
+    "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح",
+    "backToLogin": "ارجع لتسجيل الدخول"
   },
   "error": {
     "title": "حدث خطأ",
@@ -237,7 +248,8 @@
     "languageLabel": "لغة العرض",
     "languageAr": "العربية",
     "languageEn": "English",
-    "languageNote": "يغيّر لغة التطبيق بالكامل"
+    "languageNote": "يغيّر لغة التطبيق بالكامل",
+    "notifPush": "إشعارات فورية"
   },
   "members": {
     "pageTitle": "الأعضاء",
@@ -287,7 +299,11 @@
     "statusActive": "نشط",
     "statusAtRisk": "يحتاج متابعة",
     "statusInactive": "غير نشط",
-    "statusVisitor": "زائر"
+    "statusVisitor": "زائر",
+    "roleSuperAdmin": "المسؤول الأعلى",
+    "roleMinistryLeader": "قائد خدمة",
+    "roleGroupLeader": "قائد مجموعة",
+    "roleMember": "عضو"
   },
   "visitors": {
     "adminPageTitle": "قائمة الزوار",
@@ -338,7 +354,9 @@
     "statusContacted": "تم التواصل",
     "statusConverted": "أصبح عضواً",
     "statusLost": "فقدنا التواصل",
-    "searchPlaceholder": "ابحث بالاسم أو الهاتف..."
+    "searchPlaceholder": "ابحث بالاسم أو الهاتف...",
+    "queueEmptyTitle": "مفيش زوار لسه",
+    "queueEmptyBody": "الزوار الجدد هيظهروا هنا لما يسجلوا من خلال نموذج QR."
   },
   "groups": {
     "backToGroups": "المجموعات",
@@ -462,7 +480,10 @@
     "dialogAllAdded": "جميع الأعضاء في المجموعة",
     "toastAdded": "تم إضافة العضو",
     "toastRemoved": "تم إزالة العضو",
-    "toastError": "حدث خطأ"
+    "toastError": "حدث خطأ",
+    "cancelButton": "إلغاء",
+    "confirmRemoveTitle": "إزالة عضو",
+    "confirmRemoveBody": "متأكد إنك عايز تشيل العضو ده من المجموعة؟"
   },
   "ministries": {
     "pageTitle": "الخدمات",
@@ -561,7 +582,11 @@
     "notifySend": "إرسال",
     "notifySending": "جارٍ الإرسال...",
     "notifySent": "تم إرسال الإشعار إلى {count} عضو",
-    "notifyError": "فشل إرسال الإشعار"
+    "notifyError": "فشل إرسال الإشعار",
+    "confirmRemoveTitle": "إزالة عضو",
+    "confirmRemoveBody": "متأكد إنك عايز تشيل العضو ده من الخدمة؟",
+    "roleUpgradeTitle": "ترقية لقائد",
+    "roleUpgradeConfirmBtn": "ترقية لقائد"
   },
   "gathering": {
     "newPageTitle": "اجتماع جديد",
@@ -823,7 +848,9 @@
     "title": "الإشعارات",
     "empty": "لا توجد إشعارات",
     "markAllRead": "تحديد الكل كمقروء",
-    "loading": "جارٍ التحميل..."
+    "loading": "جارٍ التحميل...",
+    "emptyTitle": "مفيش جديد",
+    "emptyBody": "مفيش إشعارات دلوقتي."
   },
   "notificationsPage": {
     "title": "الإشعارات",
@@ -983,7 +1010,9 @@
     "allGroups": "جميع المجموعات",
     "noSearchResults": "لا توجد أحداث مطابقة للبحث",
     "staffing": "التعيينات",
-    "rolePresetSelect": "اختيار سريع للدور"
+    "rolePresetSelect": "اختيار سريع للدور",
+    "confirmRemoveNeedTitle": "إزالة احتياج خدمة",
+    "confirmRemoveNeedBody": "متأكد إنك عايز تشيل الاحتياج ده؟"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1057,7 +1086,14 @@
     "rolePresetNameAr": "اسم الدور (عربي)",
     "rolePresetCount": "العدد",
     "noRolePresets": "لا توجد أدوار محددة",
-    "totalRoles": "إجمالي الأدوار"
+    "totalRoles": "إجمالي الأدوار",
+    "confirmRemoveSegmentTitle": "إزالة فقرة",
+    "confirmRemoveSegmentBody": "متأكد إنك عايز تشيل الفقرة دي من البرنامج؟",
+    "cancelRemove": "إلغاء",
+    "confirmRemove": "إزالة",
+    "moveUp": "تحريك لأعلى",
+    "moveDown": "تحريك لأسفل",
+    "removeSegment": "حذف الفقرة"
   },
   "songs": {
     "pageTitle": "الترانيم",
@@ -1111,7 +1147,10 @@
     "shortcutNav": "التنقل بين الشرائح",
     "shortcutNext": "الشريحة التالية",
     "shortcutFullscreen": "ملء الشاشة",
-    "shortcutClose": "إغلاق الإعدادات"
+    "shortcutClose": "إغلاق الإعدادات",
+    "stepTitleArtist": "العنوان والفنان",
+    "stepLyrics": "الكلمات",
+    "stepTagsReview": "التصنيفات والمراجعة"
   },
   "announcements": {
     "adminPageTitle": "الإعلانات",
@@ -1168,7 +1207,10 @@
     "created": "تم إنشاء الإعلان",
     "updated": "تم تحديث الإعلان",
     "create": "إنشاء",
-    "update": "تحديث"
+    "update": "تحديث",
+    "emptyTitle": "مفيش إعلانات لسه",
+    "emptyBody": "الإعلانات اللي هتنشرها هتظهر هنا لأعضاء الكنيسة.",
+    "confirmDeleteTitle": "حذف الإعلان"
   },
   "serving": {
     "adminPageTitle": "الخدمة",
@@ -1257,7 +1299,12 @@
     "selectArea": "اختر مجال الخدمة",
     "ministry": "الخدمة",
     "unknownMember": "عضو غير معروف",
-    "unknownArea": "أخرى"
+    "unknownArea": "أخرى",
+    "confirmCancelTitle": "إلغاء التسجيل",
+    "keepSignup": "إبقاء التسجيل",
+    "noAreasBody": "أنشئ مجالات خدمة لتنظيم فرق المتطوعين.",
+    "noSlotsBody": "أنشئ فترات خدمة ليتمكن الفريق من التسجيل.",
+    "noOpenSlotsBody": "ارجع بعدين عشان تشوف فرص خدمة جديدة."
   },
   "timeAgo": {
     "now": "الآن",
@@ -1335,7 +1382,9 @@
     "shortcutClose": "إغلاق الإعدادات",
     "shortcutGoTo": "الذهاب إلى آية",
     "goTo": "الذهاب إلى",
-    "searchBook": "ابحث عن سفر..."
+    "searchBook": "ابحث عن سفر...",
+    "decreaseFontSize": "تصغير حجم الخط",
+    "increaseFontSize": "تكبير حجم الخط"
   },
   "notificationComposer": {
     "pageTitle": "إرسال إشعارات",
@@ -1685,7 +1734,9 @@
     "assignSuccess": "تم تعيين طلب الصلاة بنجاح",
     "unassignSuccess": "تم إلغاء تعيين الصلاة",
     "noMembersFound": "لم يتم العثور على أعضاء",
-    "assignedToMe": "مُعيَّنة لي"
+    "assignedToMe": "مُعيَّنة لي",
+    "emptyTitle": "مفيش طلبات صلاة لسه",
+    "emptyBody": "قدّم طلب صلاة فوق وهيظهر هنا."
   },
   "outreach": {
     "pageTitle": "التواصل",

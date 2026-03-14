@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type { Song, SongDisplaySettings } from '@/types'
 
@@ -147,7 +148,7 @@ export function SongPresenter({ song }: SongPresenterProps) {
 
       updateSetting('bg_image', publicUrl)
     } catch {
-      // silently fail upload
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setUploading(false)
     }
