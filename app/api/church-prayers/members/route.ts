@@ -1,37 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // GET — Search church members for prayer assignment
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_prayers) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { searchParams } = new URL(req.url)
-  const q = searchParams.get('q')?.trim() || ''
-
-  let dbClient: any
+export const GET = apiHandler(async ({ supabase, profile }) => {
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     dbClient = await createAdminClient()
   } catch {
     dbClient = supabase
   }
 
-  let query = dbClient
+  const { data, error } = await dbClient
     .from('profiles')
     .select('id, first_name, last_name, first_name_ar, last_name_ar, photo_url, email')
     .eq('church_id', profile.church_id)
@@ -39,11 +18,7 @@ export async function GET(req: NextRequest) {
     .order('first_name')
     .limit(200)
 
-  const { data, error } = await query
-  if (error) {
-    console.error('[/api/church-prayers/members GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json({ data: data || [] })
-}
+  return { data: data || [] }
+}, { requirePermissions: ['can_view_prayers'] })

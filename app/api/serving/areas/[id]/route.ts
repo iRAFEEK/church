@@ -1,100 +1,66 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateServingAreaSchema } from '@/lib/schemas/serving'
 
-// GET /api/serving/areas/[id]
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// GET /api/serving/areas/[id] — area detail
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data, error } = await supabase
     .from('serving_areas')
-    .select('*, ministries(name, name_ar)')
+    .select('id, name, name_ar, description, description_ar, ministry_id, is_active, created_at, ministries(name, name_ar)')
     .eq('id', id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/serving/areas/[id] GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (error && error.code === 'PGRST116') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error) throw error
 
-  return NextResponse.json({ data })
-}
+  return { data }
+})
 
-// PATCH /api/serving/areas/[id]
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_serving) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+// PATCH /api/serving/areas/[id] — update area (admin only)
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
   const body = await req.json()
+  const validated = validate(UpdateServingAreaSchema, body)
+
   const { data, error } = await supabase
     .from('serving_areas')
-    .update(body)
+    .update(validated)
     .eq('id', id)
-    .select()
+    .eq('church_id', profile.church_id)
+    .select('id, name, name_ar, description, description_ar, ministry_id, is_active, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/serving/areas/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (error && error.code === 'PGRST116') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ data })
-}
+  if (error) throw error
 
-// DELETE /api/serving/areas/[id]
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  revalidateTag(`serving-areas-${profile.church_id}`)
+  return { data }
+}, { requirePermissions: ['can_manage_serving'] })
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
+// DELETE /api/serving/areas/[id] — delete area (admin only)
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_serving) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('serving_areas')
     .delete()
     .eq('id', id)
+    .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/serving/areas/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (error) throw error
+  if (count === 0) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ success: true })
-}
+
+  revalidateTag(`serving-areas-${profile.church_id}`)
+  return { success: true }
+}, { requirePermissions: ['can_manage_serving'] })

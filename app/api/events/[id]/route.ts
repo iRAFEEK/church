@@ -1,76 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateEventSchema } from '@/lib/schemas/event'
 
 // GET /api/events/[id] — get event detail
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { data, error } = await supabase
     .from('events')
-    .select('*, event_visibility_targets(*)')
+    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status, registration_required, registration_closes_at, notes, notes_ar, custom_field_values, created_by, created_at, event_visibility_targets(target_type, target_id)')
     .eq('id', id)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (error) {
-    console.error('[/api/events/[id] GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (error) throw error
+  if (!data) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  return NextResponse.json({ data })
-}
+  return { data }
+})
 
-// PATCH /api/events/[id] — update event (admin only)
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const body = await req.json()
+// PATCH /api/events/[id] — update event
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
+  const body = validate(UpdateEventSchema, await req.json())
   const { visibility_targets, ...eventData } = body
 
   const { data, error } = await supabase
     .from('events')
     .update(eventData)
     .eq('id', id)
-    .select()
+    .eq('church_id', profile.church_id)
+    .select('id, title, title_ar, event_type, starts_at, ends_at, status, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/events/[id] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Update visibility targets
   if (visibility_targets !== undefined) {
     await supabase.from('event_visibility_targets').delete().eq('event_id', id)
     if (visibility_targets.length > 0) {
       await supabase.from('event_visibility_targets').insert(
-        visibility_targets.map((t: { target_type: string; target_id: string }) => ({
+        visibility_targets.map((t) => ({
           event_id: id,
           target_type: t.target_type,
           target_id: t.target_id,
@@ -80,40 +51,20 @@ export async function PATCH(
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_events'] })
 
-// DELETE /api/events/[id] — delete event (admin only)
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+// DELETE /api/events/[id] — delete event
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
   const { error } = await supabase
     .from('events')
     .delete()
     .eq('id', id)
+    .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/events/[id] DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+}, { requirePermissions: ['can_manage_events'] })

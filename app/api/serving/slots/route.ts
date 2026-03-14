@@ -1,28 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateServingSlotSchema } from '@/lib/schemas/serving'
+
+interface ServingSignup {
+  id: string
+  status: string
+}
+
+interface SlotWithSignups {
+  id: string
+  serving_area_id: string
+  title: string
+  title_ar: string | null
+  date: string
+  start_time: string | null
+  end_time: string | null
+  max_volunteers: number | null
+  notes: string | null
+  notes_ar: string | null
+  church_id: string
+  created_at: string
+  serving_areas: { name: string; name_ar: string | null } | null
+  serving_signups: ServingSignup[] | null
+}
 
 // GET /api/serving/slots — list slots with signup counts
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const areaId = searchParams.get('area_id')
   const upcoming = searchParams.get('upcoming')
 
   let query = supabase
     .from('serving_slots')
-    .select('*, serving_areas(name, name_ar), serving_signups(id, status)')
+    .select('id, serving_area_id, title, title_ar, date, start_time, end_time, max_volunteers, notes, notes_ar, church_id, created_at, serving_areas(name, name_ar), serving_signups(id, status)')
     .eq('church_id', profile.church_id)
     .order('date', { ascending: true })
 
@@ -35,53 +45,33 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query
-  if (error) {
-    console.error('[/api/serving/slots GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Add signup count to each slot
-  const enriched = (data || []).map((slot: any) => ({
+  const enriched = ((data as unknown as SlotWithSignups[]) || []).map((slot) => ({
     ...slot,
-    signup_count: slot.serving_signups?.filter((s: any) => s.status !== 'cancelled').length || 0,
+    signup_count: slot.serving_signups?.filter((s) => s.status !== 'cancelled').length || 0,
     serving_signups: undefined,
   }))
 
-  return NextResponse.json({ data: enriched }, { headers: { 'Cache-Control': 'private, max-age=15, stale-while-revalidate=60' } })
-}
+  return { data: enriched }
+}, { cache: 'private, max-age=15, stale-while-revalidate=60' })
 
 // POST /api/serving/slots — create slot (admin only)
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_serving) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
+  const validated = validate(CreateServingSlotSchema, body)
+
   const { data, error } = await supabase
     .from('serving_slots')
     .insert({
-      ...body,
+      ...validated,
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select()
+    .select('id, serving_area_id, title, title_ar, date, start_time, end_time, max_volunteers, notes, notes_ar, church_id, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/serving/slots POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data }, { status: 201 })
-}
+  if (error) throw error
+  return Response.json({ data }, { status: 201 })
+}, { requirePermissions: ['can_manage_serving'] })

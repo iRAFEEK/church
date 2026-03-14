@@ -23,3 +23,64 @@ export const CreateEventSchema = z.object({
 })
 
 export const UpdateEventSchema = CreateEventSchema.partial()
+
+// Segments — PUT /api/events/[id]/segments
+export const ReplaceSegmentsSchema = z.object({
+  segments: z.array(z.object({
+    title: z.string().min(1).max(200),
+    title_ar: z.string().max(200).optional().nullable(),
+    duration_minutes: z.number().int().positive().optional().nullable(),
+    ministry_id: z.string().uuid().optional().nullable(),
+    assigned_to: z.string().uuid().optional().nullable(),
+    notes: z.string().max(2000).optional().nullable(),
+    notes_ar: z.string().max(2000).optional().nullable(),
+  })),
+})
+
+// Registrations — PATCH /api/events/[id]/registrations
+export const UpdateRegistrationSchema = z.object({
+  registrationId: z.string().uuid(),
+  action: z.enum(['check_in', 'cancel']),
+})
+
+// Service needs — PUT /api/events/[id]/service-needs
+export const ReplaceServiceNeedsSchema = z.object({
+  needs: z.array(z.object({
+    ministry_id: z.string().uuid().optional().nullable(),
+    group_id: z.string().uuid().optional().nullable(),
+    volunteers_needed: z.number().int().positive().default(1),
+    notes: z.string().max(2000).optional().nullable(),
+    notes_ar: z.string().max(2000).optional().nullable(),
+  })),
+})
+
+// Service assignments — POST /api/events/[id]/service-needs/[needId]/assignments
+export const CreateAssignmentSchema = z.object({
+  profile_id: z.string().uuid(),
+  notes: z.string().max(2000).optional().nullable(),
+  role: z.string().max(200).optional().nullable(),
+  role_ar: z.string().max(200).optional().nullable(),
+})
+
+// Service assignments — DELETE /api/events/[id]/service-needs/[needId]/assignments
+export const DeleteAssignmentSchema = z.object({
+  assignment_id: z.string().uuid(),
+})
+
+// Service assignment status — PATCH /api/events/[id]/service-needs/[needId]/assignments/[assignmentId]
+export const UpdateAssignmentSchema = z.object({
+  status: z.enum(['confirmed', 'declined']).optional(),
+  role: z.string().max(200).optional().nullable(),
+  role_ar: z.string().max(200).optional().nullable(),
+}).refine(data => data.status !== undefined || data.role !== undefined || data.role_ar !== undefined, {
+  message: 'At least one field must be provided',
+})
+
+// From template — POST /api/events/from-template
+export const CreateFromTemplateSchema = z.object({
+  template_id: z.string().uuid(),
+  starts_at: z.string().datetime(),
+  ends_at: z.string().datetime().optional().nullable(),
+  overrides: z.record(z.unknown()).optional(),
+  custom_field_values: z.record(z.unknown()).optional(),
+})

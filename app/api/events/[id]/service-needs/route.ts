@@ -1,31 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { ReplaceServiceNeedsSchema } from '@/lib/schemas/event'
 import { notifyEventServiceRequest } from '@/lib/messaging/triggers'
-import { resolveApiPermissions } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 
+interface ServiceNeedRow {
+  id: string
+  ministry_id: string | null
+  group_id: string | null
+  volunteers_needed: number
+  notes: string | null
+  notes_ar: string | null
+  ministry: { id: string; name: string; name_ar: string | null; leader_id: string | null } | null
+  group: { id: string; name: string; name_ar: string | null; leader_id: string | null; co_leader_id: string | null } | null
+  event_service_assignments: {
+    id: string
+    profile_id: string
+    status: string
+    assigned_by: string | null
+    notes: string | null
+    role: string | null
+    role_ar: string | null
+    created_at: string
+    profile: {
+      id: string
+      first_name: string
+      last_name: string
+      first_name_ar: string | null
+      last_name_ar: string | null
+      photo_url: string | null
+      phone: string | null
+    } | null
+  }[]
+}
+
 // GET /api/events/[id]/service-needs — list service needs with assignment counts
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const eventId = params!.id
 
   const { data: needs, error } = await supabase
     .from('event_service_needs')
     .select(`
-      *,
+      id, event_id, ministry_id, group_id, volunteers_needed, notes, notes_ar,
       ministry:ministry_id(id, name, name_ar, leader_id),
       group:group_id(id, name, name_ar, leader_id, co_leader_id),
       event_service_assignments(
@@ -36,50 +52,26 @@ export async function GET(
     .eq('event_id', eventId)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/events/[id]/service-needs GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Enrich with assignment counts
-  const enriched = (needs || []).map((need: any) => ({
+  const enriched = ((needs || []) as unknown as ServiceNeedRow[]).map((need) => ({
     ...need,
     assignments: need.event_service_assignments || [],
     assigned_count: (need.event_service_assignments || []).filter(
-      (a: any) => a.status !== 'declined'
+      (a) => a.status !== 'declined'
     ).length,
     event_service_assignments: undefined,
   }))
 
-  return NextResponse.json({ data: enriched })
-}
+  return { data: enriched }
+})
 
-// PUT /api/events/[id]/service-needs — replace all service needs (admin only)
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { needs } = await req.json()
-  if (!Array.isArray(needs)) {
-    return NextResponse.json({ error: 'needs must be an array' }, { status: 400 })
-  }
+// PUT /api/events/[id]/service-needs — replace all service needs
+export const PUT = apiHandler(async ({ req, supabase, profile, params }) => {
+  const eventId = params!.id
+  const body = validate(ReplaceServiceNeedsSchema, await req.json())
+  const { needs } = body
 
   // Get existing needs for diffing
   const { data: existing } = await supabase
@@ -89,7 +81,7 @@ export async function PUT(
     .eq('church_id', profile.church_id)
 
   const existingMap = new Map(
-    (existing || []).map((e: any) => [
+    (existing || []).map((e: { id: string; ministry_id: string | null; group_id: string | null }) => [
       e.ministry_id ? `m:${e.ministry_id}` : `g:${e.group_id}`,
       e.id,
     ])
@@ -108,7 +100,7 @@ export async function PUT(
   }
 
   // Delete needs that are no longer in the list
-  const toDelete = (existing || []).filter((e: any) => {
+  const toDelete = (existing || []).filter((e: { id: string; ministry_id: string | null; group_id: string | null }) => {
     const key = e.ministry_id ? `m:${e.ministry_id}` : `g:${e.group_id}`
     return !incomingKeys.has(key)
   })
@@ -117,11 +109,11 @@ export async function PUT(
     await supabase
       .from('event_service_needs')
       .delete()
-      .in('id', toDelete.map((d: any) => d.id))
+      .in('id', toDelete.map((d: { id: string }) => d.id))
   }
 
   // Upsert remaining needs
-  const upsertData = needs.map((need: any) => {
+  const upsertData = needs.map((need) => {
     const key = need.ministry_id ? `m:${need.ministry_id}` : `g:${need.group_id}`
     const existingId = existingMap.get(key)
     return {
@@ -141,10 +133,7 @@ export async function PUT(
       .from('event_service_needs')
       .upsert(upsertData)
 
-    if (error) {
-      console.error('[/api/events/[id]/service-needs PUT]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    if (error) throw error
   }
 
   // Send notifications for newly added needs (fire-and-forget)
@@ -157,7 +146,9 @@ export async function PUT(
       .eq('church_id', profile.church_id)
 
     for (const need of allNeeds || []) {
-      const key = need.ministry_id ? `m:${need.ministry_id}` : `g:${need.group_id}`
+      const key = (need as { id: string; ministry_id: string | null; group_id: string | null }).ministry_id
+        ? `m:${(need as { ministry_id: string }).ministry_id}`
+        : `g:${(need as { group_id: string }).group_id}`
       if (newNeedKeys.has(key)) {
         notifyEventServiceRequest(eventId, need.id, profile.church_id).catch((err) =>
           logger.error('notifyEventServiceRequest fire-and-forget failed', { module: 'events', churchId: profile.church_id, error: err })
@@ -166,5 +157,5 @@ export async function PUT(
     }
   }
 
-  return NextResponse.json({ success: true })
-}
+  return { success: true }
+}, { requirePermissions: ['can_manage_events'] })

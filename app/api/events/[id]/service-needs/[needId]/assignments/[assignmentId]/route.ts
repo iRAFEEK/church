@@ -1,55 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateAssignmentSchema } from '@/lib/schemas/event'
 import { notifyAssignmentResponse } from '@/lib/messaging/triggers'
 import { logger } from '@/lib/logger'
 
-type Params = { params: Promise<{ id: string; needId: string; assignmentId: string }> }
-
 // PATCH — update assignment (status confirm/decline, or role edit)
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const { assignmentId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  const assignmentId = params!.assignmentId
+  const body = validate(UpdateAssignmentSchema, await req.json())
 
-  const body = await req.json()
-  const { status, role, role_ar } = body
+  const updatePayload: Record<string, string> = {}
 
-  const updatePayload: Record<string, any> = {}
-
-  if (status) {
-    if (!['confirmed', 'declined'].includes(status)) {
-      return NextResponse.json({ error: 'status must be "confirmed" or "declined"' }, { status: 400 })
-    }
-    updatePayload.status = status
+  if (body.status) {
+    updatePayload.status = body.status
     updatePayload.status_changed_at = new Date().toISOString()
   }
 
-  if (role !== undefined) updatePayload.role = role || null
-  if (role_ar !== undefined) updatePayload.role_ar = role_ar || null
-
-  if (Object.keys(updatePayload).length === 0) {
-    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
-  }
+  if (body.role !== undefined) updatePayload.role = body.role || ''
+  if (body.role_ar !== undefined) updatePayload.role_ar = body.role_ar || ''
 
   const { data: assignment, error } = await supabase
     .from('event_service_assignments')
     .update(updatePayload)
     .eq('id', assignmentId)
-    .select()
+    .eq('church_id', profile.church_id)
+    .select('id, service_need_id, profile_id, status, role, role_ar, assigned_by, church_id, status_changed_at')
     .single()
 
-  if (error) {
-    console.error('[/api/events/[id]/service-needs/[needId]/assignments/[assignmentId] PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Notify assigner when member confirms/declines
-  if (status && assignment.assigned_by) {
+  if (body.status && assignment.assigned_by) {
     notifyAssignmentResponse(assignmentId, assignment.church_id).catch((err) =>
       logger.error('notifyAssignmentResponse fire-and-forget failed', { module: 'events', churchId: assignment.church_id, error: err })
     )
   }
 
-  return NextResponse.json({ data: assignment })
-}
+  return { data: assignment }
+})

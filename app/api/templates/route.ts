@@ -1,25 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateTemplateSchema } from '@/lib/schemas/template'
 
 // GET /api/templates — list templates for church
-export async function GET() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
+export const GET = apiHandler(async ({ supabase, profile }) => {
   const { data, error } = await supabase
     .from('event_templates')
     .select(`
-      *,
+      id, church_id, name, name_ar, event_type, title, title_ar,
+      description, description_ar, location, capacity, is_public,
+      registration_required, notes, notes_ar, is_active,
+      recurrence_type, recurrence_day, default_start_time, default_end_time,
+      custom_fields, created_by, created_at, updated_at,
       event_template_needs(id),
       event_template_segments(id)
     `)
@@ -27,43 +19,25 @@ export async function GET() {
     .eq('is_active', true)
     .order('name', { ascending: true })
 
-  if (error) {
-    console.error('[/api/templates GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  const enriched = (data || []).map((t: any) => ({
+  const enriched = (data || []).map((t) => ({
     ...t,
-    needs_count: t.event_template_needs?.length || 0,
-    segments_count: t.event_template_segments?.length || 0,
+    needs_count: Array.isArray(t.event_template_needs) ? t.event_template_needs.length : 0,
+    segments_count: Array.isArray(t.event_template_segments) ? t.event_template_segments.length : 0,
     event_template_needs: undefined,
     event_template_segments: undefined,
   }))
 
-  return NextResponse.json({ data: enriched }, {
-    headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
-  })
-}
+  return { data: enriched }
+}, {
+  cache: 'private, max-age=60, stale-while-revalidate=300',
+})
 
-// POST /api/templates — create template with needs and segments (admin only)
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_templates) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { needs, segments, ...templateFields } = await req.json()
+// POST /api/templates — create template with needs and segments
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
+  const body = validate(CreateTemplateSchema, await req.json())
+  const { needs, segments, ...templateFields } = body
 
   // Create template
   const { data: template, error } = await supabase
@@ -73,17 +47,14 @@ export async function POST(req: NextRequest) {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select()
+    .select('id, name, name_ar, event_type, title, title_ar, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/templates POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Insert needs
   if (Array.isArray(needs) && needs.length > 0) {
-    const needRows = needs.map((n: any) => ({
+    const needRows = needs.map((n) => ({
       template_id: template.id,
       church_id: profile.church_id,
       ministry_id: n.ministry_id || null,
@@ -93,12 +64,13 @@ export async function POST(req: NextRequest) {
       notes_ar: n.notes_ar || null,
       role_presets: n.role_presets || [],
     }))
-    await supabase.from('event_template_needs').insert(needRows)
+    const { error: needsError } = await supabase.from('event_template_needs').insert(needRows)
+    if (needsError) throw needsError
   }
 
   // Insert segments
   if (Array.isArray(segments) && segments.length > 0) {
-    const segRows = segments.map((s: any, i: number) => ({
+    const segRows = segments.map((s, i: number) => ({
       template_id: template.id,
       church_id: profile.church_id,
       title: s.title,
@@ -110,8 +82,11 @@ export async function POST(req: NextRequest) {
       notes_ar: s.notes_ar || null,
       sort_order: i,
     }))
-    await supabase.from('event_template_segments').insert(segRows)
+    const { error: segError } = await supabase.from('event_template_segments').insert(segRows)
+    if (segError) throw segError
   }
 
-  return NextResponse.json({ data: template }, { status: 201 })
-}
+  return Response.json({ data: template }, { status: 201 })
+}, {
+  requirePermissions: ['can_manage_templates'],
+})

@@ -1,28 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
+
+interface AssignmentItem {
+  id: string
+  profile_id: string
+  status: string
+  assigned_by: string | null
+  notes: string | null
+  role: string | null
+  role_ar: string | null
+  created_at: string
+  profile: {
+    id: string
+    first_name: string
+    last_name: string
+    first_name_ar: string | null
+    last_name_ar: string | null
+    photo_url: string | null
+    phone: string | null
+  } | null
+}
+
+interface ServiceNeedRow {
+  id: string
+  ministry_id: string | null
+  group_id: string | null
+  volunteers_needed: number
+  notes: string | null
+  notes_ar: string | null
+  ministry: { id: string; name: string; name_ar: string | null; leader_id: string | null } | null
+  group: { id: string; name: string; name_ar: string | null; leader_id: string | null; co_leader_id: string | null } | null
+  event_service_assignments: AssignmentItem[]
+}
+
+interface GroupedSummary {
+  type: string
+  ministry: ServiceNeedRow['ministry']
+  group: ServiceNeedRow['group']
+  needs: { id: string; volunteers_needed: number; notes: string | null; notes_ar: string | null }[]
+  assignments: AssignmentItem[]
+  stats: { total_needed: number; assigned: number; confirmed: number; declined: number; pending: number }
+}
 
 // GET /api/events/[id]/ministry-summary — service needs grouped by ministry/group
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+export const GET = apiHandler(async ({ supabase, profile, params }) => {
+  const eventId = params!.id
 
   const { data: needs, error } = await supabase
     .from('event_service_needs')
     .select(`
-      *,
+      id, ministry_id, group_id, volunteers_needed, notes, notes_ar,
       ministry:ministry_id(id, name, name_ar, leader_id),
       group:group_id(id, name, name_ar, leader_id, co_leader_id),
       event_service_assignments(
@@ -33,15 +59,12 @@ export async function GET(
     .eq('event_id', eventId)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/events/[id]/ministry-summary GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Group by ministry/group
-  const grouped: Record<string, any> = {}
+  const grouped: Record<string, GroupedSummary> = {}
 
-  for (const need of needs || []) {
+  for (const need of (needs || []) as unknown as ServiceNeedRow[]) {
     const key = need.ministry_id
       ? `ministry:${need.ministry_id}`
       : `group:${need.group_id}`
@@ -76,5 +99,5 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ data: Object.values(grouped) })
-}
+  return { data: Object.values(grouped) }
+})

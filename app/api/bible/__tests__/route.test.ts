@@ -21,6 +21,18 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  resolveApiPermissions: vi.fn().mockResolvedValue({}),
+}))
+
+vi.mock('@/lib/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}))
+
+vi.mock('@/lib/api/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockReturnValue(null),
+}))
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function mockUnauth() {
@@ -32,24 +44,27 @@ function mockUnauth() {
 
 function mockAuth(userId = 'user-1', churchId = 'church-1') {
   mockGetUser.mockResolvedValue({
-    data: { user: { id: userId } },
+    data: { user: { id: userId, email: 'test@test.com' } },
     error: null,
   })
-  // First .single() call returns the profile
-  mockChain.single.mockResolvedValueOnce({
-    data: { church_id: churchId },
-    error: null,
-  })
+  // apiHandler calls .single() 3 times: profile, user_churches, role_permission_defaults
+  mockChain.single
+    .mockResolvedValueOnce({ data: { id: userId, church_id: churchId, role: 'member', permissions: null }, error: null })
+    .mockResolvedValueOnce({ data: { role: 'member' }, error: null })
+    .mockResolvedValueOnce({ data: { permissions: null }, error: null })
 }
 
 function mockAuthWithResult(userId = 'user-1', churchId = 'church-1', result: unknown = { id: 'row-1' }) {
   mockGetUser.mockResolvedValue({
-    data: { user: { id: userId } },
+    data: { user: { id: userId, email: 'test@test.com' } },
     error: null,
   })
-  // First .single() returns profile, second returns inserted/upserted row
+  // apiHandler calls .single() 3 times: profile, user_churches, role_permission_defaults
+  // Then the route's own .single() call returns the result
   mockChain.single
-    .mockResolvedValueOnce({ data: { church_id: churchId }, error: null })
+    .mockResolvedValueOnce({ data: { id: userId, church_id: churchId, role: 'member', permissions: null }, error: null })
+    .mockResolvedValueOnce({ data: { role: 'member' }, error: null })
+    .mockResolvedValueOnce({ data: { permissions: null }, error: null })
     .mockResolvedValueOnce({ data: result, error: null })
 }
 

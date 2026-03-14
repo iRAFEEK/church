@@ -1,37 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // POST /api/events/[id]/register — register for an event
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const POST = apiHandler(async ({ req, supabase, user, profile, params }) => {
+  const eventId = params!.id
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, first_name, last_name, phone, email')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  // Check event exists and is open for registration
+  // Check event exists, belongs to church, and is open for registration
   const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, status, capacity, registration_closes_at')
     .eq('id', eventId)
+    .eq('church_id', profile.church_id)
     .single()
 
-  if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+  if (!event) return Response.json({ error: 'Not found' }, { status: 404 })
   if (event.status === 'cancelled') {
-    return NextResponse.json({ error: 'Event is cancelled' }, { status: 400 })
+    return Response.json({ error: 'Event is cancelled' }, { status: 400 })
   }
   if (event.registration_closes_at && new Date(event.registration_closes_at) < new Date()) {
-    return NextResponse.json({ error: 'Registration closed' }, { status: 400 })
+    return Response.json({ error: 'Registration closed' }, { status: 400 })
   }
 
   // Check if already registered
@@ -40,26 +26,36 @@ export async function POST(
     .select('id')
     .eq('event_id', eventId)
     .eq('profile_id', user.id)
+    .eq('church_id', profile.church_id)
     .single()
 
   if (existing) {
-    return NextResponse.json({ error: 'Already registered' }, { status: 409 })
+    return Response.json({ error: 'Already registered' }, { status: 409 })
   }
 
   // Check capacity
   if (event.capacity) {
     const { count } = await supabase
       .from('event_registrations')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('event_id', eventId)
+      .eq('church_id', profile.church_id)
       .neq('status', 'cancelled')
 
     if (count && count >= event.capacity) {
-      return NextResponse.json({ error: 'Event is full' }, { status: 400 })
+      return Response.json({ error: 'Event is full' }, { status: 400 })
     }
   }
 
   const body = await req.json().catch(() => ({}))
+
+  // Fetch profile details for name/phone/email defaults
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, phone, email')
+    .eq('id', user.id)
+    .eq('church_id', profile.church_id)
+    .single()
 
   const { data, error } = await supabase
     .from('event_registrations')
@@ -67,17 +63,14 @@ export async function POST(
       event_id: eventId,
       church_id: profile.church_id,
       profile_id: user.id,
-      name: body.name || `${profile.first_name} ${profile.last_name}`,
-      phone: body.phone || profile.phone,
-      email: body.email || profile.email,
+      name: body.name || (profileData ? `${profileData.first_name} ${profileData.last_name}` : ''),
+      phone: body.phone || profileData?.phone || null,
+      email: body.email || profileData?.email || null,
       status: 'registered',
     })
-    .select()
+    .select('id, event_id, profile_id, name, status, registered_at')
     .single()
 
-  if (error) {
-    console.error('[/api/events/[id]/register POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data }, { status: 201 })
-}
+  if (error) throw error
+  return Response.json({ data }, { status: 201 })
+})

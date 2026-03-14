@@ -18,6 +18,14 @@ vi.mock('@/lib/messaging/dispatcher', () => ({
   sendNotification: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('@/lib/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}))
+
+vi.mock('@/lib/api/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockReturnValue(null),
+}))
+
 import { GET, POST } from '../route'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { resolveApiPermissions } from '@/lib/auth'
@@ -41,11 +49,12 @@ function buildSupabase(overrides: {
 } = {}) {
   const { user, profile, queryData } = overrides
 
-  // Default profile
+  // Default profile (must include id for apiHandler)
   const defaultProfile = profile ?? {
+    id: USER_ID,
     church_id: CHURCH_ID,
     role: 'member',
-    permissions: {},
+    permissions: null,
   }
 
   // Chain builders for query results
@@ -68,14 +77,28 @@ function buildSupabase(overrides: {
   const insertSelect = vi.fn().mockReturnValue({ single: insertSingle })
   const insertFn = vi.fn().mockReturnValue({ select: insertSelect })
 
+  // apiHandler auth chain: user_churches + role_permission_defaults
+  const authSingle = vi.fn().mockResolvedValue({ data: { role: (defaultProfile as Record<string, unknown>)?.role ?? 'member' }, error: null })
+  const authEq2 = vi.fn().mockReturnValue({ single: authSingle })
+  const authEq1 = vi.fn().mockReturnValue({ eq: authEq2 })
+  const authSelect = vi.fn().mockReturnValue({ eq: authEq1 })
+
+  const roleDefaultsSingle = vi.fn().mockResolvedValue({ data: { permissions: null }, error: null })
+  const roleDefaultsEq2 = vi.fn().mockReturnValue({ single: roleDefaultsSingle })
+  const roleDefaultsEq1 = vi.fn().mockReturnValue({ eq: roleDefaultsEq2 })
+  const roleDefaultsSelect = vi.fn().mockReturnValue({ eq: roleDefaultsEq1 })
+
   const from = vi.fn().mockImplementation((table: string) => {
     if (table === 'profiles') return { select: profileSelect }
+    if (table === 'user_churches') return { select: authSelect }
+    if (table === 'role_permission_defaults') return { select: roleDefaultsSelect }
     if (table === 'prayer_requests') return { select: selectQuery, insert: insertFn }
     return { select: vi.fn().mockReturnValue({ eq: vi.fn() }) }
   })
 
   const getUser = vi.fn().mockResolvedValue({
-    data: { user: user !== undefined ? user : { id: USER_ID } },
+    data: { user: user !== undefined ? user : { id: USER_ID, email: 'test@test.com' } },
+    error: user === null ? { message: 'No user' } : null,
   })
 
   return { from, auth: { getUser }, insertFn }
@@ -103,16 +126,24 @@ describe('GET /api/church-prayers', () => {
   })
 
   it('filters prayer requests by church_id from profile', async () => {
-    const supa = buildSupabase()
+    const supa = buildSupabase({
+      profile: { id: USER_ID, church_id: CHURCH_ID, role: 'super_admin', permissions: null },
+    })
     vi.mocked(createClient).mockResolvedValue(supa as any)
     vi.mocked(createAdminClient).mockResolvedValue(supa as any)
-    vi.mocked(resolveApiPermissions).mockResolvedValue({ can_view_prayers: true } as any)
 
     const req = makeRequest('/api/church-prayers')
-    await GET(req)
+    const res = await GET(req)
 
-    // Verify from('prayer_requests') was called
-    expect(supa.from).toHaveBeenCalledWith('prayer_requests')
+    // If auth failed, the handler won't reach prayer_requests query
+    if (res.status !== 200) {
+      const json = await res.json()
+      throw new Error(`Expected 200 but got ${res.status}: ${JSON.stringify(json)}`)
+    }
+
+    // Verify from('prayer_requests') was called (among other auth tables)
+    const fromCalls = (supa.from as ReturnType<typeof vi.fn>).mock.calls.map((c: unknown[]) => c[0])
+    expect(fromCalls).toContain('prayer_requests')
     // The route source must filter by church_id — verify via code inspection
     const routeCode = await import('fs').then(fs =>
       fs.readFileSync('app/api/church-prayers/route.ts', 'utf-8')

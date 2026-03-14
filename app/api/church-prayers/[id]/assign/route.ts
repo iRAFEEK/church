@@ -1,36 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { AssignPrayerSchema } from '@/lib/schemas/prayer'
+import { createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 
-type Params = { params: Promise<{ id: string }> }
-
 // POST — Assign prayer to a member
-export async function POST(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
+  const id = params!.id
+  const body = validate(AssignPrayerSchema, await req.json())
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_prayers) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const { assigned_to } = await req.json()
-  if (!assigned_to) {
-    return NextResponse.json({ error: 'assigned_to is required' }, { status: 400 })
-  }
-
-  let dbClient: any
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     dbClient = await createAdminClient()
   } catch {
@@ -40,23 +20,20 @@ export async function POST(req: NextRequest, { params }: Params) {
   // Update prayer request
   const { data, error } = await dbClient
     .from('prayer_requests')
-    .update({ assigned_to })
+    .update({ assigned_to: body.assigned_to })
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .is('group_id', null)
     .select('id, content, assigned_to, is_anonymous, submitted_by')
     .single()
 
-  if (error) {
-    console.error('[/api/church-prayers/[id]/assign POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // Notify the assigned member
   try {
     await sendNotification({
-      profileId: assigned_to,
+      profileId: body.assigned_to,
       churchId: profile.church_id,
       type: 'general',
       titleEn: 'Prayer Request Assigned',
@@ -70,30 +47,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Don't fail the request if notification fails
   }
 
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_view_prayers'] })
 
 // DELETE — Unassign prayer
-export async function DELETE(req: NextRequest, { params }: Params) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+  const id = params!.id
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_view_prayers) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  let dbClient: any
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     dbClient = await createAdminClient()
   } catch {
@@ -106,9 +67,6 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     .eq('id', id)
     .eq('church_id', profile.church_id)
 
-  if (error) {
-    console.error('[/api/church-prayers/[id]/assign DELETE]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ success: true })
-}
+  if (error) throw error
+  return { success: true }
+}, { requirePermissions: ['can_view_prayers'] })

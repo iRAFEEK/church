@@ -79,10 +79,54 @@ const mockFrom = vi.fn().mockImplementation((table: string) => {
 const mockSupabase = {
   auth: {
     getUser: vi.fn().mockImplementation(() => ({
-      data: { user: mockUser },
+      data: { user: mockUser ? { ...mockUser, email: 'test@test.com' } : null },
+      error: mockUser ? null : { message: 'No user' },
     })),
   },
-  from: mockFrom,
+  from: vi.fn().mockImplementation((table: string) => {
+    if (table === 'profiles') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: mockProfile ? { id: mockUser?.id, ...mockProfile } : null,
+              error: mockProfile ? null : { message: 'not found' },
+            }),
+          }),
+        }),
+      }
+    }
+    if (table === 'user_churches') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: mockProfile ? { role: mockProfile.role } : null,
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      }
+    }
+    if (table === 'role_permission_defaults') {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { permissions: null },
+                error: null,
+              }),
+            }),
+          }),
+        }),
+      }
+    }
+    // All other tables (event_templates, etc.)
+    return mockFrom(table)
+  }),
 }
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -91,6 +135,14 @@ vi.mock('@/lib/supabase/server', () => ({
 
 vi.mock('@/lib/auth', () => ({
   resolveApiPermissions: vi.fn().mockResolvedValue({ can_manage_templates: true }),
+}))
+
+vi.mock('@/lib/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}))
+
+vi.mock('@/lib/api/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockReturnValue(null),
 }))
 
 // ---------------------------------------------------------------------------
@@ -126,7 +178,7 @@ describe('GET /api/templates', () => {
 
   it('returns 401 when unauthenticated', async () => {
     const { GET } = await import('@/app/api/templates/route')
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/templates'))
     expect(res.status).toBe(401)
     const json = await res.json()
     expect(json.error).toBe('Unauthorized')
@@ -140,7 +192,7 @@ describe('GET /api/templates', () => {
     ]
 
     const { GET } = await import('@/app/api/templates/route')
-    const res = await GET()
+    const res = await GET(new NextRequest('http://localhost/api/templates'))
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.data).toHaveLength(1)
@@ -148,7 +200,7 @@ describe('GET /api/templates', () => {
     expect(json.data[0].segments_count).toBe(0)
 
     // Verify church_id was passed as a filter
-    const fromCalls = mockFrom.mock.calls
+    const fromCalls = mockSupabase.from.mock.calls
     const templateCalls = fromCalls.filter((call: unknown[]) => call[0] === 'event_templates')
     expect(templateCalls.length).toBeGreaterThan(0)
   })
@@ -179,7 +231,7 @@ describe('POST /api/templates', () => {
     mockInsertedTemplate = { id: 't-new', name: 'New Template', church_id: 'church-xyz' }
 
     const { POST } = await import('@/app/api/templates/route')
-    const res = await POST(makeRequest('POST', { name: 'New Template' }))
+    const res = await POST(makeRequest('POST', { name: 'New Template', title: 'Sunday Service' }))
     expect(res.status).toBe(201)
     const json = await res.json()
     expect(json.data.church_id).toBe('church-xyz')

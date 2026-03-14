@@ -1,30 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { apiHandler } from '@/lib/api/handler'
 
 // GET /api/profiles — list members (admin only, paginated)
-export async function GET(request: NextRequest) {
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Get current user's profile + role
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('church_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!currentProfile) {
-    return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-  }
-
-  if (!['ministry_leader', 'super_admin'].includes(currentProfile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
+  const { searchParams } = new URL(req.url)
 
   // Pagination
   const page = parseInt(searchParams.get('page') ?? '1')
@@ -39,7 +17,7 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('profiles')
     .select('id, first_name, last_name, first_name_ar, last_name_ar, email, phone, role, status, gender, photo_url, joined_church_at, created_at', { count: 'exact' })
-    .eq('church_id', currentProfile.church_id)
+    .eq('church_id', profile.church_id)
     .order('created_at', { ascending: false })
     .range(offset, offset + pageSize - 1)
 
@@ -57,18 +35,16 @@ export async function GET(request: NextRequest) {
 
   const { data, count, error } = await query
 
-  if (error) {
-    console.error('[/api/profiles GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json({
+  return {
     data,
     count,
     page,
     pageSize,
     totalPages: Math.ceil((count ?? 0) / pageSize),
-  }, {
-    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
-  })
-}
+  }
+}, {
+  requireRoles: ['ministry_leader', 'super_admin'],
+  cache: 'private, max-age=30, stale-while-revalidate=120',
+})

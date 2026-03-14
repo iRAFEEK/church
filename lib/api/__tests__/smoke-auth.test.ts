@@ -108,6 +108,45 @@ const APIHANDLER_ROUTES: Array<{ method: string; path: string; module: string }>
   { method: 'POST', path: '/api/notifications/send', module: '@/app/api/notifications/send/route' },
   { method: 'POST', path: '/api/notifications/audience', module: '@/app/api/notifications/audience/route' },
   { method: 'GET', path: '/api/notifications/scopes', module: '@/app/api/notifications/scopes/route' },
+
+  // Events (migrated to apiHandler)
+  { method: 'GET', path: '/api/events', module: '@/app/api/events/route' },
+  { method: 'POST', path: '/api/events', module: '@/app/api/events/route' },
+  { method: 'POST', path: '/api/events/from-template', module: '@/app/api/events/from-template/route' },
+
+  // Serving slots (migrated to apiHandler)
+  { method: 'GET', path: '/api/serving/slots', module: '@/app/api/serving/slots/route' },
+  { method: 'POST', path: '/api/serving/slots', module: '@/app/api/serving/slots/route' },
+
+  // Templates (migrated to apiHandler)
+  { method: 'GET', path: '/api/templates', module: '@/app/api/templates/route' },
+  { method: 'POST', path: '/api/templates', module: '@/app/api/templates/route' },
+
+  // Church prayers (migrated to apiHandler)
+  { method: 'GET', path: '/api/church-prayers', module: '@/app/api/church-prayers/route' },
+  { method: 'POST', path: '/api/church-prayers', module: '@/app/api/church-prayers/route' },
+  { method: 'GET', path: '/api/church-prayers/members', module: '@/app/api/church-prayers/members/route' },
+
+  // Outreach (migrated to apiHandler)
+  { method: 'GET', path: '/api/outreach', module: '@/app/api/outreach/route' },
+  { method: 'GET', path: '/api/outreach/visits', module: '@/app/api/outreach/visits/route' },
+  { method: 'POST', path: '/api/outreach/visits', module: '@/app/api/outreach/visits/route' },
+
+  // Visitors (GET migrated to apiHandler; POST is public)
+  { method: 'GET', path: '/api/visitors', module: '@/app/api/visitors/route' },
+
+  // Profiles (migrated to apiHandler)
+  { method: 'GET', path: '/api/profiles', module: '@/app/api/profiles/route' },
+  { method: 'GET', path: '/api/profiles/at-risk', module: '@/app/api/profiles/at-risk/route' },
+
+  // Push (migrated to apiHandler)
+  { method: 'GET', path: '/api/push/test', module: '@/app/api/push/test/route' },
+
+  // Bible bookmarks + highlights (migrated to apiHandler)
+  { method: 'GET', path: '/api/bible/bookmarks', module: '@/app/api/bible/bookmarks/route' },
+  { method: 'POST', path: '/api/bible/bookmarks', module: '@/app/api/bible/bookmarks/route' },
+  { method: 'GET', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
+  { method: 'POST', path: '/api/bible/highlights', module: '@/app/api/bible/highlights/route' },
 ]
 
 describe('Smoke — all apiHandler routes return 401, not 500, when unauthenticated', () => {

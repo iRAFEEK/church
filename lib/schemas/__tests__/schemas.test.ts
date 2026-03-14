@@ -84,14 +84,25 @@ describe('CreateVisitorSchema', () => {
     const result = CreateVisitorSchema.safeParse({
       first_name: 'John',
       last_name: 'Doe',
-      church_id: 'injected-id',
+      church_id: '550e8400-e29b-41d4-a716-446655440000',
       role: 'super_admin',
     })
     expect(result.success).toBe(true)
     if (result.success) {
-      expect((result.data as Record<string, unknown>).church_id).toBeUndefined()
+      // church_id is a valid schema field (used by public visitor form)
+      expect((result.data as Record<string, unknown>).church_id).toBe('550e8400-e29b-41d4-a716-446655440000')
+      // role should still be stripped — not in schema
       expect((result.data as Record<string, unknown>).role).toBeUndefined()
     }
+  })
+
+  it('rejects non-UUID church_id (mass assignment protection)', () => {
+    const result = CreateVisitorSchema.safeParse({
+      first_name: 'John',
+      last_name: 'Doe',
+      church_id: 'injected-id',
+    })
+    expect(result.success).toBe(false)
   })
 
   it('rejects first_name exceeding max length', () => {

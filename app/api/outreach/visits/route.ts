@@ -1,26 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateOutreachVisitSchema } from '@/lib/schemas/outreach'
 
 // GET /api/outreach/visits — list visits
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_outreach) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
   const profileId = searchParams.get('profile_id')
 
@@ -40,58 +24,30 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query
-  if (error) {
-    console.error('[/api/outreach/visits GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json({ data })
-}
+  return { data }
+}, { requirePermissions: ['can_manage_outreach'] })
 
 // POST /api/outreach/visits — log a new visit
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_outreach) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const body = await req.json()
-  const { profile_id, visit_date, notes, needs_followup, followup_date, followup_notes } = body
-
-  if (!profile_id) {
-    return NextResponse.json({ error: 'profile_id is required' }, { status: 400 })
-  }
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
+  const body = validate(CreateOutreachVisitSchema, await req.json())
 
   const { data, error } = await supabase
     .from('outreach_visits')
     .insert({
       church_id: profile.church_id,
-      profile_id,
+      profile_id: body.profile_id,
       visited_by: user.id,
-      visit_date: visit_date || new Date().toISOString().split('T')[0],
-      notes: notes || null,
-      needs_followup: needs_followup || false,
-      followup_date: followup_date || null,
-      followup_notes: followup_notes || null,
+      visit_date: body.visit_date || new Date().toISOString().split('T')[0],
+      notes: body.notes || null,
+      needs_followup: body.needs_followup,
+      followup_date: body.followup_date || null,
+      followup_notes: body.followup_notes || null,
     })
     .select()
     .single()
 
-  if (error) {
-    console.error('[/api/outreach/visits POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   return NextResponse.json({ data }, { status: 201 })
-}
+}, { requirePermissions: ['can_manage_outreach'] })

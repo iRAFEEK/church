@@ -1,28 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
 import { searchBible } from '@/lib/bible/queries'
 
-// GET /api/bible/[bibleId]/search?query=...&limit=20&offset=0
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ bibleId: string }> }
-) {
-  try {
-    const { bibleId } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// GET /api/bible/[bibleId]/search?query=...&limit=20
+// Bible search is shared reference data, no church_id filtering needed
+export const GET = apiHandler(async ({ req, params }) => {
+  const bibleId = params!.bibleId
 
-    const { searchParams } = new URL(req.url)
-    const query = searchParams.get('query')
-    if (!query) return NextResponse.json({ error: 'query parameter is required' }, { status: 400 })
-
-    const limit = parseInt(searchParams.get('limit') || '10')
-
-    const data = await searchBible(bibleId, query, limit)
-    return NextResponse.json({ data }, { headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' } })
-  } catch (error: any) {
-    console.error('[/api/bible/[bibleId]/search GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  const { searchParams } = new URL(req.url)
+  const query = searchParams.get('query')
+  if (!query) {
+    return NextResponse.json({ error: 'query parameter is required' }, { status: 400 })
   }
-}
+
+  const limit = parseInt(searchParams.get('limit') || '10')
+
+  const data = await searchBible(bibleId, query, limit)
+  return { data }
+}, { cache: 'private, max-age=60, stale-while-revalidate=300' })

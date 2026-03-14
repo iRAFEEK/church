@@ -1,31 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { CreateChurchPrayerSchema } from '@/lib/schemas/prayer'
+import { createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 
 // GET /api/church-prayers — list church-wide prayer requests
-export async function GET(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, role, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const perms = await resolveApiPermissions(supabase, profile)
-
+export const GET = apiHandler(async ({ req, supabase, user, profile, resolvedPermissions }) => {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status') || 'active'
   const mine = searchParams.get('mine') === 'true'
   const assigned = searchParams.get('assigned') === 'true'
 
   // Use admin client for queries to bypass RLS issues in API routes
-  let queryClient: any
+  let queryClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     queryClient = await createAdminClient()
   } catch {
@@ -43,21 +31,19 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50)
 
-    if (error) {
-      console.error('[/api/church-prayers GET]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
+    if (error) throw error
 
     // Strip submitter info for anonymous prayers
-    const sanitized = (data as any[] || []).map(p => {
-      if (p.is_anonymous) {
-        const { profiles, submitted_by, ...rest } = p
+    const sanitized = ((data ?? []) as Record<string, unknown>[]).map(p => {
+      const prayer = p as Record<string, unknown> & { is_anonymous: boolean; profiles?: unknown; submitted_by?: string }
+      if (prayer.is_anonymous) {
+        const { profiles, submitted_by, ...rest } = prayer
         return { ...rest, submitter: null }
       }
-      return { ...p, submitter: p.profiles || null, profiles: undefined }
+      return { ...prayer, submitter: prayer.profiles || null, profiles: undefined }
     })
 
-    return NextResponse.json({ data: sanitized })
+    return { data: sanitized }
   }
 
   // If requesting own prayers, no permission needed
@@ -71,15 +57,12 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50)
 
-    if (error) {
-      console.error('[/api/church-prayers GET]', error)
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    }
-    return NextResponse.json({ data })
+    if (error) throw error
+    return { data }
   }
 
   // Admin view requires permission
-  if (!perms.can_view_prayers) {
+  if (!resolvedPermissions.can_view_prayers) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -92,50 +75,33 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
     .limit(100)
 
-  if (error) {
-    console.error('[/api/church-prayers GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Strip submitter info for anonymous prayers (unless super_admin)
   const isSuperAdmin = profile.role === 'super_admin'
-  const sanitized = (data as any[]).map(p => {
-    if (p.is_anonymous && !isSuperAdmin) {
-      const { profiles, submitted_by, assignee, ...rest } = p
+  const sanitized = ((data ?? []) as Record<string, unknown>[]).map(p => {
+    const prayer = p as Record<string, unknown> & { is_anonymous: boolean; profiles?: unknown; submitted_by?: string; assignee?: unknown }
+    if (prayer.is_anonymous && !isSuperAdmin) {
+      const { profiles, submitted_by, assignee, ...rest } = prayer
       return { ...rest, submitter: null, assignee: assignee || null }
     }
     return {
-      ...p,
-      submitter: p.profiles || null,
-      assignee: p.assignee || null,
+      ...prayer,
+      submitter: prayer.profiles || null,
+      assignee: prayer.assignee || null,
       profiles: undefined,
     }
   })
 
-  return NextResponse.json({ data: sanitized })
-}
+  return { data: sanitized }
+})
 
 // POST /api/church-prayers — submit a church-wide prayer request
-export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('church_id, first_name, first_name_ar')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-
-  const { content, is_anonymous } = await req.json()
-  if (!content?.trim()) {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 })
-  }
+export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
+  const body = validate(CreateChurchPrayerSchema, await req.json())
 
   // Use admin client for insert to bypass RLS
-  let insertClient: any
+  let insertClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
   try {
     insertClient = await createAdminClient()
   } catch {
@@ -147,8 +113,8 @@ export async function POST(req: NextRequest) {
     .insert({
       church_id: profile.church_id,
       submitted_by: user.id,
-      content: content.trim(),
-      is_anonymous: is_anonymous || false,
+      content: body.content.trim(),
+      is_anonymous: body.is_anonymous,
       is_private: false,
       group_id: null,
       gathering_id: null,
@@ -156,14 +122,20 @@ export async function POST(req: NextRequest) {
     .select('id, content, is_anonymous, status, created_at')
     .single()
 
-  if (error) {
-    console.error('[/api/church-prayers POST]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
   // Notify super_admins about the new prayer request
   try {
     const adminClient = await createAdminClient()
+
+    // Fetch profile name for notification
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('first_name, first_name_ar')
+      .eq('id', user.id)
+      .eq('church_id', profile.church_id)
+      .single()
+
     const { data: admins } = await adminClient
       .from('profiles')
       .select('id')
@@ -171,9 +143,9 @@ export async function POST(req: NextRequest) {
       .eq('role', 'super_admin')
       .neq('id', user.id)
 
-    const submitterName = is_anonymous
+    const submitterName = body.is_anonymous
       ? 'Anonymous'
-      : (profile.first_name_ar || profile.first_name || 'Member')
+      : (profileData?.first_name_ar || profileData?.first_name || 'Member')
 
     if (admins && admins.length > 0) {
       await Promise.allSettled(
@@ -184,10 +156,10 @@ export async function POST(req: NextRequest) {
             type: 'general',
             titleEn: 'New Prayer Request',
             titleAr: 'طلب صلاة جديد',
-            bodyEn: is_anonymous
+            bodyEn: body.is_anonymous
               ? 'A new anonymous prayer request has been submitted.'
-              : `${profile.first_name || 'A member'} submitted a prayer request.`,
-            bodyAr: is_anonymous
+              : `${profileData?.first_name || 'A member'} submitted a prayer request.`,
+            bodyAr: body.is_anonymous
               ? 'تم تقديم طلب صلاة مجهول جديد.'
               : `${submitterName} قدّم طلب صلاة.`,
             referenceId: data.id,
@@ -201,4 +173,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ data }, { status: 201 })
-}
+})

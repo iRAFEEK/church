@@ -1,77 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { resolveApiPermissions } from '@/lib/auth'
+import { apiHandler } from '@/lib/api/handler'
+import { validate } from '@/lib/api/validate'
+import { UpdateRegistrationSchema } from '@/lib/schemas/event'
 
-// GET /api/events/[id]/registrations — list registrations (admin only)
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
+// GET /api/events/[id]/registrations — list registrations
+export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
+  const eventId = params!.id
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
 
   let query = supabase
     .from('event_registrations')
-    .select('*', { count: 'exact' })
+    .select('id, event_id, profile_id, name, phone, email, status, check_in_at, registered_at', { count: 'exact' })
     .eq('event_id', eventId)
+    .eq('church_id', profile.church_id)
     .order('registered_at', { ascending: false })
 
   if (status) query = query.eq('status', status)
 
   const { data, error, count } = await query
-  if (error) {
-    console.error('[/api/events/[id]/registrations GET]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
 
-  return NextResponse.json({ data, count })
-}
+  return { data, count }
+}, { requirePermissions: ['can_manage_events'] })
 
-// PATCH /api/events/[id]/registrations — check-in a registration
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: eventId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, church_id, permissions')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const perms = await resolveApiPermissions(supabase, profile)
-  if (!perms.can_manage_events) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  const body = await req.json()
+// PATCH /api/events/[id]/registrations — check-in or cancel a registration
+export const PATCH = apiHandler(async ({ supabase, profile, params, req }) => {
+  const eventId = params!.id
+  const body = validate(UpdateRegistrationSchema, await req.json())
   const { registrationId, action } = body
-
-  if (!registrationId || !action) {
-    return NextResponse.json({ error: 'registrationId and action required' }, { status: 400 })
-  }
 
   const updates: Record<string, string> = {}
   if (action === 'check_in') {
@@ -86,12 +42,10 @@ export async function PATCH(
     .update(updates)
     .eq('id', registrationId)
     .eq('event_id', eventId)
-    .select()
+    .eq('church_id', profile.church_id)
+    .select('id, event_id, profile_id, name, status, check_in_at')
     .single()
 
-  if (error) {
-    console.error('[/api/events/[id]/registrations PATCH]', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  return NextResponse.json({ data })
-}
+  if (error) throw error
+  return { data }
+}, { requirePermissions: ['can_manage_events'] })

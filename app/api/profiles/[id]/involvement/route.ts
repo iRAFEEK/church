@@ -1,85 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { apiHandler } from '@/lib/api/handler'
 
-type Params = { params: Promise<{ id: string }> }
+// GET /api/profiles/[id]/involvement — member's involvement across church activities
+export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
+  const targetId = params!.id
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id: targetId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // RBAC check: members can only view own involvement
+  const isSelf = targetId === user.id
+  const isAdmin = ['ministry_leader', 'super_admin'].includes(profile.role)
 
-  // Get current user's profile
-  const { data: currentProfile } = await supabase
-    .from('profiles')
-    .select('id, church_id, role')
-    .eq('id', user.id)
-    .single()
+  if (!isSelf && !isAdmin) {
+    // Group leaders can view members in their groups
+    if (profile.role === 'group_leader') {
+      const { data: leaderGroups } = await supabase
+        .from('group_members')
+        .select('group_id')
+        .eq('profile_id', profile.id)
+        .in('role_in_group', ['leader', 'co_leader'])
+        .eq('is_active', true)
 
-  if (!currentProfile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+      const groupIds = (leaderGroups || []).map((g: { group_id: string }) => g.group_id)
 
-  // Get target profile's church_id
-  const { data: targetProfile } = await supabase
-    .from('profiles')
-    .select('id, church_id')
-    .eq('id', targetId)
-    .single()
+      if (groupIds.length === 0) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
 
-  if (!targetProfile) return NextResponse.json({ error: 'Member not found' }, { status: 404 })
-  if (targetProfile.church_id !== currentProfile.church_id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+      const { data: memberCheck } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('profile_id', targetId)
+        .in('group_id', groupIds)
+        .limit(1)
 
-  // RBAC check
-  const role = currentProfile.role
-  if (role === 'member' && currentProfile.id !== targetId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  if (role === 'group_leader' && currentProfile.id !== targetId) {
-    // Verify target is in a group the current user leads
-    const { data: leaderCheck } = await supabase
-      .from('group_members')
-      .select('id')
-      .eq('profile_id', currentProfile.id)
-      .in('role_in_group', ['leader', 'co_leader'])
-      .eq('is_active', true)
-
-    if (!leaderCheck || leaderCheck.length === 0) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const leaderGroupIds = leaderCheck.map((g: any) => g.id)
-
-    // Get all groups where leader is leader, then check if target is in any
-    const { data: leaderGroups } = await supabase
-      .from('group_members')
-      .select('group_id')
-      .eq('profile_id', currentProfile.id)
-      .in('role_in_group', ['leader', 'co_leader'])
-      .eq('is_active', true)
-
-    const groupIds = (leaderGroups || []).map((g: any) => g.group_id)
-
-    if (groupIds.length === 0) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { data: memberCheck } = await supabase
-      .from('group_members')
-      .select('id')
-      .eq('profile_id', targetId)
-      .in('group_id', groupIds)
-      .limit(1)
-
-    if (!memberCheck || memberCheck.length === 0) {
+      if (!memberCheck || memberCheck.length === 0) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    } else {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }
 
-  // super_admin and ministry_leader pass through — same church is enough
-
-  const churchId = currentProfile.church_id
+  const churchId = profile.church_id
 
   // Run all queries in parallel
   const [
@@ -127,6 +88,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         group:group_id(id, name, name_ar, type, ministry:ministry_id(name, name_ar))
       `)
       .eq('profile_id', targetId)
+      .eq('church_id', churchId)
       .order('joined_at', { ascending: false }),
 
     // 4. Ministry memberships
@@ -137,6 +99,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         ministry:ministry_id(id, name, name_ar)
       `)
       .eq('profile_id', targetId)
+      .eq('church_id', churchId)
       .order('joined_at', { ascending: false }),
 
     // 5. Event registrations
@@ -151,12 +114,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
       .order('registered_at', { ascending: false }),
   ])
 
+  // Helper to safely access nested relation fields from Supabase untyped client
+  // Supabase returns joined rows as objects (or arrays without generated types)
+  function rel(obj: Record<string, unknown>): Record<string, unknown> {
+    return (Array.isArray(obj) ? obj[0] : obj) || {}
+  }
+
   // Flatten service assignments
-  const serviceAssignments = (assignmentsRes.data || []).map((a: any) => {
-    const need = a.service_need || {}
-    const event = need.event || {}
-    const ministry = need.ministry
-    const group = need.group
+  const serviceAssignments = (assignmentsRes.data || []).map((a: Record<string, unknown>) => {
+    const need = rel(a.service_need as Record<string, unknown>)
+    const event = rel(need.event as Record<string, unknown>)
+    const ministry = rel(need.ministry as Record<string, unknown>)
+    const group = rel(need.group as Record<string, unknown>)
     return {
       id: a.id,
       status: a.status,
@@ -171,17 +140,17 @@ export async function GET(_req: NextRequest, { params }: Params) {
       event_ends_at: event.ends_at || null,
       event_location: event.location || null,
       event_status: event.status || '',
-      ministry_name: ministry?.name || null,
-      ministry_name_ar: ministry?.name_ar || null,
-      group_name: group?.name || null,
-      group_name_ar: group?.name_ar || null,
+      ministry_name: ministry.name || null,
+      ministry_name_ar: ministry.name_ar || null,
+      group_name: group.name || null,
+      group_name_ar: group.name_ar || null,
     }
   })
 
   // Flatten serving signups
-  const servingSignups = (signupsRes.data || []).map((s: any) => {
-    const slot = s.slot || {}
-    const area = slot.area
+  const servingSignups = (signupsRes.data || []).map((s: Record<string, unknown>) => {
+    const slot = rel(s.slot as Record<string, unknown>)
+    const area = rel(slot.area as Record<string, unknown>)
     return {
       id: s.id,
       status: s.status,
@@ -192,15 +161,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
       slot_date: slot.date || '',
       slot_start_time: slot.start_time || null,
       slot_end_time: slot.end_time || null,
-      area_name: area?.name || null,
-      area_name_ar: area?.name_ar || null,
+      area_name: area.name || null,
+      area_name_ar: area.name_ar || null,
     }
   })
 
   // Flatten group memberships
-  const groupMemberships = (groupsRes.data || []).map((g: any) => {
-    const group = g.group || {}
-    const ministry = group.ministry
+  const groupMemberships = (groupsRes.data || []).map((g: Record<string, unknown>) => {
+    const group = rel(g.group as Record<string, unknown>)
+    const ministry = rel(group.ministry as Record<string, unknown>)
     return {
       id: g.id,
       role_in_group: g.role_in_group,
@@ -210,14 +179,14 @@ export async function GET(_req: NextRequest, { params }: Params) {
       group_name: group.name || '',
       group_name_ar: group.name_ar || null,
       group_type: group.type || 'other',
-      ministry_name: ministry?.name || null,
-      ministry_name_ar: ministry?.name_ar || null,
+      ministry_name: ministry.name || null,
+      ministry_name_ar: ministry.name_ar || null,
     }
   })
 
   // Flatten ministry memberships
-  const ministryMemberships = (ministriesRes.data || []).map((m: any) => {
-    const ministry = m.ministry || {}
+  const ministryMemberships = (ministriesRes.data || []).map((m: Record<string, unknown>) => {
+    const ministry = rel(m.ministry as Record<string, unknown>)
     return {
       id: m.id,
       role_in_ministry: m.role_in_ministry,
@@ -230,8 +199,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   })
 
   // Flatten event registrations
-  const eventRegistrations = (registrationsRes.data || []).map((r: any) => {
-    const event = r.event || {}
+  const eventRegistrations = (registrationsRes.data || []).map((r: Record<string, unknown>) => {
+    const event = rel(r.event as Record<string, unknown>)
     return {
       id: r.id,
       status: r.status,
@@ -247,21 +216,21 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   // Compute stats
   const stats = {
-    totalEventsServed: serviceAssignments.filter((a: any) => a.status !== 'declined').length,
-    totalConfirmed: serviceAssignments.filter((a: any) => a.status === 'confirmed').length,
-    totalDeclined: serviceAssignments.filter((a: any) => a.status === 'declined').length,
-    totalServingSignups: servingSignups.filter((s: any) => s.status !== 'cancelled').length,
-    activeGroups: groupMemberships.filter((g: any) => g.is_active).length,
-    activeMinistries: ministryMemberships.filter((m: any) => m.is_active).length,
+    totalEventsServed: serviceAssignments.filter((a) => a.status !== 'declined').length,
+    totalConfirmed: serviceAssignments.filter((a) => a.status === 'confirmed').length,
+    totalDeclined: serviceAssignments.filter((a) => a.status === 'declined').length,
+    totalServingSignups: servingSignups.filter((s) => s.status !== 'cancelled').length,
+    activeGroups: groupMemberships.filter((g) => g.is_active).length,
+    activeMinistries: ministryMemberships.filter((m) => m.is_active).length,
     eventsRegistered: eventRegistrations.length,
   }
 
-  return NextResponse.json({
+  return {
     stats,
     serviceAssignments,
     servingSignups,
     groupMemberships,
     ministryMemberships,
     eventRegistrations,
-  })
-}
+  }
+})

@@ -34,6 +34,18 @@ vi.mock('@/lib/utils/normalize', () => ({
   normalizeSearch: vi.fn((s: string) => s),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  resolveApiPermissions: vi.fn().mockResolvedValue({}),
+}))
+
+vi.mock('@/lib/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}))
+
+vi.mock('@/lib/api/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockReturnValue(null),
+}))
+
 vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
   revalidatePath: vi.fn(),
@@ -47,11 +59,11 @@ function mockAuth(role = 'super_admin', churchId = 'church-profile-test') {
     data: { user: { id: 'user-1', email: 'admin@test.com' } },
     error: null,
   })
-  // Profile lookup returns church_id + role
-  mockChain.single.mockResolvedValueOnce({
-    data: { id: 'user-1', church_id: churchId, role },
-    error: null,
-  })
+  // apiHandler calls .single() 3 times: profile, user_churches, role_permission_defaults
+  mockChain.single
+    .mockResolvedValueOnce({ data: { id: 'user-1', church_id: churchId, role, permissions: null }, error: null })
+    .mockResolvedValueOnce({ data: { role }, error: null })
+    .mockResolvedValueOnce({ data: { permissions: null }, error: null })
 }
 
 function mockUnauth() {
@@ -214,7 +226,7 @@ describe('/api/profiles/at-risk', () => {
   describe('GET — authentication', () => {
     it('returns 401 for unauthenticated request', async () => {
       mockUnauth()
-      const res = await getAtRisk()
+      const res = await getAtRisk(makeReq('/api/profiles/at-risk'))
       expect(res.status).toBe(401)
     })
   })
@@ -236,7 +248,7 @@ describe('/api/profiles/at-risk', () => {
         return Object.assign(p, mockChain)
       })
 
-      await getAtRisk()
+      await getAtRisk(makeReq('/api/profiles/at-risk'))
 
       const churchIdCalls = capturedEqCalls.filter(([col]) => col === 'church_id')
       expect(churchIdCalls.length).toBeGreaterThanOrEqual(1)
