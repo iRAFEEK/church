@@ -64,12 +64,12 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">{t('status')}</label>
           <select name="status" defaultValue={sp.status || ''} className="text-sm border rounded px-2 py-1.5 bg-background">
-            <option value="">All</option>
-            <option value="draft">Draft</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="posted">Posted</option>
-            <option value="void">Void</option>
+            <option value="">{t('allStatuses')}</option>
+            <option value="draft">{t('draft')}</option>
+            <option value="pending">{t('pending')}</option>
+            <option value="approved">{t('approved')}</option>
+            <option value="posted">{t('posted')}</option>
+            <option value="void">{t('void')}</option>
           </select>
         </div>
         <div className="flex flex-col gap-1">
@@ -96,9 +96,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                   <p className="text-xs text-muted-foreground mt-0.5 font-mono">{txn.reference_number || txn.id.slice(0, 8)} · {txn.transaction_date}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <p className="font-mono text-sm font-semibold" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}</p>
+                  <p className="font-mono text-sm font-semibold tabular-nums" dir="ltr">{fmt(txn.total_amount || 0, txn.currency || 'USD', locale)}</p>
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
-                    {txn.status}
+                    {t(txn.status)}
                   </span>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                 <td className="px-4 py-2 max-w-xs truncate">{txn.description || '—'}</td>
                 <td className="px-4 py-2">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[txn.status] || 'bg-gray-100 text-gray-700'}`}>
-                    {txn.status}
+                    {t(txn.status)}
                   </span>
                 </td>
                 <td className="px-4 py-2 text-end font-mono tabular-nums">
@@ -155,15 +155,15 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <div className="flex gap-2 justify-center">
           {page > 1 && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`?page=${page - 1}`}>Previous</Link>
+              <Link href={`?page=${page - 1}`}>{t('previous')}</Link>
             </Button>
           )}
           <span className="text-sm text-muted-foreground py-1.5">
-            Page {page} of {Math.ceil(count / limit)}
+            {t('pageOf', { page, total: Math.ceil(count / limit) })}
           </span>
           {page < Math.ceil(count / limit) && (
             <Button variant="outline" size="sm" asChild>
-              <Link href={`?page=${page + 1}`}>Next</Link>
+              <Link href={`?page=${page + 1}`}>{t('next')}</Link>
             </Button>
           )}
         </div>

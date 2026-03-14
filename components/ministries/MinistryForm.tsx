@@ -14,12 +14,14 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Type, Image as ImageIcon, Settings, Upload, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-const STEPS = [
-  { title: 'Name & Description', titleAr: 'الاسم والوصف' },
-  { title: 'Photo', titleAr: 'الصورة' },
-  { title: 'Settings', titleAr: 'الإعدادات' },
-  { title: 'Review', titleAr: 'مراجعة' },
-]
+function getMinistrySteps(t: (key: string) => string) {
+  return [
+    { title: t('stepNameDescription'), titleAr: t('stepNameDescription') },
+    { title: t('stepPhoto'), titleAr: t('stepPhoto') },
+    { title: t('stepSettings'), titleAr: t('stepSettings') },
+    { title: t('stepReview'), titleAr: t('stepReview') },
+  ]
+}
 
 type Props = {
   ministry?: {
@@ -39,6 +41,7 @@ export function MinistryForm({ ministry }: Props) {
   const [step, setStep] = useState(0)
   const t = useTranslations('ministryForm')
   const locale = useLocale()
+  const STEPS = getMinistrySteps(t)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({

@@ -30,11 +30,13 @@ interface ServingSlotFormProps {
   defaultAreaId?: string
 }
 
-const STEPS = [
-  { title: 'Area & Title', titleAr: 'المجال والعنوان' },
-  { title: 'Schedule', titleAr: 'الجدول' },
-  { title: 'Review', titleAr: 'مراجعة' },
-]
+function getServingSteps(t: (key: string) => string) {
+  return [
+    { title: t('stepAreaTitle'), titleAr: t('stepAreaTitle') },
+    { title: t('stepSchedule'), titleAr: t('stepSchedule') },
+    { title: t('stepReview'), titleAr: t('stepReview') },
+  ]
+}
 
 export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
   const router = useRouter()
@@ -42,6 +44,7 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
   const tc = useTranslations('common')
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
+  const STEPS = getServingSteps(t)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
   const [areas, setAreas] = useState<ServingArea[]>([])

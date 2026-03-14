@@ -37,6 +37,7 @@ function ChurchSelectStep({
 }: {
   onSelect: (church: ChurchSearchResult) => void
 }) {
+  const t = useTranslations('auth')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ChurchSearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -68,7 +69,7 @@ function ChurchSelectStep({
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           className="ps-9"
-          placeholder="Search by church name…"
+          placeholder={t('searchChurchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           dir="auto"
@@ -122,16 +123,16 @@ function ChurchSelectStep({
 
       {results.length === 0 && query.length > 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          No churches found for &ldquo;{query}&rdquo;.{' '}
+          {t('noChurchesFound', { query })}{' '}
           <Link href="/welcome" className="underline underline-offset-4">
-            Register a new church
+            {t('registerNewChurch')}
           </Link>
         </p>
       )}
 
       {results.length === 0 && query.length === 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          Type your church name to search
+          {t('typeToSearch')}
         </p>
       )}
     </div>
@@ -140,18 +141,11 @@ function ChurchSelectStep({
 
 // ─── Step 2: Signup Form ────────────────────────────────────────────────────────
 
-const signupSchema = z
-  .object({
-    email: z.string().email('Enter a valid email'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((v) => v.password === v.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
-
-type SignupForm = z.infer<typeof signupSchema>
+type SignupForm = {
+  email: string
+  password: string
+  confirmPassword: string
+}
 
 function SignupFormStep({
   churchId,
@@ -165,6 +159,17 @@ function SignupFormStep({
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const t = useTranslations('auth')
+
+  const signupSchema = z
+    .object({
+      email: z.string().email(t('validationEmail')),
+      password: z.string().min(6, t('validationPassword')),
+      confirmPassword: z.string(),
+    })
+    .refine((v) => v.password === v.confirmPassword, {
+      message: t('validationPasswordMismatch'),
+      path: ['confirmPassword'],
+    })
 
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -203,7 +208,7 @@ function SignupFormStep({
           onClick={onBack}
           className="ms-auto text-xs text-muted-foreground underline underline-offset-2 shrink-0"
         >
-          Change
+          {t('changeChurch')}
         </button>
       </div>
 
@@ -214,11 +219,11 @@ function SignupFormStep({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('emailLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('emailPlaceholder')}
                     autoComplete="email"
                     dir="ltr"
                     className="text-base"
@@ -234,11 +239,11 @@ function SignupFormStep({
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t('passwordLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t('passwordPlaceholder')}
                     autoComplete="new-password"
                     dir="ltr"
                     className="text-base"
@@ -254,11 +259,11 @@ function SignupFormStep({
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t('passwordPlaceholder')}
                     autoComplete="new-password"
                     dir="ltr"
                     className="text-base"
@@ -273,10 +278,10 @@ function SignupFormStep({
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating account…
+                {t('creatingAccount')}
               </>
             ) : (
-              'Create account'
+              t('createAccountButton')
             )}
           </Button>
         </form>
@@ -288,6 +293,7 @@ function SignupFormStep({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SignupPage() {
+  const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const [selectedChurch, setSelectedChurch] =
     useState<ChurchSearchResult | null>(null)
@@ -305,11 +311,11 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">Create account</CardTitle>
+        <CardTitle className="text-2xl">{t('signUpTitle')}</CardTitle>
         <CardDescription>
           {showForm
-            ? `Signing up for ${churchName}`
-            : 'Find your church to get started'}
+            ? t('signingUpFor', { church: churchName })
+            : t('findChurchToStart')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -324,9 +330,9 @@ export default function SignupPage() {
         )}
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link href="/login" className="font-medium underline underline-offset-4">
-            Sign in
+            {t('signInLink')}
           </Link>
         </p>
       </CardContent>

@@ -118,7 +118,7 @@ export function PrayerAssignDialog({ prayerId, onAssigned }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-blue-600 hover:text-blue-700">
+        <Button variant="ghost" size="sm" className="h-9 px-2 text-blue-600 hover:text-blue-700">
           <UserPlus className="h-3.5 w-3.5 me-1" />
           <span className="text-xs">{t('assign')}</span>
         </Button>

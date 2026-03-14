@@ -163,17 +163,17 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                     type="button"
                     onClick={() => moveSegment(i, -1)}
                     disabled={i === 0}
-                    className="p-0.5 text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
                   >
-                    <GripVertical className="h-3 w-3 rotate-180" />
+                    <GripVertical className="h-4 w-4 rotate-180" />
                   </button>
                   <button
                     type="button"
                     onClick={() => moveSegment(i, 1)}
                     disabled={i === segments.length - 1}
-                    className="p-0.5 text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
+                    className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-300 hover:text-zinc-500 disabled:opacity-30"
                   >
-                    <GripVertical className="h-3 w-3" />
+                    <GripVertical className="h-4 w-4" />
                   </button>
                 </div>
 

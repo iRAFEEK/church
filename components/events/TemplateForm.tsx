@@ -40,16 +40,18 @@ interface TemplateFormProps {
   }
 }
 
-const STEPS = [
-  { title: 'Basics', titleAr: 'الأساسيات' },
-  { title: 'Schedule', titleAr: 'الجدول' },
-  { title: 'Defaults', titleAr: 'الإعدادات الافتراضية' },
-  { title: 'Service Needs', titleAr: 'احتياجات الخدمة' },
-  { title: 'Run of Show', titleAr: 'ترتيب البرنامج' },
-  { title: 'Custom Fields', titleAr: 'حقول مخصصة' },
-  { title: 'Notes', titleAr: 'ملاحظات' },
-  { title: 'Review', titleAr: 'مراجعة' },
-]
+function getTemplateSteps(t: (key: string) => string) {
+  return [
+    { title: t('stepBasics'), titleAr: t('stepBasics') },
+    { title: t('stepSchedule'), titleAr: t('stepSchedule') },
+    { title: t('stepDefaults'), titleAr: t('stepDefaults') },
+    { title: t('stepServiceNeeds'), titleAr: t('stepServiceNeeds') },
+    { title: t('stepRunOfShow'), titleAr: t('stepRunOfShow') },
+    { title: t('stepCustomFields'), titleAr: t('stepCustomFields') },
+    { title: t('stepNotes'), titleAr: t('stepNotes') },
+    { title: t('stepReview'), titleAr: t('stepReview') },
+  ]
+}
 
 const EVENT_TYPE_ICONS: Record<string, string> = {
   service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
@@ -66,6 +68,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const tg = useTranslations('groups')
   const locale = useLocale()
   const isRTL = locale.startsWith('ar')
+  const STEPS = getTemplateSteps(t)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 

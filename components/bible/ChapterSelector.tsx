@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
+import { ChevronLeft } from 'lucide-react'
 import { BIBLE_BOOKS_AR } from '@/lib/bible/constants'
 import type { ApiBibleChapter } from '@/types'
 
@@ -27,9 +28,10 @@ export function ChapterSelector({ bookId, bookName, chapters, onSelect, onBack }
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="text-sm text-primary hover:underline"
+          className="flex items-center gap-1 text-sm text-primary hover:underline min-h-[44px]"
         >
-          ← {t('back')}
+          <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+          {t('back')}
         </button>
         <h2 className="text-lg font-semibold">{displayName}</h2>
       </div>

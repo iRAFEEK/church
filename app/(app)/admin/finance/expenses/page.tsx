@@ -185,7 +185,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-bold text-lg">{formatCurrency(e.amount, e.currency, locale)}</span>
+                    <span className="font-bold text-lg tabular-nums" dir="ltr">{formatCurrency(e.amount, e.currency, locale)}</span>
                     {canApprove && e.status === 'submitted' && (
                       <div className="flex gap-1">
                         <form action={`/api/finance/expenses/${e.id}/approve`} method="POST">

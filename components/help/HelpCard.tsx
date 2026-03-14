@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { X, Play } from 'lucide-react'
 import type { HelpItem } from '@/lib/help/registry'
@@ -13,6 +13,7 @@ interface HelpCardProps {
 
 export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
   const locale = useLocale()
+  const t = useTranslations('help')
   const isAr = locale.startsWith('ar')
 
   return (
@@ -62,7 +63,7 @@ export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
               }}
             >
               <Play className="h-3.5 w-3.5" />
-              {isAr ? 'أرني الخطوات' : 'Walk me through it'}
+              {t('walkMeThrough')}
             </Button>
           )}
           <Button
@@ -70,7 +71,7 @@ export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
             className="flex-1"
             onClick={onClose}
           >
-            {isAr ? 'فهمت' : 'Got it'}
+            {t('gotIt')}
           </Button>
         </div>
       </div>

@@ -72,7 +72,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
               <div>
                 <p className="text-xs text-muted-foreground">{t('combinedProgress')}</p>
                 <p className="text-sm font-medium mt-0.5">
-                  {formatCurrency(totalRaised, 'USD', locale)} / {formatCurrency(totalGoal, 'USD', locale)}
+                  <span className="tabular-nums" dir="ltr">{formatCurrency(totalRaised, 'USD', locale)}</span> / <span className="tabular-nums" dir="ltr">{formatCurrency(totalGoal, 'USD', locale)}</span>
                 </p>
               </div>
               <span className="text-xl font-bold">
@@ -131,7 +131,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                 {/* Thermometer */}
                 <div>
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-bold text-green-700">{formatCurrency(c.raised_amount, c.currency, locale)}</span>
+                    <span className="font-bold text-green-700 tabular-nums" dir="ltr">{formatCurrency(c.raised_amount, c.currency, locale)}</span>
                     <span className="text-muted-foreground text-xs">{pct.toFixed(0)}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2.5">
@@ -145,13 +145,13 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>{t('raised')}</span>
-                    <span>{t('goal')}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
+                    <span>{t('goal')}: <span className="tabular-nums" dir="ltr">{formatCurrency(c.goal_amount, c.currency, locale)}</span></span>
                   </div>
                 </div>
 
                 {c.pledged_amount > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {t('pledged')}: {formatCurrency(c.pledged_amount, c.currency, locale)}
+                    {t('pledged')}: <span className="tabular-nums" dir="ltr">{formatCurrency(c.pledged_amount, c.currency, locale)}</span>
                   </p>
                 )}
 

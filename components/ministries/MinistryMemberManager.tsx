@@ -207,7 +207,7 @@ export function MinistryMemberManager({
                 <div className="flex gap-2 shrink-0 items-center">
                   {canManage && (
                     <Select value={m.role_in_ministry} onValueChange={v => changeRole(m, v)}>
-                      <SelectTrigger className="h-7 text-xs w-24">
+                      <SelectTrigger className="h-9 text-xs w-24">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -217,16 +217,20 @@ export function MinistryMemberManager({
                       </SelectContent>
                     </Select>
                   )}
-                  <Link href={`/admin/members/${p.id}`} className="text-xs text-zinc-500 hover:text-zinc-700">
-                    {t('viewLink')}
-                  </Link>
+                  <Button variant="ghost" size="sm" className="h-9 text-xs text-zinc-500 hover:text-zinc-700" asChild>
+                    <Link href={`/admin/members/${p.id}`}>
+                      {t('viewLink')}
+                    </Link>
+                  </Button>
                   {canManage && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
                       onClick={() => removeMember(m)}
-                      className="text-xs text-red-500 hover:text-red-700"
                     >
                       {t('removeButton')}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -260,7 +264,7 @@ export function MinistryMemberManager({
                     key={p.id}
                     onClick={() => addMember(p)}
                     disabled={loading}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-end"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors text-start"
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src={p.photo_url || undefined} />

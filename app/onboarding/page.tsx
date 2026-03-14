@@ -42,6 +42,7 @@ import type { ChurchSearchResult } from '@/types'
 // ─── Step 1: Church Search ────────────────────────────────────────────────────
 
 function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
+  const t = useTranslations('onboarding')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ChurchSearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -84,12 +85,12 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error('Could not join church', { description: data.error })
+        toast.error(t('couldNotJoinChurch'), { description: data.error })
         return
       }
 
       setJoinedId(church.id)
-      toast.success(`Joined ${church.name}!`)
+      toast.success(t('joinedChurch', { name: church.name }))
       setTimeout(onJoined, 800)
     } finally {
       setJoiningId(null)
@@ -103,13 +104,14 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           className="ps-9"
-          placeholder="Search by church name…"
+          placeholder={t('searchChurchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          dir="auto"
           autoFocus
         />
         {searching && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
 
@@ -158,10 +160,10 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
                 ) : joinedId === church.id ? (
                   <>
                     <Check className="h-4 w-4" />
-                    Joined
+                    {t('joined')}
                   </>
                 ) : (
-                  'Join'
+                  t('join')
                 )}
               </Button>
             </li>
@@ -171,23 +173,23 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 
       {results.length === 0 && query.length > 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          No churches found for &ldquo;{query}&rdquo;.{' '}
+          {t('noChurchesFound', { query })}{' '}
           <Link href="/welcome" className="underline underline-offset-4">
-            Register a new church
+            {t('registerNewChurch')}
           </Link>
         </p>
       )}
 
       {results.length === 0 && query.length === 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          Type your church name to search
+          {t('typeToSearch')}
         </p>
       )}
 
       {/* Register a new church link */}
       <div className="flex justify-center pt-2 border-t">
         <Link href="/welcome" className="text-sm text-muted-foreground underline underline-offset-4">
-          Register a new church
+          {t('registerNewChurch')}
         </Link>
       </div>
     </div>
@@ -475,9 +477,9 @@ export default function OnboardingPage() {
           {step === 'church' ? (
             <>
               <CardHeader>
-                <CardTitle>Find your church</CardTitle>
+                <CardTitle>{t('findYourChurch')}</CardTitle>
                 <CardDescription>
-                  Search for your church to join it on Ekklesia. You can join multiple churches.
+                  {t('findYourChurchDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>

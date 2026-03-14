@@ -383,7 +383,7 @@ export function BiblePresenter({
       </div>
 
       {/* Bottom controls bar */}
-      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
+      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 active:opacity-100 focus-within:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -391,7 +391,7 @@ export function BiblePresenter({
             className="text-white hover:bg-white/20"
             onClick={() => window.close()}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
           </Button>
           <span className="text-white text-sm">
             {currentVerse + 1} / {verses.length}
@@ -406,7 +406,7 @@ export function BiblePresenter({
             onClick={goPrev}
             disabled={currentVerse === 0}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
           </Button>
           <Button
             variant="ghost"
@@ -415,7 +415,7 @@ export function BiblePresenter({
             onClick={goNext}
             disabled={currentVerse === verses.length - 1}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-5 w-5 rtl:rotate-180" />
           </Button>
         </div>
 

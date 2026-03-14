@@ -47,7 +47,7 @@ export function BookmarksList({ bookmarks, onNavigate, onDelete }: BookmarksList
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
               onClick={async () => {
                 try {
                   await fetch(`/api/bible/bookmarks/${bm.id}`, { method: 'DELETE' })
