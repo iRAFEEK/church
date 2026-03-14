@@ -15,16 +15,16 @@ interface SongFormProps {
   song?: Song
 }
 
-const STEPS = [
-  { title: 'Title & Artist', titleAr: 'العنوان والفنان' },
-  { title: 'Lyrics', titleAr: 'الكلمات' },
-  { title: 'Tags & Review', titleAr: 'التصنيفات والمراجعة' },
-]
-
 export function SongForm({ song }: SongFormProps) {
   const router = useRouter()
   const t = useTranslations('songs')
   const tc = useTranslations('common')
+
+  const STEPS = [
+    { title: t('stepTitleArtist'), titleAr: t('stepTitleArtist') },
+    { title: t('stepLyrics'), titleAr: t('stepLyrics') },
+    { title: t('stepTagsReview'), titleAr: t('stepTagsReview') },
+  ]
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
@@ -187,8 +187,8 @@ export function SongForm({ song }: SongFormProps) {
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
               placeholder={t('tagsPlaceholder')}
-              dir="ltr"
-              className="min-h-[48px]"
+              dir="auto"
+              className="text-base min-h-[48px]"
             />
             <p className="text-xs text-muted-foreground mt-1">{t('tagsHint')}</p>
           </div>

@@ -28,7 +28,7 @@ export default async function NewGatheringPage({ params }: Params) {
   if (!isLeader && !isAdmin) redirect('/dashboard')
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
+    <div className="max-w-lg mx-auto space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('newPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{group.name_ar || group.name}</p>

@@ -141,6 +141,7 @@ export function NeedForm({ initial }: NeedFormProps) {
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
               dir="auto"
+              className="text-base"
             />
           </div>
 
@@ -152,6 +153,7 @@ export function NeedForm({ initial }: NeedFormProps) {
               onChange={(e) => set('description', e.target.value)}
               rows={3}
               dir="auto"
+              className="text-base"
             />
           </div>
 
@@ -206,6 +208,7 @@ export function NeedForm({ initial }: NeedFormProps) {
                   size="icon"
                   className="absolute top-2 end-2 h-7 w-7"
                   onClick={() => set('image_url', '')}
+                  aria-label={t('removeImage')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -242,6 +245,8 @@ export function NeedForm({ initial }: NeedFormProps) {
               <Input
                 value={form.contact_name}
                 onChange={(e) => set('contact_name', e.target.value)}
+                dir="auto"
+                className="text-base"
               />
             </div>
             <div>

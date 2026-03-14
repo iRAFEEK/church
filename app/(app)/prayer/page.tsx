@@ -105,7 +105,7 @@ export default function PrayerPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center gap-3">
         <HandHeart className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">{t('pageTitle')}</h1>
@@ -120,7 +120,7 @@ export default function PrayerPage() {
             <CardTitle className="text-base flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-blue-600" />
               {t('assignedToMe')}
-              <Badge variant="secondary" className="text-[10px] ms-1">{assignedPrayers.length}</Badge>
+              <Badge variant="secondary" className="text-xs ms-1">{assignedPrayers.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -142,7 +142,7 @@ export default function PrayerPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
                             <AvatarImage src={prayer.submitter.photo_url || undefined} />
-                            <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                           </Avatar>
                           <span className="text-xs text-muted-foreground">{submitterName}</span>
                         </div>
@@ -152,7 +152,7 @@ export default function PrayerPage() {
                       </span>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${
+                        className={`text-xs ${
                           prayer.status === 'answered'
                             ? 'bg-green-50 text-green-700 border-green-200'
                             : 'bg-blue-50 text-blue-700 border-blue-200'
@@ -195,7 +195,13 @@ export default function PrayerPage() {
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : myPrayers.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">{t('empty')}</p>
+            <div className="flex flex-col items-center justify-center py-12 px-8 text-center">
+              <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
+                <HandHeart className="h-6 w-6 text-zinc-400" />
+              </div>
+              <p className="text-sm font-medium text-zinc-900 mb-1">{t('emptyTitle')}</p>
+              <p className="text-xs text-zinc-500 max-w-[220px]">{t('emptyBody')}</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {myPrayers.map(prayer => (
@@ -208,7 +214,7 @@ export default function PrayerPage() {
                       </span>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${
+                        className={`text-xs ${
                           prayer.status === 'answered'
                             ? 'bg-green-50 text-green-700 border-green-200'
                             : prayer.status === 'archived'

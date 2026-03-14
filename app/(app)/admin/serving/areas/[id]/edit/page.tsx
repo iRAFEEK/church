@@ -22,7 +22,7 @@ export default async function EditServingAreaPage({ params }: { params: Promise<
   if (!area) notFound()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('editArea')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{area.name}</p>

@@ -107,7 +107,7 @@ export default function JoinPage() {
                     <FormItem>
                       <FormLabel>{t('firstNameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('firstNamePH')} {...field} />
+                        <Input placeholder={t('firstNamePH')} dir="auto" className="text-base" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -120,7 +120,7 @@ export default function JoinPage() {
                     <FormItem>
                       <FormLabel>{t('lastNameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('lastNamePH')} {...field} />
+                        <Input placeholder={t('lastNamePH')} dir="auto" className="text-base" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -135,7 +135,7 @@ export default function JoinPage() {
                   <FormItem>
                     <FormLabel>{t('phoneLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder={t('phonePH')} type="tel" {...field} />
+                      <Input placeholder={t('phonePH')} type="tel" dir="ltr" className="text-base" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,7 +149,7 @@ export default function JoinPage() {
                   <FormItem>
                     <FormLabel>{t('emailLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder={t('emailPH')} type="email" dir="ltr" {...field} />
+                      <Input placeholder={t('emailPH')} type="email" dir="ltr" className="text-base" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +186,7 @@ export default function JoinPage() {
                   <FormItem>
                     <FormLabel>{t('occupationLabel')}</FormLabel>
                     <FormControl>
-                      <Input placeholder={t('occupationPH')} {...field} />
+                      <Input placeholder={t('occupationPH')} dir="auto" className="text-base" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

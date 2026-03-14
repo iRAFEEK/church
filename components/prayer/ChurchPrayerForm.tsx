@@ -66,6 +66,8 @@ export function ChurchPrayerForm({ onSubmitted }: Props) {
                 placeholder={t('contentPlaceholder')}
                 rows={4}
                 required
+                dir="auto"
+                className="text-base"
               />
             </div>
 

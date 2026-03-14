@@ -92,6 +92,7 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
           size="icon"
           className="h-8 w-8 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent shrink-0"
           onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? t('expandSidebar') : t('collapseSidebar')}
         >
           <CollapseIcon className="h-4 w-4" />
         </Button>

@@ -221,94 +221,98 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
   return (
     <div className="space-y-4">
       {/* Navigation Bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Version dropdown */}
-        {availableVersions.length > 1 && (
-          <Select value={bibleId} onValueChange={handleVersionChange} disabled={versionLoading}>
-            <SelectTrigger className="w-auto min-w-[120px] h-9 text-sm">
-              <SelectValue />
+      <div className="space-y-2">
+        {/* Row 1: Book/Chapter selects */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Version dropdown */}
+          {availableVersions.length > 1 && (
+            <Select value={bibleId} onValueChange={handleVersionChange} disabled={versionLoading}>
+              <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px] h-11 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableVersions.map(v => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.name_local || v.name} ({v.abbreviation})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Book dropdown */}
+          <Select value={selectedBookId} onValueChange={handleBookChange} disabled={versionLoading}>
+            <SelectTrigger className="flex-1 sm:flex-none sm:w-auto sm:min-w-[140px] h-11 text-sm">
+              <SelectValue placeholder={t('selectBook')} />
             </SelectTrigger>
-            <SelectContent>
-              {availableVersions.map(v => (
-                <SelectItem key={v.id} value={v.id}>
-                  {v.name_local || v.name} ({v.abbreviation})
+            <SelectContent className="max-h-80">
+              {otBooks.length > 0 && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                    {t('oldTestament')}
+                  </div>
+                  {otBooks.map((book) => (
+                    <SelectItem key={book.id} value={book.id}>
+                      {BIBLE_BOOKS_AR[book.id] || book.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+              {dcBooks.length > 0 && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-1">
+                    {t('deuterocanonical')}
+                  </div>
+                  {dcBooks.map((book) => (
+                    <SelectItem key={book.id} value={book.id}>
+                      {BIBLE_BOOKS_AR[book.id] || book.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+              {ntBooks.length > 0 && (
+                <>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-1">
+                    {t('newTestament')}
+                  </div>
+                  {ntBooks.map((book) => (
+                    <SelectItem key={book.id} value={book.id}>
+                      {BIBLE_BOOKS_AR[book.id] || book.name}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+
+          {/* Chapter dropdown */}
+          <Select
+            value={selectedChapterId}
+            onValueChange={handleChapterChange}
+            disabled={chapters.length === 0 || versionLoading}
+          >
+            <SelectTrigger className="flex-1 sm:flex-none sm:w-auto sm:min-w-[100px] h-11 text-sm">
+              <SelectValue placeholder={t('selectChapter')} />
+            </SelectTrigger>
+            <SelectContent className="max-h-80">
+              {chapters.map((ch) => (
+                <SelectItem key={ch.id} value={ch.id}>
+                  {t('chapter')} {ch.number}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        )}
+        </div>
 
-        {/* Book dropdown */}
-        <Select value={selectedBookId} onValueChange={handleBookChange} disabled={versionLoading}>
-          <SelectTrigger className="w-auto min-w-[140px] h-9 text-sm">
-            <SelectValue placeholder={t('selectBook')} />
-          </SelectTrigger>
-          <SelectContent className="max-h-80">
-            {otBooks.length > 0 && (
-              <>
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                  {t('oldTestament')}
-                </div>
-                {otBooks.map((book) => (
-                  <SelectItem key={book.id} value={book.id}>
-                    {BIBLE_BOOKS_AR[book.id] || book.name}
-                  </SelectItem>
-                ))}
-              </>
-            )}
-            {dcBooks.length > 0 && (
-              <>
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-1">
-                  {t('deuterocanonical')}
-                </div>
-                {dcBooks.map((book) => (
-                  <SelectItem key={book.id} value={book.id}>
-                    {BIBLE_BOOKS_AR[book.id] || book.name}
-                  </SelectItem>
-                ))}
-              </>
-            )}
-            {ntBooks.length > 0 && (
-              <>
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-1">
-                  {t('newTestament')}
-                </div>
-                {ntBooks.map((book) => (
-                  <SelectItem key={book.id} value={book.id}>
-                    {BIBLE_BOOKS_AR[book.id] || book.name}
-                  </SelectItem>
-                ))}
-              </>
-            )}
-          </SelectContent>
-        </Select>
-
-        {/* Chapter dropdown */}
-        <Select
-          value={selectedChapterId}
-          onValueChange={handleChapterChange}
-          disabled={chapters.length === 0 || versionLoading}
-        >
-          <SelectTrigger className="w-auto min-w-[100px] h-9 text-sm">
-            <SelectValue placeholder={t('selectChapter')} />
-          </SelectTrigger>
-          <SelectContent className="max-h-80">
-            {chapters.map((ch) => (
-              <SelectItem key={ch.id} value={ch.id}>
-                {t('chapter')} {ch.number}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center gap-1 ms-auto">
+        {/* Row 2: Action buttons */}
+        <div className="flex items-center gap-1">
           {/* Search */}
           <BibleSearch bibleId={bibleId} onNavigate={handleSearchNavigate} />
 
           {/* Font size control */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0" aria-label={t('fontSize')}>
                 <Type className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -319,19 +323,21 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10"
+                    className="h-7 w-7"
                     onClick={() => setFontSize(s => Math.max(12, s - 2))}
+                    aria-label={t('decreaseFontSize')}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-3 w-3" />
                   </Button>
                   <span className="text-sm font-mono w-8 text-center">{fontSize}</span>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10"
+                    className="h-7 w-7"
                     onClick={() => setFontSize(s => Math.min(36, s + 2))}
+                    aria-label={t('increaseFontSize')}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
@@ -343,14 +349,15 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
             variant="ghost"
             size="sm"
             onClick={() => setShowBookmarks(!showBookmarks)}
-            className={showBookmarks ? 'bg-muted' : ''}
+            className={`h-9 w-9 p-0 ${showBookmarks ? 'bg-muted' : ''}`}
+            aria-label={t('bookmarks')}
           >
             <Bookmark className="h-4 w-4" />
           </Button>
 
           {/* Present button */}
           {chapterContent && (
-            <Button variant="ghost" size="sm" onClick={openPresenter}>
+            <Button variant="ghost" size="sm" onClick={openPresenter} className="h-9 w-9 p-0" aria-label={t('present')}>
               <Presentation className="h-4 w-4" />
             </Button>
           )}
@@ -407,8 +414,9 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               size="sm"
               disabled={!hasPrev}
               onClick={() => navigateChapter('prev')}
+              aria-label={t('back')}
             >
-              <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
+              <ChevronLeft className="h-4 w-4 me-1" />
               {t('back')}
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -420,8 +428,8 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               disabled={!hasNext}
               onClick={() => navigateChapter('next')}
             >
-              {t('chapter')}
-              <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
+              {t('chapter')} →
+              <ChevronRight className="h-4 w-4 ms-1" />
             </Button>
           </div>
         </div>

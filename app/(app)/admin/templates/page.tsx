@@ -34,7 +34,7 @@ export default async function TemplatesPage() {
     .order('name', { ascending: true })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
@@ -67,7 +67,7 @@ export default async function TemplatesPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-zinc-800 truncate">{name}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-xs">
                       {te(`type_${tmpl.event_type}`)}
                     </Badge>
                     {needsCount > 0 && (
@@ -84,9 +84,9 @@ export default async function TemplatesPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1">
                   <Link href={`/admin/events/from-template?template=${tmpl.id}`}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       <Copy className="h-3.5 w-3.5 me-1" />
                       {t('useTemplate')}
                     </Button>

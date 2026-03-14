@@ -28,7 +28,7 @@ export default async function FinanceDashboardPage() {
   const t = await getTranslations('finance')
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 px-4 py-4 md:px-6 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -110,7 +110,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">{t('incomeThisMonth')}</p>
-                <p className="text-2xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency(totalIncomeThisMonth, currency, locale)}</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(totalIncomeThisMonth, currency, locale)}</p>
               </div>
               <div className="p-2 bg-green-100 rounded-full">
                 <TrendingUp className="w-5 h-5 text-green-600" />
@@ -124,7 +124,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">{t('incomeThisYear')}</p>
-                <p className="text-2xl font-bold mt-1 tabular-nums" dir="ltr">{formatCurrency(totalIncomeThisYear, currency, locale)}</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(totalIncomeThisYear, currency, locale)}</p>
               </div>
               <div className="p-2 bg-blue-100 rounded-full">
                 <DollarSign className="w-5 h-5 text-blue-600" />
@@ -140,7 +140,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                 <p className="text-xs text-muted-foreground">{t('pendingExpenses')}</p>
                 <p className="text-2xl font-bold mt-1">{pendingCount}</p>
                 {pendingAmount > 0 && (
-                  <p className="text-xs text-muted-foreground tabular-nums" dir="ltr">{formatCurrency(pendingAmount, currency, locale)}</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(pendingAmount, currency, locale)}</p>
                 )}
               </div>
               <div className="p-2 bg-yellow-100 rounded-full">
@@ -175,7 +175,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/funds">
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </CardHeader>
@@ -187,7 +187,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                 <div key={fund.id} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{isAr ? fund.name_ar || fund.name : fund.name}</span>
-                    <span className="font-bold tabular-nums" dir="ltr">{formatCurrency(fund.current_balance, currency, locale)}</span>
+                    <span className="font-bold">{formatCurrency(fund.current_balance, currency, locale)}</span>
                   </div>
                   {fund.target_amount && (
                     <div className="w-full bg-muted rounded-full h-1.5">
@@ -220,7 +220,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/donations">
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </CardHeader>
@@ -248,7 +248,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                         </p>
                       </div>
                     </div>
-                    <span className="font-bold text-green-600 tabular-nums" dir="ltr">{formatCurrency(d.amount, d.currency, locale)}</span>
+                    <span className="font-bold text-green-600">{formatCurrency(d.amount, d.currency, locale)}</span>
                   </div>
                 ))}
               </div>
@@ -270,7 +270,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/expenses">
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </CardHeader>
@@ -286,9 +286,9 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                       <p className="text-xs text-muted-foreground">{e.created_at.split('T')[0]}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm tabular-nums" dir="ltr">{formatCurrency(e.amount, e.currency, locale)}</span>
+                      <span className="font-medium text-sm">{formatCurrency(e.amount, e.currency, locale)}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${expenseStatusColor[e.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {t(e.status)}
+                        {e.status}
                       </span>
                     </div>
                   </div>
@@ -307,7 +307,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/campaigns">
-                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </CardHeader>
@@ -328,8 +328,8 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                         <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span><span className="tabular-nums" dir="ltr">{formatCurrency(c.raised_amount, c.currency, locale)}</span> {t('raised')}</span>
-                        <span>{t('goal')}: <span className="tabular-nums" dir="ltr">{formatCurrency(c.goal_amount, c.currency, locale)}</span></span>
+                        <span>{formatCurrency(c.raised_amount, c.currency, locale)} {t('raised')}</span>
+                        <span>{t('goal')}: {formatCurrency(c.goal_amount, c.currency, locale)}</span>
                       </div>
                     </div>
                   )

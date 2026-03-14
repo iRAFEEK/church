@@ -42,7 +42,6 @@ import type { ChurchSearchResult } from '@/types'
 // ─── Step 1: Church Search ────────────────────────────────────────────────────
 
 function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
-  const t = useTranslations('onboarding')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ChurchSearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -85,12 +84,12 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error(t('couldNotJoinChurch'), { description: data.error })
+        toast.error('Could not join church', { description: data.error })
         return
       }
 
       setJoinedId(church.id)
-      toast.success(t('joinedChurch', { name: church.name }))
+      toast.success(`Joined ${church.name}!`)
       setTimeout(onJoined, 800)
     } finally {
       setJoiningId(null)
@@ -103,8 +102,8 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
       <div className="relative">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="ps-9"
-          placeholder={t('searchChurchPlaceholder')}
+          className="ps-9 text-base"
+          placeholder="Search by church name…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           dir="auto"
@@ -160,10 +159,10 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
                 ) : joinedId === church.id ? (
                   <>
                     <Check className="h-4 w-4" />
-                    {t('joined')}
+                    Joined
                   </>
                 ) : (
-                  t('join')
+                  'Join'
                 )}
               </Button>
             </li>
@@ -173,23 +172,23 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 
       {results.length === 0 && query.length > 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          {t('noChurchesFound', { query })}{' '}
+          No churches found for &ldquo;{query}&rdquo;.{' '}
           <Link href="/welcome" className="underline underline-offset-4">
-            {t('registerNewChurch')}
+            Register a new church
           </Link>
         </p>
       )}
 
       {results.length === 0 && query.length === 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          {t('typeToSearch')}
+          Type your church name to search
         </p>
       )}
 
       {/* Register a new church link */}
       <div className="flex justify-center pt-2 border-t">
         <Link href="/welcome" className="text-sm text-muted-foreground underline underline-offset-4">
-          {t('registerNewChurch')}
+          Register a new church
         </Link>
       </div>
     </div>
@@ -285,7 +284,7 @@ function ProfileStep() {
                 <FormItem>
                   <FormLabel>{t('firstNameAr')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('firstNameArPlaceholder')} {...field} />
+                    <Input placeholder={t('firstNameArPlaceholder')} dir="auto" className="text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -298,7 +297,7 @@ function ProfileStep() {
                 <FormItem>
                   <FormLabel>{t('lastNameAr')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('lastNameArPlaceholder')} {...field} />
+                    <Input placeholder={t('lastNameArPlaceholder')} dir="auto" className="text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -320,7 +319,7 @@ function ProfileStep() {
                 <FormItem>
                   <FormLabel>{t('firstNameEn')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" {...field} />
+                    <Input placeholder={t('firstNameEnPlaceholder')} dir="ltr" className="text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -333,7 +332,7 @@ function ProfileStep() {
                 <FormItem>
                   <FormLabel>{t('lastNameEn')}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" {...field} />
+                    <Input placeholder={t('lastNameEnPlaceholder')} dir="ltr" className="text-base" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -350,7 +349,7 @@ function ProfileStep() {
             <FormItem>
               <FormLabel>{t('phone')}</FormLabel>
               <FormControl>
-                <Input type="tel" placeholder={t('phonePlaceholder')} dir="ltr" {...field} />
+                <Input type="tel" placeholder={t('phonePlaceholder')} dir="ltr" className="text-base" {...field} />
               </FormControl>
               <FormDescription>{t('phoneDescription')}</FormDescription>
               <FormMessage />
@@ -404,7 +403,7 @@ function ProfileStep() {
             <FormItem>
               <FormLabel>{t('occupation')}</FormLabel>
               <FormControl>
-                <Input placeholder={t('occupationPlaceholder')} {...field} />
+                <Input placeholder={t('occupationPlaceholder')} dir="auto" className="text-base" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -477,9 +476,9 @@ export default function OnboardingPage() {
           {step === 'church' ? (
             <>
               <CardHeader>
-                <CardTitle>{t('findYourChurch')}</CardTitle>
+                <CardTitle>Find your church</CardTitle>
                 <CardDescription>
-                  {t('findYourChurchDesc')}
+                  Search for your church to join it on Ekklesia. You can join multiple churches.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -498,6 +497,12 @@ export default function OnboardingPage() {
             </>
           )}
         </Card>
+
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          <Link href="/login" className="font-medium underline underline-offset-4">
+            {t('backToLogin')}
+          </Link>
+        </p>
       </div>
     </div>
   )

@@ -116,7 +116,7 @@ export function LeaderDashboard({ data }: Props) {
                     className="w-full bg-primary/20 rounded-t-sm min-h-[4px]"
                     style={{ height: `${Math.max(point.rate, 4)}%` }}
                   />
-                  <span className="text-[9px] text-muted-foreground">{point.weekLabel}</span>
+                  <span className="text-xs text-muted-foreground">{point.weekLabel}</span>
                 </div>
               ))}
             </div>

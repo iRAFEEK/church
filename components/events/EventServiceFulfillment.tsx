@@ -154,7 +154,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                               </span>
                             )}
                           </span>
-                          <Badge variant="outline" className={cn('text-[10px]', statusBadge[assignment.status])}>
+                          <Badge variant="outline" className={cn('text-xs', statusBadge[assignment.status])}>
                             {t(`${assignment.status}Status`)}
                           </Badge>
                         </div>

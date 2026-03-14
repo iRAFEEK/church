@@ -43,10 +43,10 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
           {artist && <p className="text-sm text-zinc-500 mt-1">{artist}</p>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
           {lyrics && (
             <a href={`/presenter/songs/${song.id}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="default">
+              <Button variant="default" className="w-full sm:w-auto">
                 <Presentation className="h-4 w-4 me-2" />
                 {t('present')}
               </Button>
@@ -54,7 +54,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           )}
           {isLeader && (
             <Link href={`/admin/songs/${song.id}/edit`}>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Pencil className="h-4 w-4 me-2" />
                 {t('edit')}
               </Button>

@@ -69,7 +69,7 @@ export function MinistryLeaderDashboard({ data }: Props) {
                     className="w-full bg-primary/20 rounded-t-sm min-h-[4px]"
                     style={{ height: `${Math.max(point.rate, 4)}%` }}
                   />
-                  <span className="text-[9px] text-muted-foreground">{point.weekLabel}</span>
+                  <span className="text-xs text-muted-foreground">{point.weekLabel}</span>
                 </div>
               ))}
             </div>
@@ -125,7 +125,7 @@ export function MinistryLeaderDashboard({ data }: Props) {
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       {(a.role || a.roleAr) && (
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-xs">
                           {isAr ? (a.roleAr || a.role) : a.role}
                         </Badge>
                       )}

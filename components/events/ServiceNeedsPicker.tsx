@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Plus, Trash2, Users, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Ministry, Group, RolePreset } from '@/types'
@@ -182,16 +183,33 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                     type="button"
                     onClick={() => openEditDialog(i)}
                     className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
+                    aria-label={t('editServiceNeed')}
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(i)}
-                    className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
+                        aria-label={t('removeServiceNeed')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('confirmRemoveNeedTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('confirmRemoveNeedBody')}</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleRemove(i)} className="bg-red-600 hover:bg-red-700">
+                          {t('removeServiceNeed')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             )
@@ -285,7 +303,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetName') || 'Role name'}
                         dir="ltr"
-                        className="min-h-[44px] text-sm flex-1"
+                        className="h-8 text-xs flex-1"
                       />
                       <Input
                         value={rp.role_ar}
@@ -296,7 +314,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetNameAr') || 'اسم الدور'}
                         dir="rtl"
-                        className="min-h-[44px] text-sm flex-1"
+                        className="h-8 text-xs flex-1"
                       />
                       <Input
                         type="number"
@@ -308,12 +326,13 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                           setRolePresets(updated)
                         }}
                         dir="ltr"
-                        className="min-h-[44px] text-sm w-16"
+                        className="h-8 text-xs w-16"
                       />
                       <button
                         type="button"
                         onClick={() => setRolePresets(rolePresets.filter((_, j) => j !== rpIdx))}
                         className="p-1 text-zinc-400 hover:text-red-500"
+                        aria-label={t('removeServiceNeed')}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -350,7 +369,8 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                dir="ltr"
+                dir="auto"
+                className="text-base"
                 placeholder="e.g., 2 camera operators, 1 sound engineer"
               />
             </div>

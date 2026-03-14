@@ -346,20 +346,20 @@ export function NotificationComposer({
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">{tc('titleAr')} *</label>
-              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} placeholder={tc('titleArPlaceholder')} />
+              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} placeholder={tc('titleArPlaceholder')} dir="auto" className="text-base" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">{tc('bodyAr')} *</label>
-              <Textarea value={bodyAr} onChange={e => setBodyAr(e.target.value)} placeholder={tc('bodyArPlaceholder')} rows={3} />
+              <Textarea value={bodyAr} onChange={e => setBodyAr(e.target.value)} placeholder={tc('bodyArPlaceholder')} rows={3} dir="auto" className="text-base" />
             </div>
             <Separator />
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">{tc('titleEn')}</label>
-              <Input dir="ltr" value={titleEn} onChange={e => setTitleEn(e.target.value)} placeholder={tc('titleEnPlaceholder')} />
+              <Input dir="ltr" value={titleEn} onChange={e => setTitleEn(e.target.value)} placeholder={tc('titleEnPlaceholder')} className="text-base" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">{tc('bodyEn')}</label>
-              <Textarea dir="ltr" value={bodyEn} onChange={e => setBodyEn(e.target.value)} placeholder={tc('bodyEnPlaceholder')} rows={2} />
+              <Textarea dir="ltr" value={bodyEn} onChange={e => setBodyEn(e.target.value)} placeholder={tc('bodyEnPlaceholder')} rows={2} className="text-base" />
             </div>
             <Separator />
             <div className="space-y-2">

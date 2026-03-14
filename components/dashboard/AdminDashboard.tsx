@@ -82,19 +82,19 @@ export function AdminDashboard({ data }: Props) {
           href="/admin/events/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <Calendar className="h-4 w-4" /> {t('quickActionNewEvent')}
+          <Calendar className="h-4 w-4" /> {isAr ? 'حدث جديد' : 'New Event'}
         </Link>
         <Link
           href="/admin/announcements/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <Megaphone className="h-4 w-4" /> {t('quickActionAnnouncement')}
+          <Megaphone className="h-4 w-4" /> {isAr ? 'إعلان' : 'Announcement'}
         </Link>
         <Link
           href="/admin/visitors"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <UserPlus className="h-4 w-4" /> {t('quickActionVisitors')}
+          <UserPlus className="h-4 w-4" /> {isAr ? 'الزوار' : 'Visitors'}
         </Link>
       </div>
 

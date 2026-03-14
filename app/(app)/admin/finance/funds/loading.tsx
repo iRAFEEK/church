@@ -11,7 +11,7 @@ export default function FundsLoading() {
         <div className="h-9 bg-zinc-200 rounded w-32" />
       </div>
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse border rounded-lg p-4 space-y-2">
             <div className="h-3 bg-zinc-100 rounded w-20" />

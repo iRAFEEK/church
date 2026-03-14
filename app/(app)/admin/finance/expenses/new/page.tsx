@@ -10,5 +10,9 @@ export default async function NewExpensePage() {
     getCachedFunds(profile.church_id),
   ])
 
-  return <ExpenseForm ministries={ministries || []} funds={funds || []} />
+  return (
+    <div className="pb-24">
+      <ExpenseForm ministries={ministries || []} funds={funds || []} />
+    </div>
+  )
 }

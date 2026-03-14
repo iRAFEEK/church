@@ -14,30 +14,26 @@ export function HighlightPalette({ activeColor, onSelect, onRemove }: HighlightP
   const t = useTranslations('bible')
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1.5">
       {HIGHLIGHT_COLORS.map((c) => (
         <button
           key={c.value}
           type="button"
           onClick={() => onSelect(c.value)}
-          className="h-10 w-10 flex items-center justify-center rounded-full"
-          title={t(`color${c.value.charAt(0).toUpperCase() + c.value.slice(1)}` as Parameters<typeof t>[0])}
-        >
-          <span className={`h-6 w-6 rounded-full ${c.class} border-2 transition-transform hover:scale-110 ${
+          className={`h-6 w-6 rounded-full ${c.class} border-2 transition-transform hover:scale-110 ${
             activeColor === c.value ? 'border-zinc-900 scale-110' : 'border-transparent'
-          }`} />
-        </button>
+          }`}
+          title={t(`color${c.value.charAt(0).toUpperCase() + c.value.slice(1)}` as Parameters<typeof t>[0])}
+        />
       ))}
       {activeColor && (
         <button
           type="button"
           onClick={onRemove}
-          className="h-10 w-10 flex items-center justify-center rounded-full"
+          className="h-6 w-6 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 text-xs hover:border-zinc-500 hover:text-zinc-600 transition-colors"
           title={t('highlightRemoved')}
         >
-          <span className="h-6 w-6 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 text-xs hover:border-zinc-500 hover:text-zinc-600 transition-colors">
-            ✕
-          </span>
+          ✕
         </button>
       )}
     </div>

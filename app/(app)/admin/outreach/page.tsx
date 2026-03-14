@@ -8,7 +8,7 @@ export default async function OutreachPage() {
   const t = await getTranslations('outreach')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <div className="flex items-center gap-3">
           <MapPin className="h-6 w-6 text-primary" />

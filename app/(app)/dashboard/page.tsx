@@ -34,14 +34,14 @@ export default async function DashboardPage() {
 
   // Welcome header (shared across all roles)
   const header = (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+    <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="min-w-0">
+        <h1 className="text-2xl font-bold tracking-tight truncate">
           {t('welcome', { name: firstName })}
         </h1>
-        <p className="text-muted-foreground">{churchName}</p>
+        <p className="text-muted-foreground truncate">{churchName}</p>
       </div>
-      <Badge variant="secondary" className="text-sm">
+      <Badge variant="secondary" className="text-sm shrink-0">
         {t(roleKey)}
       </Badge>
     </div>

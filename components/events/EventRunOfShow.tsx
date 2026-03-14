@@ -90,13 +90,13 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
                   <p className="text-sm font-medium text-zinc-800">{segTitle}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     {seg.duration_minutes && (
-                      <Badge variant="outline" className="text-[10px] gap-1">
+                      <Badge variant="outline" className="text-xs gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         {seg.duration_minutes} {t('min')}
                       </Badge>
                     )}
                     {ministryName && (
-                      <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Badge variant="secondary" className="text-xs gap-1">
                         <Users className="h-2.5 w-2.5" />
                         {ministryName}
                       </Badge>

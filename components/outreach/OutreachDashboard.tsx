@@ -168,12 +168,12 @@ export function OutreachDashboard() {
 
                       <div className="flex items-center gap-2 shrink-0">
                         {member.needs_followup && (
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-[10px]">
+                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
                             <AlertCircle className="h-3 w-3 me-1" />
                             {t('needsFollowup')}
                           </Badge>
                         )}
-                        <Badge variant="outline" className={`text-[10px] ${statusColor}`}>
+                        <Badge variant="outline" className={`text-xs ${statusColor}`}>
                           <Calendar className="h-3 w-3 me-1" />
                           {getVisitLabel(member.last_visit_date)}
                         </Badge>

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2, Search, Building2, Check } from 'lucide-react'
+import { Loader2, Search, Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 
@@ -68,7 +68,7 @@ function ChurchSelectStep({
       <div className="relative">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          className="ps-9"
+          className="ps-9 text-base"
           placeholder={t('searchChurchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -132,7 +132,7 @@ function ChurchSelectStep({
 
       {results.length === 0 && query.length === 0 && !searching && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          {t('typeToSearch')}
+          {t('searchChurchHint')}
         </p>
       )}
     </div>
@@ -140,12 +140,6 @@ function ChurchSelectStep({
 }
 
 // ─── Step 2: Signup Form ────────────────────────────────────────────────────────
-
-type SignupForm = {
-  email: string
-  password: string
-  confirmPassword: string
-}
 
 function SignupFormStep({
   churchId,
@@ -167,9 +161,11 @@ function SignupFormStep({
       confirmPassword: z.string(),
     })
     .refine((v) => v.password === v.confirmPassword, {
-      message: t('validationPasswordMismatch'),
+      message: t('validationPasswordMatch'),
       path: ['confirmPassword'],
     })
+
+  type SignupForm = z.infer<typeof signupSchema>
 
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -194,6 +190,7 @@ function SignupFormStep({
       return
     }
 
+    toast.success(t('signUpSuccess'))
     router.push('/onboarding')
     router.refresh()
   }
@@ -263,7 +260,7 @@ function SignupFormStep({
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder={t('passwordPlaceholder')}
+                    placeholder="••••••••"
                     autoComplete="new-password"
                     dir="ltr"
                     className="text-base"
@@ -293,8 +290,8 @@ function SignupFormStep({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SignupPage() {
-  const t = useTranslations('auth')
   const searchParams = useSearchParams()
+  const t = useTranslations('auth')
   const [selectedChurch, setSelectedChurch] =
     useState<ChurchSearchResult | null>(null)
 
@@ -314,8 +311,8 @@ export default function SignupPage() {
         <CardTitle className="text-2xl">{t('signUpTitle')}</CardTitle>
         <CardDescription>
           {showForm
-            ? t('signingUpFor', { church: churchName })
-            : t('findChurchToStart')}
+            ? t('signUpForChurch', { church: churchName })
+            : t('signUpDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>

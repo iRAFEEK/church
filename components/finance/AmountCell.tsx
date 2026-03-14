@@ -1,7 +1,6 @@
 'use client'
 
 import { CurrencyDisplay } from './CurrencyDisplay'
-import { useLocale } from 'next-intl'
 
 interface AmountCellProps {
   amount: number
@@ -11,7 +10,6 @@ interface AmountCellProps {
 }
 
 export function AmountCell({ amount, currency = 'USD', type = 'neutral', className = '' }: AmountCellProps) {
-  const locale = useLocale()
   const colorClass =
     type === 'income' ? 'text-green-600 dark:text-green-400' :
     type === 'expense' ? 'text-red-600 dark:text-red-400' :
@@ -21,8 +19,7 @@ export function AmountCell({ amount, currency = 'USD', type = 'neutral', classNa
     <CurrencyDisplay
       amount={amount}
       currency={currency}
-      locale={locale}
-      className={`font-mono ${colorClass} ${className}`}
+      className={`font-mono tabular-nums ${colorClass} ${className}`}
     />
   )
 }

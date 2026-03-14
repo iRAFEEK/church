@@ -16,5 +16,9 @@ export default async function NewBudgetPage() {
       .order('start_date', { ascending: false }),
   ])
 
-  return <BudgetForm funds={funds || []} fiscalYears={fiscalYears || []} />
+  return (
+    <div className="pb-24">
+      <BudgetForm funds={funds || []} fiscalYears={fiscalYears || []} />
+    </div>
+  )
 }

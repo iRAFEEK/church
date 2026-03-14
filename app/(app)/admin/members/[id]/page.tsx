@@ -62,6 +62,16 @@ export default async function MemberDetailPage({
   const displayName = nameAr || nameEn || memberProfile.email || '—'
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
+  const getRoleLabel = (role: string) => {
+    const map: Record<string, string> = {
+      super_admin: t('roleSuperAdmin'),
+      ministry_leader: t('roleMinistryLeader'),
+      group_leader: t('roleGroupLeader'),
+      member: t('roleMember'),
+    }
+    return map[role] ?? role
+  }
+
   const getStatusLabel = (status: string) => {
     const map: Record<string, string> = {
       active: t('statusActive'),
@@ -79,12 +89,12 @@ export default async function MemberDetailPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 pb-24">
       {/* Back */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/admin/members">
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
         <h1 className="text-xl font-bold">{t('pageTitle')}</h1>
@@ -104,7 +114,7 @@ export default async function MemberDetailPage({
               {nameEn && <p className="text-muted-foreground" dir="ltr">{nameEn}</p>}
 
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                <Badge variant="secondary">{memberProfile.role}</Badge>
+                <Badge variant="secondary">{getRoleLabel(memberProfile.role)}</Badge>
                 <Badge variant={getStatusVariant(memberProfile.status)}>
                   {getStatusLabel(memberProfile.status)}
                 </Badge>
@@ -121,7 +131,7 @@ export default async function MemberDetailPage({
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="info" dir="rtl">
+      <Tabs defaultValue="info">
         <TabsList className={`grid w-full ${admin && canManageOutreach ? 'grid-cols-5' : admin || canManageOutreach ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
           <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>

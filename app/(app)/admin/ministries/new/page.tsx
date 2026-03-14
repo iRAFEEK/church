@@ -11,7 +11,7 @@ export default async function NewMinistryPage() {
   const t = await getTranslations('ministries')
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg mx-auto space-y-4 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('dialogCreateTitle')}</h1>
       </div>

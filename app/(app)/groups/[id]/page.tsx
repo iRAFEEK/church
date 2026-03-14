@@ -99,7 +99,7 @@ export default async function GroupLeaderPage({ params }: Params) {
   const backHref = isAdmin ? '/admin/groups' : '/my-group'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Back navigation */}
       <Link
         href={backHref}

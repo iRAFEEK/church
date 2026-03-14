@@ -242,7 +242,7 @@ export default function NotificationsPage() {
   // ── Render ───────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -348,7 +348,7 @@ export default function NotificationsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`types.${n.type}`)}</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">{t(`types.${n.type}`)}</Badge>
                       <span className="text-xs text-muted-foreground">{formatDate(n.created_at, locale)}</span>
                     </div>
                   </div>
@@ -364,10 +364,10 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{t('page', { current: page, total: totalPages })}</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-10 w-10" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </Button>
-            <Button variant="outline" size="icon" className="h-10 w-10" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>
@@ -393,7 +393,7 @@ export default function NotificationsPage() {
                       <DialogTitle className="text-base">{sn.title}</DialogTitle>
                       <DialogDescription asChild>
                         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t(`types.${sn.type}`)}</Badge>
+                          <Badge variant="outline" className="text-xs px-1.5 py-0">{t(`types.${sn.type}`)}</Badge>
                           <span>{formatDate(sn.created_at, locale)}</span>
                         </div>
                       </DialogDescription>

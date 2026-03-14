@@ -24,7 +24,7 @@ export default async function NewGroupPage() {
   ])
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('newGroupPageTitle')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{t('newGroupPageSubtitle')}</p>

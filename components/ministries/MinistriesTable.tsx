@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { SearchInput } from '@/components/ui/search-input'
 import { normalizeSearch } from '@/lib/utils/search'
+import { Users } from 'lucide-react'
 
 type Leader = {
   id: string
@@ -74,9 +75,12 @@ export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
       />
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-zinc-400">
-          <p className="font-medium">{t('emptyTitle')}</p>
-          <p className="text-sm mt-1">{t('emptySubtitle')}</p>
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+          <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+            <Users className="h-8 w-8 text-zinc-400" />
+          </div>
+          <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
+          <p className="text-sm text-zinc-500 max-w-[260px]">{t('emptySubtitle')}</p>
         </div>
       ) : (
         <div className="rounded-xl border border-zinc-200 divide-y divide-zinc-100">

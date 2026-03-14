@@ -11,10 +11,10 @@ import { Shield, User, Users, UserCheck, ShieldCheck, Search, Settings, Pencil }
 import { ALL_PERMISSIONS, PERMISSION_LABELS, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 import type { PermissionKey } from '@/types'
 
-const ROLE_ICONS: Record<string, typeof User> = {
-  member: User,
-  group_leader: Users,
-  ministry_leader: UserCheck,
+const ROLE_META: Record<string, { icon: typeof User; en: string; ar: string }> = {
+  member: { icon: User, en: 'Members', ar: 'الأعضاء' },
+  group_leader: { icon: Users, en: 'Group Leaders', ar: 'قادة المجموعات' },
+  ministry_leader: { icon: UserCheck, en: 'Ministry Leaders', ar: 'قادة الخدمات' },
 }
 
 interface SearchParams {
@@ -77,7 +77,7 @@ export default async function PermissionsSummaryPage({
   const configuredRoles = ['member', 'group_leader', 'ministry_leader']
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto pb-24">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
@@ -90,9 +90,10 @@ export default async function PermissionsSummaryPage({
       {/* Role Defaults Quick Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {configuredRoles.map(role => {
-          const Icon = ROLE_ICONS[role]
-          if (!Icon) return null
-          const roleLabel = t(`role_${role}`)
+          const meta = ROLE_META[role]
+          if (!meta) return null
+          const Icon = meta.icon
+          const roleLabel = isRTL ? meta.ar : meta.en
           const defaults = HARDCODED_ROLE_DEFAULTS[role as keyof typeof HARDCODED_ROLE_DEFAULTS]
           const enabledCount = ALL_PERMISSIONS.filter(k => defaults[k]).length
 
@@ -104,19 +105,19 @@ export default async function PermissionsSummaryPage({
                     <Icon className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">{roleLabel}</span>
                   </div>
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-xs">
                     {enabledCount}/{ALL_PERMISSIONS.length}
                   </Badge>
                 </div>
                 {overrideCounts[role] && (
                   <p className="text-xs text-blue-600 mt-1.5">
-                    {t('withCustomOverrides', { count: overrideCounts[role] })}
+                    {overrideCounts[role]} {isRTL ? 'عضو لديه تخصيصات' : 'with custom overrides'}
                   </p>
                 )}
                 <Link href="/admin/settings/roles" className="mt-3 block">
                   <Button variant="outline" size="sm" className="w-full text-xs">
                     <Settings className="h-3 w-3 me-1" />
-                    {t('editDefaults')}
+                    {isRTL ? 'تعديل الافتراضيات' : 'Edit Defaults'}
                   </Button>
                 </Link>
               </CardContent>
@@ -134,7 +135,7 @@ export default async function PermissionsSummaryPage({
               <Input
                 name="q"
                 defaultValue={search}
-                placeholder={t('searchMembers')}
+                placeholder={isRTL ? 'البحث عن عضو...' : 'Search members...'}
                 className="ps-9"
               />
             </div>
@@ -143,12 +144,12 @@ export default async function PermissionsSummaryPage({
               defaultValue={roleFilter ?? ''}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="">{t('allRoles')}</option>
-              <option value="member">{t('role_member')}</option>
-              <option value="group_leader">{t('role_group_leader')}</option>
-              <option value="ministry_leader">{t('role_ministry_leader')}</option>
+              <option value="">{isRTL ? 'جميع الأدوار' : 'All Roles'}</option>
+              <option value="member">{isRTL ? 'أعضاء' : 'Members'}</option>
+              <option value="group_leader">{isRTL ? 'قادة المجموعات' : 'Group Leaders'}</option>
+              <option value="ministry_leader">{isRTL ? 'قادة الخدمات' : 'Ministry Leaders'}</option>
             </select>
-            <Button type="submit" variant="outline">{t('searchButton')}</Button>
+            <Button type="submit" variant="outline">{isRTL ? 'بحث' : 'Search'}</Button>
           </form>
         </CardContent>
       </Card>
@@ -158,8 +159,8 @@ export default async function PermissionsSummaryPage({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
-              {t('memberPermissions')}
-              <Badge variant="secondary" className="ms-2 text-[10px]">{members.length}</Badge>
+              {isRTL ? 'صلاحيات الأعضاء' : 'Member Permissions'}
+              <Badge variant="secondary" className="ms-2 text-xs">{members.length}</Badge>
             </CardTitle>
           </CardHeader>
           {/* Mobile card list */}
@@ -171,29 +172,30 @@ export default async function PermissionsSummaryPage({
               const initials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
               const overrides = m.permissions as Record<string, boolean> | null
               const overrideKeys = overrides ? Object.keys(overrides) : []
-              const roleLabel = t(`role_${m.role}`)
+              const meta = ROLE_META[m.role]
+              const roleLabel = meta ? (isRTL ? meta.ar : meta.en) : m.role
               return (
                 <div key={m.id} className="px-4 py-3 flex items-center gap-3">
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarImage src={m.photo_url ?? undefined} />
-                    <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium truncate">{name || m.email || '—'}</p>
-                      <Badge variant="secondary" className="text-[10px] shrink-0">{roleLabel}</Badge>
+                      <Badge variant="secondary" className="text-xs shrink-0">{roleLabel}</Badge>
                     </div>
                     {overrideKeys.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {overrideKeys.slice(0, 2).map(key => (
-                          <Badge key={key} variant="outline" className={`text-[9px] ${overrides![key] ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                          <Badge key={key} variant="outline" className={`text-xs ${overrides![key] ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                             {isRTL ? PERMISSION_LABELS[key as PermissionKey]?.ar : PERMISSION_LABELS[key as PermissionKey]?.en}
                           </Badge>
                         ))}
-                        {overrideKeys.length > 2 && <Badge variant="outline" className="text-[9px]">+{overrideKeys.length - 2}</Badge>}
+                        {overrideKeys.length > 2 && <Badge variant="outline" className="text-xs">+{overrideKeys.length - 2}</Badge>}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground mt-0.5">{t('default')}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{isRTL ? 'افتراضي' : 'Default'}</p>
                     )}
                   </div>
                   <Button variant="ghost" size="sm" asChild className="shrink-0">
@@ -211,9 +213,9 @@ export default async function PermissionsSummaryPage({
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
-                  <th className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{t('colMember')}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colRole')}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{t('colOverrides')}</th>
+                  <th className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'العضو' : 'Member'}</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'الدور' : 'Role'}</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'التخصيصات' : 'Overrides'}</th>
                   <th className="pe-6 py-2.5"></th>
                 </tr>
               </thead>
@@ -225,7 +227,8 @@ export default async function PermissionsSummaryPage({
                   const initials = name ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '?'
                   const overrides = m.permissions as Record<string, boolean> | null
                   const overrideKeys = overrides ? Object.keys(overrides) : []
-                  const roleLabel = t(`role_${m.role}`)
+                  const meta = ROLE_META[m.role]
+                  const roleLabel = meta ? (isRTL ? meta.ar : meta.en) : m.role
 
                   return (
                     <tr key={m.id} className="hover:bg-muted/30 transition-colors">
@@ -233,18 +236,18 @@ export default async function PermissionsSummaryPage({
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarImage src={m.photo_url ?? undefined} />
-                            <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate">{name || m.email || '—'}</p>
                             {m.email && name && (
-                              <p className="text-[11px] text-muted-foreground truncate" dir="ltr">{m.email}</p>
+                              <p className="text-xs text-muted-foreground truncate" dir="ltr">{m.email}</p>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant="secondary" className="text-[10px]">{roleLabel}</Badge>
+                        <Badge variant="secondary" className="text-xs">{roleLabel}</Badge>
                       </td>
                       <td className="px-4 py-3">
                         {overrideKeys.length > 0 ? (
@@ -253,7 +256,7 @@ export default async function PermissionsSummaryPage({
                               <Badge
                                 key={key}
                                 variant="outline"
-                                className={`text-[9px] ${overrides![key] ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}
+                                className={`text-xs ${overrides![key] ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-red-50 text-red-700 border-red-200'}`}
                               >
                                 {isRTL
                                   ? PERMISSION_LABELS[key as PermissionKey]?.ar
@@ -261,20 +264,20 @@ export default async function PermissionsSummaryPage({
                               </Badge>
                             ))}
                             {overrideKeys.length > 3 && (
-                              <Badge variant="outline" className="text-[9px]">
+                              <Badge variant="outline" className="text-xs">
                                 +{overrideKeys.length - 3}
                               </Badge>
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">{t('default')}</span>
+                          <span className="text-xs text-muted-foreground">{isRTL ? 'افتراضي' : 'Default'}</span>
                         )}
                       </td>
                       <td className="pe-6 py-3">
                         <Button variant="ghost" size="sm" asChild>
                           <Link href={`/admin/permissions/${m.id}`}>
                             <Pencil className="h-3.5 w-3.5 me-1" />
-                            {t('edit')}
+                            {isRTL ? 'تعديل' : 'Edit'}
                           </Link>
                         </Button>
                       </td>
@@ -290,7 +293,7 @@ export default async function PermissionsSummaryPage({
           <CardContent className="py-12 text-center">
             <Users className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground text-sm">
-              {search ? t('noResults') : t('noMembers')}
+              {search ? (isRTL ? 'لا نتائج' : 'No results found') : (isRTL ? 'لا يوجد أعضاء' : 'No members found')}
             </p>
           </CardContent>
         </Card>

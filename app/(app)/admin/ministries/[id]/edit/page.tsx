@@ -24,7 +24,7 @@ export default async function EditMinistryPage({ params }: Params) {
   if (!ministry) notFound()
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg mx-auto space-y-4 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('dialogEditTitle')}</h1>
       </div>

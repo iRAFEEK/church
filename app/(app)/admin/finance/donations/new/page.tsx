@@ -28,10 +28,12 @@ export default async function NewDonationPage() {
   ])
 
   return (
-    <DonationForm
-      funds={funds || []}
-      campaigns={campaigns || []}
-      members={members || []}
-    />
+    <div className="pb-24">
+      <DonationForm
+        funds={funds || []}
+        campaigns={campaigns || []}
+        members={members || []}
+      />
+    </div>
   )
 }

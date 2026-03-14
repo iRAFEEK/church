@@ -17,7 +17,7 @@ export default async function BookmarksPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t('bookmarks')}</h1>
         <p className="text-muted-foreground text-sm">{t('viewBookmarks')}</p>

@@ -123,6 +123,7 @@ export function NotificationBell() {
           size="icon"
           className="h-10 w-10 md:h-8 md:w-8 relative"
           onClick={handleBellClick}
+          aria-label={t('title')}
         >
           <Bell className="h-5 w-5 md:h-4 md:w-4" />
           {unreadCount > 0 && (

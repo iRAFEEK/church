@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AnnouncementCard } from '@/components/announcements/AnnouncementCard'
-import { Plus } from 'lucide-react'
+import { Plus, Megaphone } from 'lucide-react'
 import type { Announcement } from '@/types'
 
 export default async function AnnouncementsPage({
@@ -55,7 +55,7 @@ export default async function AnnouncementsPage({
     : null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">
@@ -94,8 +94,20 @@ export default async function AnnouncementsPage({
       )}
 
       {!announcements || announcements.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          {t('noAnnouncements')}
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+          <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+            <Megaphone className="h-8 w-8 text-zinc-400" />
+          </div>
+          <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
+          <p className="text-sm text-zinc-500 mb-6 max-w-[260px]">{t('emptyBody')}</p>
+          {admin && (
+            <Link href="/admin/announcements/new">
+              <Button size="sm">
+                <Plus className="h-4 w-4 me-1.5" />
+                {t('newAnnouncement')}
+              </Button>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="divide-y rounded-lg border">

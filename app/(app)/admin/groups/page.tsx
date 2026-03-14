@@ -41,7 +41,7 @@ export default async function GroupsPage() {
   const ministries = await getCachedMinistries(user.profile.church_id)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{t('adminPageTitle')}</h1>

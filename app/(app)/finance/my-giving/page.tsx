@@ -89,7 +89,7 @@ export default async function MyGivingPage({ searchParams }: { searchParams: Sea
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-2xl mx-auto">
+    <div className="space-y-6 px-4 py-4 md:px-6 max-w-2xl mx-auto pb-24">
       <div>
         <h1 className="text-2xl font-bold">{t('myGiving')}</h1>
         <p className="text-muted-foreground text-sm mt-1">

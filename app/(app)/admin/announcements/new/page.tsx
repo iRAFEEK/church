@@ -11,7 +11,7 @@ export default async function NewAnnouncementPage() {
   const t = await getTranslations('announcements')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{t('newAnnouncement')}</h1>
         <p className="text-sm text-zinc-500 mt-1">{t('newAnnouncementSubtitle')}</p>
