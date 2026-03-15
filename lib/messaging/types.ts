@@ -13,6 +13,8 @@ export type NotificationType =
   | 'need_response_received'
   | 'need_response_status_changed'
   | 'need_message'
+  | 'group_join_request'
+  | 'ministry_member_added'
   | 'general'
 
 export interface MessagePayload {

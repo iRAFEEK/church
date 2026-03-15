@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import type {
   AdminDashboardData,
   LeaderDashboardData,
@@ -18,14 +18,14 @@ import type {
 // ─── Cached Dashboard Wrappers (300s TTL) ─────────────────────────
 // These wrap the raw fetch functions with unstable_cache so dashboard
 // queries don't hit the database on every page load.
-// IMPORTANT: Supabase client is created INSIDE each cached function
-// because unstable_cache serializes the closure and the client uses
-// cookies for auth which can't be serialized.
+// IMPORTANT: Uses createAdminClient (service role, no cookies) because
+// unstable_cache forbids accessing cookies() inside cached functions.
+// All queries are already scoped by churchId passed as parameter.
 
 export const getCachedAdminDashboard = (churchId: string, profileId: string, slaHours: number = 48) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       return fetchAdminDashboard(supabase, profileId, churchId, slaHours)
     },
     [`admin-dashboard-${churchId}`],
@@ -35,7 +35,7 @@ export const getCachedAdminDashboard = (churchId: string, profileId: string, sla
 export const getCachedMinistryLeaderDashboard = (churchId: string, profileId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       return fetchMinistryLeaderDashboardV2(supabase, profileId, churchId)
     },
     [`ministry-leader-dashboard-${churchId}-${profileId}`],
@@ -45,7 +45,7 @@ export const getCachedMinistryLeaderDashboard = (churchId: string, profileId: st
 export const getCachedLeaderDashboard = (churchId: string, profileId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       return fetchLeaderDashboard(supabase, profileId, churchId)
     },
     [`leader-dashboard-${churchId}-${profileId}`],
@@ -55,7 +55,7 @@ export const getCachedLeaderDashboard = (churchId: string, profileId: string) =>
 export const getCachedMemberDashboard = (churchId: string, profileId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       return fetchMemberDashboard(supabase, profileId, churchId)
     },
     [`member-dashboard-${churchId}-${profileId}`],
@@ -482,7 +482,7 @@ export async function fetchAdminDashboard(
         id: slot.id,
         label: slot.title || slot.title_ar || '',
         sublabel: `${activeSignups}/${slot.max_volunteers} filled`,
-        href: '/serving',
+        href: `/admin/serving/slots/${slot.id}`,
       })
     }
   }
@@ -944,7 +944,7 @@ export async function fetchMinistryLeaderDashboard(
         id: slot.id,
         label: slot.title || slot.title_ar || '',
         sublabel: `${activeSignups}/${slot.max_volunteers} filled`,
-        href: '/serving',
+        href: `/admin/serving/slots/${slot.id}`,
       })
     }
   }

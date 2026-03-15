@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Music, FileText, Tag } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Song } from '@/types'
 
 interface SongFormProps {
@@ -25,30 +26,21 @@ export function SongForm({ song }: SongFormProps) {
     { title: t('stepLyrics'), titleAr: t('stepLyrics') },
     { title: t('stepTagsReview'), titleAr: t('stepTagsReview') },
   ]
-  const locale = useLocale()
-  const isAr = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
+
   const [form, setForm] = useState({
-    title: song?.title || '',
-    title_ar: song?.title_ar || '',
-    artist: song?.artist || '',
-    artist_ar: song?.artist_ar || '',
-    lyrics: song?.lyrics || '',
-    lyrics_ar: song?.lyrics_ar || '',
+    title: song?.title || song?.title_ar || '',
+    artist: song?.artist || song?.artist_ar || '',
+    lyrics: song?.lyrics || song?.lyrics_ar || '',
     tags: song?.tags?.join(', ') || '',
   })
 
-  const titleField = isAr ? 'title_ar' : 'title'
-  const titleAltField = isAr ? 'title' : 'title_ar'
-  const artistField = isAr ? 'artist_ar' : 'artist'
-  const artistAltField = isAr ? 'artist' : 'artist_ar'
-  const lyricsField = isAr ? 'lyrics_ar' : 'lyrics'
-  const lyricsAltField = isAr ? 'lyrics' : 'lyrics_ar'
-
   const handleSubmit = async () => {
-    if (!form[titleField]) {
+    if (!form.title) {
       toast.error(t('titleRequired'))
       return
     }
@@ -61,12 +53,12 @@ export function SongForm({ song }: SongFormProps) {
         .filter(Boolean)
 
       const payload = {
-        title: form.title || form.title_ar || '',
-        title_ar: form.title_ar || null,
+        title: form.title,
+        title_ar: form.title,
         artist: form.artist || null,
-        artist_ar: form.artist_ar || null,
+        artist_ar: form.artist || null,
         lyrics: form.lyrics || null,
-        lyrics_ar: form.lyrics_ar || null,
+        lyrics_ar: form.lyrics || null,
         tags,
       }
 
@@ -95,19 +87,31 @@ export function SongForm({ song }: SongFormProps) {
     }
   }
 
-  const canProceed = step === 0 ? !!form[titleField] : true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.title.trim()) errs.title = tV('titleRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form, tV])
 
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={song ? t('updateSong') : t('createSong')}
       submitLabelAr={song ? t('updateSong') : t('createSong')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Title & Artist */}
       {step === 0 && (
@@ -115,30 +119,25 @@ export function SongForm({ song }: SongFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Music className="h-5 w-5" />
-              <span className="text-sm font-medium">{tc('title')} *</span>
+              <span className="text-sm font-medium">{tc('title')}<RequiredMark /></span>
             </div>
             <Input
-              value={form[titleField]}
-              onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
-              dir={isAr ? 'rtl' : 'ltr'}
-              className="text-lg min-h-[48px]"
+              value={form.title}
+              onChange={(e) => { setForm({ ...form, title: e.target.value }); if (errors.title) setErrors(prev => { const next = { ...prev }; delete next.title; return next }) }}
+              dir="auto"
+              className={cn('text-lg min-h-[48px]', errors.title && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.title} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')} ({isAr ? 'EN' : 'AR'})</Label>
+            <div className="flex items-center gap-3 text-zinc-500 mb-2">
+              <Music className="h-5 w-5" />
+              <span className="text-sm font-medium">{tc('artist')}</span>
+            </div>
             <Input
-              value={form[titleAltField]}
-              onChange={(e) => setForm({ ...form, [titleAltField]: e.target.value })}
-              dir={isAr ? 'ltr' : 'rtl'}
-              className="min-h-[48px]"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('artist')}</Label>
-            <Input
-              value={form[artistField]}
-              onChange={(e) => setForm({ ...form, [artistField]: e.target.value })}
-              dir={isAr ? 'rtl' : 'ltr'}
+              value={form.artist}
+              onChange={(e) => setForm({ ...form, artist: e.target.value })}
+              dir="auto"
               className="min-h-[48px]"
             />
           </div>
@@ -154,21 +153,11 @@ export function SongForm({ song }: SongFormProps) {
               <span className="text-sm font-medium">{tc('lyrics')}</span>
             </div>
             <Textarea
-              value={form[lyricsField]}
-              onChange={(e) => setForm({ ...form, [lyricsField]: e.target.value })}
+              value={form.lyrics}
+              onChange={(e) => setForm({ ...form, lyrics: e.target.value })}
               rows={12}
-              dir={isAr ? 'rtl' : 'ltr'}
-              placeholder={isAr ? t('lyricsPlaceholderAr') : t('lyricsPlaceholder')}
-              className="font-mono text-sm"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('lyrics')} ({isAr ? 'EN' : 'AR'})</Label>
-            <Textarea
-              value={form[lyricsAltField]}
-              onChange={(e) => setForm({ ...form, [lyricsAltField]: e.target.value })}
-              rows={8}
-              dir={isAr ? 'ltr' : 'rtl'}
+              dir="auto"
+              placeholder={t('lyricsPlaceholder')}
               className="font-mono text-sm"
             />
           </div>
@@ -193,13 +182,13 @@ export function SongForm({ song }: SongFormProps) {
             <p className="text-xs text-muted-foreground mt-1">{t('tagsHint')}</p>
           </div>
           <div className="space-y-3 pt-2">
-            <ReviewItem icon={<Music className="h-4 w-4" />} label={tc('title')} value={form[titleField]} />
-            {form[artistField] && <ReviewItem icon={<Music className="h-4 w-4" />} label={tc('artist')} value={form[artistField]} />}
-            {form[lyricsField] && (
+            <ReviewItem icon={<Music className="h-4 w-4" />} label={tc('title')} value={form.title} />
+            {form.artist && <ReviewItem icon={<Music className="h-4 w-4" />} label={tc('artist')} value={form.artist} />}
+            {form.lyrics && (
               <ReviewItem
                 icon={<FileText className="h-4 w-4" />}
                 label={tc('lyrics')}
-                value={form[lyricsField].split('\n').slice(0, 3).join(' / ') + '...'}
+                value={form.lyrics.split('\n').slice(0, 3).join(' / ') + '...'}
               />
             )}
           </div>

@@ -9,7 +9,13 @@ import { updateRoleDefaultsSchema, updateUserPermissionsSchema } from '@/lib/sch
 // ── Group Schema ────────────────────────────────────────────────────────────
 
 describe('CreateGroupSchema', () => {
-  const VALID = { name: 'Alpha Group', type: 'small_group' as const }
+  const VALID = {
+    name: 'Alpha Group',
+    type: 'small_group' as const,
+    meeting_day: 'Friday',
+    meeting_time: '19:00',
+    meeting_frequency: 'weekly' as const,
+  }
 
   it('accepts valid data with only required fields', () => {
     expect(CreateGroupSchema.safeParse(VALID).success).toBe(true)
@@ -22,11 +28,8 @@ describe('CreateGroupSchema', () => {
       ministry_id: crypto.randomUUID(),
       leader_id: crypto.randomUUID(),
       co_leader_id: crypto.randomUUID(),
-      meeting_day: 'Friday',
-      meeting_time: '19:00',
       meeting_location: 'Room 201',
       meeting_location_ar: 'غرفة 201',
-      meeting_frequency: 'weekly' as const,
       max_members: 15,
       is_open: true,
       is_active: true,
@@ -35,29 +38,29 @@ describe('CreateGroupSchema', () => {
   })
 
   it('rejects missing name', () => {
-    const r = CreateGroupSchema.safeParse({ type: 'small_group' })
+    const r = CreateGroupSchema.safeParse({ type: 'small_group', meeting_day: 'Friday', meeting_time: '19:00', meeting_frequency: 'weekly' })
     expect(r.success).toBe(false)
   })
 
   it('rejects empty name', () => {
-    const r = CreateGroupSchema.safeParse({ name: '', type: 'small_group' })
+    const r = CreateGroupSchema.safeParse({ ...VALID, name: '' })
     expect(r.success).toBe(false)
   })
 
   it('rejects missing type', () => {
-    const r = CreateGroupSchema.safeParse({ name: 'Test' })
+    const r = CreateGroupSchema.safeParse({ name: 'Test', meeting_day: 'Friday', meeting_time: '19:00', meeting_frequency: 'weekly' })
     expect(r.success).toBe(false)
   })
 
   it('rejects invalid type enum', () => {
-    const r = CreateGroupSchema.safeParse({ name: 'Test', type: 'invalid_type' })
+    const r = CreateGroupSchema.safeParse({ ...VALID, type: 'invalid_type' })
     expect(r.success).toBe(false)
   })
 
   it('accepts all valid type enums', () => {
     const types = ['small_group', 'youth', 'women', 'men', 'family', 'prayer', 'other']
     for (const type of types) {
-      expect(CreateGroupSchema.safeParse({ name: 'Test', type }).success).toBe(true)
+      expect(CreateGroupSchema.safeParse({ ...VALID, type }).success).toBe(true)
     }
   })
 
@@ -76,9 +79,19 @@ describe('CreateGroupSchema', () => {
     expect(r.success).toBe(false)
   })
 
-  it('defaults meeting_frequency to weekly', () => {
-    const r = CreateGroupSchema.parse(VALID)
-    expect(r.meeting_frequency).toBe('weekly')
+  it('rejects missing meeting_day', () => {
+    const { meeting_day: _, ...noDay } = VALID
+    expect(CreateGroupSchema.safeParse(noDay).success).toBe(false)
+  })
+
+  it('rejects missing meeting_time', () => {
+    const { meeting_time: _, ...noTime } = VALID
+    expect(CreateGroupSchema.safeParse(noTime).success).toBe(false)
+  })
+
+  it('rejects missing meeting_frequency', () => {
+    const { meeting_frequency: _, ...noFreq } = VALID
+    expect(CreateGroupSchema.safeParse(noFreq).success).toBe(false)
   })
 })
 

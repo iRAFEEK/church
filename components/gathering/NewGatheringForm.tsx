@@ -1,14 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { getNextGatheringDate } from '@/lib/gatherings'
 import { Calendar, MapPin, BookOpen, FileText } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type Group = {
   id: string
@@ -51,8 +53,14 @@ export function NewGatheringForm({ group }: { group: Group }) {
     notes: '',
   })
 
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
+
   function set(key: string, val: string) {
     setForm(prev => ({ ...prev, [key]: val }))
+    if (errors[key]) {
+      setErrors(prev => { const next = { ...prev }; delete next[key]; return next })
+    }
   }
 
   async function submit() {
@@ -79,34 +87,47 @@ export function NewGatheringForm({ group }: { group: Group }) {
     }
   }
 
-  const canProceed = step === 0 ? !!form.scheduled_at : true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.scheduled_at) errs.scheduled_at = tV('dateRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form.scheduled_at, tV])
 
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={submit}
       isSubmitting={loading}
       submitLabel={t('formCreate')}
       submitLabelAr={t('formCreate')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: When */}
       {step === 0 && (
         <div className="space-y-4 pt-4">
           <div className="flex items-center gap-3 text-zinc-500 mb-2">
             <Calendar className="h-5 w-5" />
-            <span className="text-sm font-medium">{t('formDateTime')}</span>
+            <span className="text-sm font-medium">{t('formDateTime')}<RequiredMark /></span>
           </div>
           <Input
             type="datetime-local"
             value={form.scheduled_at}
             onChange={e => set('scheduled_at', e.target.value)}
             dir="ltr"
-            className="text-lg min-h-[48px]"
+            className={cn('text-lg min-h-[48px]', errors.scheduled_at && 'border-red-500 focus-visible:ring-red-500')}
           />
+          <FieldError error={errors.scheduled_at} />
         </div>
       )}
 

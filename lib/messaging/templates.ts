@@ -129,6 +129,26 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectAr: 'تم {statusAr} عرض مساعدتك',
   },
 
+  group_join_request: {
+    whatsappTemplate: 'group_join_request',
+    titleEn: 'New Join Request',
+    titleAr: 'طلب انضمام جديد',
+    bodyEn: '{memberName} wants to join your group {groupName}.',
+    bodyAr: '{memberName} يريد الانضمام إلى مجموعة {groupName}.',
+    emailSubjectEn: 'New join request for {groupName}',
+    emailSubjectAr: 'طلب انضمام جديد لمجموعة {groupName}',
+  },
+
+  ministry_member_added: {
+    whatsappTemplate: 'ministry_member_added',
+    titleEn: 'Added to Ministry',
+    titleAr: 'تمت إضافتك لخدمة',
+    bodyEn: 'You have been added to {ministryName}.',
+    bodyAr: 'تمت إضافتك إلى خدمة {ministryName}.',
+    emailSubjectEn: 'Added to {ministryName}',
+    emailSubjectAr: 'تمت إضافتك إلى {ministryName}',
+  },
+
   need_message: {
     whatsappTemplate: 'need_message',
     titleEn: 'New Message on Need',

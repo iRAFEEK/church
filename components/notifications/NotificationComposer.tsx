@@ -4,18 +4,16 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   Send, Users, Shield, Building2, Heart, X, Info, Loader2,
-  UserPlus, AlertTriangle, Image, Link as LinkIcon,
+  UserPlus, AlertTriangle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from '@/components/ui/sheet'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -46,11 +44,12 @@ interface NotificationComposerProps {
   initialGroups: GroupOption[]
   initialMinistries: MinistryOption[]
   onClose: () => void
+  open: boolean
 }
 
 export function NotificationComposer({
   allowedTargetTypes, isUnscoped, userRole,
-  initialGroups, initialMinistries, onClose,
+  initialGroups, initialMinistries, onClose, open,
 }: NotificationComposerProps) {
   const tc = useTranslations('notificationComposer')
 
@@ -61,16 +60,12 @@ export function NotificationComposer({
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [selectedVisitorStatuses, setSelectedVisitorStatuses] = useState<string[]>([])
   const [selectedGender, setSelectedGender] = useState<string>('')
-  const [titleAr, setTitleAr] = useState('')
-  const [titleEn, setTitleEn] = useState('')
-  const [bodyAr, setBodyAr] = useState('')
-  const [bodyEn, setBodyEn] = useState('')
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
   const [groups, setGroups] = useState<GroupOption[]>(initialGroups)
   const [ministries, setMinistries] = useState<MinistryOption[]>(initialMinistries)
   const [audienceCount, setAudienceCount] = useState<{ profileCount: number; visitorCount: number; total: number } | null>(null)
   const [loadingCount, setLoadingCount] = useState(false)
-  const [imageUrl, setImageUrl] = useState('')
-  const [linkUrl, setLinkUrl] = useState('')
   const [sending, setSending] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -151,11 +146,9 @@ export function NotificationComposer({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          titleAr, titleEn: titleEn || undefined,
-          bodyAr, bodyEn: bodyEn || undefined,
+          titleAr: title, titleEn: title,
+          bodyAr: body, bodyEn: body,
           targets: buildTargets(),
-          imageUrl: imageUrl.trim() || undefined,
-          linkUrl: linkUrl.trim() || undefined,
         }),
       })
       if (!res.ok) {
@@ -174,219 +167,217 @@ export function NotificationComposer({
   }
 
   const hasTargets = buildTargets().length > 0
-  const canSubmit = hasTargets && titleAr.trim() && bodyAr.trim() && !sending
+  const canSubmit = hasTargets && title.trim() && body.trim() && !sending
 
   return (
     <>
-      <div className="space-y-4">
-        {/* Audience */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              {tc('audienceTitle')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!isUnscoped && (
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                <Info className="h-4 w-4 shrink-0" />
-                {userRole === 'ministry_leader' ? tc('scopeInfo_ministry_leader') : tc('scopeInfo_group_leader')}
-              </div>
-            )}
+      <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+        <SheetContent side="bottom" className="h-[85vh] flex flex-col p-0 rounded-t-2xl">
+          <SheetHeader className="px-4 pt-4 pb-2 border-b shrink-0">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-base flex items-center gap-2">
+                <Send className="h-4 w-4" />
+                {tc('sheetTitle')}
+              </SheetTitle>
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </SheetHeader>
 
-            {allowedTargetTypes.includes('all_church') && (
-              <button
-                onClick={() => {
-                  setAllChurch(!allChurch)
-                  if (!allChurch) {
-                    setSelectedRoles([]); setSelectedGroups([]); setSelectedMinistries([])
-                    setSelectedStatuses([]); setSelectedVisitorStatuses([]); setSelectedGender('')
-                  }
-                }}
-                className={`w-full p-3 rounded-lg border-2 text-start transition-colors ${
-                  allChurch ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="font-medium">{tc('allChurch')}</span>
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+            {/* Audience Section */}
+            <div className="space-y-3">
+              <label className="text-sm font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {tc('audienceTitle')}
+              </label>
+
+              {!isUnscoped && (
+                <div className="rounded-lg bg-blue-50 p-2.5 text-xs text-blue-700 flex items-center gap-2">
+                  <Info className="h-3.5 w-3.5 shrink-0" />
+                  {userRole === 'ministry_leader' ? tc('scopeInfo_ministry_leader') : tc('scopeInfo_group_leader')}
                 </div>
-              </button>
-            )}
+              )}
 
-            {!allChurch && (
-              <>
-                {allowedTargetTypes.includes('roles') && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Shield className="h-3.5 w-3.5" /> {tc('byRole')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {ROLES.map(role => (
-                        <Badge key={role} variant={selectedRoles.includes(role) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedRoles, role, setSelectedRoles)}>
-                          {tc(`role_${role}`)}
-                        </Badge>
-                      ))}
-                    </div>
+              {allowedTargetTypes.includes('all_church') && (
+                <button
+                  onClick={() => {
+                    setAllChurch(!allChurch)
+                    if (!allChurch) {
+                      setSelectedRoles([]); setSelectedGroups([]); setSelectedMinistries([])
+                      setSelectedStatuses([]); setSelectedVisitorStatuses([]); setSelectedGender('')
+                    }
+                  }}
+                  className={`w-full p-3 rounded-lg border-2 text-start transition-colors min-h-[44px] ${
+                    allChurch ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span className="font-medium text-sm">{tc('allChurch')}</span>
                   </div>
-                )}
+                </button>
+              )}
 
-                {allowedTargetTypes.includes('groups') && groups.length > 0 && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" /> {tc('byGroup')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {groups.map(g => (
-                        <Badge key={g.id} variant={selectedGroups.includes(g.id) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedGroups, g.id, setSelectedGroups)}>
-                          {g.name_ar || g.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {allowedTargetTypes.includes('ministries') && ministries.length > 0 && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Building2 className="h-3.5 w-3.5" /> {tc('byMinistry')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {ministries.map(m => (
-                        <Badge key={m.id} variant={selectedMinistries.includes(m.id) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedMinistries, m.id, setSelectedMinistries)}>
-                          {m.name_ar || m.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {allowedTargetTypes.includes('statuses') && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <AlertTriangle className="h-3.5 w-3.5" /> {tc('byStatus')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {STATUSES.map(s => (
-                        <Badge key={s} variant={selectedStatuses.includes(s) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedStatuses, s, setSelectedStatuses)}>
-                          {tc(`status_${s}`)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {allowedTargetTypes.includes('visitors') && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <UserPlus className="h-3.5 w-3.5" /> {tc('byVisitors')}
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {VISITOR_STATUSES.map(vs => (
-                        <Badge key={vs} variant={selectedVisitorStatuses.includes(vs) ? 'default' : 'outline'}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => toggleInArray(selectedVisitorStatuses, vs, setSelectedVisitorStatuses)}>
-                          {tc(`visitor_${vs}`)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {allowedTargetTypes.includes('gender') && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Heart className="h-3.5 w-3.5" /> {tc('byGender')}
-                    </label>
-                    <Select value={selectedGender || 'none'} onValueChange={(v) => setSelectedGender(v === 'none' ? '' : v)}>
-                      <SelectTrigger className="w-auto min-w-[160px]">
-                        <SelectValue placeholder={tc('genderPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{tc('genderAll')}</SelectItem>
-                        {GENDERS.map(g => (
-                          <SelectItem key={g} value={g}>{tc(`gender_${g}`)}</SelectItem>
+              {!allChurch && (
+                <div className="space-y-3">
+                  {allowedTargetTypes.includes('roles') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <Shield className="h-3 w-3" /> {tc('byRole')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {ROLES.map(role => (
+                          <Badge key={role} variant={selectedRoles.includes(role) ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => toggleInArray(selectedRoles, role, setSelectedRoles)}>
+                            {tc(`role_${role}`)}
+                          </Badge>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </>
-            )}
+                      </div>
+                    </div>
+                  )}
 
-            {hasTargets && (
-              <div className="rounded-lg bg-muted/50 p-3 flex items-center gap-2">
-                {loadingCount
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Users className="h-4 w-4 text-primary" />}
-                <span className="text-sm font-medium">
-                  {audienceCount
-                    ? tc('audiencePreview', { members: audienceCount.profileCount, visitors: audienceCount.visitorCount, total: audienceCount.total })
-                    : tc('calculating')}
-                </span>
+                  {allowedTargetTypes.includes('groups') && groups.length > 0 && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <Users className="h-3 w-3" /> {tc('byGroup')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {groups.map(g => (
+                          <Badge key={g.id} variant={selectedGroups.includes(g.id) ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => toggleInArray(selectedGroups, g.id, setSelectedGroups)}>
+                            {g.name_ar || g.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {allowedTargetTypes.includes('ministries') && ministries.length > 0 && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <Building2 className="h-3 w-3" /> {tc('byMinistry')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {ministries.map(m => (
+                          <Badge key={m.id} variant={selectedMinistries.includes(m.id) ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => toggleInArray(selectedMinistries, m.id, setSelectedMinistries)}>
+                            {m.name_ar || m.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {allowedTargetTypes.includes('statuses') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <AlertTriangle className="h-3 w-3" /> {tc('byStatus')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {STATUSES.map(s => (
+                          <Badge key={s} variant={selectedStatuses.includes(s) ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => toggleInArray(selectedStatuses, s, setSelectedStatuses)}>
+                            {tc(`status_${s}`)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {allowedTargetTypes.includes('visitors') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <UserPlus className="h-3 w-3" /> {tc('byVisitors')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {VISITOR_STATUSES.map(vs => (
+                          <Badge key={vs} variant={selectedVisitorStatuses.includes(vs) ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => toggleInArray(selectedVisitorStatuses, vs, setSelectedVisitorStatuses)}>
+                            {tc(`visitor_${vs}`)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {allowedTargetTypes.includes('gender') && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                        <Heart className="h-3 w-3" /> {tc('byGender')}
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {GENDERS.map(g => (
+                          <Badge key={g} variant={selectedGender === g ? 'default' : 'outline'}
+                            className="cursor-pointer px-2.5 py-1 text-xs"
+                            onClick={() => setSelectedGender(selectedGender === g ? '' : g)}>
+                            {tc(`gender_${g}`)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {hasTargets && (
+                <div className="rounded-lg bg-muted/50 p-2.5 flex items-center gap-2">
+                  {loadingCount
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : <Users className="h-3.5 w-3.5 text-primary" />}
+                  <span className="text-xs font-medium">
+                    {audienceCount
+                      ? tc('audiencePreview', { members: audienceCount.profileCount, visitors: audienceCount.visitorCount, total: audienceCount.total })
+                      : tc('calculating')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Message Section */}
+            <div className="space-y-3">
+              <label className="text-sm font-semibold">{tc('messageTitle')}</label>
+              <div className="space-y-2">
+                <Input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder={tc('titlePlaceholder')}
+                  dir="auto"
+                  className="text-base min-h-[44px]"
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <div className="space-y-2">
+                <Textarea
+                  value={body}
+                  onChange={e => setBody(e.target.value)}
+                  placeholder={tc('bodyPlaceholder')}
+                  rows={3}
+                  dir="auto"
+                  className="text-base"
+                />
+              </div>
+            </div>
+          </div>
 
-        {/* Message */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{tc('messageTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{tc('titleAr')} *</label>
-              <Input value={titleAr} onChange={e => setTitleAr(e.target.value)} placeholder={tc('titleArPlaceholder')} dir="auto" className="text-base" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{tc('bodyAr')} *</label>
-              <Textarea value={bodyAr} onChange={e => setBodyAr(e.target.value)} placeholder={tc('bodyArPlaceholder')} rows={3} dir="auto" className="text-base" />
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">{tc('titleEn')}</label>
-              <Input dir="ltr" value={titleEn} onChange={e => setTitleEn(e.target.value)} placeholder={tc('titleEnPlaceholder')} className="text-base" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">{tc('bodyEn')}</label>
-              <Textarea dir="ltr" value={bodyEn} onChange={e => setBodyEn(e.target.value)} placeholder={tc('bodyEnPlaceholder')} rows={2} className="text-base" />
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1.5">
-                <Image className="h-3.5 w-3.5" /> {tc('imageUrl')}
-              </label>
-              <Input dir="ltr" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder={tc('imageUrlPlaceholder')} type="url" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1.5">
-                <LinkIcon className="h-3.5 w-3.5" /> {tc('linkUrl')}
-              </label>
-              <Input dir="ltr" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder={tc('linkUrlPlaceholder')} type="url" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Send Button */}
-        <div className="flex justify-end">
-          <Button size="lg" disabled={!canSubmit} onClick={() => setShowConfirm(true)} className="gap-2">
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {sending ? tc('sending') : tc('sendButton')}
-          </Button>
-        </div>
-
-        <Separator />
-      </div>
+          {/* Sticky Send Button */}
+          <div className="border-t px-4 py-3 shrink-0">
+            <Button
+              className="w-full min-h-[48px] gap-2"
+              disabled={!canSubmit}
+              onClick={() => setShowConfirm(true)}
+            >
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {sending ? tc('sending') : tc('sendButton')}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Confirm Dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>

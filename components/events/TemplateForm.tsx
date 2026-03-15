@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Type, Settings, FileText, ListOrdered, Users, StickyNote, Calendar, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -64,25 +65,21 @@ export function TemplateForm({ template }: TemplateFormProps) {
   const te = useTranslations('events')
   const tc = useTranslations('common')
   const tg = useTranslations('groups')
-  const locale = useLocale()
-  const isRTL = locale.startsWith('ar')
+  const tV = useTranslations('validation')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const [form, setForm] = useState({
-    name: template?.name || '',
-    name_ar: template?.name_ar || '',
+    name: template?.name || template?.name_ar || '',
     event_type: template?.event_type || 'service',
-    title: template?.title || '',
-    title_ar: template?.title_ar || '',
-    description: template?.description || '',
-    description_ar: template?.description_ar || '',
+    title: template?.title || template?.title_ar || '',
+    description: template?.description || template?.description_ar || '',
     location: template?.location || '',
     capacity: template?.capacity ? String(template.capacity) : '',
     is_public: template?.is_public ?? true,
     registration_required: template?.registration_required ?? false,
-    notes: template?.notes || '',
-    notes_ar: template?.notes_ar || '',
+    notes: template?.notes || template?.notes_ar || '',
     recurrence_type: template?.recurrence_type || 'none',
     recurrence_day: template?.recurrence_day ?? 0,
     default_start_time: template?.default_start_time || '',
@@ -167,18 +164,18 @@ export function TemplateForm({ template }: TemplateFormProps) {
     try {
       const payload = {
         name: form.name,
-        name_ar: form.name_ar || null,
+        name_ar: form.name,
         event_type: form.event_type,
         title: form.title,
-        title_ar: form.title_ar || null,
+        title_ar: form.title,
         description: form.description || null,
-        description_ar: form.description_ar || null,
+        description_ar: form.description || null,
         location: form.location || null,
         capacity: form.capacity ? Number(form.capacity) : null,
         is_public: form.is_public,
         registration_required: form.registration_required,
         notes: form.notes || null,
-        notes_ar: form.notes_ar || null,
+        notes_ar: form.notes || null,
         recurrence_type: form.recurrence_type,
         recurrence_day: form.recurrence_type !== 'none' ? form.recurrence_day : null,
         default_start_time: form.default_start_time || null,
@@ -270,7 +267,21 @@ export function TemplateForm({ template }: TemplateFormProps) {
     }
   }
 
-  const canProceed = step === 0 ? !!(form.name && form.title) : true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.name.trim()) errs.name = tV('nameRequired')
+      if (!form.title.trim()) errs.title = tV('titleRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form.name, form.title, tV])
+
   const totalVolunteers = serviceNeeds.reduce((sum, n) => sum + n.volunteers_needed, 0)
   const totalDuration = segments.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)
 
@@ -286,12 +297,12 @@ export function TemplateForm({ template }: TemplateFormProps) {
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={template ? t('updateTemplate') : t('createTemplate')}
       submitLabelAr={template ? t('updateTemplate') : t('createTemplate')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 0: Basics */}
       {step === 0 && (
@@ -299,46 +310,30 @@ export function TemplateForm({ template }: TemplateFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Type className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('templateName')} *</span>
+              <span className="text-sm font-medium">{t('templateName')}<RequiredMark /></span>
             </div>
             <Input
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => { setForm({ ...form, name: e.target.value }); if (errors.name) setErrors(prev => { const next = { ...prev }; delete next.name; return next }) }}
               placeholder={t('templateNamePlaceholder')}
-              dir="ltr"
-              className="text-lg min-h-[48px]"
+              dir="auto"
+              className={cn('text-lg min-h-[48px]', errors.name && 'border-red-500 focus-visible:ring-red-500')}
             />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('templateNameAr')}</Label>
-            <Input
-              value={form.name_ar}
-              onChange={(e) => setForm({ ...form, name_ar: e.target.value })}
-              dir="rtl"
-              className="min-h-[48px]"
-            />
+            <FieldError error={errors.name} />
           </div>
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Type className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('defaultTitle')} *</span>
+              <span className="text-sm font-medium">{t('defaultTitle')}<RequiredMark /></span>
             </div>
             <Input
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => { setForm({ ...form, title: e.target.value }); if (errors.title) setErrors(prev => { const next = { ...prev }; delete next.title; return next }) }}
               placeholder={t('templateNameArPlaceholder')}
-              dir="ltr"
-              className="min-h-[48px]"
+              dir="auto"
+              className={cn('min-h-[48px]', errors.title && 'border-red-500 focus-visible:ring-red-500')}
             />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('defaultTitleAr')}</Label>
-            <Input
-              value={form.title_ar}
-              onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-              dir="rtl"
-              className="min-h-[48px]"
-            />
+            <FieldError error={errors.title} />
           </div>
           <div>
             <Label className="text-sm text-zinc-500 mb-2 block">{te('eventType')}</Label>
@@ -450,16 +445,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              dir="ltr"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{te('descriptionAr')}</Label>
-            <Textarea
-              value={form.description_ar}
-              onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
-              rows={3}
-              dir="rtl"
+              dir="auto"
             />
           </div>
           <div>
@@ -467,6 +453,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
             <Input
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
+              dir="auto"
               className="min-h-[48px]"
             />
           </div>
@@ -535,17 +522,8 @@ export function TemplateForm({ template }: TemplateFormProps) {
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={4}
-              dir="ltr"
+              dir="auto"
               placeholder={t('templateNotesPlaceholder')}
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('specialNotesAr')}</Label>
-            <Textarea
-              value={form.notes_ar}
-              onChange={(e) => setForm({ ...form, notes_ar: e.target.value })}
-              rows={4}
-              dir="rtl"
             />
           </div>
         </div>

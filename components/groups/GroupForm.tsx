@@ -1,19 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Users, UserCheck, Calendar, Settings, Type, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RegisterLeaderDialog } from './RegisterLeaderDialog'
 
-type Ministry = { id: string; name: string; name_ar: string | null }
+type Ministry = { id: string; name: string; name_ar: string | null; is_default?: boolean }
 type Leader = { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null }
 
 const GROUP_TYPE_KEYS = [
@@ -69,6 +70,7 @@ type Props = {
     max_members?: string
     is_open: boolean
   }
+  // name_ar and meeting_location_ar kept in Props for backward compat with existing data
 }
 
 export function GroupForm({ ministries, leaders, group }: Props) {
@@ -79,20 +81,18 @@ export function GroupForm({ ministries, leaders, group }: Props) {
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false)
   const t = useTranslations('groupForm')
   const tGroups = useTranslations('groups')
-  const locale = useLocale()
-  const isRTL = locale.startsWith('ar')
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const [form, setForm] = useState({
-    name: group?.name || '',
-    name_ar: group?.name_ar || '',
+    name: group?.name || group?.name_ar || '',
     type: group?.type || 'small_group',
-    ministry_id: group?.ministry_id || '',
+    ministry_id: group?.ministry_id || ministries.find(m => m.is_default)?.id || '',
     leader_id: group?.leader_id || '',
     co_leader_id: group?.co_leader_id || '',
     meeting_day: group?.meeting_day || '',
     meeting_time: group?.meeting_time || '',
-    meeting_location: group?.meeting_location || '',
-    meeting_location_ar: group?.meeting_location_ar || '',
+    meeting_location: group?.meeting_location || group?.meeting_location_ar || '',
     meeting_frequency: group?.meeting_frequency || 'weekly',
     max_members: group?.max_members || '',
     is_open: group?.is_open ?? true,
@@ -100,10 +100,36 @@ export function GroupForm({ ministries, leaders, group }: Props) {
 
   function set(key: string, val: string | boolean) {
     setForm(prev => ({ ...prev, [key]: val }))
+    // Clear error for this field when user types
+    if (errors[key]) {
+      setErrors(prev => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+    }
   }
 
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.name.trim()) errs.name = tV('nameRequired')
+    }
+    if (step === 2) {
+      if (!form.meeting_day) errs.meeting_day = tV('dayRequired')
+      if (!form.meeting_time) errs.meeting_time = tV('timeRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form.name, form.meeting_day, form.meeting_time, tV])
+
   async function handleSubmit() {
-    if (!form.name) {
+    if (!form.name || !form.meeting_day || !form.meeting_time) {
       toast.error(t('toastError'))
       return
     }
@@ -112,16 +138,16 @@ export function GroupForm({ ministries, leaders, group }: Props) {
     try {
       const body = {
         name: form.name,
-        name_ar: form.name_ar || null,
+        name_ar: form.name,
         type: form.type,
         ministry_id: form.ministry_id || null,
         leader_id: form.leader_id || null,
         co_leader_id: form.co_leader_id || null,
-        meeting_day: form.meeting_day || null,
-        meeting_time: form.meeting_time || null,
+        meeting_day: form.meeting_day,
+        meeting_time: form.meeting_time,
         meeting_location: form.meeting_location || null,
-        meeting_location_ar: form.meeting_location_ar || null,
-        meeting_frequency: form.meeting_frequency || 'weekly',
+        meeting_location_ar: form.meeting_location || null,
+        meeting_frequency: form.meeting_frequency,
         max_members: form.max_members ? parseInt(form.max_members as string) : null,
         is_open: form.is_open,
       }
@@ -157,19 +183,17 @@ export function GroupForm({ ministries, leaders, group }: Props) {
     return `${l.first_name_ar || l.first_name || ''} ${l.last_name_ar || l.last_name || ''}`.trim()
   }
 
-  const canProceed = step === 0 ? !!form.name : true
-
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={group ? t('saveButton') : t('saveButton')}
       submitLabelAr={group ? t('saveButton') : t('saveButton')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Name & Type */}
       {step === 0 && (
@@ -177,25 +201,16 @@ export function GroupForm({ ministries, leaders, group }: Props) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Type className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('nameEn')} *</span>
+              <span className="text-sm font-medium">{t('name')}<RequiredMark /></span>
             </div>
             <Input
               value={form.name}
               onChange={e => set('name', e.target.value)}
               dir="auto"
-              placeholder={t('nameEnPlaceholder')}
-              className="text-base min-h-[48px]"
+              placeholder={t('namePlaceholder')}
+              className={cn('text-base min-h-[48px]', errors.name && 'border-red-500 focus-visible:ring-red-500')}
             />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('nameAr')}</Label>
-            <Input
-              value={form.name_ar}
-              onChange={e => set('name_ar', e.target.value)}
-              placeholder={t('nameArPlaceholder')}
-              dir="auto"
-              className="text-base min-h-[48px]"
-            />
+            <FieldError error={errors.name} />
           </div>
           <div>
             <Label className="text-sm text-zinc-500 mb-2 block">{t('type')}</Label>
@@ -292,28 +307,30 @@ export function GroupForm({ ministries, leaders, group }: Props) {
             <div>
               <div className="flex items-center gap-2 text-zinc-500 mb-2">
                 <Calendar className="h-4 w-4" />
-                <span className="text-sm font-medium">{t('meetingDay')}</span>
+                <span className="text-sm font-medium">{t('meetingDay')}<RequiredMark /></span>
               </div>
               <Select value={form.meeting_day} onValueChange={v => set('meeting_day', v)}>
-                <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('meetingDayPlaceholder')} /></SelectTrigger>
+                <SelectTrigger className={cn('min-h-[48px]', errors.meeting_day && 'border-red-500')}><SelectValue placeholder={t('meetingDayPlaceholder')} /></SelectTrigger>
                 <SelectContent>
                   {DAY_KEYS.map(d => <SelectItem key={d.value} value={d.value}>{tGroups(d.key)}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <FieldError error={errors.meeting_day} />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-2 block">{t('meetingTime')}</Label>
+              <Label className="text-sm text-zinc-500 mb-2 block">{t('meetingTime')}<RequiredMark /></Label>
               <Input
                 type="time"
                 value={form.meeting_time}
                 onChange={e => set('meeting_time', e.target.value)}
                 dir="ltr"
-                className="min-h-[48px]"
+                className={cn('min-h-[48px]', errors.meeting_time && 'border-red-500 focus-visible:ring-red-500')}
               />
+              <FieldError error={errors.meeting_time} />
             </div>
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('frequency')}</Label>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('frequency')}<RequiredMark /></Label>
             <Select value={form.meeting_frequency} onValueChange={v => set('meeting_frequency', v)}>
               <SelectTrigger className="min-h-[48px]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -354,8 +371,7 @@ export function GroupForm({ ministries, leaders, group }: Props) {
       {/* Step 4: Review */}
       {step === 3 && (
         <div className="space-y-3 pt-4">
-          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameEn')} value={form.name} />
-          {form.name_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameAr')} value={form.name_ar} />}
+          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('name')} value={form.name} />
           <ReviewItem
             icon={<Users className="h-4 w-4" />}
             label={t('type')}

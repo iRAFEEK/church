@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Megaphone, FileText, Settings, Pin } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Announcement, AnnouncementStatus } from '@/types'
 
 interface AnnouncementFormProps {
@@ -19,7 +21,6 @@ interface AnnouncementFormProps {
 
 const STEPS = [
   { title: 'Content', titleAr: 'المحتوى' },
-  { title: 'Translation', titleAr: 'الترجمة' },
   { title: 'Settings', titleAr: 'الإعدادات' },
 ]
 
@@ -27,29 +28,22 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
   const router = useRouter()
   const t = useTranslations('announcements')
   const tc = useTranslations('common')
-  const locale = useLocale()
-  const isAr = locale.startsWith('ar')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
 
   const [form, setForm] = useState({
-    title: announcement?.title || '',
-    title_ar: announcement?.title_ar || '',
-    body: announcement?.body || '',
-    body_ar: announcement?.body_ar || '',
+    title: announcement?.title || announcement?.title_ar || '',
+    body: announcement?.body || announcement?.body_ar || '',
     status: (announcement?.status || 'draft') as AnnouncementStatus,
     is_pinned: announcement?.is_pinned || false,
     expires_at: announcement?.expires_at ? announcement.expires_at.slice(0, 10) : '',
   })
 
-  const titleField = isAr ? 'title_ar' : 'title'
-  const titleAltField = isAr ? 'title' : 'title_ar'
-  const bodyField = isAr ? 'body_ar' : 'body'
-  const bodyAltField = isAr ? 'body' : 'body_ar'
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const handleSubmit = async () => {
-    const primaryTitle = form[titleField]
-    if (!primaryTitle) {
+    if (!form.title) {
       toast.error(t('requiredTitle'))
       return
     }
@@ -57,10 +51,10 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
     setLoading(true)
     try {
       const payload = {
-        title: form.title || form.title_ar || '',
-        title_ar: form.title_ar || null,
+        title: form.title,
+        title_ar: form.title,
         body: form.body || null,
-        body_ar: form.body_ar || null,
+        body_ar: form.body || null,
         status: form.status,
         is_pinned: form.is_pinned,
         expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
@@ -91,19 +85,31 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
     }
   }
 
-  const canProceed = step === 0 ? !!form[titleField] : true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.title.trim()) errs.title = tV('titleRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form, tV])
 
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={announcement ? t('updateAnnouncement') : t('createAnnouncement')}
       submitLabelAr={announcement ? t('updateAnnouncement') : t('createAnnouncement')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Content */}
       {step === 0 && (
@@ -111,14 +117,15 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Megaphone className="h-5 w-5" />
-              <span className="text-sm font-medium">{tc('title')} *</span>
+              <span className="text-sm font-medium">{tc('title')}<RequiredMark /></span>
             </div>
             <Input
-              value={form[titleField]}
-              onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
-              dir={isAr ? 'rtl' : 'ltr'}
-              className="text-lg min-h-[48px]"
+              value={form.title}
+              onChange={(e) => { setForm({ ...form, title: e.target.value }); if (errors.title) setErrors(prev => { const next = { ...prev }; delete next.title; return next }) }}
+              dir="auto"
+              className={cn('text-lg min-h-[48px]', errors.title && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.title} />
           </div>
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
@@ -126,42 +133,17 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
               <span className="text-sm font-medium">{tc('body')}</span>
             </div>
             <Textarea
-              value={form[bodyField]}
-              onChange={(e) => setForm({ ...form, [bodyField]: e.target.value })}
+              value={form.body}
+              onChange={(e) => setForm({ ...form, body: e.target.value })}
               rows={6}
-              dir={isAr ? 'rtl' : 'ltr'}
+              dir="auto"
             />
           </div>
         </div>
       )}
 
-      {/* Step 2: Translation */}
+      {/* Step 2: Settings & Review */}
       {step === 1 && (
-        <div className="space-y-5 pt-4">
-          <p className="text-sm text-zinc-500">{tc('addTranslation')}</p>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')} ({isAr ? 'EN' : 'AR'})</Label>
-            <Input
-              value={form[titleAltField]}
-              onChange={(e) => setForm({ ...form, [titleAltField]: e.target.value })}
-              dir={isAr ? 'ltr' : 'rtl'}
-              className="min-h-[48px]"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('body')} ({isAr ? 'EN' : 'AR'})</Label>
-            <Textarea
-              value={form[bodyAltField]}
-              onChange={(e) => setForm({ ...form, [bodyAltField]: e.target.value })}
-              rows={6}
-              dir={isAr ? 'ltr' : 'rtl'}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Settings & Review */}
-      {step === 2 && (
         <div className="space-y-5 pt-4">
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
@@ -198,12 +180,12 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
             </div>
           </div>
           <div className="space-y-3 pt-2">
-            <ReviewItem icon={<Megaphone className="h-4 w-4" />} label={tc('title')} value={form[titleField]} />
-            {form[bodyField] && (
+            <ReviewItem icon={<Megaphone className="h-4 w-4" />} label={tc('title')} value={form.title} />
+            {form.body && (
               <ReviewItem
                 icon={<FileText className="h-4 w-4" />}
                 label={tc('body')}
-                value={form[bodyField].length > 100 ? form[bodyField].slice(0, 100) + '...' : form[bodyField]}
+                value={form.body.length > 100 ? form.body.slice(0, 100) + '...' : form.body}
               />
             )}
           </div>

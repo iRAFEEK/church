@@ -275,9 +275,10 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Compose Panel (admin only, lazy-loaded) */}
-      {showCompose && canSend && (
+      {/* Compose Sheet (admin only, lazy-loaded) */}
+      {canSend && (
         <NotificationComposer
+          open={showCompose}
           allowedTargetTypes={allowedTargetTypes}
           isUnscoped={isUnscoped}
           userRole={userRole}

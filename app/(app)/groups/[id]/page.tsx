@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { GroupMemberManager } from '@/components/groups/GroupMemberManager'
 import { GatheringHistory } from '@/components/gathering/GatheringHistory'
 import { PrayerList } from '@/components/gathering/PrayerList'
+import { JoinRequestButton } from '@/components/groups/JoinRequestButton'
+import { PendingJoinRequests } from '@/components/groups/PendingJoinRequests'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { ChevronLeft } from 'lucide-react'
 
@@ -55,13 +57,24 @@ export default async function GroupLeaderPage({ params }: Params) {
       m.profile?.id === user.profile.id && m.is_active
   )
 
-  if (!isLeaderOrAdmin && !isMember) redirect('/dashboard')
-
   const activeMembers = (group.group_members || []).filter((m: { is_active: boolean }) => m.is_active)
   const atRiskMembers = activeMembers.filter((m: { profile: { status: string } | null }) => m.profile?.status === 'at_risk')
 
-  // Fetch allMembers, gatherings, and prayers in parallel (all depend on id only)
-  const [{ data: allMembers }, { data: gatherings }, { data: activePrayers }] = await Promise.all([
+  // Check for pending join request if not a member/leader
+  let hasPendingRequest = false
+  if (!isLeaderOrAdmin && !isMember) {
+    const { data: pendingReq } = await supabase
+      .from('group_join_requests')
+      .select('id')
+      .eq('group_id', id)
+      .eq('profile_id', user.profile.id)
+      .eq('status', 'pending')
+      .maybeSingle()
+    hasPendingRequest = !!pendingReq
+  }
+
+  // Fetch allMembers, gatherings, prayers, and join requests in parallel
+  const [{ data: allMembers }, { data: gatherings }, { data: activePrayers }, { data: joinRequests }] = await Promise.all([
     isLeaderOrAdmin
       ? supabase
           .from('profiles')
@@ -81,6 +94,15 @@ export default async function GroupLeaderPage({ params }: Params) {
       .eq('group_id', id)
       .eq('status', 'active')
       .order('created_at', { ascending: false }),
+    isLeaderOrAdmin
+      ? supabase
+          .from('group_join_requests')
+          .select('id, profile_id, status, message, created_at, profile:profile_id(id, first_name, last_name, first_name_ar, last_name_ar, photo_url)')
+          .eq('group_id', id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: true })
+          .limit(50)
+      : Promise.resolve({ data: [] as { id: string; profile_id: string; status: string; message: string | null; created_at: string; profile: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null }[] }),
   ])
 
   // Upcoming gathering
@@ -124,7 +146,18 @@ export default async function GroupLeaderPage({ params }: Params) {
             <Button size="sm">{t('newGatheringButton')}</Button>
           </Link>
         )}
+        {!isLeaderOrAdmin && !isMember && (
+          <JoinRequestButton groupId={id} hasPendingRequest={hasPendingRequest} />
+        )}
       </div>
+
+      {/* Pending join requests (leaders only) */}
+      {isLeaderOrAdmin && (joinRequests || []).length > 0 && (
+        <PendingJoinRequests
+          groupId={id}
+          requests={(joinRequests || []) as Parameters<typeof PendingJoinRequests>[0]['requests']}
+        />
+      )}
 
       {/* Stats row */}
       {isLeaderOrAdmin && (

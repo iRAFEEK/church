@@ -207,7 +207,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: 'Reports',
     label_ar: 'التقارير',
-    href: '/admin/reports',
+    href: '/admin/finance/reports',
     iconName: 'BarChart3',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_reports',

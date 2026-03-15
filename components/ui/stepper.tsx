@@ -10,6 +10,8 @@ export interface StepperStep {
   titleAr: string
 }
 
+export type StepErrors = Record<string, string>
+
 interface StepperProps {
   steps: StepperStep[]
   currentStep: number
@@ -20,6 +22,8 @@ interface StepperProps {
   submitLabel?: string
   submitLabelAr?: string
   canProceed?: boolean
+  /** Called before advancing. Return field errors to block navigation. */
+  onValidateStep?: () => StepErrors | null
   children: React.ReactNode
 }
 
@@ -33,6 +37,7 @@ export function Stepper({
   submitLabel,
   submitLabelAr,
   canProceed = true,
+  onValidateStep,
   children,
 }: StepperProps) {
   const locale = useLocale()
@@ -42,6 +47,22 @@ export function Stepper({
   const isFirstStep = currentStep === 0
 
   const BackIcon = isRTL ? ChevronRight : ChevronLeft
+
+  function handleNext() {
+    if (onValidateStep) {
+      const errors = onValidateStep()
+      if (errors && Object.keys(errors).length > 0) return
+    }
+    onNext()
+  }
+
+  function handleSubmit() {
+    if (onValidateStep) {
+      const errors = onValidateStep()
+      if (errors && Object.keys(errors).length > 0) return
+    }
+    onSubmit?.()
+  }
 
   return (
     <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
@@ -101,7 +122,7 @@ export function Stepper({
           <Button
             type="button"
             className="min-h-[48px] flex-1 bg-green-600 hover:bg-green-700"
-            onClick={onSubmit}
+            onClick={handleSubmit}
             disabled={!canProceed || isSubmitting}
           >
             {isSubmitting
@@ -115,7 +136,7 @@ export function Stepper({
           <Button
             type="button"
             className="min-h-[48px] flex-1"
-            onClick={onNext}
+            onClick={handleNext}
             disabled={!canProceed}
           >
             <span className="mx-1">{t('next')}</span>
