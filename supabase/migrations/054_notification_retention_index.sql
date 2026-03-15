@@ -3,4 +3,4 @@
 -- The cron job at /api/cron/notification-cleanup filters by created_at
 
 CREATE INDEX IF NOT EXISTS idx_notifications_church_created
-  ON notifications (church_id, created_at);
+  ON notifications_log (church_id, created_at);
