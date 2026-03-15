@@ -30,20 +30,21 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
-const TEST_ACCOUNTS = [
+// Only defined in development — bundler eliminates array contents in production builds
+const TEST_ACCOUNTS = process.env.NODE_ENV === 'development' ? [
   { email: 'pastor@gracechurch.test', password: 'password123', label: 'Super Admin (Pastor)', role: 'super_admin' },
   { email: 'admin@gracechurch.test', password: 'password123', label: 'Super Admin (Associate)', role: 'super_admin' },
   { email: 'worship@gracechurch.test', password: 'password123', label: 'Ministry Leader (Worship)', role: 'ministry_leader' },
   { email: 'leader1@gracechurch.test', password: 'password123', label: 'Group Leader', role: 'group_leader' },
   { email: 'member@gracechurch.test', password: 'password123', label: 'Member', role: 'member' },
-]
+] : []
 
-const CROSS_CHURCH_ACCOUNTS = [
+const CROSS_CHURCH_ACCOUNTS = process.env.NODE_ENV === 'development' ? [
   { email: 'admin@gracecairo.org', password: 'password123', label: 'Grace Church Cairo (Egypt)', role: 'super_admin' },
   { email: 'admin@hopebeirut.org', password: 'password123', label: 'Hope Church Beirut (Lebanon)', role: 'super_admin' },
   { email: 'admin@resurrectionamman.org', password: 'password123', label: 'Resurrection Church Amman (Jordan)', role: 'super_admin' },
   { email: 'admin@stmarkbaghdad.org', password: 'password123', label: 'St. Mark Church Baghdad (Iraq)', role: 'super_admin' },
-]
+] : []
 
 
 export default function LoginPage() {
