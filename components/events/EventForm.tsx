@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Calendar, MapPin, FileText, Settings, Type, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -54,14 +55,14 @@ export function EventForm({ event }: EventFormProps) {
   const tc = useTranslations('common')
   const locale = useLocale()
   const isRTL = locale.startsWith('ar')
+  const tV = useTranslations('validation')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const [form, setForm] = useState({
-    title: event?.title || '',
-    title_ar: event?.title_ar || '',
-    description: event?.description || '',
-    description_ar: event?.description_ar || '',
+    title: event?.title || event?.title_ar || '',
+    description: event?.description || event?.description_ar || '',
     event_type: event?.event_type || 'service',
     starts_at: event?.starts_at ? event.starts_at.slice(0, 16) : '',
     ends_at: event?.ends_at ? event.ends_at.slice(0, 16) : '',
@@ -150,9 +151,9 @@ export function EventForm({ event }: EventFormProps) {
     try {
       const payload = {
         title: form.title,
-        title_ar: form.title_ar || null,
+        title_ar: form.title,
         description: form.description || null,
-        description_ar: form.description_ar || null,
+        description_ar: form.description || null,
         event_type: form.event_type,
         starts_at: form.starts_at,
         ends_at: form.ends_at || null,
@@ -223,10 +224,22 @@ export function EventForm({ event }: EventFormProps) {
     }
   }
 
-  const canProceed =
-    step === 0 ? !!form.title :
-    step === 1 ? !!form.starts_at :
-    true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.title.trim()) errs.title = tV('titleRequired')
+    }
+    if (step === 1) {
+      if (!form.starts_at) errs.starts_at = tV('dateRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form.title, form.starts_at, tV])
 
   const totalVolunteers = serviceNeeds.reduce((sum, n) => sum + n.volunteers_needed, 0)
 
@@ -235,12 +248,12 @@ export function EventForm({ event }: EventFormProps) {
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={event ? t('updateEvent') : t('createEvent')}
       submitLabelAr={event ? t('updateEvent') : t('createEvent')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Title & Type */}
       {step === 0 && (
@@ -248,23 +261,15 @@ export function EventForm({ event }: EventFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Type className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('titleEn')} *</span>
+              <span className="text-sm font-medium">{t('title')}<RequiredMark /></span>
             </div>
             <Input
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              dir="ltr"
-              className="text-lg min-h-[48px]"
+              onChange={(e) => { setForm({ ...form, title: e.target.value }); if (errors.title) setErrors(prev => { const next = { ...prev }; delete next.title; return next }) }}
+              dir="auto"
+              className={cn('text-lg min-h-[48px]', errors.title && 'border-red-500 focus-visible:ring-red-500')}
             />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('titleAr')}</Label>
-            <Input
-              value={form.title_ar}
-              onChange={(e) => setForm({ ...form, title_ar: e.target.value })}
-              dir="rtl"
-              className="min-h-[48px]"
-            />
+            <FieldError error={errors.title} />
           </div>
           <div>
             <Label className="text-sm text-zinc-500 mb-2 block">{t('eventType')}</Label>
@@ -296,15 +301,16 @@ export function EventForm({ event }: EventFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Calendar className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('startsAt')} *</span>
+              <span className="text-sm font-medium">{t('startsAt')}<RequiredMark /></span>
             </div>
             <Input
               type="datetime-local"
               value={form.starts_at}
-              onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
+              onChange={(e) => { setForm({ ...form, starts_at: e.target.value }); if (errors.starts_at) setErrors(prev => { const next = { ...prev }; delete next.starts_at; return next }) }}
               dir="ltr"
-              className="text-lg min-h-[48px]"
+              className={cn('text-lg min-h-[48px]', errors.starts_at && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.starts_at} />
           </div>
           <div>
             <Label className="text-sm text-zinc-500 mb-1 block">{t('endsAt')}</Label>
@@ -354,23 +360,13 @@ export function EventForm({ event }: EventFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <FileText className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('descriptionEn')}</span>
+              <span className="text-sm font-medium">{t('description')}</span>
             </div>
             <Textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              dir="ltr"
-              className="text-base"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('descriptionAr')}</Label>
-            <Textarea
-              value={form.description_ar}
-              onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
-              rows={3}
-              dir="rtl"
+              dir="auto"
               className="text-base"
             />
           </div>
@@ -411,8 +407,7 @@ export function EventForm({ event }: EventFormProps) {
       {/* Step 7: Review */}
       {step === 6 && (
         <div className="space-y-3 pt-4">
-          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleEn')} value={form.title} />
-          {form.title_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('titleAr')} value={form.title_ar} />}
+          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('title')} value={form.title} />
           <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('eventType')} value={`${EVENT_TYPE_ICONS[form.event_type]} ${t(`type_${form.event_type}`)}`} />
           {form.starts_at && (
             <ReviewItem

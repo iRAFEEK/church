@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { MinistryMemberManager } from '@/components/ministries/MinistryMemberManager'
 import { MinistryEventsList } from '@/components/ministries/MinistryEventsList'
+import { MinistryMeetings } from '@/components/ministries/MinistryMeetings'
 import { getTranslations } from 'next-intl/server'
 
 type Params = { params: Promise<{ id: string }> }
@@ -176,6 +177,12 @@ export default async function MinistryDetailPage({ params }: Params) {
           )}
         </div>
       </div>
+
+      {/* Meetings */}
+      <MinistryMeetings
+        ministryId={id}
+        members={(activeMembers || []).map((m: { profile: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null } | null }) => m.profile).filter(Boolean) as Array<{ id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null }>}
+      />
 
       {/* Events */}
       <MinistryEventsList ministryId={id} />

@@ -605,6 +605,91 @@ export async function notifyNeedMessage(
 }
 
 /**
+ * Notify group leader when someone requests to join their group.
+ * Called from POST /api/groups/[id]/join-requests
+ */
+export async function notifyGroupJoinRequest(requestId: string, groupId: string, churchId: string) {
+  try {
+    const supabase = await createClient()
+
+    const [{ data: request }, { data: group }] = await Promise.all([
+      supabase
+        .from('group_join_requests')
+        .select('profile_id, profile:profile_id(first_name, last_name, first_name_ar, last_name_ar)')
+        .eq('id', requestId)
+        .single(),
+      supabase
+        .from('groups')
+        .select('name, name_ar, leader_id')
+        .eq('id', groupId)
+        .single(),
+    ])
+
+    if (!request?.profile || !group?.leader_id) return
+
+    const p = request.profile as unknown as { first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null }
+    const memberName = `${p.first_name_ar || p.first_name || ''} ${p.last_name_ar || p.last_name || ''}`.trim()
+    const groupName = group.name_ar || group.name
+    const template = TEMPLATES.group_join_request
+
+    await sendNotification({
+      profileId: group.leader_id,
+      churchId,
+      type: 'group_join_request',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { memberName, groupName }),
+      bodyAr: interpolate(template.bodyAr, { memberName, groupName }),
+      referenceId: groupId,
+      referenceType: 'group',
+      data: { memberName, groupName },
+    })
+  } catch (error) {
+    logger.error('notifyGroupJoinRequest failed', { module: 'messaging', churchId, error })
+  }
+}
+
+/**
+ * Notify a member when they are added to a ministry.
+ * Called from POST /api/ministries/[id]/members
+ */
+export async function notifyMinistryMemberAdded(
+  profileId: string,
+  ministryId: string,
+  churchId: string
+) {
+  try {
+    const supabase = await createClient()
+
+    const { data: ministry } = await supabase
+      .from('ministries')
+      .select('name, name_ar')
+      .eq('id', ministryId)
+      .single()
+
+    if (!ministry) return
+
+    const ministryName = ministry.name_ar || ministry.name
+    const template = TEMPLATES.ministry_member_added
+
+    await sendNotification({
+      profileId,
+      churchId,
+      type: 'ministry_member_added',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { ministryName }),
+      bodyAr: interpolate(template.bodyAr, { ministryName }),
+      referenceId: ministryId,
+      referenceType: 'ministry',
+      data: { ministryName },
+    })
+  } catch (error) {
+    logger.error('notifyMinistryMemberAdded failed', { module: 'messaging', churchId, error })
+  }
+}
+
+/**
  * Send gathering reminder to all group members.
  * Called by a cron/scheduled function.
  */

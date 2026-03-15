@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Heart, FileText, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { ServingArea, Ministry } from '@/types'
 
 interface ServingAreaFormProps {
@@ -33,18 +35,14 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([])
 
   const [form, setForm] = useState({
-    name: area?.name || '',
-    name_ar: area?.name_ar || '',
-    description: area?.description || '',
-    description_ar: area?.description_ar || '',
+    name: area?.name || area?.name_ar || '',
+    description: area?.description || area?.description_ar || '',
     ministry_id: area?.ministry_id || '',
     is_active: area?.is_active ?? true,
   })
 
-  const nameField = isAr ? 'name_ar' : 'name'
-  const nameAltField = isAr ? 'name' : 'name_ar'
-  const descField = isAr ? 'description_ar' : 'description'
-  const descAltField = isAr ? 'description' : 'description_ar'
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
 
   useEffect(() => {
     const controller = new AbortController()
@@ -60,7 +58,7 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
   }, [])
 
   const handleSubmit = async () => {
-    if (!form[nameField]) {
+    if (!form.name) {
       toast.error(t('requiredName'))
       return
     }
@@ -68,10 +66,10 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
     setLoading(true)
     try {
       const payload = {
-        name: form.name || form.name_ar || '',
-        name_ar: form.name_ar || null,
+        name: form.name,
+        name_ar: form.name,
         description: form.description || null,
-        description_ar: form.description_ar || null,
+        description_ar: form.description || null,
         ministry_id: form.ministry_id || null,
         is_active: form.is_active,
       }
@@ -100,19 +98,31 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
     }
   }
 
-  const canProceed = step === 0 ? !!form[nameField] : true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.name.trim()) errs.name = tV('nameRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form, tV])
 
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={area ? t('updateArea') : t('createArea')}
       submitLabelAr={area ? t('updateArea') : t('createArea')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Name & Description */}
       {step === 0 && (
@@ -120,23 +130,15 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Heart className="h-5 w-5" />
-              <span className="text-sm font-medium">{tc('name')} *</span>
+              <span className="text-sm font-medium">{tc('name')}<RequiredMark /></span>
             </div>
             <Input
-              value={form[nameField]}
-              onChange={(e) => setForm({ ...form, [nameField]: e.target.value })}
-              dir={isAr ? 'rtl' : 'ltr'}
-              className="text-lg min-h-[48px]"
+              value={form.name}
+              onChange={(e) => { setForm({ ...form, name: e.target.value }); if (errors.name) setErrors(prev => { const next = { ...prev }; delete next.name; return next }) }}
+              dir="auto"
+              className={cn('text-lg min-h-[48px]', errors.name && 'border-red-500 focus-visible:ring-red-500')}
             />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('name')} ({isAr ? 'EN' : 'AR'})</Label>
-            <Input
-              value={form[nameAltField]}
-              onChange={(e) => setForm({ ...form, [nameAltField]: e.target.value })}
-              dir={isAr ? 'ltr' : 'rtl'}
-              className="min-h-[48px]"
-            />
+            <FieldError error={errors.name} />
           </div>
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
@@ -144,10 +146,10 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
               <span className="text-sm font-medium">{tc('description')}</span>
             </div>
             <Textarea
-              value={form[descField]}
-              onChange={(e) => setForm({ ...form, [descField]: e.target.value })}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              dir={isAr ? 'rtl' : 'ltr'}
+              dir="auto"
             />
           </div>
         </div>
@@ -176,8 +178,8 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
             <Label>{tc('active')}</Label>
           </div>
           <div className="space-y-3 pt-2">
-            <ReviewItem icon={<Heart className="h-4 w-4" />} label={tc('name')} value={form[nameField]} />
-            {form[descField] && <ReviewItem icon={<FileText className="h-4 w-4" />} label={tc('description')} value={form[descField]} />}
+            <ReviewItem icon={<Heart className="h-4 w-4" />} label={tc('name')} value={form.name} />
+            {form.description && <ReviewItem icon={<FileText className="h-4 w-4" />} label={tc('description')} value={form.description} />}
           </div>
         </div>
       )}

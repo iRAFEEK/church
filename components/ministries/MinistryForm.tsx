@@ -1,17 +1,19 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Type, Image as ImageIcon, Settings, Upload, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
 const STEPS = [
@@ -38,14 +40,11 @@ export function MinistryForm({ ministry }: Props) {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
   const t = useTranslations('ministryForm')
-  const locale = useLocale()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
-    name: ministry?.name || '',
-    name_ar: ministry?.name_ar || '',
-    description: ministry?.description || '',
-    description_ar: ministry?.description_ar || '',
+    name: ministry?.name_ar || ministry?.name || '',
+    description: ministry?.description_ar || ministry?.description || '',
     photo_url: ministry?.photo_url || '',
     is_active: ministry?.is_active ?? true,
   })
@@ -53,9 +52,29 @@ export function MinistryForm({ ministry }: Props) {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(ministry?.photo_url || null)
 
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
+
   function set(key: string, val: string | boolean) {
     setForm(prev => ({ ...prev, [key]: val }))
+    if (errors[key]) {
+      setErrors(prev => { const next = { ...prev }; delete next[key]; return next })
+    }
   }
+
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.name.trim()) errs.name = tV('nameRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form.name, tV])
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -111,9 +130,9 @@ export function MinistryForm({ ministry }: Props) {
     try {
       const body = {
         name: form.name,
-        name_ar: form.name_ar || null,
+        name_ar: form.name || null,
         description: form.description || null,
-        description_ar: form.description_ar || null,
+        description_ar: form.description || null,
         is_active: form.is_active,
         photo_url: form.photo_url || null,
       }
@@ -158,19 +177,17 @@ export function MinistryForm({ ministry }: Props) {
     }
   }
 
-  const canProceed = step === 0 ? !!form.name : true
-
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={t('saveButton')}
       submitLabelAr={t('saveButton')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Name & Description */}
       {step === 0 && (
@@ -178,46 +195,26 @@ export function MinistryForm({ ministry }: Props) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Type className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('nameEn')} *</span>
+              <span className="text-sm font-medium">{t('name')}<RequiredMark /></span>
             </div>
             <Input
               value={form.name}
               onChange={e => set('name', e.target.value)}
               dir="auto"
-              placeholder={t('nameEnPlaceholder')}
-              className="text-base min-h-[48px]"
+              placeholder={t('namePlaceholder')}
+              className={cn('text-base min-h-[48px]', errors.name && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.name} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('nameAr')}</Label>
-            <Input
-              value={form.name_ar}
-              onChange={e => set('name_ar', e.target.value)}
-              placeholder={t('nameArPlaceholder')}
-              dir="auto"
-              className="text-base min-h-[48px]"
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('descriptionEn')}</Label>
+            <Label className="text-sm text-zinc-500 mb-1 block">{t('description')}</Label>
             <Textarea
               value={form.description}
               onChange={e => set('description', e.target.value)}
               dir="auto"
               rows={3}
               className="text-base"
-              placeholder={t('descriptionEnPlaceholder')}
-            />
-          </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('descriptionAr')}</Label>
-            <Textarea
-              value={form.description_ar}
-              onChange={e => set('description_ar', e.target.value)}
-              rows={3}
-              dir="auto"
-              className="text-base"
-              placeholder={t('descriptionArPlaceholder')}
+              placeholder={t('descriptionPlaceholder')}
             />
           </div>
         </div>
@@ -304,10 +301,8 @@ export function MinistryForm({ ministry }: Props) {
       {/* Step 4: Review */}
       {step === 3 && (
         <div className="space-y-3 pt-4">
-          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameEn')} value={form.name} />
-          {form.name_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('nameAr')} value={form.name_ar} />}
-          {form.description && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('descriptionEn')} value={form.description} />}
-          {form.description_ar && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('descriptionAr')} value={form.description_ar} />}
+          <ReviewItem icon={<Type className="h-4 w-4" />} label={t('name')} value={form.name} />
+          {form.description && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('description')} value={form.description} />}
           {photoPreview && (
             <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-100">
               <p className="text-xs text-zinc-400 font-medium mb-2">{t('photo')}</p>

@@ -2,16 +2,16 @@
 // These wrap frequently-read, rarely-changing reference data queries
 // so they don't hit the database on every page load.
 //
-// IMPORTANT: The supabase client is created INSIDE each cached function
-// because unstable_cache serializes the function closure and the client
-// uses cookies for auth which can't be serialized.
+// IMPORTANT: Uses createAdminClient (service role, no cookies) because
+// unstable_cache forbids accessing cookies() inside cached functions.
+// All queries are scoped by churchId passed as parameter.
 //
 // Invalidation: Each entity has a corresponding revalidateTag call that
 // must be added to its mutation API routes (POST/PATCH/DELETE).
 // Tag naming: `{entity}-{churchId}` — always church-scoped.
 
 import { unstable_cache } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // ─── Ministries (reference data — 3600s TTL) ─────────────────────
 
@@ -22,10 +22,10 @@ import { createClient } from '@/lib/supabase/server'
 export const getCachedMinistries = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('ministries')
-        .select('id, name, name_ar, is_active')
+        .select('id, name, name_ar, is_active, is_default')
         .eq('church_id', churchId)
         .eq('is_active', true)
         .order('name')
@@ -43,7 +43,7 @@ export const getCachedMinistries = (churchId: string) =>
 export const getCachedGroups = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('groups')
         .select('id, name, name_ar, type, ministry_id, is_active')
@@ -65,7 +65,7 @@ export const getCachedGroups = (churchId: string) =>
 export const getCachedFunds = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('funds')
         .select('id, name, name_ar, code, current_balance, target_amount, is_restricted, is_default, display_order')
@@ -88,7 +88,7 @@ export const getCachedFunds = (churchId: string) =>
 export const getCachedAccounts = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('accounts')
         .select('id, code, name, name_ar, account_type, account_sub_type, is_header, is_active, parent_id, display_order')
@@ -110,7 +110,7 @@ export const getCachedAccounts = (churchId: string) =>
 export const getCachedServingAreas = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('serving_areas')
         .select('id, name, name_ar, ministry_id, is_active')
@@ -132,7 +132,7 @@ export const getCachedServingAreas = (churchId: string) =>
 export const getCachedFeatureFlags = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('church_features')
         .select('feature, enabled')
@@ -151,7 +151,7 @@ export const getCachedFeatureFlags = (churchId: string) =>
 export const getCachedChurchLeaders = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const { data } = await supabase
         .from('church_leaders')
         .select('id, name, name_ar, title, title_ar, photo_url, bio, bio_ar, display_order')
@@ -173,7 +173,7 @@ export const getCachedChurchLeaders = (churchId: string) =>
 export const getCachedDashboardCounts = (churchId: string) =>
   unstable_cache(
     async () => {
-      const supabase = await createClient()
+      const supabase = await createAdminClient()
       const now = new Date()
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 

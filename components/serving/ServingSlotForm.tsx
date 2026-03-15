@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Stepper } from '@/components/ui/stepper'
+import { Stepper, type StepErrors } from '@/components/ui/stepper'
+import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
 import { Heart, Calendar, Users, FileText } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { ServingArea } from '@/types'
 
 interface SlotData {
@@ -57,6 +59,9 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
     notes: slot?.notes || '',
     notes_ar: slot?.notes_ar || '',
   })
+
+  const tV = useTranslations('validation')
+  const [errors, setErrors] = useState<StepErrors>({})
 
   const titleField = isAr ? 'title_ar' : 'title'
   const notesField = isAr ? 'notes_ar' : 'notes'
@@ -118,22 +123,35 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
     }
   }
 
-  const canProceed =
-    step === 0 ? !!(form[titleField] && form.serving_area_id) :
-    step === 1 ? !!form.date :
-    true
+  const validateStep = useCallback((): StepErrors | null => {
+    const errs: StepErrors = {}
+    if (step === 0) {
+      if (!form.serving_area_id) errs.serving_area_id = tV('selectRequired')
+      if (!form[titleField].trim()) errs[titleField] = tV('titleRequired')
+    }
+    if (step === 1) {
+      if (!form.date) errs.date = tV('dateRequired')
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      toast.error(tV('fixErrors'))
+      return errs
+    }
+    setErrors({})
+    return null
+  }, [step, form, titleField, tV])
 
   return (
     <Stepper
       steps={STEPS}
       currentStep={step}
       onNext={() => setStep(s => Math.min(s + 1, STEPS.length - 1))}
-      onBack={() => step === 0 ? router.back() : setStep(s => s - 1)}
+      onBack={() => { setErrors({}); step === 0 ? router.back() : setStep(s => s - 1) }}
       onSubmit={handleSubmit}
       isSubmitting={loading}
       submitLabel={slot ? t('updateSlot') : t('createSlot')}
       submitLabelAr={slot ? t('updateSlot') : t('createSlot')}
-      canProceed={canProceed}
+      onValidateStep={validateStep}
     >
       {/* Step 1: Area & Title */}
       {step === 0 && (
@@ -141,25 +159,27 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Heart className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('slotArea')} *</span>
+              <span className="text-sm font-medium">{t('slotArea')}<RequiredMark /></span>
             </div>
-            <Select value={form.serving_area_id} onValueChange={(v) => setForm({ ...form, serving_area_id: v })}>
-              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('slotAreaPlaceholder')} /></SelectTrigger>
+            <Select value={form.serving_area_id} onValueChange={(v) => { setForm({ ...form, serving_area_id: v }); if (errors.serving_area_id) setErrors(prev => { const next = { ...prev }; delete next.serving_area_id; return next }) }}>
+              <SelectTrigger className={cn('min-h-[48px]', errors.serving_area_id && 'border-red-500')}><SelectValue placeholder={t('slotAreaPlaceholder')} /></SelectTrigger>
               <SelectContent>
                 {areas.map(a => (
                   <SelectItem key={a.id} value={a.id}>{isAr ? (a.name_ar || a.name) : a.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <FieldError error={errors.serving_area_id} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')} *</Label>
+            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')}<RequiredMark /></Label>
             <Input
               value={form[titleField]}
-              onChange={(e) => setForm({ ...form, [titleField]: e.target.value })}
+              onChange={(e) => { setForm({ ...form, [titleField]: e.target.value }); if (errors[titleField]) setErrors(prev => { const next = { ...prev }; delete next[titleField]; return next }) }}
               dir={isAr ? 'rtl' : 'ltr'}
-              className="text-lg min-h-[48px]"
+              className={cn('text-lg min-h-[48px]', errors[titleField] && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors[titleField]} />
           </div>
         </div>
       )}
@@ -170,15 +190,16 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
           <div>
             <div className="flex items-center gap-3 text-zinc-500 mb-2">
               <Calendar className="h-5 w-5" />
-              <span className="text-sm font-medium">{t('slotDate')} *</span>
+              <span className="text-sm font-medium">{t('slotDate')}<RequiredMark /></span>
             </div>
             <Input
               type="date"
               value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              onChange={(e) => { setForm({ ...form, date: e.target.value }); if (errors.date) setErrors(prev => { const next = { ...prev }; delete next.date; return next }) }}
               dir="ltr"
-              className="min-h-[48px]"
+              className={cn('min-h-[48px]', errors.date && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.date} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

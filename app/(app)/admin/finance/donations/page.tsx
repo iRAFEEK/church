@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Plus, Download, HandCoins, Users, Filter } from 'lucide-react'
+import { Plus, Download, HandCoins, Filter } from 'lucide-react'
 import { getLocale, getTranslations } from 'next-intl/server'
 
 interface SearchParams { page?: string; fund_id?: string; method?: string; date_from?: string; date_to?: string }
@@ -98,12 +98,6 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-            <Link href="/admin/finance/donations/batch">
-              <Users className="w-4 h-4 me-2" />
-              {t('batchEntry')}
-            </Link>
-          </Button>
           <Button size="sm" asChild className="w-full sm:w-auto">
             <Link href="/admin/finance/donations/new">
               <Plus className="w-4 h-4 me-2" />

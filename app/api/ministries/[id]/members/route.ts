@@ -7,6 +7,7 @@ import {
   UpdateMinistryMemberSchema,
   RemoveMinistryMemberSchema,
 } from '@/lib/schemas/ministry'
+import { notifyMinistryMemberAdded } from '@/lib/messaging/triggers'
 
 // POST /api/ministries/[id]/members — add member to ministry
 export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
@@ -36,6 +37,10 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)
+
+  // Notify the member they were added (fire and forget)
+  notifyMinistryMemberAdded(body.profile_id, ministry_id, profile.church_id)
+
   return NextResponse.json({ data }, { status: 201 })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 

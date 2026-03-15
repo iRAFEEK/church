@@ -166,6 +166,9 @@ describe('/api/groups', () => {
       const res = await POST(makeReq('POST', {
         name: 'Alpha Group',
         type: 'small_group',
+        meeting_day: 'monday',
+        meeting_time: '18:00',
+        meeting_frequency: 'weekly',
       }))
       expect(res.status).toBe(200)
     })
