@@ -196,7 +196,7 @@ export default function CreateFromTemplatePage() {
     <div className="max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => step === 0 ? router.back() : setStep(0)}>
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
         </Button>
         <h1 className="text-xl font-bold text-zinc-900">{t('createFromTemplate')}</h1>
       </div>

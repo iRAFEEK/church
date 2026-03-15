@@ -2,6 +2,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateEventSchema } from '@/lib/schemas/event'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // GET /api/events — list events for user's church
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
@@ -42,9 +43,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (upcoming) query = query.gte('starts_at', new Date().toISOString())
   if (search) {
     const { normalizeSearch } = await import('@/lib/utils/normalize')
-    const normalized = normalizeSearch(search)
-    const parts = [`title.ilike.%${search}%`, `title_ar.ilike.%${search}%`]
-    if (normalized !== search) {
+    const escaped = sanitizeLikePattern(search)
+    const normalized = normalizeSearch(escaped)
+    const parts = [`title.ilike.%${escaped}%`, `title_ar.ilike.%${escaped}%`]
+    if (normalized !== escaped) {
       parts.push(`title.ilike.%${normalized}%`, `title_ar.ilike.%${normalized}%`)
     }
     query = query.or(parts.join(','))

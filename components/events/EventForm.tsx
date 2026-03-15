@@ -180,16 +180,16 @@ export function EventForm({ event }: EventFormProps) {
         body: JSON.stringify(payload),
       })
 
+      const responseData = await res.json()
+
       if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.error || 'Failed')
+        throw new Error(responseData.error || 'Failed')
       }
 
       // Get the event ID — for new events, parse from response; for edits, use the prop
       let eventId = event?.id
       if (!eventId) {
-        const eventData = await res.json()
-        eventId = eventData.data?.id
+        eventId = responseData.data?.id
       }
 
       // Save service needs (don't block the event save on failure)

@@ -7,6 +7,7 @@ import { CreateVisitorSchema } from '@/lib/schemas/visitor'
 import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
 import { rateLimitPublic } from '@/lib/api/rate-limit'
 import { logger } from '@/lib/logger'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // POST /api/visitors — public, no auth required (QR visitor form)
 // Cannot use apiHandler because this is a public endpoint with no session.
@@ -95,8 +96,9 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   if (status) query = query.eq('status', status)
   if (q) {
+    const escaped = sanitizeLikePattern(q)
     query = query.or(
-      `first_name.ilike.%${q}%,last_name.ilike.%${q}%,phone.ilike.%${q}%`
+      `first_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,phone.ilike.%${escaped}%`
     )
   }
 

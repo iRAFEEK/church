@@ -1,4 +1,8 @@
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app'
+// PERF: firebase/app (~15-20KB) is dynamically imported so it doesn't
+// load on every authenticated page. Only loaded when push notifications
+// are actually used.
+
+import type { FirebaseApp } from 'firebase/app'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,21 +15,23 @@ const firebaseConfig = {
 
 let app: FirebaseApp | null = null
 
-function getFirebaseApp(): FirebaseApp {
-  if (!app) {
-    app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig)
-  }
+async function getFirebaseApp(): Promise<FirebaseApp> {
+  if (app) return app
+  const { initializeApp, getApps } = await import('firebase/app')
+  app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig)
   return app
 }
 
 export async function getFirebaseMessaging() {
   if (typeof window === 'undefined') return null
 
+  const firebaseApp = await getFirebaseApp()
   const { getMessaging } = await import('firebase/messaging')
-  return getMessaging(getFirebaseApp())
+  return getMessaging(firebaseApp)
 }
 
 export function isFirebaseClientConfigured(): boolean {
+  // Just check env vars — no firebase import needed
   return !!(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
     process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID &&

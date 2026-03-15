@@ -174,7 +174,7 @@ export default async function FinancialReportsPage() {
               {t('fundBalanceSummary')}
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/admin/finance/funds"><ArrowRight className="w-4 h-4" /></Link>
+              <Link href="/admin/finance/funds"><ArrowRight className="w-4 h-4 rtl:rotate-180" /></Link>
             </Button>
           </CardHeader>
           <CardContent>

@@ -149,19 +149,12 @@ describe('Finance [id] routes — static analysis', () => {
     })
   })
 
-  describe('transactions [id] PATCH — double-entry validation', () => {
-    it('validates debits equal credits before updating line items', () => {
+  describe('transactions [id] PATCH — atomic RPC', () => {
+    it('uses atomic RPC for balance validation and line item replacement', () => {
       const code = sources['Transactions [id]']
-      expect(code).toContain('totalDebits')
-      expect(code).toContain('totalCredits')
-      expect(code).toContain('Transaction is not balanced')
-    })
-
-    it('replaces old line items atomically (delete + insert)', () => {
-      const code = sources['Transactions [id]']
-      expect(code).toContain("'transaction_line_items'")
-      expect(code).toContain('.delete()')
-      expect(code).toContain('.insert(items)')
+      // ARCH-6 fix: moved to Postgres RPC for atomicity
+      expect(code).toContain('update_transaction_with_items')
+      expect(code).toContain('rpc')
     })
   })
 

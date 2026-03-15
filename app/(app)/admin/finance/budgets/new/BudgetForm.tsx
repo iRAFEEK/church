@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ interface BudgetFormProps {
 export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
   const router = useRouter()
   const t = useTranslations('finance')
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -31,36 +32,44 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true); setError('')
 
-    const res = await fetch('/api/finance/budgets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        total_income: parseFloat(form.total_income),
-        fund_id: form.fund_id || null,
-        fiscal_year_id: form.fiscal_year_id || null,
-        end_date: form.end_date || null,
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          total_income: parseFloat(form.total_income),
+          fund_id: form.fund_id || null,
+          fiscal_year_id: form.fiscal_year_id || null,
+          end_date: form.end_date || null,
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to create budget')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToCreate'))
+        return
+      }
+
+      router.push('/admin/finance/budgets')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/budgets')
-    router.refresh()
   }
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/budgets"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/budgets"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('newBudget')}</h1>
       </div>
@@ -71,11 +80,11 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>{t('nameEn')} *</Label>
-                <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder="Budget name" />
+                <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
               </div>
               <div className="space-y-1">
                 <Label>{t('nameAr')}</Label>
-                <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="اسم الميزانية" dir="rtl" />
+                <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
               </div>
             </div>
 
@@ -100,7 +109,7 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
                 <Label>{t('fiscalYear')}</Label>
                 <select value={form.fiscal_year_id} onChange={e => set('fiscal_year_id', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background">
-                  <option value="">None</option>
+                  <option value="">{t('none')}</option>
                   {fiscalYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
                 </select>
               </div>
@@ -110,7 +119,7 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
               <Label>{t('fund')}</Label>
               <select value={form.fund_id} onChange={e => set('fund_id', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background">
-                <option value="">No fund</option>
+                <option value="">{t('noFund')}</option>
                 {funds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
@@ -134,7 +143,7 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
                 {loading ? t('creating') : t('createBudget')}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/admin/finance/budgets">Cancel</Link>
+                <Link href="/admin/finance/budgets">{t('cancel')}</Link>
               </Button>
             </div>
           </form>

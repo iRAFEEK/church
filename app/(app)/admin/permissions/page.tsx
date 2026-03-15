@@ -135,7 +135,7 @@ export default async function PermissionsSummaryPage({
               <Input
                 name="q"
                 defaultValue={search}
-                placeholder={isRTL ? 'البحث عن عضو...' : 'Search members...'}
+                placeholder={t('searchMembersPlaceholder')}
                 className="ps-9"
               />
             </div>

@@ -49,18 +49,14 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
     const routeName = new URL(req.url).pathname
 
     try {
-      // Rate limiting — runs before auth to protect against brute force
-      const rateLimitTier = options.rateLimit ??
-        (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) ? 'normal' : 'relaxed')
-
-      if (rateLimitTier !== 'none') {
-        const config = RATE_LIMIT_CONFIG[rateLimitTier]
-        const rateLimited = checkRateLimit(req, {
-          ...config,
-          prefix: `${rateLimitTier}:${routeName}`,
-        })
-        if (rateLimited) return rateLimited
-      }
+      // Pre-auth brute force protection — IP-based, generous limit (200/min)
+      // Prevents unauthenticated abuse without blocking shared church WiFi users
+      const ipBrute = checkRateLimit(req, {
+        limit: 200,
+        windowSeconds: 60,
+        prefix: `brute:${routeName}`,
+      })
+      if (ipBrute) return ipBrute
 
       const supabase = await createClient()
       const { requireAuth = true, requireRoles, requirePermissions } = options
@@ -114,6 +110,23 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
           (roleDefaults?.permissions ?? null) as PermissionMap | null,
           profile.permissions
         )
+        }
+      }
+
+      // DB-6 fix: Authenticated rate limiting — per-user instead of per-IP
+      // Solves shared church WiFi problem where all devices share one IP
+      if (user) {
+        const rateLimitTier = options.rateLimit ??
+          (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method) ? 'normal' : 'relaxed')
+
+        if (rateLimitTier !== 'none') {
+          const config = RATE_LIMIT_CONFIG[rateLimitTier]
+          const rateLimited = checkRateLimit(req, {
+            ...config,
+            prefix: `${rateLimitTier}:${routeName}`,
+            userId: user.id,
+          })
+          if (rateLimited) return rateLimited
         }
       }
 

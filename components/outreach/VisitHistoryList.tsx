@@ -73,7 +73,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-destructive hover:text-destructive"
+                  className="h-9 px-2 text-destructive hover:text-destructive"
                   onClick={() => onDelete(visit.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

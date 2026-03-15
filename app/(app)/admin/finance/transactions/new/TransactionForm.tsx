@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ type TransactionFormProps = {
 export function TransactionForm({ accounts, funds }: TransactionFormProps) {
   const router = useRouter()
   const t = useTranslations('finance')
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -49,44 +50,52 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isBalanced) { setError('Journal entry must be balanced (debits = credits)'); return }
+    if (!isBalanced) { setError(t('journalMustBalance')); return }
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true); setError('')
 
-    const res = await fetch('/api/finance/transactions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        total_amount: totalDebits,
-        fund_id: form.fund_id || null,
-        line_items: lines
-          .filter(l => l.account_id)
-          .map(l => ({
-            account_id: l.account_id,
-            description: l.description || null,
-            debit_amount: parseFloat(l.debit_amount) || 0,
-            credit_amount: parseFloat(l.credit_amount) || 0,
-            currency: form.currency,
-          })),
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          total_amount: totalDebits,
+          fund_id: form.fund_id || null,
+          line_items: lines
+            .filter(l => l.account_id)
+            .map(l => ({
+              account_id: l.account_id,
+              description: l.description || null,
+              debit_amount: parseFloat(l.debit_amount) || 0,
+              credit_amount: parseFloat(l.credit_amount) || 0,
+              currency: form.currency,
+            })),
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to create transaction')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToCreate'))
+        return
+      }
+
+      router.push('/admin/finance/transactions')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/transactions')
-    router.refresh()
   }
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/transactions"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/transactions"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('newJournalEntry')}</h1>
       </div>
@@ -109,7 +118,7 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
             <div className="col-span-2 space-y-1">
               <Label>{t('description')}</Label>
               <Input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                placeholder="Journal entry description..." />
+                placeholder={t('journalDescriptionPlaceholder')} dir="auto" />
             </div>
             <div className="space-y-1">
               <Label>{t('fund')}</Label>
@@ -122,7 +131,7 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
             <div className="space-y-1">
               <Label>{t('memo')}</Label>
               <Input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
-                placeholder="Internal memo..." />
+                placeholder={t('internalMemoPlaceholder')} dir="auto" />
             </div>
           </CardContent>
         </Card>
@@ -145,8 +154,8 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
                   <tr className="text-start text-muted-foreground border-b">
                     <th className="pb-2 font-medium w-48">{t('accounts')}</th>
                     <th className="pb-2 font-medium">{t('description')}</th>
-                    <th className="pb-2 font-medium w-28 text-end">Debit</th>
-                    <th className="pb-2 font-medium w-28 text-end">Credit</th>
+                    <th className="pb-2 font-medium w-28 text-end">{t('debit')}</th>
+                    <th className="pb-2 font-medium w-28 text-end">{t('credit')}</th>
                     <th className="pb-2 w-8"></th>
                   </tr>
                 </thead>
@@ -170,7 +179,8 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
                           value={line.description}
                           onChange={e => updateLine(i, 'description', e.target.value)}
                           placeholder={t('lineDescription')}
-                          className="text-sm h-8"
+                          dir="auto"
+                          className="text-sm h-9"
                         />
                       </td>
                       <td className="py-1.5 pe-2">
@@ -179,7 +189,7 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
                           value={line.debit_amount}
                           onChange={e => updateLine(i, 'debit_amount', e.target.value)}
                           placeholder="0"
-                          className="text-sm h-8 text-end font-mono"
+                          className="text-sm h-9 text-end font-mono"
                         />
                       </td>
                       <td className="py-1.5 pe-2">
@@ -188,12 +198,12 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
                           value={line.credit_amount}
                           onChange={e => updateLine(i, 'credit_amount', e.target.value)}
                           placeholder="0"
-                          className="text-sm h-8 text-end font-mono"
+                          className="text-sm h-9 text-end font-mono"
                         />
                       </td>
                       <td className="py-1.5">
                         {lines.length > 2 && (
-                          <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0"
+                          <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0"
                             onClick={() => removeLine(i)}>
                             <Trash2 className="w-3 h-3 text-muted-foreground" />
                           </Button>
@@ -216,7 +226,7 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
                   {!isBalanced && totalDebits > 0 && (
                     <tr>
                       <td colSpan={5} className="pt-1 text-xs text-red-600">
-                        Difference: {Math.abs(totalDebits - totalCredits).toFixed(2)} — {t('differenceWarning')}
+                        {t('difference')}: {Math.abs(totalDebits - totalCredits).toFixed(2)} — {t('differenceWarning')}
                       </td>
                     </tr>
                   )}
@@ -233,7 +243,7 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
             {loading ? t('saving') : t('saveJournalEntry')}
           </Button>
           <Button type="button" variant="outline" asChild>
-            <Link href="/admin/finance/transactions">Cancel</Link>
+            <Link href="/admin/finance/transactions">{t('cancel')}</Link>
           </Button>
         </div>
       </form>

@@ -66,7 +66,7 @@ export default async function ChurchNeedDetailPage({ params, searchParams }: { p
       {/* Back button */}
       <Button variant="ghost" size="sm" asChild>
         <Link href="/community/needs">
-          <ArrowLeft className="h-4 w-4 me-1" />
+          <ArrowLeft className="h-4 w-4 me-1 rtl:rotate-180" />
           {t('title')}
         </Link>
       </Button>

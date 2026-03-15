@@ -6,7 +6,7 @@ import { UpdateChurchNeedSchema } from '@/lib/schemas/church-need'
 import { createAdminClient } from '@/lib/supabase/server'
 
 // GET /api/community/needs/[id] — single need with church info
-export const GET = apiHandler(async ({ params }) => {
+export const GET = apiHandler(async ({ profile, params }) => {
   const { id } = params!
   const admin = await createAdminClient()
 
@@ -26,7 +26,32 @@ export const GET = apiHandler(async ({ params }) => {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  return { data: { ...needResult.data, response_count: countResult.count || 0 } }
+  const need = { ...needResult.data, response_count: countResult.count || 0 }
+
+  // Strip contact PII from needs owned by other churches,
+  // unless the caller's church has an accepted response
+  if (need.church_id !== profile.church_id) {
+    let hasAcceptedResponse = false
+    const { data: acceptedResp } = await admin
+      .from('church_need_responses')
+      .select('id')
+      .eq('need_id', id)
+      .eq('responder_church_id', profile.church_id)
+      .eq('status', 'accepted')
+      .limit(1)
+
+    if (acceptedResp && acceptedResp.length > 0) {
+      hasAcceptedResponse = true
+    }
+
+    if (!hasAcceptedResponse) {
+      delete (need as Record<string, unknown>).contact_name
+      delete (need as Record<string, unknown>).contact_phone
+      delete (need as Record<string, unknown>).contact_email
+    }
+  }
+
+  return { data: need }
 }, { requirePermissions: ['can_view_church_needs'] })
 
 // PATCH /api/community/needs/[id] — update own need

@@ -161,7 +161,17 @@
     "toastError": "An error occurred",
     "toastSuccess": "Welcome!",
     "toastSuccessDesc": "Your profile has been created successfully",
-    "backToLogin": "Back to Login"
+    "backToLogin": "Back to Login",
+    "searchChurchPlaceholder": "Search by church name\u2026",
+    "findYourChurch": "Find your church",
+    "findYourChurchDesc": "Search for your church to join it on Ekklesia. You can join multiple churches.",
+    "searchPlaceholder": "Type your church name to search",
+    "noChurchesFound": "No churches found for \"{query}\"",
+    "registerNewChurch": "Register a new church",
+    "joinedChurch": "Joined {churchName}!",
+    "joined": "Joined",
+    "couldNotJoin": "Could not join church",
+    "join": "Join"
   },
   "error": {
     "title": "An Error Occurred",
@@ -850,7 +860,8 @@
     "markAllRead": "Mark all read",
     "loading": "Loading...",
     "emptyTitle": "All caught up",
-    "emptyBody": "You have no notifications right now."
+    "emptyBody": "You have no notifications right now.",
+    "errorGeneral": "Something went wrong. Please try again."
   },
   "notificationsPage": {
     "title": "Notifications",
@@ -1012,7 +1023,8 @@
     "staffing": "Staffing",
     "rolePresetSelect": "Quick select role",
     "confirmRemoveNeedTitle": "Remove Service Need",
-    "confirmRemoveNeedBody": "Are you sure you want to remove this service need?"
+    "confirmRemoveNeedBody": "Are you sure you want to remove this service need?",
+    "serviceNotesPlaceholder": "e.g., 2 camera operators, 1 sound engineer"
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -1093,7 +1105,13 @@
     "confirmRemove": "Remove",
     "moveUp": "Move Up",
     "moveDown": "Move Down",
-    "removeSegment": "Remove Segment"
+    "removeSegment": "Remove Segment",
+    "segmentTitlePlaceholder": "e.g., Worship, Sermon, Offering",
+    "segmentNotesPlaceholder": "e.g., Pastor to prepare communion intro",
+    "templateNamePlaceholder": "e.g., Sunday Morning Service",
+    "templateNameArPlaceholder": "e.g., Sunday Service",
+    "templateNotesPlaceholder": "e.g., Remind pastor about communion, prepare extra chairs",
+    "customFieldOptionsPlaceholder": "Option 1, Option 2, Option 3"
   },
   "songs": {
     "pageTitle": "Songs",
@@ -1384,7 +1402,8 @@
     "goTo": "Go To",
     "searchBook": "Search books...",
     "decreaseFontSize": "Decrease font size",
-    "increaseFontSize": "Increase font size"
+    "increaseFontSize": "Increase font size",
+    "errorGeneral": "Something went wrong. Please try again."
   },
   "notificationComposer": {
     "pageTitle": "Send Notifications",
@@ -1703,7 +1722,9 @@
     "superAdminNote": "Super admins always have full permissions.",
     "userPermissionsTitle": "Permission Overrides",
     "userPermissionsDesc": "Toggle permissions on or off. Highlighted toggles differ from the role default.",
-    "memberNotFound": "Member not found."
+    "memberNotFound": "Member not found.",
+    "failedToLoadData": "Failed to load data",
+    "searchMembersPlaceholder": "Search members..."
   },
   "churchPrayer": {
     "pageTitle": "Prayer Requests",
@@ -1736,7 +1757,10 @@
     "noMembersFound": "No members found",
     "assignedToMe": "Assigned to Me",
     "emptyTitle": "No prayer requests yet",
-    "emptyBody": "Submit a prayer request above and it will appear here."
+    "emptyBody": "Submit a prayer request above and it will appear here.",
+    "deleteConfirmTitle": "Delete Prayer Request",
+    "deleteConfirmBody": "Are you sure you want to delete this prayer request? This action cannot be undone.",
+    "deleteConfirmCancel": "Cancel"
   },
   "outreach": {
     "pageTitle": "Outreach",
@@ -1845,6 +1869,9 @@
     "lineDescription": "Line description",
     "totals": "Totals",
     "differenceWarning": "entry must be balanced",
+    "difference": "Difference",
+    "debit": "Debit",
+    "credit": "Credit",
     "saveJournalEntry": "Save Journal Entry",
     "refNumber": "Ref #",
     "status": "Status",
@@ -1861,6 +1888,7 @@
     "quarterly": "Quarterly",
     "monthly": "Monthly",
     "custom": "Custom",
+    "none": "None",
     "fiscalYear": "Fiscal Year",
     "startDate": "Start Date",
     "endDate": "End Date",
@@ -1915,6 +1943,12 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "paid": "Paid",
+    "expenseStatus": {
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "paid": "Paid"
+    },
     "chartOfAccounts": "Chart of Accounts",
     "newAccount": "New Account",
     "code": "Code",
@@ -1955,8 +1989,15 @@
     "workflowSection": "Workflow",
     "saveSettings": "Save Settings",
     "settingsSaved": "Settings saved",
-    "failedToSave": "Failed to save settings",
-    "networkError": "Network error — could not save settings",
+    "failedToSave": "Failed to save",
+    "failedToSubmit": "Failed to submit",
+    "failedToCreate": "Failed to create",
+    "networkError": "Network error. Please try again.",
+    "journalMustBalance": "Journal entry must be balanced (debits = credits)",
+    "vendorNamePlaceholder": "Vendor name",
+    "journalDescriptionPlaceholder": "Journal entry description...",
+    "internalMemoPlaceholder": "Internal memo...",
+    "fundDescriptionPlaceholder": "Fund description...",
     "cash": "Cash",
     "check": "Check",
     "bankTransfer": "Bank Transfer",

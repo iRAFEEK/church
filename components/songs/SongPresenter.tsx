@@ -148,7 +148,7 @@ export function SongPresenter({ song }: SongPresenterProps) {
 
       updateSetting('bg_image', publicUrl)
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     } finally {
       setUploading(false)
     }

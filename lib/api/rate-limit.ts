@@ -28,9 +28,11 @@ function cleanup() {
 
 /**
  * Get a client identifier from the request.
- * Uses x-forwarded-for (Vercel sets this), falls back to x-real-ip.
+ * DB-6 fix: prefer user ID for authenticated routes (shared church WiFi = all devices share one IP).
+ * Falls back to IP-based for unauthenticated requests (brute force protection).
  */
-function getClientId(req: NextRequest): string {
+function getClientId(req: NextRequest, userId?: string): string {
+  if (userId) return `user:${userId}`
   return (
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     req.headers.get('x-real-ip') ??
@@ -45,6 +47,8 @@ interface RateLimitOptions {
   windowSeconds: number
   /** Optional key prefix to separate different endpoints */
   prefix?: string
+  /** Authenticated user ID — when provided, rate limits per-user instead of per-IP */
+  userId?: string
 }
 
 /**
@@ -57,7 +61,7 @@ export function checkRateLimit(
 ): NextResponse | null {
   cleanup()
 
-  const clientId = getClientId(req)
+  const clientId = getClientId(req, options.userId)
   const key = `${options.prefix ?? 'rl'}:${clientId}`
   const now = Date.now()
 

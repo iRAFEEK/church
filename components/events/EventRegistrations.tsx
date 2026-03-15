@@ -105,6 +105,7 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
           placeholder={t('searchRegistrations')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          dir="auto"
           className="ps-9"
         />
       </div>
@@ -132,7 +133,7 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 text-green-600"
+                      className="h-9 text-green-600"
                       onClick={() => handleAction(reg.id, 'check_in')}
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -140,7 +141,7 @@ export function EventRegistrations({ eventId }: EventRegistrationsProps) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 text-red-600"
+                      className="h-9 text-red-600"
                       onClick={() => handleAction(reg.id, 'cancel')}
                     >
                       <XCircle className="h-4 w-4" />

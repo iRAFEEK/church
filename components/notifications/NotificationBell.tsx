@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, CheckCheck } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -56,27 +56,46 @@ export function NotificationBell() {
     return () => controller.abort()
   }, [fetchNotifications])
 
+  // Store user ID for scoping the realtime subscription
+  const userIdRef = useRef<string | null>(null)
+
   useEffect(() => {
     const supabase = createBrowserClient()
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications_log',
-          filter: `channel=eq.in_app`,
-        },
-        () => {
-          fetchNotifications()
-        }
-      )
-      .subscribe()
+    async function setupSubscription() {
+      // Get the current user's ID to scope the subscription
+      if (!userIdRef.current) {
+        const { data: { user } } = await supabase.auth.getUser()
+        userIdRef.current = user?.id ?? null
+      }
+
+      const userId = userIdRef.current
+      if (!userId) return
+
+      channel = supabase
+        .channel(`notifications-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications_log',
+            filter: `profile_id=eq.${userId}`,
+          },
+          () => {
+            fetchNotifications()
+          }
+        )
+        .subscribe()
+    }
+
+    setupSubscription()
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [fetchNotifications])
 
@@ -88,7 +107,7 @@ export function NotificationBell() {
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     }
   }
 
@@ -98,7 +117,7 @@ export function NotificationBell() {
       setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString(), status: 'read' })))
       setUnreadCount(0)
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     }
   }
 
@@ -144,7 +163,7 @@ export function NotificationBell() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-xs gap-1"
+              className="h-9 text-xs gap-1"
               onClick={markAllRead}
             >
               <CheckCheck className="h-3.5 w-3.5" />

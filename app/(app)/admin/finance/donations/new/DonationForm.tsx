@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,7 @@ interface DonationFormProps {
 export default function DonationForm({ funds, campaigns, members }: DonationFormProps) {
   const router = useRouter()
   const t = useTranslations('finance')
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -42,30 +43,38 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/finance/donations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        amount: parseFloat(form.amount),
-        base_amount: parseFloat(form.amount),
-        donor_id: form.is_anonymous ? null : form.donor_id || null,
-        campaign_id: form.campaign_id || null,
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          amount: parseFloat(form.amount),
+          base_amount: parseFloat(form.amount),
+          donor_id: form.is_anonymous ? null : form.donor_id || null,
+          campaign_id: form.campaign_id || null,
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to save donation')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToSave'))
+        return
+      }
+
+      router.push('/admin/finance/donations')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/donations')
-    router.refresh()
   }
 
   const set = (field: string, value: string | boolean) =>
@@ -75,7 +84,7 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
     <div className="p-6 max-w-xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/donations"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/donations"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('recordDonation')}</h1>
       </div>

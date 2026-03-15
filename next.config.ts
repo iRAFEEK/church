@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 import withBundleAnalyzerInit from '@next/bundle-analyzer';
 import withPWAInit from '@ducanh2912/next-pwa';
@@ -34,12 +33,21 @@ const nextConfig: NextConfig = {
 
 const composedConfig = withBundleAnalyzer(withPWA(withNextIntl(nextConfig)));
 
-export default process.env.NEXT_PUBLIC_SENTRY_DSN
-  ? withSentryConfig(composedConfig, {
+// PERF: Only wrap with Sentry when DSN is configured.
+// The @sentry/nextjs import is conditional to avoid pulling the Sentry
+// webpack plugin into builds that don't use it.
+let finalConfig: NextConfig | Promise<NextConfig> = composedConfig;
+
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  finalConfig = import('@sentry/nextjs').then(({ withSentryConfig }) =>
+    withSentryConfig(composedConfig, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       silent: true,
       widenClientFileUpload: true,
       disableLogger: true,
     })
-  : composedConfig;
+  );
+}
+
+export default finalConfig;

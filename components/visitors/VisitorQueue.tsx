@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -61,6 +61,7 @@ export function VisitorQueue({
   const [assignTo, setAssignTo] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
+  const submittingRef = useRef(false)
   const [localVisitors, setLocalVisitors] = useState(visitors)
 
   const STATUS_LABELS: Record<string, string> = {
@@ -99,6 +100,8 @@ export function VisitorQueue({
 
   async function submitAction() {
     if (!selected || !mode) return
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     try {
       let body: Record<string, unknown> = { action: mode }
@@ -124,6 +127,7 @@ export function VisitorQueue({
     } catch {
       toast.error(t('queueToastError'))
     } finally {
+      submittingRef.current = false
       setLoading(false)
     }
   }

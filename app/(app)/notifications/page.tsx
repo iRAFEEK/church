@@ -364,10 +364,10 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{t('page', { current: page, total: totalPages })}</p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+            <Button variant="outline" size="icon" className="h-9 w-9" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
               <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+            <Button variant="outline" size="icon" className="h-9 w-9" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>

@@ -6,6 +6,7 @@ import { ChurchPrayerForm } from '@/components/prayer/ChurchPrayerForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { HandHeart, UserCheck, Loader2, EyeOff } from 'lucide-react'
 
 interface MyPrayer {
@@ -226,12 +227,30 @@ export default function PrayerPage() {
                       </Badge>
                     </div>
                     {prayer.status === 'active' && (
-                      <button
-                        onClick={() => handleDelete(prayer.id)}
-                        className="text-xs text-destructive hover:underline"
-                      >
-                        {t('delete')}
-                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            {t('delete')}
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t('deleteConfirmTitle')}</AlertDialogTitle>
+                            <AlertDialogDescription>{t('deleteConfirmBody')}</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t('deleteConfirmCancel')}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(prayer.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {t('delete')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                   {prayer.resolved_notes && (

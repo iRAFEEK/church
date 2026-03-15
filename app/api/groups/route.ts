@@ -7,6 +7,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateGroupSchema } from '@/lib/schemas/group'
 import { normalizeSearch } from '@/lib/utils/normalize'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const { searchParams } = new URL(req.url)
@@ -32,9 +33,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   if (ministry_id) query = query.eq('ministry_id', ministry_id)
   if (type) query = query.eq('type', type)
   if (q) {
-    const normalized = normalizeSearch(q)
-    const parts = [`name.ilike.%${q}%`, `name_ar.ilike.%${q}%`]
-    if (normalized !== q) {
+    const escaped = sanitizeLikePattern(q)
+    const normalized = normalizeSearch(escaped)
+    const parts = [`name.ilike.%${escaped}%`, `name_ar.ilike.%${escaped}%`]
+    if (normalized !== escaped) {
       parts.push(`name.ilike.%${normalized}%`, `name_ar.ilike.%${normalized}%`)
     }
     query = query.or(parts.join(','))

@@ -86,8 +86,8 @@ describe('P0-7: Finance atomic operations', () => {
     })
   })
 
-  describe('Migration 046 defines atomic RPC functions', () => {
-    const migration = fs.readFileSync('supabase/migrations/046_finance_atomic_rpcs.sql', 'utf-8')
+  describe('Migration 055 defines atomic RPC functions', () => {
+    const migration = fs.readFileSync('supabase/migrations/055_finance_atomic_rpcs.sql', 'utf-8')
 
     it('defines create_transaction_with_items function', () => {
       expect(migration).toContain('CREATE OR REPLACE FUNCTION create_transaction_with_items')

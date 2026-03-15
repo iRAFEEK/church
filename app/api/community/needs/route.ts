@@ -45,6 +45,17 @@ export const GET = apiHandler(async ({ req, profile }) => {
   const { data, error, count } = await query
   if (error) throw error
 
+  // Strip contact PII from needs owned by other churches
+  if (data) {
+    for (const need of data) {
+      if (need.church_id !== profile.church_id) {
+        delete (need as Record<string, unknown>).contact_name
+        delete (need as Record<string, unknown>).contact_phone
+        delete (need as Record<string, unknown>).contact_email
+      }
+    }
+  }
+
   return { data, count, page, pageSize, totalPages: Math.ceil((count || 0) / pageSize) }
 }, { requirePermissions: ['can_view_church_needs'] })
 

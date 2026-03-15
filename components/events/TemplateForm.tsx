@@ -304,7 +304,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g., Sunday Morning Service"
+              placeholder={t('templateNamePlaceholder')}
               dir="ltr"
               className="text-lg min-h-[48px]"
             />
@@ -326,7 +326,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
             <Input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="e.g., Sunday Service"
+              placeholder={t('templateNameArPlaceholder')}
               dir="ltr"
               className="min-h-[48px]"
             />
@@ -536,7 +536,7 @@ export function TemplateForm({ template }: TemplateFormProps) {
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={4}
               dir="ltr"
-              placeholder="e.g., Remind pastor about communion, prepare extra chairs"
+              placeholder={t('templateNotesPlaceholder')}
             />
           </div>
           <div>

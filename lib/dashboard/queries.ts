@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { unstable_cache } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 import type {
   AdminDashboardData,
   LeaderDashboardData,
@@ -12,6 +14,53 @@ import type {
   AtRiskMember,
   RecentPrayer,
 } from '@/types/dashboard'
+
+// ─── Cached Dashboard Wrappers (300s TTL) ─────────────────────────
+// These wrap the raw fetch functions with unstable_cache so dashboard
+// queries don't hit the database on every page load.
+// IMPORTANT: Supabase client is created INSIDE each cached function
+// because unstable_cache serializes the closure and the client uses
+// cookies for auth which can't be serialized.
+
+export const getCachedAdminDashboard = (churchId: string, profileId: string, slaHours: number = 48) =>
+  unstable_cache(
+    async () => {
+      const supabase = await createClient()
+      return fetchAdminDashboard(supabase, profileId, churchId, slaHours)
+    },
+    [`admin-dashboard-${churchId}`],
+    { tags: [`dashboard-${churchId}`], revalidate: 300 }
+  )()
+
+export const getCachedMinistryLeaderDashboard = (churchId: string, profileId: string) =>
+  unstable_cache(
+    async () => {
+      const supabase = await createClient()
+      return fetchMinistryLeaderDashboardV2(supabase, profileId, churchId)
+    },
+    [`ministry-leader-dashboard-${churchId}-${profileId}`],
+    { tags: [`dashboard-${churchId}`], revalidate: 300 }
+  )()
+
+export const getCachedLeaderDashboard = (churchId: string, profileId: string) =>
+  unstable_cache(
+    async () => {
+      const supabase = await createClient()
+      return fetchLeaderDashboard(supabase, profileId, churchId)
+    },
+    [`leader-dashboard-${churchId}-${profileId}`],
+    { tags: [`dashboard-${churchId}`], revalidate: 300 }
+  )()
+
+export const getCachedMemberDashboard = (churchId: string, profileId: string) =>
+  unstable_cache(
+    async () => {
+      const supabase = await createClient()
+      return fetchMemberDashboard(supabase, profileId, churchId)
+    },
+    [`member-dashboard-${churchId}-${profileId}`],
+    { tags: [`dashboard-${churchId}`], revalidate: 300 }
+  )()
 
 // ─── Shared DB record interfaces ─────────────────
 // These mirror the shape of Supabase joined query results

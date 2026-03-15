@@ -11,28 +11,20 @@ describe('Transaction [id] PATCH — double-entry balance validation', () => {
   })
 
   it('should filter by church_id on all queries', () => {
-    const churchIdCount = (txnIdRouteCode.match(/eq\('church_id', profile\.church_id\)/g) || []).length
-    expect(churchIdCount).toBeGreaterThanOrEqual(3) // GET + PATCH header + PATCH line items
+    // PATCH now uses atomic RPC which receives church_id as parameter
+    // GET still filters directly
+    expect(txnIdRouteCode).toContain('church_id')
+    expect(txnIdRouteCode).toContain('profile.church_id')
   })
 
   it('PATCH should validate body with Zod schema', () => {
     expect(txnIdRouteCode).toContain('validate(UpdateTransactionSchema')
   })
 
-  it('PATCH should re-validate double-entry balance when line_items are updated', () => {
-    expect(txnIdRouteCode).toContain('totalDebits')
-    expect(txnIdRouteCode).toContain('totalCredits')
-    expect(txnIdRouteCode).toContain('Math.abs(totalDebits - totalCredits)')
-    expect(txnIdRouteCode).toContain("'Transaction is not balanced'")
-    expect(txnIdRouteCode).toContain('status: 422')
-  })
-
-  it('PATCH should return debits and credits in error details', () => {
-    expect(txnIdRouteCode).toContain('details: { debits: totalDebits, credits: totalCredits }')
-  })
-
-  it('should use epsilon comparison (0.01) not exact equality', () => {
-    expect(txnIdRouteCode).toContain('0.01')
+  it('PATCH uses atomic RPC for balance validation and line item replacement', () => {
+    // ARCH-6 fix: balance validation + line item atomicity moved to Postgres RPC
+    expect(txnIdRouteCode).toContain('update_transaction_with_items')
+    expect(txnIdRouteCode).toContain('rpc')
   })
 
   it('should not leak error.message to client', () => {
