@@ -133,13 +133,15 @@ describe('/api/bible/bookmarks', () => {
     const res = await postBookmarks(makeReq('/api/bible/bookmarks', 'POST', body))
     expect(res.status).toBe(201)
 
-    // Verify insert was called with profile_id from user and church_id from profile
-    expect(mockChain.insert).toHaveBeenCalledWith(
+    // Verify upsert was called with profile_id from user and church_id from profile
+    // DB-1 fix: bookmarks now use upsert with unique constraint to prevent duplicates
+    expect(mockChain.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_id: 'user-55',
         church_id: 'church-9',
         bible_id: 'svd',
       }),
+      { onConflict: 'profile_id,bible_id,book_id,chapter_id,verse_id' },
     )
   })
 })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,7 @@ interface ExpenseFormProps {
 export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
   const router = useRouter()
   const t = useTranslations('finance')
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -37,29 +38,37 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/finance/expenses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        amount: parseFloat(form.amount),
-        ministry_id: form.ministry_id || null,
-        fund_id: form.fund_id || null,
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          amount: parseFloat(form.amount),
+          ministry_id: form.ministry_id || null,
+          fund_id: form.fund_id || null,
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to submit')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToSubmit'))
+        return
+      }
+
+      router.push('/admin/finance/expenses')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/expenses')
-    router.refresh()
   }
 
   const set = (field: string, value: string | boolean) =>
@@ -69,7 +78,7 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
     <div className="p-6 max-w-xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/expenses"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/expenses"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('newExpense')}</h1>
       </div>
@@ -117,7 +126,7 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
               <Input
                 value={form.vendor_name}
                 onChange={e => set('vendor_name', e.target.value)}
-                placeholder="Vendor name"
+                placeholder={t('vendorNamePlaceholder')}
               />
             </div>
 
@@ -189,7 +198,7 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
                 {loading ? t('saving') : t('submitRequest')}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/admin/finance/expenses">Cancel</Link>
+                <Link href="/admin/finance/expenses">{t('cancel')}</Link>
               </Button>
             </div>
           </form>

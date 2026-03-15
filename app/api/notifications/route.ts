@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger'
 import { NextResponse } from 'next/server'
 
 // GET /api/notifications — get current user's notifications (paginated)
-export const GET = apiHandler(async ({ req, supabase, user }) => {
+export const GET = apiHandler(async ({ req, supabase, user, profile }) => {
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = parseInt(searchParams.get('pageSize') || '20')
@@ -16,6 +16,7 @@ export const GET = apiHandler(async ({ req, supabase, user }) => {
     .from('notifications_log')
     .select('id, type, channel, title, body, payload, status, read_at, reference_id, reference_type, sent_at, created_at', { count: 'exact' })
     .eq('profile_id', user.id)
+    .eq('church_id', profile.church_id)
     .eq('channel', 'in_app')
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -38,6 +39,7 @@ export const GET = apiHandler(async ({ req, supabase, user }) => {
     .from('notifications_log')
     .select('id', { count: 'exact', head: true })
     .eq('profile_id', user.id)
+    .eq('church_id', profile.church_id)
     .eq('channel', 'in_app')
     .is('read_at', null)
 

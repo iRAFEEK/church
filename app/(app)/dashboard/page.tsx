@@ -2,7 +2,12 @@ import { getCurrentUserWithRole, isLeader } from '@/lib/auth'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
-import { fetchAdminDashboard, fetchMinistryLeaderDashboardV2, fetchLeaderDashboard, fetchMemberDashboard } from '@/lib/dashboard/queries'
+import {
+  getCachedAdminDashboard,
+  getCachedMinistryLeaderDashboard,
+  getCachedLeaderDashboard,
+  getCachedMemberDashboard,
+} from '@/lib/dashboard/queries'
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
 import { MinistryLeaderDashboard } from '@/components/dashboard/MinistryLeaderDashboard'
 import { LeaderDashboard } from '@/components/dashboard/LeaderDashboard'
@@ -19,7 +24,6 @@ export default async function DashboardPage() {
   const { id, profile, church } = await getCurrentUserWithRole()
   const t = await getTranslations('dashboard')
   const locale = await getLocale()
-  const supabase = await createClient()
 
   const isRTL = locale.startsWith('ar')
   const firstName = isRTL
@@ -51,7 +55,7 @@ export default async function DashboardPage() {
   const slaHours = church.visitor_sla_hours ?? 48
 
   if (profile.role === 'super_admin') {
-    const data = await fetchAdminDashboard(supabase, id, churchId, slaHours)
+    const data = await getCachedAdminDashboard(churchId, id, slaHours)
     return (
       <div className="space-y-6">
         {header}
@@ -61,7 +65,7 @@ export default async function DashboardPage() {
   }
 
   if (profile.role === 'ministry_leader') {
-    const data = await fetchMinistryLeaderDashboardV2(supabase, id, churchId)
+    const data = await getCachedMinistryLeaderDashboard(churchId, id)
     return (
       <div className="space-y-6">
         {header}
@@ -71,7 +75,7 @@ export default async function DashboardPage() {
   }
 
   if (isLeader(profile)) {
-    const data = await fetchLeaderDashboard(supabase, id, churchId)
+    const data = await getCachedLeaderDashboard(churchId, id)
     return (
       <div className="space-y-6">
         {header}
@@ -81,6 +85,7 @@ export default async function DashboardPage() {
   }
 
   // Check if member is a ministry co-leader — show LeaderDashboard if so
+  const supabase = await createClient()
   const { data: coLeaderCheck } = await supabase
     .from('ministry_members')
     .select('id')
@@ -90,7 +95,7 @@ export default async function DashboardPage() {
     .limit(1)
 
   if (coLeaderCheck && coLeaderCheck.length > 0) {
-    const data = await fetchLeaderDashboard(supabase, id, churchId)
+    const data = await getCachedLeaderDashboard(churchId, id)
     return (
       <div className="space-y-6">
         {header}
@@ -100,7 +105,7 @@ export default async function DashboardPage() {
   }
 
   // Member dashboard
-  const data = await fetchMemberDashboard(supabase, id, churchId)
+  const data = await getCachedMemberDashboard(churchId, id)
   return (
     <div className="space-y-6">
       {header}

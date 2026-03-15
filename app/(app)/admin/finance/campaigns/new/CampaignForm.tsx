@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ interface CampaignFormProps {
 export function CampaignForm({ funds }: CampaignFormProps) {
   const t = useTranslations('finance')
   const router = useRouter()
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -30,29 +31,37 @@ export function CampaignForm({ funds }: CampaignFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/finance/campaigns', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        goal_amount: parseFloat(form.goal_amount),
-        fund_id: form.fund_id || null,
-        end_date: form.end_date || null,
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/campaigns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          goal_amount: parseFloat(form.goal_amount),
+          fund_id: form.fund_id || null,
+          end_date: form.end_date || null,
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to create campaign')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToCreate'))
+        return
+      }
+
+      router.push('/admin/finance/campaigns')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/campaigns')
-    router.refresh()
   }
 
   const set = (field: string, value: string | boolean) =>
@@ -62,7 +71,7 @@ export function CampaignForm({ funds }: CampaignFormProps) {
     <div className="p-6 max-w-xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/campaigns"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/campaigns"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('newCampaign')}</h1>
       </div>
@@ -143,7 +152,7 @@ export function CampaignForm({ funds }: CampaignFormProps) {
                 {loading ? t('creating') : t('createCampaign')}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/admin/finance/campaigns">Cancel</Link>
+                <Link href="/admin/finance/campaigns">{t('cancel')}</Link>
               </Button>
             </div>
           </form>

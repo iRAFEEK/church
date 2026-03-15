@@ -121,33 +121,33 @@ describe('POST /api/churches/register', () => {
     vi.clearAllMocks()
   })
 
-  // 1. Returns 400 when email is missing
-  it('returns 400 when email is missing', async () => {
+  // 1. Returns 422 when email is missing (Zod validation)
+  it('returns 422 when email is missing', async () => {
     const { email: _email, ...body } = validBody
     const res = await POST(makeRequest(body))
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(422)
     const json = await res.json()
-    expect(json.error).toMatch(/missing required fields/i)
+    expect(json.error).toMatch(/validation failed/i)
   })
 
-  // 2. Returns 400 when churchNameAr is missing
-  it('returns 400 when churchNameAr is missing', async () => {
+  // 2. Returns 422 when churchNameAr is missing (Zod validation)
+  it('returns 422 when churchNameAr is missing', async () => {
     const { churchNameAr: _name, ...body } = validBody
     const res = await POST(makeRequest(body))
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(422)
     const json = await res.json()
-    expect(json.error).toMatch(/missing required fields/i)
+    expect(json.error).toMatch(/validation failed/i)
   })
 
-  // 3. Returns 400 when password is too short
-  it('returns 400 when password is shorter than 6 characters', async () => {
-    const res = await POST(makeRequest({ ...validBody, password: '12345' }))
+  // 3. Returns 422 when password is too short (min 8 chars)
+  it('returns 422 when password is shorter than 8 characters', async () => {
+    const res = await POST(makeRequest({ ...validBody, password: '1234567' }))
 
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(422)
     const json = await res.json()
-    expect(json.error).toMatch(/password/i)
+    expect(json.error).toMatch(/validation failed/i)
   })
 
   // 4. Returns 201 on successful registration with correct churchId

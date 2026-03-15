@@ -23,20 +23,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     return Response.json({ error: 'Registration closed' }, { status: 400 })
   }
 
-  // Check if already registered
-  const { data: existing } = await supabase
-    .from('event_registrations')
-    .select('id')
-    .eq('event_id', eventId)
-    .eq('profile_id', user.id)
-    .eq('church_id', profile.church_id)
-    .single()
-
-  if (existing) {
-    return Response.json({ error: 'Already registered' }, { status: 409 })
-  }
-
-  // Check capacity
+  // Check capacity (keep this — upsert handles duplicate prevention via DB constraint)
   if (event.capacity) {
     const { count } = await supabase
       .from('event_registrations')
@@ -60,9 +47,11 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
     .eq('church_id', profile.church_id)
     .single()
 
+  // DB-3 fix: upsert with unique constraint on (event_id, profile_id) prevents duplicates
+  // from concurrent requests or network retries without TOCTOU race
   const { data, error } = await supabase
     .from('event_registrations')
-    .insert({
+    .upsert({
       event_id: eventId,
       church_id: profile.church_id,
       profile_id: user.id,
@@ -70,7 +59,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
       phone: body.phone || profileData?.phone || null,
       email: body.email || profileData?.email || null,
       status: 'registered',
-    })
+    }, { onConflict: 'event_id,profile_id' })
     .select('id, event_id, profile_id, name, status, registered_at')
     .single()
 

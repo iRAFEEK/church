@@ -1,4 +1,5 @@
 import { apiHandler } from '@/lib/api/handler'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // GET /api/profiles — list members (admin only, paginated)
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
@@ -23,9 +24,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   if (search) {
     const { normalizeSearch } = await import('@/lib/utils/normalize')
-    const normalized = normalizeSearch(search)
-    const base = `first_name_ar.ilike.%${search}%,last_name_ar.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`
-    const extra = normalized !== search
+    const escaped = sanitizeLikePattern(search)
+    const normalized = normalizeSearch(escaped)
+    const base = `first_name_ar.ilike.%${escaped}%,last_name_ar.ilike.%${escaped}%,first_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,email.ilike.%${escaped}%`
+    const extra = normalized !== escaped
       ? `,first_name_ar.ilike.%${normalized}%,last_name_ar.ilike.%${normalized}%,first_name.ilike.%${normalized}%,last_name.ilike.%${normalized}%`
       : ''
     query = query.or(base + extra)

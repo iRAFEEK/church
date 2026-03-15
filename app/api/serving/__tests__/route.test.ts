@@ -258,21 +258,13 @@ describe('/api/serving/slots/[id]/signup', () => {
     })
   })
 
-  describe('POST — duplicate prevention (static)', () => {
-    it('signup route checks for existing signup and returns Already signed up', async () => {
+  describe('POST — atomic signup via RPC (static)', () => {
+    it('signup route uses atomic Postgres function instead of separate queries', async () => {
       const { join } = await import('path')
       const code = readFileSync(join(process.cwd(), 'app/api/serving/slots/[id]/signup/route.ts'), 'utf-8')
-      expect(code).toContain('Already signed up')
-      expect(code).toContain('409')
-    })
-  })
-
-  describe('POST — slot capacity enforcement (static)', () => {
-    it('signup route checks max_volunteers and returns Slot is full', async () => {
-      const { join } = await import('path')
-      const code = readFileSync(join(process.cwd(), 'app/api/serving/slots/[id]/signup/route.ts'), 'utf-8')
-      expect(code).toContain('max_volunteers')
-      expect(code).toContain('Slot is full')
+      // DB-4 fix: uses atomic RPC function with SELECT FOR UPDATE
+      expect(code).toContain('signup_for_serving_slot')
+      expect(code).toContain('rpc')
     })
   })
 

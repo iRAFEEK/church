@@ -161,7 +161,17 @@
     "toastError": "حدث خطأ",
     "toastSuccess": "أهلاً بك!",
     "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح",
-    "backToLogin": "ارجع لتسجيل الدخول"
+    "backToLogin": "ارجع لتسجيل الدخول",
+    "searchChurchPlaceholder": "ابحث باسم الكنيسة…",
+    "findYourChurch": "دوّر على كنيستك",
+    "findYourChurchDesc": "دوّر على كنيستك عشان تنضم ليها على إكليسيا. تقدر تنضم لأكتر من كنيسة.",
+    "searchPlaceholder": "اكتب اسم كنيستك عشان تدوّر",
+    "noChurchesFound": "مفيش كنايس لـ \"{query}\"",
+    "registerNewChurch": "سجّل كنيسة جديدة",
+    "joinedChurch": "انضميت لـ {churchName}!",
+    "joined": "انضميت",
+    "couldNotJoin": "مقدرش تنضم للكنيسة",
+    "join": "انضم"
   },
   "error": {
     "title": "حدث خطأ",
@@ -850,7 +860,8 @@
     "markAllRead": "تحديد الكل كمقروء",
     "loading": "جارٍ التحميل...",
     "emptyTitle": "مفيش جديد",
-    "emptyBody": "مفيش إشعارات دلوقتي."
+    "emptyBody": "مفيش إشعارات دلوقتي.",
+    "errorGeneral": "حصل مشكلة. جرّب تاني."
   },
   "notificationsPage": {
     "title": "الإشعارات",
@@ -1012,7 +1023,8 @@
     "staffing": "التعيينات",
     "rolePresetSelect": "اختيار سريع للدور",
     "confirmRemoveNeedTitle": "إزالة احتياج خدمة",
-    "confirmRemoveNeedBody": "متأكد إنك عايز تشيل الاحتياج ده؟"
+    "confirmRemoveNeedBody": "متأكد إنك عايز تشيل الاحتياج ده؟",
+    "serviceNotesPlaceholder": "مثلاً: ٢ مصوّرين، ١ مهندس صوت"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1093,7 +1105,13 @@
     "confirmRemove": "إزالة",
     "moveUp": "تحريك لأعلى",
     "moveDown": "تحريك لأسفل",
-    "removeSegment": "حذف الفقرة"
+    "removeSegment": "حذف الفقرة",
+    "segmentTitlePlaceholder": "مثلاً: تسبيح، عظة، تقدمات",
+    "segmentNotesPlaceholder": "مثلاً: القس يحضّر مقدمة التناول",
+    "templateNamePlaceholder": "مثلاً: خدمة صباح الأحد",
+    "templateNameArPlaceholder": "مثلاً: خدمة الأحد",
+    "templateNotesPlaceholder": "مثلاً: فكّر القس بالتناول، حضّر كراسي زيادة",
+    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣"
   },
   "songs": {
     "pageTitle": "الترانيم",
@@ -1384,7 +1402,8 @@
     "goTo": "الذهاب إلى",
     "searchBook": "ابحث عن سفر...",
     "decreaseFontSize": "تصغير حجم الخط",
-    "increaseFontSize": "تكبير حجم الخط"
+    "increaseFontSize": "تكبير حجم الخط",
+    "errorGeneral": "حصل مشكلة. جرّب تاني."
   },
   "notificationComposer": {
     "pageTitle": "إرسال إشعارات",
@@ -1703,7 +1722,9 @@
     "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً.",
     "userPermissionsTitle": "تخصيصات الصلاحيات",
     "userPermissionsDesc": "تبديل الصلاحيات. الأزرار المميزة تختلف عن الإعداد الافتراضي للدور.",
-    "memberNotFound": "العضو غير موجود."
+    "memberNotFound": "العضو غير موجود.",
+    "failedToLoadData": "فشل تحميل البيانات",
+    "searchMembersPlaceholder": "دوّر على عضو..."
   },
   "churchPrayer": {
     "pageTitle": "طلبات الصلاة",
@@ -1736,7 +1757,10 @@
     "noMembersFound": "لم يتم العثور على أعضاء",
     "assignedToMe": "مُعيَّنة لي",
     "emptyTitle": "مفيش طلبات صلاة لسه",
-    "emptyBody": "قدّم طلب صلاة فوق وهيظهر هنا."
+    "emptyBody": "قدّم طلب صلاة فوق وهيظهر هنا.",
+    "deleteConfirmTitle": "حذف طلب الصلاة",
+    "deleteConfirmBody": "متأكد إنك عايز تحذف طلب الصلاة ده؟ مش هتقدر ترجع فيه.",
+    "deleteConfirmCancel": "إلغاء"
   },
   "outreach": {
     "pageTitle": "التواصل",
@@ -1800,6 +1824,28 @@
     },
     "error": {
       "switch": "مقدرش يتغيّر للكنيسة دي"
+    }
+  },
+  "finance": {
+    "cancel": "إلغاء",
+    "next": "التالي",
+    "failedToSave": "مقدرش يتحفظ",
+    "failedToSubmit": "مقدرش يتبعت",
+    "failedToCreate": "مقدرش يتعمل",
+    "networkError": "فيه مشكلة في النت. جرّب تاني.",
+    "journalMustBalance": "القيد لازم يكون متوازن (المدين = الدائن)",
+    "vendorNamePlaceholder": "اسم المورد",
+    "journalDescriptionPlaceholder": "وصف القيد المحاسبي...",
+    "internalMemoPlaceholder": "ملاحظة داخلية...",
+    "fundDescriptionPlaceholder": "وصف الصندوق...",
+    "difference": "الفرق",
+    "debit": "مدين",
+    "credit": "دائن",
+    "expenseStatus": {
+      "submitted": "مقدم",
+      "approved": "متوافق عليه",
+      "rejected": "مرفوض",
+      "paid": "مدفوع"
     }
   }
 }

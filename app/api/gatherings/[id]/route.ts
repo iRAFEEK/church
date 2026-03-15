@@ -45,6 +45,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 })
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+  // Group leaders verified by role check; admins can edit any gathering in their church
   const id = params?.id
   if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -71,4 +72,4 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
-})
+}, { requireRoles: ['super_admin', 'ministry_leader', 'group_leader'] })

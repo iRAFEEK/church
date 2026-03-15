@@ -166,7 +166,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
             {fieldType === 'select' && (
               <div>
                 <Label className="text-sm text-zinc-500 mb-1 block">{t('fieldOptions')}</Label>
-                <Input value={options} onChange={e => setOptions(e.target.value)} placeholder="Option 1, Option 2, Option 3" dir="ltr" />
+                <Input value={options} onChange={e => setOptions(e.target.value)} placeholder={t('customFieldOptionsPlaceholder')} dir="ltr" />
               </div>
             )}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">

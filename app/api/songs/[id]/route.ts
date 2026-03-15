@@ -41,7 +41,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ data })
-})
+}, { requirePermissions: ['can_manage_songs'] })
 
 // DELETE /api/songs/[id] — delete song (admins only)
 export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
@@ -57,4 +57,4 @@ export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   return NextResponse.json({ success: true })
-})
+}, { requirePermissions: ['can_manage_songs'] })

@@ -175,7 +175,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/funds">
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             </Button>
           </CardHeader>
@@ -220,7 +220,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/donations">
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             </Button>
           </CardHeader>
@@ -270,7 +270,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/expenses">
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             </Button>
           </CardHeader>
@@ -288,7 +288,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm">{formatCurrency(e.amount, e.currency, locale)}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${expenseStatusColor[e.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {e.status}
+                        {t(`expenseStatus.${e.status}`)}
                       </span>
                     </div>
                   </div>
@@ -307,7 +307,7 @@ async function DashboardContent({ churchId, defaultCurrency }: { churchId: strin
             </CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/finance/campaigns">
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             </Button>
           </CardHeader>

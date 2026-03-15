@@ -23,80 +23,56 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 }, { requirePermissions: ['can_view_finances'] })
 
 // PATCH /api/finance/transactions/[id] — update transaction
-// Re-validates double-entry balance after line item changes
+// Uses atomic RPC to prevent data loss if line item insert fails (ARCH-6)
+// RPC also enforces posted/approved immutability check (ARCH-7)
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const body = validate(UpdateTransactionSchema, await req.json())
   const txnId = params!.id
 
-  // If line_items are being updated, re-validate double-entry balance
-  if (body.line_items && body.line_items.length > 0) {
-    const totalDebits = body.line_items.reduce((sum, li) => sum + (li.debit_amount ?? 0), 0)
-    const totalCredits = body.line_items.reduce((sum, li) => sum + (li.credit_amount ?? 0), 0)
+  // Atomic RPC: header update + line item replacement in single DB transaction
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    'update_transaction_with_items',
+    {
+      p_transaction_id: txnId,
+      p_church_id: profile.church_id,
+      p_description: body.description ?? null,
+      p_transaction_date: body.transaction_date ?? null,
+      p_reference_number: body.reference_number ?? null,
+      p_memo: body.memo ?? null,
+      p_status: body.status ?? null,
+      p_items: body.line_items ? JSON.stringify(body.line_items) : null,
+    }
+  )
 
-    if (Math.abs(totalDebits - totalCredits) > 0.01) {
+  if (rpcError) {
+    // Balance validation errors surface as RAISE EXCEPTION from the RPC
+    if (rpcError.message?.includes('does not balance')) {
       return Response.json(
-        {
-          error: 'Transaction is not balanced',
-          details: { debits: totalDebits, credits: totalCredits },
-        },
+        { error: 'Transaction is not balanced' },
         { status: 422 }
       )
     }
-
-    // Delete old line items and insert new ones
-    const { error: deleteError } = await supabase
-      .from('transaction_line_items')
-      .delete()
-      .eq('transaction_id', txnId)
-      .eq('church_id', profile.church_id)
-
-    if (deleteError) throw deleteError
-
-    const items = body.line_items.map(li => ({
-      ...li,
-      transaction_id: txnId,
-      church_id: profile.church_id,
-    }))
-
-    const { error: insertError } = await supabase
-      .from('transaction_line_items')
-      .insert(items)
-
-    if (insertError) throw insertError
-  }
-
-  // Update transaction header (exclude line_items from header update)
-  const { line_items: _lineItems, ...headerUpdates } = body
-
-  if (Object.keys(headerUpdates).length > 0) {
-    const { data, error } = await supabase
-      .from('financial_transactions')
-      .update(headerUpdates)
-      .eq('id', txnId)
-      .eq('church_id', profile.church_id)
-      .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency')
-      .single()
-
-    if (error || !data) {
-      return Response.json({ error: 'Not found' }, { status: 404 })
-    }
-
-    revalidateTag(`dashboard-${profile.church_id}`)
-    return Response.json({ data })
-  }
-
-  // If only line items were updated, re-fetch the full transaction
-  const { data: refreshed, error: refreshError } = await supabase
-    .from('financial_transactions')
-    .select('id, reference_number, transaction_date, description, memo, status, total_amount, currency')
-    .eq('id', txnId)
-    .eq('church_id', profile.church_id)
-    .single()
-
-  if (refreshError) {
-    logger.error('[/api/finance/transactions/[id] PATCH]', { module: 'finance', error: refreshError })
+    logger.error('[/api/finance/transactions/[id] PATCH] RPC error', {
+      module: 'finance',
+      error: rpcError,
+    })
     return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
+
+  // RPC returns { error, status } for domain errors, { status, data } for success
+  const result = rpcResult as Record<string, unknown>
+
+  if (result.error === 'not_found') {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  if (result.error === 'posted_transaction_immutable') {
+    return Response.json(
+      { error: 'Cannot modify a posted or approved transaction' },
+      { status: 422 }
+    )
+  }
+
   revalidateTag(`dashboard-${profile.church_id}`)
-  return Response.json({ data: refreshed })
+  return Response.json({ data: result.data })
 }, { requirePermissions: ['can_manage_finances'] })

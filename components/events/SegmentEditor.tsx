@@ -254,7 +254,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Worship, Sermon, Offering"
+                placeholder={t('segmentTitlePlaceholder')}
                 dir="auto"
                 className="text-base"
               />
@@ -302,7 +302,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                 rows={2}
                 dir="auto"
                 className="text-base"
-                placeholder="e.g., Pastor to prepare communion intro"
+                placeholder={t('segmentNotesPlaceholder')}
               />
             </div>
             <div>

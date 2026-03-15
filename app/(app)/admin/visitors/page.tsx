@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { VisitorQueue } from '@/components/visitors/VisitorQueue'
 import { getTranslations } from 'next-intl/server'
+import type { Visitor } from '@/types'
 
 export default async function AdminVisitorsPage() {
   const user = await requirePermission('can_view_visitors')
@@ -18,19 +19,21 @@ export default async function AdminVisitorsPage() {
   const [visitorsResult, leadersResult] = await Promise.all([
     supabase
       .from('visitors')
-      .select('*, assigned_profile:assigned_to(id,first_name,last_name,first_name_ar,last_name_ar)')
+      .select('id, church_id, first_name, last_name, first_name_ar, last_name_ar, phone, email, age_range, how_heard, occupation, visited_at, status, assigned_to, contacted_at, contact_notes, escalated_at, converted_to, created_at, updated_at, assigned_profile:assigned_to(id,first_name,last_name,first_name_ar,last_name_ar)')
+      .eq('church_id', user.profile.church_id)
       .neq('status', 'converted')
       .order('visited_at', { ascending: false }),
     supabase
       .from('profiles')
       .select('id,first_name,last_name,first_name_ar,last_name_ar')
+      .eq('church_id', user.profile.church_id)
       .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
       .eq('status', 'active')
       .order('first_name'),
   ])
 
-  const visitors = visitorsResult.data
-  const leaders = leadersResult.data
+  const visitors = (visitorsResult.data ?? []) as unknown as Visitor[]
+  const leaders = leadersResult.data ?? []
 
   const now = Date.now()
   const slaMs = slaHours * 60 * 60 * 1000

@@ -57,6 +57,20 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
   const validated = validate(CreateExpenseSchema, body)
 
+  // QUAL-24: Verify fund_id, account_id, ministry_id belong to user's church
+  if (validated.fund_id) {
+    const { data: fund } = await supabase.from('funds').select('id').eq('id', validated.fund_id).eq('church_id', profile.church_id).single()
+    if (!fund) return Response.json({ error: 'Invalid fund' }, { status: 400 })
+  }
+  if (validated.account_id) {
+    const { data: account } = await supabase.from('accounts').select('id').eq('id', validated.account_id).eq('church_id', profile.church_id).single()
+    if (!account) return Response.json({ error: 'Invalid account' }, { status: 400 })
+  }
+  if (validated.ministry_id) {
+    const { data: ministry } = await supabase.from('ministries').select('id').eq('id', validated.ministry_id).eq('church_id', profile.church_id).single()
+    if (!ministry) return Response.json({ error: 'Invalid ministry' }, { status: 400 })
+  }
+
   const { data, error } = await supabase
     .from('expense_requests')
     .insert({

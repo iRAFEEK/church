@@ -3,6 +3,9 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/messaging/dispatcher'
 import { TEMPLATES, interpolate } from '@/lib/messaging/templates'
 import { verifyCronAuth } from '@/lib/api/cron-auth'
+import { logger } from '@/lib/logger'
+
+const NOTIFICATION_BATCH_SIZE = 25
 
 export async function GET(req: NextRequest) {
   const authError = verifyCronAuth(req)
@@ -36,6 +39,7 @@ export async function GET(req: NextRequest) {
   const alreadySent = new Set(existing?.map(e => e.reference_id) || [])
 
   let sent = 0
+  let failed = 0
   const template = TEMPLATES.event_reminder
 
   for (const event of events) {
@@ -57,22 +61,41 @@ export async function GET(req: NextRequest) {
       minute: '2-digit',
     })
 
-    for (const reg of registrations) {
-      await sendNotification({
-        profileId: reg.profile_id!,
-        churchId: event.church_id,
-        type: 'event_reminder',
-        titleEn: template.titleEn,
-        titleAr: template.titleAr,
-        bodyEn: interpolate(template.bodyEn, { eventName, time }),
-        bodyAr: interpolate(template.bodyAr, { eventName, time }),
-        referenceId: event.id,
-        referenceType: 'event',
-        data: { eventName, time },
-      })
-      sent++
+    // Send notifications in batches to avoid Vercel timeout
+    for (let i = 0; i < registrations.length; i += NOTIFICATION_BATCH_SIZE) {
+      const batch = registrations.slice(i, i + NOTIFICATION_BATCH_SIZE)
+      const results = await Promise.allSettled(
+        batch.map(reg =>
+          sendNotification({
+            profileId: reg.profile_id!,
+            churchId: event.church_id,
+            type: 'event_reminder',
+            titleEn: template.titleEn,
+            titleAr: template.titleAr,
+            bodyEn: interpolate(template.bodyEn, { eventName, time }),
+            bodyAr: interpolate(template.bodyAr, { eventName, time }),
+            referenceId: event.id,
+            referenceType: 'event',
+            data: { eventName, time },
+          })
+        )
+      )
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          sent++
+        } else {
+          failed++
+          logger.error('Event reminder notification failed', {
+            module: 'cron',
+            churchId: event.church_id,
+            route: '/api/cron/event-reminders',
+            error: result.reason,
+          })
+        }
+      }
     }
   }
 
-  return NextResponse.json({ sent, events: events.length })
+  return NextResponse.json({ sent, failed, events: events.length })
 }

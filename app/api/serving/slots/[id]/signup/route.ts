@@ -3,75 +3,28 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 
 // POST /api/serving/slots/[id]/signup — sign up for a slot
+// DB-4 fix: uses atomic Postgres function with SELECT FOR UPDATE to prevent
+// race conditions on capacity checks and duplicate signups
 export const POST = apiHandler(async ({ supabase, user, profile, params }) => {
   const slotId = params!.id
 
-  // Check if already signed up
-  const { data: existing } = await supabase
-    .from('serving_signups')
-    .select('id, status')
-    .eq('slot_id', slotId)
-    .eq('profile_id', user.id)
-    .eq('church_id', profile.church_id)
-    .single()
-
-  if (existing && existing.status !== 'cancelled') {
-    return NextResponse.json({ error: 'Already signed up' }, { status: 409 })
-  }
-
-  // Check capacity — also verify slot belongs to this church
-  const { data: slot } = await supabase
-    .from('serving_slots')
-    .select('max_volunteers')
-    .eq('id', slotId)
-    .eq('church_id', profile.church_id)
-    .single()
-
-  if (!slot) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  }
-
-  if (slot.max_volunteers) {
-    const { count } = await supabase
-      .from('serving_signups')
-      .select('id', { count: 'exact', head: true })
-      .eq('slot_id', slotId)
-      .eq('church_id', profile.church_id)
-      .neq('status', 'cancelled')
-
-    if ((count || 0) >= slot.max_volunteers) {
-      return NextResponse.json({ error: 'Slot is full' }, { status: 409 })
-    }
-  }
-
-  // If previously cancelled, re-activate
-  if (existing && existing.status === 'cancelled') {
-    const { data, error } = await supabase
-      .from('serving_signups')
-      .update({ status: 'signed_up', signed_up_at: new Date().toISOString(), cancelled_at: null })
-      .eq('id', existing.id)
-      .eq('church_id', profile.church_id)
-      .select('id, slot_id, profile_id, church_id, status, signed_up_at')
-      .single()
-
-    if (error) throw error
-    revalidateTag(`dashboard-${profile.church_id}`)
-    return { data }
-  }
-
-  const { data, error } = await supabase
-    .from('serving_signups')
-    .insert({
-      slot_id: slotId,
-      church_id: profile.church_id,
-      profile_id: user.id,
+  const { data: result, error } = await supabase
+    .rpc('signup_for_serving_slot', {
+      p_slot_id: slotId,
+      p_profile_id: user.id,
+      p_church_id: profile.church_id,
     })
-    .select('id, slot_id, profile_id, church_id, status, signed_up_at')
-    .single()
 
   if (error) throw error
+
+  const parsed = result as { error?: string; status: number; data?: Record<string, unknown> }
+
+  if (parsed.error) {
+    return NextResponse.json({ error: parsed.error }, { status: parsed.status })
+  }
+
   revalidateTag(`dashboard-${profile.church_id}`)
-  return Response.json({ data }, { status: 201 })
+  return Response.json({ data: parsed.data }, { status: parsed.status })
 })
 
 // DELETE /api/serving/slots/[id]/signup — cancel own signup

@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { CreateGatheringPrayerSchema } from '@/lib/schemas/gathering'
 
-export const GET = apiHandler(async ({ supabase, profile, params }) => {
+export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
   const gathering_id = params?.id
   if (!gathering_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -24,6 +24,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
     .eq('gathering_id', gathering_id)
     .eq('church_id', profile.church_id)
+    .or(`is_private.eq.false,submitted_by.eq.${user.id}`)
     .order('created_at', { ascending: true })
 
   if (error) {

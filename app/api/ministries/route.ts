@@ -4,6 +4,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateMinistrySchema } from '@/lib/schemas/ministry'
 import { normalizeSearch } from '@/lib/utils/normalize'
+import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
 // GET /api/ministries — list ministries for the current church
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
@@ -18,9 +19,10 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
     .order('name')
 
   if (q) {
-    const normalized = normalizeSearch(q)
-    const parts = [`name.ilike.%${q}%`, `name_ar.ilike.%${q}%`]
-    if (normalized !== q) {
+    const escaped = sanitizeLikePattern(q)
+    const normalized = normalizeSearch(escaped)
+    const parts = [`name.ilike.%${escaped}%`, `name_ar.ilike.%${escaped}%`]
+    if (normalized !== escaped) {
       parts.push(`name.ilike.%${normalized}%`, `name_ar.ilike.%${normalized}%`)
     }
     query = query.or(parts.join(','))

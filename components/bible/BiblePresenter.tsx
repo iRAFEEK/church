@@ -192,7 +192,7 @@ export function BiblePresenter({
         setGoToChapterId(chapterId)
       }
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     } finally {
       setGoToLoading(false)
     }
@@ -319,7 +319,7 @@ export function BiblePresenter({
         setShowGoTo(false)
       }
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     } finally {
       setGoToLoading(false)
     }

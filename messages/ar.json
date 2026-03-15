@@ -161,7 +161,17 @@
     "toastError": "حدث خطأ",
     "toastSuccess": "أهلاً بك!",
     "toastSuccessDesc": "تم إنشاء ملفك الشخصي بنجاح",
-    "backToLogin": "العودة لتسجيل الدخول"
+    "backToLogin": "العودة لتسجيل الدخول",
+    "searchChurchPlaceholder": "ابحث باسم الكنيسة…",
+    "findYourChurch": "ابحث عن كنيستك",
+    "findYourChurchDesc": "ابحث عن كنيستك للانضمام إليها على إكليسيا. يمكنك الانضمام لأكثر من كنيسة.",
+    "searchPlaceholder": "اكتب اسم كنيستك للبحث",
+    "noChurchesFound": "لم يتم العثور على كنائس لـ \"{query}\"",
+    "registerNewChurch": "تسجيل كنيسة جديدة",
+    "joinedChurch": "تم الانضمام إلى {churchName}!",
+    "joined": "تم الانضمام",
+    "couldNotJoin": "تعذر الانضمام إلى الكنيسة",
+    "join": "انضمام"
   },
   "error": {
     "title": "حدث خطأ",
@@ -850,7 +860,8 @@
     "markAllRead": "تحديد الكل كمقروء",
     "loading": "جارٍ التحميل...",
     "emptyTitle": "لا جديد",
-    "emptyBody": "ليس لديك إشعارات حالياً."
+    "emptyBody": "ليس لديك إشعارات حالياً.",
+    "errorGeneral": "حدث خطأ. يرجى المحاولة مرة أخرى."
   },
   "notificationsPage": {
     "title": "الإشعارات",
@@ -1012,7 +1023,8 @@
     "staffing": "التعيينات",
     "rolePresetSelect": "اختيار سريع للدور",
     "confirmRemoveNeedTitle": "إزالة احتياج خدمة",
-    "confirmRemoveNeedBody": "هل أنت متأكد من إزالة هذا الاحتياج؟"
+    "confirmRemoveNeedBody": "هل أنت متأكد من إزالة هذا الاحتياج؟",
+    "serviceNotesPlaceholder": "مثال: ٢ مصوّرين، ١ مهندس صوت"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1093,7 +1105,13 @@
     "confirmRemove": "إزالة",
     "moveUp": "تحريك لأعلى",
     "moveDown": "تحريك لأسفل",
-    "removeSegment": "حذف الفقرة"
+    "removeSegment": "حذف الفقرة",
+    "segmentTitlePlaceholder": "مثال: تسبيح، عظة، تقدمات",
+    "segmentNotesPlaceholder": "مثال: تحضير مقدمة التناول مع القس",
+    "templateNamePlaceholder": "مثال: خدمة صباح الأحد",
+    "templateNameArPlaceholder": "مثال: خدمة الأحد",
+    "templateNotesPlaceholder": "مثال: تذكير القس بالتناول، تحضير كراسي إضافية",
+    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣"
   },
   "songs": {
     "pageTitle": "الترانيم",
@@ -1384,7 +1402,8 @@
     "goTo": "الذهاب إلى",
     "searchBook": "ابحث عن سفر...",
     "decreaseFontSize": "تصغير حجم الخط",
-    "increaseFontSize": "تكبير حجم الخط"
+    "increaseFontSize": "تكبير حجم الخط",
+    "errorGeneral": "حدث خطأ. يرجى المحاولة مرة أخرى."
   },
   "notificationComposer": {
     "pageTitle": "إرسال إشعارات",
@@ -1703,7 +1722,9 @@
     "superAdminNote": "المسؤولون لديهم جميع الصلاحيات دائماً.",
     "userPermissionsTitle": "تخصيصات الصلاحيات",
     "userPermissionsDesc": "تبديل الصلاحيات. الأزرار المميزة تختلف عن الإعداد الافتراضي للدور.",
-    "memberNotFound": "العضو غير موجود."
+    "memberNotFound": "العضو غير موجود.",
+    "failedToLoadData": "فشل تحميل البيانات",
+    "searchMembersPlaceholder": "البحث عن عضو..."
   },
   "churchPrayer": {
     "pageTitle": "طلبات الصلاة",
@@ -1736,7 +1757,10 @@
     "noMembersFound": "لم يتم العثور على أعضاء",
     "assignedToMe": "مُعيَّنة لي",
     "emptyTitle": "لا توجد طلبات صلاة بعد",
-    "emptyBody": "قدّم طلب صلاة أعلاه وسيظهر هنا."
+    "emptyBody": "قدّم طلب صلاة أعلاه وسيظهر هنا.",
+    "deleteConfirmTitle": "حذف طلب الصلاة",
+    "deleteConfirmBody": "هل أنت متأكد من حذف طلب الصلاة هذا؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteConfirmCancel": "إلغاء"
   },
   "outreach": {
     "pageTitle": "التواصل",
@@ -1845,6 +1869,9 @@
     "lineDescription": "وصف البند",
     "totals": "المجاميع",
     "differenceWarning": "يجب أن يكون القيد متوازناً",
+    "difference": "الفرق",
+    "debit": "مدين",
+    "credit": "دائن",
     "saveJournalEntry": "حفظ القيد",
     "refNumber": "المرجع",
     "status": "الحالة",
@@ -1861,6 +1888,7 @@
     "quarterly": "ربع سنوي",
     "monthly": "شهري",
     "custom": "مخصص",
+    "none": "لا شيء",
     "fiscalYear": "السنة المالية",
     "startDate": "تاريخ البداية",
     "endDate": "تاريخ النهاية",
@@ -1915,6 +1943,12 @@
     "approved": "معتمد",
     "rejected": "مرفوض",
     "paid": "مدفوع",
+    "expenseStatus": {
+      "submitted": "مقدم",
+      "approved": "موافق عليه",
+      "rejected": "مرفوض",
+      "paid": "مدفوع"
+    },
     "chartOfAccounts": "دليل الحسابات",
     "newAccount": "حساب جديد",
     "code": "الرمز",
@@ -1955,8 +1989,15 @@
     "workflowSection": "سير العمل",
     "saveSettings": "حفظ الإعدادات",
     "settingsSaved": "تم حفظ الإعدادات",
-    "failedToSave": "فشل في حفظ الإعدادات",
-    "networkError": "خطأ في الشبكة — تعذر حفظ الإعدادات",
+    "failedToSave": "فشل في الحفظ",
+    "failedToSubmit": "فشل في الإرسال",
+    "failedToCreate": "فشل في الإنشاء",
+    "networkError": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+    "journalMustBalance": "يجب أن يكون القيد متوازناً (المدين = الدائن)",
+    "vendorNamePlaceholder": "اسم المورد",
+    "journalDescriptionPlaceholder": "وصف القيد المحاسبي...",
+    "internalMemoPlaceholder": "ملاحظة داخلية...",
+    "fundDescriptionPlaceholder": "وصف الصندوق...",
     "cash": "نقداً",
     "check": "شيك",
     "bankTransfer": "تحويل بنكي",

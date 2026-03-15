@@ -303,7 +303,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetName') || 'Role name'}
                         dir="ltr"
-                        className="h-8 text-xs flex-1"
+                        className="h-9 text-xs flex-1"
                       />
                       <Input
                         value={rp.role_ar}
@@ -314,7 +314,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                         }}
                         placeholder={t('rolePresetNameAr') || 'اسم الدور'}
                         dir="rtl"
-                        className="h-8 text-xs flex-1"
+                        className="h-9 text-xs flex-1"
                       />
                       <Input
                         type="number"
@@ -326,7 +326,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                           setRolePresets(updated)
                         }}
                         dir="ltr"
-                        className="h-8 text-xs w-16"
+                        className="h-9 text-xs w-16"
                       />
                       <button
                         type="button"
@@ -371,7 +371,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                 rows={2}
                 dir="auto"
                 className="text-base"
-                placeholder="e.g., 2 camera operators, 1 sound engineer"
+                placeholder={t('serviceNotesPlaceholder')}
               />
             </div>
             <div>

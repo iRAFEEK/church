@@ -98,7 +98,7 @@ export default function OutreachMemberDetailPage() {
       <div className="flex items-center gap-3">
         <Link href="/admin/outreach">
           <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 me-1" />
+            <ArrowLeft className="h-4 w-4 me-1 rtl:rotate-180" />
             {t('pageTitle')}
           </Button>
         </Link>

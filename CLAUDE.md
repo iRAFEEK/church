@@ -1,7 +1,7 @@
 # Ekklesia — Project Context
 
 > This file is auto-maintained. Every agent that completes a task must update the relevant sections.
-> Last updated: 2026-03-12 | Updated by: UX designer agent system
+> Last updated: 2026-03-15 | Updated by: Production readiness audit fixes
 
 ---
 
@@ -406,6 +406,13 @@ supabase/
 | 036 | seed_church_needs_test_data.sql | Test data: 2 additional churches + admins, 8 needs, 6 cross-church responses |
 | 042 | new_test_churches_and_needs.sql | 2 more test churches (Amman, Baghdad) + admins + 7 needs + 3 responses |
 | 043 | church_need_messages.sql | church_need_messages table for inter-church messaging threads on accepted responses |
+| 049 | constraints_and_atomic_signup.sql | Unique constraints on event_registrations + bible_bookmarks, atomic signup_for_serving_slot() RPC |
+| 050 | rls_hardening_and_index_fixes.sql | RLS policy hardening: self-role-escalation trigger, scoped push_tokens/notifications RLS, financial_transactions read/write split, index fixes, CHECK constraints on amounts, CASCADE→RESTRICT FKs |
+| 051 | atomic_transaction_update.sql | Atomic update_transaction_with_items() RPC with SELECT FOR UPDATE, balance validation, posted tx immutability |
+| 052 | idempotency.sql | Idempotency key columns for mutation tables |
+| 053 | rate_limit_user_based.sql | User-based rate limiting support |
+| 054 | finance_form_validation.sql | Finance FK validation constraints |
+| 055 | finance_atomic_rpcs.sql | Finance atomic RPC functions (create_transaction_with_items, activate_fiscal_year, switch_default_fund) |
 
 ---
 
@@ -632,12 +639,13 @@ Last measured: 2026-03-11
 - [x] Week 5 polish: P1: 62 console.error/warn/log → structured logger across 34 files. P2: churches/search migrated to apiHandler with new profileOptional support (all routes now on apiHandler). P3: ~100 more any types replaced across 25 files (dashboard queries, finance pages, serving, events, community). Only 11 intentional any remaining. 952 tests passing, 0 TS errors.
 - [x] UX critical fixes (Phase 1): 51 critical issues — dir="ltr" on ~40 currency amounts, rtl:rotate-180 on directional icons, ~50 hardcoded strings → t(), touch targets h-6→h-10/h-7→h-9, confirm()→AlertDialog, paddingInlineStart, locale-aware fmt(). 120+ keys. 52 files.
 - [x] UX full fixes (Phase 2): 207 remaining issues — pb-24 on ~76 pages, finance responsive (px-4 md:px-6, grid-cols-1 sm:grid-cols-3), 6 AlertDialog confirmations, mobile overflow (events/templates/songs/Bible headers stack on mobile, visitor mobile cards), 8 empty states with icons+CTAs, dir="auto" on ~20 inputs, text-base iOS zoom, aria-label on ~15 buttons, text-[9px]→text-xs in 23 files, Help FAB icon, landing mobile menu, tabs dir fix, role badge translation, SongForm steps, MySignups deleted, dev buttons hidden in prod. ~90 keys. 151 files.
+- [x] Production readiness audit — 60+ fixes across 4 waves: SEC (RLS hardening, PII stripping, sanitizeLikePattern, Zod on register, LIKE injection, cron auth), DB (unique constraints, atomic RPCs, CASCADE→RESTRICT, CHECK constraints, index fixes), ARCH (missing church_id filters, permission enforcement, atomic transaction updates), QUAL (double-submit guards, error.message leaks, double res.json(), finance FK validation), i18n (onboarding strings, BudgetForm placeholders, expense statuses, global-error bilingual), RTL (21 directional icons, Sheet component), UX (touch targets, prayer delete confirm), PERF (dashboard caching, conditional Sentry/Firebase, batched cron, error boundaries). 7 new migrations (049-055). 948 tests, 0 TS errors, 0 RTL violations.
 
 ### In Progress
 
 ### Pending / Not Started
 - [ ] Production deployment hardening
-- [ ] Apply migrations 022-043 to production Supabase project
+- [ ] Apply migrations 022-055 to production Supabase project
 - [ ] Lighthouse baseline on production URL
 - [ ] Sentry error monitoring (free tier)
 - [ ] Vercel Analytics + Speed Insights
@@ -836,6 +844,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
 | 2026-03-14 | UX full fixes (Phase 2) | 207 remaining issues: pb-24 on ~76 pages, finance responsive layout (13 pages), 6 AlertDialog confirmations, mobile overflow fixes (6 locations + visitor mobile cards), 8 empty states with icons/CTAs, dir="auto" on ~20 inputs, text-base iOS zoom, aria-label on ~15 buttons, text-[9px]→text-xs in 23 files, Help FAB icon, landing mobile menu, tabs dir fix, role badge translated, SongForm steps translated, MySignups deleted, dev buttons hidden. ~90 translation keys. | 151 files: ~76 page.tsx (pb-24), 13 finance pages (responsive), 6 components (dialogs), 11 components (overflow/cards), 22 components (a11y/dir-auto), 23 files (text sizes), 3 translation files |
+| 2026-03-15 | Production readiness audit | 60+ fixes in 4 parallel waves: 7 new migrations (049-055), RLS hardening (self-escalation trigger, scoped policies, CASCADE→RESTRICT), atomic RPCs (serving signup, transaction update), unique constraints (event_registrations, bible_bookmarks), upsert patterns, PII stripping on cross-church needs, sanitizeLikePattern on 5 search routes, finance FK validation (donations + expenses), double-submit guards on 8 forms, dashboard caching (unstable_cache 300s), conditional Sentry/Firebase imports, batched cron processing, error boundaries, 21 RTL icon fixes, bilingual global-error, BudgetForm i18n, onboarding error.message leak fix. 948 tests, 0 TS errors. | supabase/migrations/049-055, ~30 app/api/**/route.ts, 6 finance form files, lib/dashboard/queries.ts, lib/api/rate-limit.ts, lib/api/handler.ts, middleware.ts, app/global-error.tsx, app/onboarding/page.tsx, 15+ component files, messages/*.json |
 | 2026-03-14 | UX critical fixes (Phase 1) | 51 critical issues: dir="ltr" on ~40 currency amounts, rtl:rotate-180 on all directional icons, ~50 hardcoded strings → t(), touch targets enlarged (24-32px → 36-44px), confirm()→AlertDialog, paddingInlineStart, locale-aware fmt(), 2 pages fully translated. 120+ translation keys. | 52 files: 12 finance pages, 7 bible/songs, 7 auth/dashboard/permissions, 12 events/members/ministries, 6 prayer/notifications/visitors, 3 translation files |
 | 2026-03-14 | Week 5 polish | P1: 62 console calls → structured logger across 34 files. P2: churches/search migrated to apiHandler with profileOptional (all routes on apiHandler). P3: ~100 more any types replaced across 25 files. Only 11 intentional any remaining. 952 tests, 0 TS errors. | 34 app/api/**/route.ts, lib/api/handler.ts, lib/api/cron-auth.ts, 18 app/**/page.tsx, 4 components/**/*.tsx, 4 lib/dashboard/*.ts, 1 test file |
 | 2026-03-14 | Week 4 code quality | P1: 36 routes bounded with .limit() — zero unbounded list queries remain. P2: 25 routes narrowed from select('*') to specific columns — zero select('*') in API routes. P3: 33 mutation routes added revalidateTag for cache invalidation. P4: ~80 any types replaced with proper types across 26 files (dashboard queries, auth, scope, features, messaging providers, Bible, events, serving components). 952 tests, 0 TS errors. | 54 app/api/**/route.ts, 14 components/**/*.tsx, 8 lib/**/*.ts, 1 test file |

@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { rateLimitSensitive } from '@/lib/api/rate-limit'
+import { validate } from '@/lib/api/validate'
+import { ValidationError } from '@/lib/api/handler'
+import { ChurchRegistrationSchema } from '@/lib/schemas/church'
 import { logger } from '@/lib/logger'
-
-interface LeaderEntry {
-  name: string
-  nameAr: string
-  title: string
-  titleAr: string
-}
 
 export async function POST(request: NextRequest) {
   const limited = rateLimitSensitive(request)
@@ -16,6 +12,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+
+    let validated
+    try {
+      validated = validate(ChurchRegistrationSchema, body)
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        return NextResponse.json(
+          { error: err.message, ...(err.fields ? { fields: err.fields } : {}) },
+          { status: 422 }
+        )
+      }
+      throw err
+    }
+
     const {
       email,
       password,
@@ -28,34 +38,7 @@ export async function POST(request: NextRequest) {
       defaultBibleId,
       welcomeMessage,
       leaders,
-    } = body as {
-      email: string
-      password: string
-      churchNameAr: string
-      churchNameEn?: string
-      country: string
-      timezone: string
-      primaryLanguage?: string
-      denomination?: string
-      defaultBibleId?: string
-      welcomeMessage?: string
-      leaders?: LeaderEntry[]
-    }
-
-    // Validate required fields
-    if (!email || !password || !churchNameAr || !country || !timezone) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
-        { status: 400 }
-      )
-    }
+    } = validated
 
     const supabase = await createAdminClient()
 

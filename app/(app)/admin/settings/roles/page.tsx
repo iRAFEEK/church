@@ -45,7 +45,7 @@ export default function RoleDefaultsPage() {
         }
       } catch (e) {
         if (e instanceof Error && e.name !== 'AbortError') {
-          toast.error(isRTL ? 'فشل تحميل البيانات' : 'Failed to load data')
+          toast.error(t('failedToLoadData'))
         }
       } finally {
         if (!controller.signal.aborted) setLoading(false)

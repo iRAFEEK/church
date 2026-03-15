@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { analytics } from '@/lib/analytics'
 import posthog from 'posthog-js'
 
-export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function FinanceError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const t = useTranslations('error')
   const pathname = usePathname()
   useEffect(() => {

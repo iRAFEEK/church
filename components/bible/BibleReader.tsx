@@ -134,7 +134,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
         body: JSON.stringify({ preferred_bible_id: newBibleId }),
       }).catch(() => {})
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     } finally {
       setVersionLoading(false)
     }
@@ -159,7 +159,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } catch {
       setChapterContent(null)
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     } finally {
       setLoading(false)
     }
@@ -201,7 +201,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       const json = await res.json()
       setHighlights(json.data || [])
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     }
   }, [chapterContent])
 
@@ -211,7 +211,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
       const json = await res.json()
       setBookmarks(json.data || [])
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error(t('errorGeneral'))
     }
   }, [])
 

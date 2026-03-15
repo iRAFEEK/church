@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl'
 export default function NewFundPage() {
   const router = useRouter()
   const t = useTranslations('finance')
+  const submittingRef = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -26,33 +27,41 @@ export default function NewFundPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true); setError('')
 
-    const res = await fetch('/api/finance/funds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        target_amount: form.target_amount ? parseFloat(form.target_amount) : null,
-      }),
-    })
+    try {
+      const res = await fetch('/api/finance/funds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          target_amount: form.target_amount ? parseFloat(form.target_amount) : null,
+        }),
+      })
 
-    if (!res.ok) {
-      const err = await res.json()
-      setError(err.error || 'Failed to create fund')
+      if (!res.ok) {
+        const err = await res.json()
+        setError(err.error || t('failedToCreate'))
+        return
+      }
+
+      router.push('/admin/finance/funds')
+      router.refresh()
+    } catch {
+      setError(t('networkError'))
+    } finally {
+      submittingRef.current = false
       setLoading(false)
-      return
     }
-
-    router.push('/admin/finance/funds')
-    router.refresh()
   }
 
   return (
     <div className="px-4 py-4 md:px-6 max-w-xl mx-auto space-y-6 pb-24">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/finance/funds"><ArrowLeft className="w-4 h-4" /></Link>
+          <Link href="/admin/finance/funds"><ArrowLeft className="w-4 h-4 rtl:rotate-180" /></Link>
         </Button>
         <h1 className="text-xl font-bold">{t('newFund')}</h1>
       </div>
@@ -75,7 +84,7 @@ export default function NewFundPage() {
               <Label>{t('description')}</Label>
               <textarea value={form.description} onChange={e => set('description', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none"
-                placeholder="Fund description..." />
+                placeholder={t('fundDescriptionPlaceholder')} />
               <textarea value={form.description_ar} onChange={e => set('description_ar', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none mt-1"
                 placeholder="الوصف بالعربية..." dir="rtl" />
@@ -106,7 +115,7 @@ export default function NewFundPage() {
                 {loading ? t('creating') : t('createFund')}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/admin/finance/funds">Cancel</Link>
+                <Link href="/admin/finance/funds">{t('cancel')}</Link>
               </Button>
             </div>
           </form>

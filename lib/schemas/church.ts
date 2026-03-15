@@ -1,5 +1,28 @@
 import { z } from 'zod'
 
+const LeaderEntrySchema = z.object({
+  name: z.string().max(200).trim().optional().default(''),
+  nameAr: z.string().max(200).trim().optional().default(''),
+  title: z.string().max(200).trim().optional().default(''),
+  titleAr: z.string().max(200).trim().optional().default(''),
+})
+
+export const ChurchRegistrationSchema = z.object({
+  email: z.string().email().max(255),
+  password: z.string().min(8).max(128),
+  churchNameAr: z.string().min(2).max(200).trim(),
+  churchNameEn: z.string().max(200).trim().optional(),
+  country: z.string().min(2).max(100).trim(),
+  timezone: z.string().max(100).trim().optional(),
+  primaryLanguage: z.enum(['ar', 'en']).default('ar'),
+  denomination: z.string().max(100).trim().optional(),
+  defaultBibleId: z.string().max(100).optional(),
+  welcomeMessage: z.string().max(2000).trim().optional(),
+  leaders: z.array(LeaderEntrySchema).max(20).optional(),
+})
+
+export type ChurchRegistrationInput = z.infer<typeof ChurchRegistrationSchema>
+
 export const JoinChurchSchema = z.object({
   church_id: z.string().uuid('Invalid church ID'),
 })

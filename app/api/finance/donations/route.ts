@@ -65,6 +65,44 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
 
   const baseAmount = validated.amount * (validated.exchange_rate ?? 1)
 
+  // QUAL-6: Verify fund_id and campaign_id belong to user's church before insert
+  if (validated.fund_id) {
+    const { data: fund } = await supabase
+      .from('funds')
+      .select('id')
+      .eq('id', validated.fund_id)
+      .eq('church_id', profile.church_id)
+      .single()
+    if (!fund) return NextResponse.json({ error: 'Invalid fund' }, { status: 400 })
+  }
+  if (validated.campaign_id) {
+    const { data: campaign } = await supabase
+      .from('campaigns')
+      .select('id')
+      .eq('id', validated.campaign_id)
+      .eq('church_id', profile.church_id)
+      .single()
+    if (!campaign) return NextResponse.json({ error: 'Invalid campaign' }, { status: 400 })
+  }
+  if (validated.batch_id) {
+    const { data: batch } = await supabase
+      .from('deposit_batches')
+      .select('id')
+      .eq('id', validated.batch_id)
+      .eq('church_id', profile.church_id)
+      .single()
+    if (!batch) return NextResponse.json({ error: 'Invalid batch' }, { status: 400 })
+  }
+  if (validated.donor_id) {
+    const { data: donor } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', validated.donor_id)
+      .eq('church_id', profile.church_id)
+      .single()
+    if (!donor) return NextResponse.json({ error: 'Invalid donor' }, { status: 400 })
+  }
+
   const { data, error } = await supabase
     .from('donations')
     .insert({
@@ -100,5 +138,6 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   }
   revalidateTag(`dashboard-${profile.church_id}`)
   revalidateTag(`funds-${profile.church_id}`)
+  revalidateTag(`campaigns-${profile.church_id}`)
   return NextResponse.json({ data }, { status: 201 })
 }, { requirePermissions: ['can_manage_finances'] })

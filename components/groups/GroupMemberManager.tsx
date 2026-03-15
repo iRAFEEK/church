@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -52,6 +52,7 @@ export function GroupMemberManager({
   const [addOpen, setAddOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const submittingRef = useRef(false)
 
   const memberIds = new Set(members.map(m => m.profile?.id))
   const available = allMembers.filter(p => {
@@ -67,6 +68,8 @@ export function GroupMemberManager({
   })
 
   async function addMember(profile: Profile) {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     try {
       const res = await fetch(`/api/groups/${groupId}/members`, {
@@ -82,12 +85,15 @@ export function GroupMemberManager({
     } catch {
       toast.error(t('toastError'))
     } finally {
+      submittingRef.current = false
       setLoading(false)
     }
   }
 
   async function removeMember(member: Member) {
     if (!member.profile) return
+    if (submittingRef.current) return
+    submittingRef.current = true
     try {
       const res = await fetch(`/api/groups/${groupId}/members`, {
         method: 'DELETE',
@@ -99,6 +105,8 @@ export function GroupMemberManager({
       toast.success(t('toastRemoved'))
     } catch {
       toast.error(t('toastError'))
+    } finally {
+      submittingRef.current = false
     }
   }
 
