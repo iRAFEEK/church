@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield, MapPin, Home } from 'lucide-react'
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
-import { MemberInvolvementCard } from '@/components/profile/MemberInvolvementCard'
+import { ConnectionSummary } from '@/components/profile/ConnectionSummary'
 import { MemberPermissionEditor } from '@/components/permissions/MemberPermissionEditor'
 import { getTranslations, getLocale } from 'next-intl/server'
 import type { Profile, ProfileMilestone } from '@/types'
@@ -229,11 +229,18 @@ export default async function MemberDetailPage({
           </Card>
         </TabsContent>
 
-        {/* Involvement Tab */}
+        {/* Involvement / Connection Summary Tab */}
         <TabsContent value="involvement">
           <Card>
-            <CardContent className="pt-6">
-              <MemberInvolvementCard profileId={memberProfile.id} />
+            <CardHeader>
+              <CardTitle className="text-base">{t('tabConnections')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ConnectionSummary
+                profileId={memberProfile.id}
+                churchId={currentUser.church_id}
+                isAdmin={admin}
+              />
             </CardContent>
           </Card>
         </TabsContent>

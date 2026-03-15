@@ -28,14 +28,16 @@ type EventDetailClientProps = {
   event: EventData
   eventId: string
   isRegistered: boolean
+  registrationCount: number
 }
 
-export function EventDetailClient({ event, eventId, isRegistered: initialRegistered }: EventDetailClientProps) {
+export function EventDetailClient({ event, eventId, isRegistered: initialRegistered, registrationCount }: EventDetailClientProps) {
   const t = useTranslations('events')
   const locale = useLocale()
   const isRTL = locale.startsWith('ar')
   const [registered, setRegistered] = useState(initialRegistered)
   const [registering, setRegistering] = useState(false)
+  const isFull = event.capacity != null && registrationCount >= event.capacity
 
   const handleRegister = async () => {
     if (registering) return
@@ -87,6 +89,9 @@ export function EventDetailClient({ event, eventId, isRegistered: initialRegiste
         <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
         <div className="flex items-center gap-2 mt-2">
           <Badge variant="secondary">{t(`type_${event.event_type}`)}</Badge>
+          {isFull && (
+            <Badge variant="destructive">{t('eventFull')}</Badge>
+          )}
         </div>
       </div>
 
@@ -106,10 +111,11 @@ export function EventDetailClient({ event, eventId, isRegistered: initialRegiste
               {event.location}
             </span>
           )}
-          {event.capacity && (
+          {event.capacity != null && (
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
-              {t('capacityLabel')}: {event.capacity}
+              <span dir="ltr">{registrationCount}/{event.capacity}</span>
+              {t('registered')}
             </span>
           )}
         </div>
@@ -122,15 +128,26 @@ export function EventDetailClient({ event, eventId, isRegistered: initialRegiste
       <EventRunOfShow eventId={eventId} />
 
       {event.registration_required && (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-2">
           {registered ? (
             <Badge variant="outline" className="bg-green-100 text-green-800 px-4 py-2 text-sm">
               {t('youAreRegistered')}
             </Badge>
+          ) : isFull ? (
+            <Badge variant="destructive" className="px-4 py-2 text-sm">
+              {t('registrationClosed')}
+            </Badge>
           ) : (
-            <Button size="lg" onClick={handleRegister} disabled={registering} className="h-11">
-              {registering ? t('registering') : t('registerForEvent')}
-            </Button>
+            <>
+              <Button size="lg" onClick={handleRegister} disabled={registering} className="h-11">
+                {registering ? t('registering') : t('registerForEvent')}
+              </Button>
+              {event.capacity != null && (
+                <p className="text-xs text-muted-foreground">
+                  {t('spotsRemaining', { count: String(event.capacity - registrationCount) })}
+                </p>
+              )}
+            </>
           )}
         </div>
       )}

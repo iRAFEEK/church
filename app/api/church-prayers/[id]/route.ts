@@ -6,9 +6,47 @@ import { UpdatePrayerRequestSchema } from '@/lib/schemas/prayer'
 import { createAdminClient } from '@/lib/supabase/server'
 
 // PATCH /api/church-prayers/[id] — update prayer status
-export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
+// Admins with can_view_prayers can update any prayer.
+// Submitters can mark their own prayer as "answered" (self-service).
+export const PATCH = apiHandler(async ({ req, supabase, user, profile, params, resolvedPermissions }) => {
   const id = params!.id
   const body = validate(UpdatePrayerRequestSchema, await req.json())
+
+  // Use admin client to bypass RLS
+  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
+  try {
+    dbClient = await createAdminClient()
+  } catch {
+    dbClient = supabase
+  }
+
+  // Check if user is the submitter (for self-service "mark answered")
+  const { data: existing } = await dbClient
+    .from('prayer_requests')
+    .select('submitted_by')
+    .eq('id', id)
+    .eq('church_id', profile.church_id)
+    .is('group_id', null)
+    .single()
+
+  if (!existing) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  const isSubmitter = existing.submitted_by === user.id
+  const hasAdminPermission = resolvedPermissions.can_view_prayers
+
+  // Submitters can only mark as answered; admins can do anything
+  if (!isSubmitter && !hasAdminPermission) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  if (isSubmitter && !hasAdminPermission) {
+    // Submitters can only change status to 'answered'
+    if (body.status && body.status !== 'answered') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+  }
 
   const updates: Record<string, unknown> = {}
   if (body.status) {
@@ -18,14 +56,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     }
   }
   if (body.resolved_notes !== undefined) updates.resolved_notes = body.resolved_notes
-
-  // Use admin client to bypass RLS
-  let dbClient: Awaited<ReturnType<typeof createAdminClient>> | typeof supabase
-  try {
-    dbClient = await createAdminClient()
-  } catch {
-    dbClient = supabase
-  }
 
   const { data, error } = await dbClient
     .from('prayer_requests')
@@ -39,7 +69,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   if (error) throw error
   revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
-}, { requirePermissions: ['can_view_prayers'] })
+})
 
 // DELETE /api/church-prayers/[id] — delete a prayer request
 export const DELETE = apiHandler(async ({ supabase, user, profile, params, resolvedPermissions }) => {

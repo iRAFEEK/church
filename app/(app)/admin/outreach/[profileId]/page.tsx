@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogVisitDialog } from '@/components/outreach/LogVisitDialog'
 import { VisitHistoryList } from '@/components/outreach/VisitHistoryList'
+import { OutreachAssignmentPanel } from '@/components/outreach/OutreachAssignmentPanel'
+import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, MapPin, Phone, Loader2, Mail } from 'lucide-react'
 
 interface MemberProfile {
@@ -51,6 +53,7 @@ export default function OutreachMemberDetailPage() {
   const [visits, setVisits] = useState<Visit[]>([])
   const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   const fetchVisits = useCallback(async (signal?: AbortSignal) => {
     setLoading(true)
@@ -77,6 +80,15 @@ export default function OutreachMemberDetailPage() {
   useEffect(() => {
     const controller = new AbortController()
     fetchVisits(controller.signal)
+
+    // Fetch current user ID for assignment panel
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user && !controller.signal.aborted) {
+        setCurrentUserId(user.id)
+      }
+    })
+
     return () => controller.abort()
   }, [fetchVisits])
 
@@ -155,6 +167,15 @@ export default function OutreachMemberDetailPage() {
               <VisitHistoryList visits={visits} onDelete={handleDeleteVisit} />
             </CardContent>
           </Card>
+
+          {/* Outreach Assignments */}
+          {currentUserId && (
+            <OutreachAssignmentPanel
+              memberId={profileId}
+              currentUserId={currentUserId}
+              canManage={true}
+            />
+          )}
         </>
       )}
     </div>

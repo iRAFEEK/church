@@ -7,17 +7,25 @@ import { UpdateEventSchema } from '@/lib/schemas/event'
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const id = params!.id
 
-  const { data, error } = await supabase
-    .from('events')
-    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status, registration_required, registration_closes_at, notes, notes_ar, custom_field_values, created_by, created_at, event_visibility_targets(target_type, target_id)')
-    .eq('id', id)
-    .eq('church_id', profile.church_id)
-    .single()
+  const [{ data, error }, { count: registrationCount }] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, is_public, status, registration_required, registration_closes_at, notes, notes_ar, custom_field_values, created_by, created_at, event_visibility_targets(target_type, target_id)')
+      .eq('id', id)
+      .eq('church_id', profile.church_id)
+      .single(),
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id)
+      .eq('church_id', profile.church_id)
+      .neq('status', 'cancelled'),
+  ])
 
   if (error) throw error
   if (!data) return Response.json({ error: 'Not found' }, { status: 404 })
 
-  return { data }
+  return { data: { ...data, registration_count: registrationCount ?? 0 } }
 })
 
 // PATCH /api/events/[id] — update event
