@@ -19,6 +19,7 @@ interface EventCardProps {
     capacity: number | null
     is_public: boolean
     status: string
+    registration_count?: number
   }
   href: string
 }
@@ -30,6 +31,7 @@ export function EventCard({ event, href }: EventCardProps) {
 
   const title = isRTL ? (event.title_ar || event.title) : event.title
   const description = isRTL ? (event.description_ar || event.description) : event.description
+  const isFull = event.capacity != null && (event.registration_count ?? 0) >= event.capacity
 
   const startDate = new Date(event.starts_at)
   const dateStr = startDate.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', {
@@ -54,9 +56,14 @@ export function EventCard({ event, href }: EventCardProps) {
       <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-base line-clamp-1">{title}</h3>
-          <Badge variant="outline" className={statusColors[event.status] || ''}>
-            {t(`status_${event.status}`)}
-          </Badge>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isFull && (
+              <Badge variant="destructive">{t('eventFull')}</Badge>
+            )}
+            <Badge variant="outline" className={statusColors[event.status] || ''}>
+              {t(`status_${event.status}`)}
+            </Badge>
+          </div>
         </div>
 
         {description && (
@@ -78,10 +85,10 @@ export function EventCard({ event, href }: EventCardProps) {
               {event.location}
             </span>
           )}
-          {event.capacity && (
+          {event.capacity != null && (
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
-              {event.capacity}
+              <span dir="ltr">{event.registration_count ?? 0}/{event.capacity}</span>
             </span>
           )}
         </div>

@@ -313,7 +313,8 @@
     "roleSuperAdmin": "المسؤول الأعلى",
     "roleMinistryLeader": "قائد خدمة",
     "roleGroupLeader": "قائد مجموعة",
-    "roleMember": "عضو"
+    "roleMember": "عضو",
+    "tabConnections": "ملخص الارتباط"
   },
   "visitors": {
     "adminPageTitle": "قائمة الزوار",
@@ -419,13 +420,24 @@
     "dayThursday": "الخميس",
     "dayFriday": "الجمعة",
     "daySaturday": "السبت",
-    "daySunday": "الأحد"
+    "daySunday": "الأحد",
+    "requestToJoin": "طلب الانضمام",
+    "joinRequestSent": "تم إرسال طلب الانضمام!",
+    "joinRequestPending": "طلب قيد الانتظار",
+    "joinRequestError": "مقدرش أبعت الطلب",
+    "pendingJoinRequests": "طلبات انضمام معلقة",
+    "approveJoinRequest": "موافقة",
+    "rejectJoinRequest": "رفض",
+    "joinRequestApproved": "تم قبول العضو",
+    "joinRequestRejected": "تم رفض الطلب"
   },
   "groupForm": {
     "nameEn": "الاسم (إنجليزي) *",
     "nameEnPlaceholder": "Youth Group",
     "nameAr": "الاسم (عربي)",
     "nameArPlaceholder": "مجموعة الشباب",
+    "name": "الاسم",
+    "namePlaceholder": "اسم المجموعة",
     "type": "النوع",
     "ministry": "الخدمة",
     "ministryPlaceholder": "اختر خدمة",
@@ -538,7 +550,33 @@
     "createEvent": "إنشاء حدث",
     "searchPlaceholder": "ابحث في الخدمات..."
   },
+  "ministryMeetings": {
+    "title": "الاجتماعات",
+    "newMeeting": "اجتماع جديد",
+    "meetingTitle": "العنوان",
+    "meetingTitlePlaceholder": "موضوع الاجتماع...",
+    "dateTime": "التاريخ والوقت",
+    "location": "المكان",
+    "locationPlaceholder": "أوضة الاجتماعات...",
+    "notes": "ملاحظات",
+    "actionItems": "بنود العمل",
+    "addItem": "إضافة بند",
+    "actionItemPlaceholder": "إيه اللي محتاج يتعمل؟",
+    "unassigned": "مش مُسنَد",
+    "createMeeting": "إنشاء اجتماع",
+    "meetingCreated": "الاجتماع اتعمل",
+    "meetingError": "مقدرش أحفظ الاجتماع",
+    "noMeetings": "مفيش اجتماعات متحددة",
+    "upcoming": "جاي",
+    "openItems": "بنود مفتوحة",
+    "markDone": "خلص",
+    "markOpen": "فتح تاني"
+  },
   "ministryForm": {
+    "name": "الاسم",
+    "namePlaceholder": "اسم الخدمة",
+    "description": "الوصف",
+    "descriptionPlaceholder": "وصف هذه الخدمة...",
     "nameEn": "الاسم (إنجليزي)",
     "nameEnPlaceholder": "Youth Ministry",
     "nameAr": "الاسم (عربي)",
@@ -681,7 +719,25 @@
     "downloadButton": "تنزيل PNG",
     "printHint": "اطبع الرمز بحجم A5 أو A4 وضعه عند المدخل للحصول على أفضل نتيجة",
     "toastDownloaded": "تم تنزيل رمز QR",
-    "toastLinkCopied": "تم نسخ الرابط"
+    "toastLinkCopied": "تم نسخ الرابط",
+    "localhostWarning": "رابط QR بيشاور على localhost. حط NEXT_PUBLIC_APP_URL في البيئة على الدومين بتاعك قبل ما تشارك."
+  },
+  "visitorForm": {
+    "title": "حقول نموذج الزوار",
+    "description": "اختار الحقول اللي تظهر في نموذج تسجيل الزوار. الاسم الأول والأخير مطلوبين دايماً.",
+    "field_first_name": "الاسم الأول",
+    "field_last_name": "الاسم الأخير",
+    "field_phone": "رقم التليفون",
+    "field_email": "الإيميل",
+    "field_age_range": "الفئة العمرية",
+    "field_occupation": "المهنة",
+    "field_how_heard": "سمعت عننا إزاي؟",
+    "alwaysRequired": "مطلوب دايماً",
+    "required": "مطلوب",
+    "save": "حفظ إعدادات النموذج",
+    "saving": "بيتحفظ...",
+    "saveSuccess": "اتحفظت إعدادات النموذج",
+    "saveFailed": "مقدرش يحفظ إعدادات النموذج"
   },
   "join": {
     "pageTitle": "أهلاً وسهلاً",
@@ -718,7 +774,8 @@
     "validationLastName": "الاسم الأخير مطلوب",
     "validationEmail": "بريد إلكتروني غير صحيح",
     "errorGeneric": "حدث خطأ",
-    "errorUnexpected": "حدث خطأ غير متوقع"
+    "errorUnexpected": "حدث خطأ غير متوقع",
+    "validationRequired": "الحقل ده مطلوب"
   },
   "joinSuccess": {
     "title": "أهلاً بك في عائلتنا!",
@@ -904,6 +961,8 @@
     "noUpcomingEvents": "لا توجد فعاليات قادمة",
     "eventNotFound": "الفعالية غير موجودة",
     "loading": "جارٍ التحميل...",
+    "title": "العنوان *",
+    "description": "الوصف",
     "titleEn": "العنوان (بالإنجليزية) *",
     "titleAr": "العنوان (بالعربية)",
     "descriptionEn": "الوصف (بالإنجليزية)",
@@ -1024,7 +1083,15 @@
     "rolePresetSelect": "اختيار سريع للدور",
     "confirmRemoveNeedTitle": "إزالة احتياج خدمة",
     "confirmRemoveNeedBody": "متأكد إنك عايز تشيل الاحتياج ده؟",
-    "serviceNotesPlaceholder": "مثلاً: ٢ مصوّرين، ١ مهندس صوت"
+    "serviceNotesPlaceholder": "مثلاً: ٢ مصوّرين، ١ مهندس صوت",
+    "deleteEvent": "مسح الفعالية",
+    "deleteEventConfirm": "امسح",
+    "deleteEventDescription": "متأكد إنك عايز تمسح \"{title}\"؟ مش هتقدر ترجع فيها.",
+    "eventDeleted": "الفعالية اتمسحت",
+    "eventFull": "مكتمل",
+    "spotsRemaining": "{count} أماكن فاضية",
+    "registered": "مسجّل",
+    "registrationClosed": "التسجيل مقفول"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1457,7 +1524,10 @@
     "imageUrl": "رابط الصورة (اختياري)",
     "imageUrlPlaceholder": "https://example.com/image.jpg",
     "linkUrl": "رابط (اختياري)",
-    "linkUrlPlaceholder": "https://example.com/page"
+    "linkUrlPlaceholder": "https://example.com/page",
+    "sheetTitle": "ابعت إشعار",
+    "titlePlaceholder": "عنوان الإشعار...",
+    "bodyPlaceholder": "اكتب رسالة الإشعار..."
   },
   "bottomNav": {
     "home": "الرئيسية",
@@ -1697,7 +1767,20 @@
     "emptyGroups": "ليس عضواً في أي مجموعة أو خدمة",
     "emptyRegistrations": "لا توجد تسجيلات فعاليات بعد",
     "emptyOverview": "لا توجد بيانات مشاركة بعد",
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "connectionSummary": "ملخص الارتباط",
+    "activeServingRoles": "أدوار الخدمة",
+    "noGroups": "مش عضو في أي مجموعة لسه",
+    "noMinistries": "مش عضو في أي خدمة لسه",
+    "noServingRoles": "مفيش أدوار خدمة لسه",
+    "addToGroup": "إضافة لمجموعة",
+    "addToMinistry": "إضافة لخدمة",
+    "selectGroup": "اختار مجموعة",
+    "selectMinistry": "اختار خدمة",
+    "memberAdded": "تمت إضافة العضو بنجاح",
+    "errorLoad": "فشل في تحميل البيانات",
+    "errorAdd": "فشل في إضافة العضو",
+    "cancel": "إلغاء"
   },
   "eventVisibility": {
     "audienceLabel": "من يمكنه رؤية هذه الفعالية؟",
@@ -1760,7 +1843,33 @@
     "emptyBody": "قدّم طلب صلاة فوق وهيظهر هنا.",
     "deleteConfirmTitle": "حذف طلب الصلاة",
     "deleteConfirmBody": "متأكد إنك عايز تحذف طلب الصلاة ده؟ مش هتقدر ترجع فيه.",
-    "deleteConfirmCancel": "إلغاء"
+    "deleteConfirmCancel": "إلغاء",
+    "churchFeed": "طلبات الكنيسة",
+    "myRequests": "طلباتي",
+    "whatToPrayFor": "عايز نصلي من أجل إيه؟",
+    "visibility": "الظهور",
+    "visibilityPublic": "شارك مع الكنيسة",
+    "visibilityPublicHint": "اسمك هيبان لأعضاء الكنيسة",
+    "visibilityAnonymous": "شارك من غير اسمك",
+    "visibilityAnonymousHint": "طلبك هيتشارك بس من غير اسمك",
+    "visibilityPrivate": "خاص (للقادة بس)",
+    "visibilityPrivateHint": "بس قادة الكنيسة هيشوفوا الطلب ده",
+    "imPraying": "بصلي",
+    "praying": "بصلي",
+    "prayingCount": "{count, plural, one {شخص واحد بيصلي} two {شخصين بيصلوا} few {# أشخاص بيصلوا} many {# شخص بيصلي} other {# شخص بيصلي}}",
+    "aMember": "عضو في الكنيسة",
+    "emptyFeedTitle": "مفيش طلبات صلاة لسه",
+    "emptyFeedBody": "كن أول واحد يشارك طلب صلاة مع كنيستك.",
+    "loadMore": "حمّل أكتر",
+    "markedAsAnswered": "اتسجلت كصلاة مُستجابة",
+    "deleted": "اتحذف طلب الصلاة",
+    "error": {
+      "submit": "مقدرش يتبعت طلب الصلاة",
+      "load": "مقدرش يتحمّل الصلوات",
+      "update": "مقدرش يتحدّث الطلب",
+      "delete": "مقدرش يتحذف الطلب",
+      "pray": "مقدرش تتحدّث حالة الصلاة"
+    }
   },
   "outreach": {
     "pageTitle": "التواصل",
@@ -1799,7 +1908,22 @@
     "visitedBy": "زار بواسطة",
     "memberDetail": "تفاصيل العضو",
     "totalVisits": "إجمالي الزيارات",
-    "selectMember": "اختر عضواً"
+    "selectMember": "اختر عضواً",
+    "assignments": "مهام التواصل",
+    "assignOutreach": "تعيين مهمة تواصل",
+    "assignToMyself": "تعيين لنفسي",
+    "assignmentNotes": "ملاحظات",
+    "assign": "تعيين",
+    "assignedTo": "معيّن إلى",
+    "assignedBy": "معيّن بواسطة",
+    "pending": "قيد الانتظار",
+    "inProgress": "جاري العمل",
+    "completed": "مكتمل",
+    "cancelled": "ملغى",
+    "updateStatus": "تحديث الحالة",
+    "noAssignments": "لا توجد مهام تواصل بعد",
+    "assignmentCreated": "تم إنشاء المهمة",
+    "assignmentUpdated": "تم تحديث المهمة"
   },
   "settings": {
     "pageTitle": "الإعدادات",
@@ -1811,7 +1935,11 @@
     "languageEn": "English",
     "languageEnDesc": "الإنجليزية",
     "languageCurrent": "الحالية",
-    "languageSaved": "تم تحديث اللغة"
+    "languageSaved": "تم تحديث اللغة",
+    "qrCodeTitle": "رمز QR",
+    "qrCodeDesc": "اعمل رمز QR لتسجيل الزوار",
+    "rolePermissionsTitle": "صلاحيات الأدوار",
+    "rolePermissionsDesc": "ظبّط الصلاحيات لكل دور"
   },
   "SelectChurch": {
     "title": "اختار كنيسة",
@@ -1828,6 +1956,16 @@
   },
   "finance": {
     "cancel": "إلغاء",
+    "createAccount": "اعمل حساب",
+    "accountNamePlaceholder": "اسم الحساب",
+    "accountType_asset": "أصول",
+    "accountType_liability": "خصوم",
+    "accountType_equity": "حقوق ملكية",
+    "accountType_income": "إيرادات",
+    "accountType_expense": "مصروفات",
+    "displayOrder": "ترتيب العرض",
+    "isHeader": "حساب رئيسي (تجميع فئات)",
+    "isActive": "نشط",
     "next": "التالي",
     "failedToSave": "مقدرش يتحفظ",
     "failedToSubmit": "مقدرش يتبعت",
@@ -1846,6 +1984,43 @@
       "approved": "متوافق عليه",
       "rejected": "مرفوض",
       "paid": "مدفوع"
-    }
+    },
+    "monthlyGivingTrend": "اتجاه العطاء الشهري",
+    "topDonors": "أكبر المتبرعين (من أول السنة)",
+    "donor": "المتبرع",
+    "count": "العدد",
+    "anonymous": "مجهول",
+    "target": "الهدف",
+    "fund": "الصندوق",
+    "account": "الحساب",
+    "budgetAmount": "مبلغ الميزانية",
+    "budget": "الميزانية",
+    "noBudgetLines": "مفيش بنود ميزانية",
+    "noReportData": "مفيش بيانات مالية لسه. ابدأ سجّل تبرعات عشان تشوف التقارير.",
+    "jan": "يناير",
+    "feb": "فبراير",
+    "mar": "مارس",
+    "apr": "أبريل",
+    "may": "مايو",
+    "jun": "يونيو",
+    "jul": "يوليو",
+    "aug": "أغسطس",
+    "sep": "سبتمبر",
+    "oct": "أكتوبر",
+    "nov": "نوفمبر",
+    "dec": "ديسمبر"
+  },
+  "validation": {
+    "required": "الحقل ده مطلوب",
+    "nameRequired": "الاسم مطلوب",
+    "titleRequired": "العنوان مطلوب",
+    "dateRequired": "التاريخ مطلوب",
+    "timeRequired": "الوقت مطلوب",
+    "dayRequired": "اليوم مطلوب",
+    "frequencyRequired": "التكرار مطلوب",
+    "locationRequired": "المكان مطلوب",
+    "descriptionRequired": "الوصف مطلوب",
+    "selectRequired": "اختار حاجة من فضلك",
+    "fixErrors": "صلّح الأخطاء الأول قبل ما تكمّل"
   }
 }

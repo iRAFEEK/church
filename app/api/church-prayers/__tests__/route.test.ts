@@ -203,6 +203,90 @@ describe('POST /api/church-prayers', () => {
 })
 
 // ---------------------------------------------------------------------------
+// POST /api/church-prayers/[id]/pray (toggle "I'm Praying")
+// ---------------------------------------------------------------------------
+
+describe('POST /api/church-prayers/[id]/pray', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns 401 when unauthenticated', async () => {
+    const supa = buildSupabase({ user: null })
+    vi.mocked(createClient).mockResolvedValue(supa as any)
+
+    const { POST: PrayPOST } = await import('../../church-prayers/[id]/pray/route')
+
+    const req = makeRequest('/api/church-prayers/prayer-1/pray', {
+      method: 'POST',
+    })
+
+    const res = await PrayPOST(req, { params: Promise.resolve({ id: 'prayer-1' }) })
+
+    expect(res.status).toBe(401)
+    const json = await res.json()
+    expect(json.error).toBe('Unauthorized')
+  })
+
+  it('pray route filters by church_id in code', async () => {
+    const routeCode = await import('fs').then(fs =>
+      fs.readFileSync('app/api/church-prayers/[id]/pray/route.ts', 'utf-8')
+    )
+    // Must filter prayer_requests by church_id
+    expect(routeCode).toContain(".eq('church_id', profile.church_id)")
+    // Must use apiHandler
+    expect(routeCode).toContain('apiHandler')
+    // Must not leak error.message
+    expect(routeCode).not.toMatch(/error\.message/)
+  })
+})
+
+describe('DELETE /api/church-prayers/[id]/pray', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns 401 when unauthenticated', async () => {
+    const supa = buildSupabase({ user: null })
+    vi.mocked(createClient).mockResolvedValue(supa as any)
+
+    const { DELETE: PrayDELETE } = await import('../../church-prayers/[id]/pray/route')
+
+    const req = makeRequest('/api/church-prayers/prayer-1/pray', {
+      method: 'DELETE',
+    })
+
+    const res = await PrayDELETE(req, { params: Promise.resolve({ id: 'prayer-1' }) })
+
+    expect(res.status).toBe(401)
+    const json = await res.json()
+    expect(json.error).toBe('Unauthorized')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// GET /api/church-prayers?feed=true (community feed)
+// ---------------------------------------------------------------------------
+
+describe('GET /api/church-prayers?feed=true', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('feed endpoint code has church_id filter and pagination', async () => {
+    const routeCode = await import('fs').then(fs =>
+      fs.readFileSync('app/api/church-prayers/route.ts', 'utf-8')
+    )
+    // Must support feed param
+    expect(routeCode).toContain("get('feed')")
+    // Must paginate
+    expect(routeCode).toContain('.range(')
+    // Must filter non-private for regular members
+    expect(routeCode).toContain("eq('is_private', false)")
+  })
+})
+
+// ---------------------------------------------------------------------------
 // PATCH /api/church-prayers/[id]
 // ---------------------------------------------------------------------------
 

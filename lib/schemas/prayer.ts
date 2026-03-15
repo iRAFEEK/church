@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const CreateChurchPrayerSchema = z.object({
   content: z.string().min(1).max(2000),
   is_anonymous: z.boolean().optional().default(false),
+  is_private: z.boolean().optional().default(false),
 })
 
 export const UpdatePrayerRequestSchema = z.object({

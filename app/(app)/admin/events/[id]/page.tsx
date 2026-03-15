@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { EventRegistrations } from '@/components/events/EventRegistrations'
 import { InlineStaffingManager } from '@/components/events/InlineStaffingManager'
 import { EventRunOfShow } from '@/components/events/EventRunOfShow'
+import { EventDeleteButton } from '@/components/events/EventDeleteButton'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 
@@ -21,13 +22,24 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
   const isRTL = locale.startsWith('ar')
   const supabase = await createClient()
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, status')
-    .eq('id', id)
-    .single()
+  const [{ data: event }, { count: registrationCount }] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, status')
+      .eq('id', id)
+      .eq('church_id', user.profile.church_id)
+      .single(),
+    supabase
+      .from('event_registrations')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id)
+      .eq('church_id', user.profile.church_id)
+      .neq('status', 'cancelled'),
+  ])
 
   if (!event) notFound()
+
+  const isFull = event.capacity != null && (registrationCount ?? 0) >= event.capacity
 
   const title = isRTL ? (event.title_ar || event.title) : event.title
   const description = isRTL ? (event.description_ar || event.description) : event.description
@@ -53,19 +65,25 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant="outline" className={statusColors[event.status] || ''}>
               {t(`status_${event.status}`)}
             </Badge>
             <Badge variant="secondary">{t(`type_${event.event_type}`)}</Badge>
+            {isFull && (
+              <Badge variant="destructive">{t('eventFull')}</Badge>
+            )}
           </div>
         </div>
-        <Link href={`/admin/events/${id}/edit`}>
-          <Button variant="outline">{t('editEvent')}</Button>
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href={`/admin/events/${id}/edit`}>
+            <Button variant="outline" className="h-11">{t('editEvent')}</Button>
+          </Link>
+          <EventDeleteButton eventId={id} eventTitle={title} />
+        </div>
       </div>
 
       <div className="border rounded-lg p-4 space-y-3">
@@ -84,10 +102,11 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
               {event.location}
             </span>
           )}
-          {event.capacity && (
+          {event.capacity != null && (
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
-              {t('capacityLabel')}: {event.capacity}
+              <span dir="ltr">{registrationCount ?? 0}/{event.capacity}</span>
+              {t('registered')}
             </span>
           )}
         </div>

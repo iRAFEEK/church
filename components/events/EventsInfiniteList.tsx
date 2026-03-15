@@ -18,6 +18,7 @@ type Event = {
   capacity: number | null
   is_public: boolean
   status: string
+  registration_count?: number
 }
 
 interface Props {
