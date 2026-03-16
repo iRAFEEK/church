@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Pencil, Phone, Mail, Briefcase, Calendar, Star, Users, UserPlus, Heart, Music, Megaphone, Shield, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Pencil, Phone, Mail, Briefcase, Calendar, Star, Users, UserPlus, Heart, Music, Megaphone, Shield, ChevronRight, Crown } from 'lucide-react'
 import { AttendanceHistory } from '@/components/profile/AttendanceHistory'
 import { MemberInvolvementCard } from '@/components/profile/MemberInvolvementCard'
 import { getTranslations, getLocale } from 'next-intl/server'
@@ -33,21 +33,41 @@ export default async function ProfilePage() {
   const t = await getTranslations('profile')
   const locale = await getLocale()
 
-  // Run all queries in parallel — milestones, attendance, and admin counts together
   const isAdmin = profile.role === 'super_admin'
+  const isLeader = ['super_admin', 'ministry_leader', 'group_leader'].includes(profile.role)
 
-  const [milestonesRes, attendanceRes, ...adminResults] = await Promise.all([
-    supabase
-      .from('profile_milestones')
-      .select('id, type, title, date, notes')
-      .eq('profile_id', profile.id)
-      .order('date', { ascending: false }),
+  // Run all queries in parallel — each group typed independently
+  const [attendanceRes, leaderGroupsRes, leaderMinistriesRes, milestonesRes, ...adminResults] = await Promise.all([
+    // Attendance (all roles)
     supabase
       .from('attendance')
       .select('id, status, marked_at, gathering:gathering_id(id, scheduled_at, topic, group:group_id(id, name, name_ar))')
       .eq('profile_id', profile.id)
       .order('marked_at', { ascending: false })
       .limit(40),
+    // Leadership groups (all roles — needed for "I Lead" section)
+    supabase
+      .from('group_members')
+      .select('id, group_id, role_in_group, group:group_id(id, name, name_ar, is_active, ministry:ministry_id(id, name, name_ar))')
+      .eq('profile_id', profile.id)
+      .eq('church_id', profile.church_id)
+      .in('role_in_group', ['leader', 'co_leader'])
+      .limit(50),
+    // Leadership ministries
+    supabase
+      .from('ministry_members')
+      .select('id, ministry_id, role_in_ministry, ministry:ministry_id(id, name, name_ar, is_active)')
+      .eq('profile_id', profile.id)
+      .eq('church_id', profile.church_id)
+      .in('role_in_ministry', ['leader', 'co_leader'])
+      .limit(50),
+    // Milestones (fetched for all but only displayed for members)
+    supabase
+      .from('profile_milestones')
+      .select('id, type, title, date, notes')
+      .eq('profile_id', profile.id)
+      .order('date', { ascending: false }),
+    // Admin counts (only for super_admin)
     ...(isAdmin ? [
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id),
       supabase.from('visitors').select('id', { count: 'exact', head: true }).eq('church_id', profile.church_id).eq('status', 'new'),
@@ -60,8 +80,8 @@ export default async function ProfilePage() {
     ] : []),
   ])
 
-  const milestones = milestonesRes.data
   const attendanceRecords = attendanceRes.data
+  const milestones = milestonesRes.data
 
   let adminCounts: { members: number; visitors: number; groups: number; ministries: number; events: number; songs: number; announcements: number; serving: number } | null = null
   if (isAdmin && adminResults.length === 8) {
@@ -77,6 +97,24 @@ export default async function ProfilePage() {
       serving: serving.count ?? 0,
     }
   }
+
+  // Leadership assignments
+  type LeaderGroup = {
+    id: string
+    group_id: string
+    role_in_group: string
+    group: { id: string; name: string; name_ar: string | null; is_active: boolean; ministry: { id: string; name: string; name_ar: string | null } | null } | null
+  }
+  type LeaderMinistry = {
+    id: string
+    ministry_id: string
+    role_in_ministry: string
+    ministry: { id: string; name: string; name_ar: string | null; is_active: boolean } | null
+  }
+
+  const leaderGroups = (leaderGroupsRes.data ?? []) as unknown as LeaderGroup[]
+  const leaderMinistries = (leaderMinistriesRes.data ?? []) as unknown as LeaderMinistry[]
+  const hasLeadershipRoles = leaderGroups.length > 0 || leaderMinistries.length > 0
 
   const MILESTONE_LABELS: Record<string, string> = {
     baptism: t('milestoneBaptism'),
@@ -101,10 +139,16 @@ export default async function ProfilePage() {
     visitor: t('statusVisitor'),
   }
 
+  const LEADER_ROLE_LABELS: Record<string, string> = {
+    leader: t('leaderRoleLeader'),
+    co_leader: t('leaderRoleCoLeader'),
+  }
+
   const displayNameAr = `${profile.first_name_ar ?? ''} ${profile.last_name_ar ?? ''}`.trim()
   const displayNameEn = `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim()
   const displayName = locale.startsWith('ar') ? (displayNameAr || displayNameEn) : (displayNameEn || displayNameAr)
   const initials = (displayNameAr || displayNameEn).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const isRTL = locale.startsWith('ar')
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-24">
@@ -170,7 +214,6 @@ export default async function ProfilePage() {
             { label: t('qlServing'), count: adminCounts.serving, href: '/serving', icon: Heart, color: 'text-teal-600 bg-teal-50' },
           ].map((item) => {
             const Icon = item.icon
-            const Chevron = locale.startsWith('ar') ? ChevronLeft : ChevronRight
             return (
               <Link key={item.href} href={item.href}>
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -182,7 +225,7 @@ export default async function ProfilePage() {
                       <p className="text-xl font-bold leading-none">{item.count}</p>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{item.label}</p>
                     </div>
-                    <Chevron className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 rtl:rotate-180" />
                   </CardContent>
                 </Card>
               </Link>
@@ -191,12 +234,92 @@ export default async function ProfilePage() {
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="info" dir={locale.startsWith('ar') ? 'rtl' : 'ltr'}>
-        <TabsList className="grid w-full grid-cols-4">
+      {/* I Lead Section — shown for leaders */}
+      {isLeader && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Crown className="h-4 w-4 text-amber-600" />
+              {t('iLead')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hasLeadershipRoles ? (
+              <div className="space-y-2">
+                {/* Ministry leadership */}
+                {leaderMinistries.map((m) => {
+                  if (!m.ministry) return null
+                  const ministryName = isRTL ? (m.ministry.name_ar || m.ministry.name) : m.ministry.name
+                  return (
+                    <Link key={m.id} href={`/admin/ministries/${m.ministry_id}`} className="block">
+                      <div className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-white hover:border-zinc-300 transition-all active:bg-zinc-50 min-h-[44px]">
+                        <div className="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                          <Shield className="h-4 w-4 text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-zinc-800 truncate">{ministryName}</p>
+                          <p className="text-xs text-zinc-500">{LEADER_ROLE_LABELS[m.role_in_ministry] ?? m.role_in_ministry}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant={m.ministry.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {m.ministry.is_active ? t('statusActive') : t('statusInactive')}
+                          </Badge>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 rtl:rotate-180" />
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+
+                {/* Group leadership */}
+                {leaderGroups.map((g) => {
+                  if (!g.group) return null
+                  const groupName = isRTL ? (g.group.name_ar || g.group.name) : g.group.name
+                  const parentMinistry = g.group.ministry
+                    ? (isRTL ? (g.group.ministry.name_ar || g.group.ministry.name) : g.group.ministry.name)
+                    : null
+                  return (
+                    <Link key={g.id} href={`/groups/${g.group_id}`} className="block">
+                      <div className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-white hover:border-zinc-300 transition-all active:bg-zinc-50 min-h-[44px]">
+                        <div className="h-9 w-9 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+                          <Users className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-zinc-800 truncate">{groupName}</p>
+                          <p className="text-xs text-zinc-500">
+                            {LEADER_ROLE_LABELS[g.role_in_group] ?? g.role_in_group}
+                            {parentMinistry && <> &middot; {parentMinistry}</>}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant={g.group.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {g.group.is_active ? t('statusActive') : t('statusInactive')}
+                          </Badge>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 rtl:rotate-180" />
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <Crown className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">{t('noLeadershipRoles')}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tabs — leaders see Info + Attendance only; members see all 4 */}
+      <Tabs defaultValue="info" dir={isRTL ? 'rtl' : 'ltr'}>
+        <TabsList className={`grid w-full ${isLeader ? 'grid-cols-2' : 'grid-cols-4'}`}>
           <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
-          <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
-          <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
+          {!isLeader && <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>}
+          {!isLeader && <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>}
           <TabsTrigger value="attendance">{t('tabAttendance')}</TabsTrigger>
         </TabsList>
 
@@ -250,54 +373,58 @@ export default async function ProfilePage() {
           </Card>
         </TabsContent>
 
-        {/* Involvement Tab */}
-        <TabsContent value="involvement">
-          <Card>
-            <CardContent className="pt-6">
-              <MemberInvolvementCard profileId={profile.id} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Involvement Tab — members only */}
+        {!isLeader && (
+          <TabsContent value="involvement">
+            <Card>
+              <CardContent className="pt-6">
+                <MemberInvolvementCard profileId={profile.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
-        {/* Milestones Tab */}
-        <TabsContent value="milestones">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">{t('milestonesTitle')}</CardTitle>
-              {/* AddMilestone button — rendered client-side via component */}
-            </CardHeader>
-            <CardContent>
-              {milestones && milestones.length > 0 ? (
-                <div className="space-y-4">
-                  {milestones.map((milestone) => (
-                    <div key={milestone.id} className="flex items-start gap-3">
-                      <span className="text-2xl">{MILESTONE_ICONS[milestone.type] ?? '\u2B50'}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">{milestone.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {MILESTONE_LABELS[milestone.type] ?? milestone.type}
-                        </p>
-                        {milestone.date && (
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(milestone.date).toLocaleDateString(locale)}
+        {/* Milestones Tab — members only */}
+        {!isLeader && (
+          <TabsContent value="milestones">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">{t('milestonesTitle')}</CardTitle>
+                {/* AddMilestone button — rendered client-side via component */}
+              </CardHeader>
+              <CardContent>
+                {milestones && milestones.length > 0 ? (
+                  <div className="space-y-4">
+                    {milestones.map((milestone) => (
+                      <div key={milestone.id} className="flex items-start gap-3">
+                        <span className="text-2xl">{MILESTONE_ICONS[milestone.type] ?? '\u2B50'}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">{milestone.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {MILESTONE_LABELS[milestone.type] ?? milestone.type}
                           </p>
-                        )}
-                        {milestone.notes && (
-                          <p className="text-sm text-muted-foreground mt-1">{milestone.notes}</p>
-                        )}
+                          {milestone.date && (
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(milestone.date).toLocaleDateString(locale)}
+                            </p>
+                          )}
+                          {milestone.notes && (
+                            <p className="text-sm text-muted-foreground mt-1">{milestone.notes}</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Star className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">{t('milestonesEmpty')}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">{t('milestonesEmpty')}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* Attendance Tab */}
         <TabsContent value="attendance">

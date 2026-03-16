@@ -274,6 +274,45 @@ describe('CreateEventSchema', () => {
     })
     expect(floatResult.success).toBe(false)
   })
+
+  it('accepts datetime-local format (no timezone)', () => {
+    const result = CreateEventSchema.safeParse({
+      title: 'Test',
+      event_type: 'worship',
+      starts_at: '2025-12-25T10:00',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects ends_at before starts_at', () => {
+    const result = CreateEventSchema.safeParse({
+      title: 'Test',
+      event_type: 'worship',
+      starts_at: '2025-12-25T18:00:00Z',
+      ends_at: '2025-12-25T10:00:00Z',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts ends_at after starts_at', () => {
+    const result = CreateEventSchema.safeParse({
+      title: 'Test',
+      event_type: 'worship',
+      starts_at: '2025-12-25T10:00:00Z',
+      ends_at: '2025-12-25T18:00:00Z',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts null ends_at', () => {
+    const result = CreateEventSchema.safeParse({
+      title: 'Test',
+      event_type: 'worship',
+      starts_at: '2025-12-25T10:00:00Z',
+      ends_at: null,
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe('CreateGatheringSchema', () => {

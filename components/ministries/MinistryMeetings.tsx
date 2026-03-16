@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Dialog,
@@ -14,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { toast } from 'sonner'
 import { Plus, Calendar, MapPin, CheckCircle2, Circle, Loader2, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -59,6 +58,7 @@ interface MinistryMeetingsProps {
 
 export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps) {
   const t = useTranslations('ministryMeetings')
+  const locale = useLocale()
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -288,7 +288,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                     <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(meeting.scheduled_at).toLocaleDateString('ar-EG', {
+                        {new Date(meeting.scheduled_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-EG', {
                           weekday: 'short',
                           day: 'numeric',
                           month: 'short',
@@ -330,7 +330,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                         <button
                           onClick={() => toggleActionItem(item.id, item.status)}
                           disabled={togglingItem === item.id}
-                          className="shrink-0 p-0.5"
+                          className="shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                           aria-label={item.status === 'done' ? t('markOpen') : t('markDone')}
                         >
                           {togglingItem === item.id ? (

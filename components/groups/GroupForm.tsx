@@ -14,7 +14,6 @@ import { Users, UserCheck, Calendar, Settings, Type, UserPlus } from 'lucide-rea
 import { cn } from '@/lib/utils'
 import { RegisterLeaderDialog } from './RegisterLeaderDialog'
 
-type Ministry = { id: string; name: string; name_ar: string | null; is_default?: boolean }
 type Leader = { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null }
 
 const GROUP_TYPE_KEYS = [
@@ -52,14 +51,12 @@ const STEPS = [
 ]
 
 type Props = {
-  ministries: Ministry[]
   leaders: Leader[]
   group?: {
     id: string
     name: string
     name_ar?: string
     type: string
-    ministry_id?: string
     leader_id?: string
     co_leader_id?: string
     meeting_day?: string
@@ -73,7 +70,7 @@ type Props = {
   // name_ar and meeting_location_ar kept in Props for backward compat with existing data
 }
 
-export function GroupForm({ ministries, leaders, group }: Props) {
+export function GroupForm({ leaders, group }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(0)
@@ -87,7 +84,6 @@ export function GroupForm({ ministries, leaders, group }: Props) {
   const [form, setForm] = useState({
     name: group?.name || group?.name_ar || '',
     type: group?.type || 'small_group',
-    ministry_id: group?.ministry_id || ministries.find(m => m.is_default)?.id || '',
     leader_id: group?.leader_id || '',
     co_leader_id: group?.co_leader_id || '',
     meeting_day: group?.meeting_day || '',
@@ -140,7 +136,6 @@ export function GroupForm({ ministries, leaders, group }: Props) {
         name: form.name,
         name_ar: form.name,
         type: form.type,
-        ministry_id: form.ministry_id || null,
         leader_id: form.leader_id || null,
         co_leader_id: form.co_leader_id || null,
         meeting_day: form.meeting_day,
@@ -282,16 +277,6 @@ export function GroupForm({ ministries, leaders, group }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('ministry')}</Label>
-            <Select value={form.ministry_id} onValueChange={v => set('ministry_id', v)}>
-              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('ministryPlaceholder')} /></SelectTrigger>
-              <SelectContent>
-                {ministries.map(m => <SelectItem key={m.id} value={m.id}>{m.name_ar || m.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
           <RegisterLeaderDialog
             open={registerDialogOpen}
             onOpenChange={setRegisterDialogOpen}

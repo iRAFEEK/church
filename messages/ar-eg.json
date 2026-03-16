@@ -221,7 +221,11 @@
     "qlEvents": "الأحداث",
     "qlSongs": "الترانيم",
     "qlAnnouncements": "الإعلانات",
-    "qlServing": "مجالات الخدمة"
+    "qlServing": "مجالات الخدمة",
+    "iLead": "أقود",
+    "noLeadershipRoles": "لا توجد مهام قيادية بعد",
+    "leaderRoleLeader": "قائد",
+    "leaderRoleCoLeader": "مساعد قائد"
   },
   "profileEdit": {
     "pageTitle": "تعديل الملف الشخصي",
@@ -2021,6 +2025,8 @@
     "locationRequired": "المكان مطلوب",
     "descriptionRequired": "الوصف مطلوب",
     "selectRequired": "اختار حاجة من فضلك",
-    "fixErrors": "صلّح الأخطاء الأول قبل ما تكمّل"
+    "fixErrors": "صلّح الأخطاء الأول قبل ما تكمّل",
+    "endBeforeStart": "تاريخ النهاية لازم يكون بعد تاريخ البداية",
+    "invalidDate": "صيغة التاريخ/الوقت مش صح"
   }
 }
