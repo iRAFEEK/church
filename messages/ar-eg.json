@@ -1095,7 +1095,8 @@
     "eventFull": "مكتمل",
     "spotsRemaining": "{count} أماكن فاضية",
     "registered": "مسجّل",
-    "registrationClosed": "التسجيل مقفول"
+    "registrationClosed": "التسجيل مقفول",
+    "serviceRequests": "طلبات الخدمة"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -2028,5 +2029,42 @@
     "fixErrors": "صلّح الأخطاء الأول قبل ما تكمّل",
     "endBeforeStart": "تاريخ النهاية لازم يكون بعد تاريخ البداية",
     "invalidDate": "صيغة التاريخ/الوقت مش صح"
+  },
+  "serviceRequests": {
+    "pendingRequests": "طلبات خدمة مستنية",
+    "accept": "موافق",
+    "decline": "رفض",
+    "assignSomeone": "عيّن حد تاني",
+    "requestedBy": "مطلوب من",
+    "requestedRole": "الدور المطلوب",
+    "requestedRolePlaceholder": "مثلاً: مهندس صوت، مرشد، قائد ترنيم",
+    "assignTo": "عيّن لـ",
+    "notes": "ملاحظات",
+    "notesPlaceholder": "ملاحظات اختيارية للطلب",
+    "responseNote": "ملاحظة الرد",
+    "responseNotePlaceholder": "ملاحظة اختيارية عن سبب التحويل",
+    "searchMember": "دوّر على عضو",
+    "searchMemberPlaceholder": "ابحث بالاسم...",
+    "noMembersFound": "مفيش أعضاء",
+    "requestAccepted": "تم قبول طلب الخدمة",
+    "requestDeclined": "تم رفض طلب الخدمة",
+    "requestReassigned": "تم تحويل طلب الخدمة",
+    "serviceRequestCreated": "تم إنشاء طلب الخدمة",
+    "errorResponding": "فشل الرد على الطلب",
+    "errorCreating": "فشل إنشاء طلب الخدمة",
+    "errorLoadingMembers": "فشل تحميل الأعضاء",
+    "confirmAssign": "عيّن",
+    "sendRequest": "ابعت الطلب",
+    "createRequest": "اطلب قائد خدمة",
+    "noRequests": "مفيش طلبات خدمة لسه",
+    "serviceRequestCount": "{count, plural, one {طلب واحد} two {طلبين} few {# طلبات} other {# طلب}}",
+    "assignedTo": "معيّن لـ",
+    "statusPending": "مستني",
+    "statusAccepted": "متقبل",
+    "statusDeclined": "مرفوض",
+    "statusReassigned": "محوّل",
+    "unknown": "مش معروف",
+    "saving": "بيحفظ...",
+    "cancel": "إلغاء"
   }
 }
