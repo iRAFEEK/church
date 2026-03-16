@@ -28,12 +28,12 @@ type Group = {
   meeting_day: string | null
   meeting_frequency: string | null
   max_members: number | null
-  ministry?: { id: string; name: string; name_ar: string | null; is_default?: boolean } | null
+  ministry?: { id: string; name: string; name_ar: string | null } | null
   leader?: Leader | null
   group_members?: [{ count: number }]
 }
 
-type Ministry = { id: string; name: string; name_ar: string | null; is_default?: boolean }
+type Ministry = { id: string; name: string; name_ar: string | null }
 
 const GROUP_TYPE_KEYS: Record<string, string> = {
   small_group: 'typeSmallGroup',
@@ -129,7 +129,7 @@ export function GroupsTable({
           renderResult={(g) => (
             <div>
               <p className="font-medium">{g.name_ar || g.name}</p>
-              {g.ministry && !g.ministry.is_default && <p className="text-xs text-muted-foreground">{g.ministry.name_ar || g.ministry.name}</p>}
+              {g.ministry && g.ministry.name !== 'Groups' && <p className="text-xs text-muted-foreground">{g.ministry.name_ar || g.ministry.name}</p>}
             </div>
           )}
           onSelect={(g) => router.push(isAdmin ? `/admin/groups/${g.id}` : `/groups/${g.id}`)}
@@ -146,14 +146,14 @@ export function GroupsTable({
             ))}
           </select>
 
-          {ministries.filter(m => !m.is_default).length > 0 && (
+          {ministries.filter(m => m.name !== 'Groups').length > 0 && (
             <select
               className="text-sm border border-zinc-200 rounded-lg px-2 py-1.5 bg-white"
               value={ministryFilter}
               onChange={e => setMinistryFilter(e.target.value)}
             >
               <option value="all">{t('filterAllMinistries')}</option>
-              {ministries.filter(m => !m.is_default).map(m => (
+              {ministries.filter(m => m.name !== 'Groups').map(m => (
                 <option key={m.id} value={m.id}>{m.name_ar || m.name}</option>
               ))}
             </select>
@@ -208,7 +208,7 @@ export function GroupsTable({
                   {g.meeting_day && (
                     <p>{DAY_KEYS[g.meeting_day] ? t(DAY_KEYS[g.meeting_day]) : g.meeting_day}</p>
                   )}
-                  {g.ministry && !g.ministry.is_default && (
+                  {g.ministry && g.ministry.name !== 'Groups' && (
                     <p>{g.ministry.name_ar || g.ministry.name}</p>
                   )}
                 </div>

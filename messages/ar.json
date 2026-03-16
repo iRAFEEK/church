@@ -371,7 +371,22 @@
     "statusLost": "فقدنا التواصل",
     "searchPlaceholder": "ابحث بالاسم أو الهاتف...",
     "queueEmptyTitle": "لا يوجد زوار بعد",
-    "queueEmptyBody": "سيظهر الزوار الجدد هنا عند تسجيلهم عبر نموذج QR."
+    "queueEmptyBody": "سيظهر الزوار الجدد هنا عند تسجيلهم عبر نموذج QR.",
+    "pipelineTitle": "مسار الزوار",
+    "overdueAlert": "{count} زوار متأخرون (SLA: {hours} ساعة)",
+    "detailContactNotes": "ملاحظات التواصل",
+    "ageRangeUnder18": "أقل من 18",
+    "ageRange1825": "18–25",
+    "ageRange2635": "26–35",
+    "ageRange3645": "36–45",
+    "ageRange4655": "46–55",
+    "ageRange56Plus": "56+",
+    "howHeardFriend": "صديق",
+    "howHeardSocialMedia": "وسائل التواصل",
+    "howHeardWebsite": "الموقع الإلكتروني",
+    "howHeardEvent": "حدث",
+    "howHeardWalkIn": "زيارة مباشرة",
+    "howHeardOther": "أخرى"
   },
   "groups": {
     "backToGroups": "المجموعات",
@@ -574,7 +589,28 @@
     "upcoming": "قادم",
     "openItems": "بنود مفتوحة",
     "markDone": "تم الإنجاز",
-    "markOpen": "إعادة فتح"
+    "markOpen": "إعادة فتح",
+    "assignTo": "إسناد إلى",
+    "dueDate": "تاريخ الاستحقاق",
+    "removeItem": "حذف البند",
+    "noActionItems": "لا توجد بنود عمل بعد — أضف مهام للمتابعة"
+  },
+  "actionItems": {
+    "title": "المهام",
+    "addTask": "إضافة مهمة",
+    "taskPlaceholder": "ما الذي يجب فعله؟",
+    "assignTo": "إسناد إلى",
+    "dueDate": "تاريخ الاستحقاق",
+    "unassigned": "غير مُسنَد",
+    "cancel": "إلغاء",
+    "itemAdded": "تمت إضافة المهمة",
+    "itemError": "تعذر إضافة المهمة",
+    "markDone": "تم الإنجاز",
+    "markOpen": "إعادة فتح",
+    "deleteItem": "حذف المهمة",
+    "empty": "لا توجد مهام بعد",
+    "emptyHint": "أضف مهام لتنظيم عمل فريقك",
+    "completedCount": "{count} مكتملة"
   },
   "ministryForm": {
     "name": "الاسم",
@@ -1096,7 +1132,9 @@
     "spotsRemaining": "{count} أماكن متبقية",
     "registered": "مسجّل",
     "registrationClosed": "التسجيل مغلق",
-    "serviceRequests": "طلبات الخدمة"
+    "serviceRequests": "طلبات الخدمة",
+    "rolePresets": "إعدادات الأدوار المسبقة",
+    "addRolePreset": "إضافة دور"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1926,6 +1964,7 @@
     "followupNeeded": "يحتاج متابعة",
     "followupDate": "تاريخ المتابعة",
     "followupNotes": "ملاحظات المتابعة",
+    "searchPlaceholder": "ابحث بالاسم أو المدينة...",
     "filterCity": "تصفية حسب المدينة",
     "filterFollowup": "يحتاج متابعة",
     "filterNotVisited": "لم تتم زيارته مؤخراً",
@@ -1960,7 +1999,16 @@
     "updateStatus": "تحديث الحالة",
     "noAssignments": "لا توجد مهام تواصل بعد",
     "assignmentCreated": "تم إنشاء المهمة",
-    "assignmentUpdated": "تم تحديث المهمة"
+    "assignmentUpdated": "تم تحديث المهمة",
+    "emptyTitle": "لا يوجد أعضاء",
+    "emptyBody": "سيظهر الأعضاء هنا بعد تسجيلهم في الكنيسة.",
+    "noVisitsTitle": "لا توجد زيارات مسجلة",
+    "noVisitsBody": "سجّل أول زيارة لبدء تتبع التواصل.",
+    "deleteVisitTitle": "حذف الزيارة",
+    "deleteVisitBody": "هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteVisitCancel": "إلغاء",
+    "deleteVisitConfirm": "حذف",
+    "loadMore": "تحميل المزيد"
   },
   "settings": {
     "pageTitle": "الإعدادات",

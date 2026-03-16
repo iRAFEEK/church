@@ -21,7 +21,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
       id, name, name_ar, type, is_active, is_open,
       meeting_day, meeting_frequency, max_members, church_id,
       ministry_id, leader_id, co_leader_id,
-      ministry:ministry_id(id,name,name_ar,is_default),
+      ministry:ministry_id(id,name,name_ar),
       leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
       co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar),
       member_count:group_members(count)
@@ -71,15 +71,15 @@ export const POST = apiHandler(async ({ supabase, profile, req }) => {
 
 /**
  * Find or create the default "Groups" ministry for a church.
- * Uses the is_default flag from migration 057.
+ * Uses name-based detection (compatible before migration 057 is applied).
  */
 async function getOrCreateDefaultGroupsMinistry(churchId: string, supabase: ApiContext['supabase']): Promise<string | null> {
-  // Try to find existing default ministry
+  // Try to find existing default ministry by name
   const { data: existing } = await supabase
     .from('ministries')
     .select('id')
     .eq('church_id', churchId)
-    .eq('is_default', true)
+    .eq('name', 'Groups')
     .single()
 
   if (existing) return existing.id
@@ -92,7 +92,6 @@ async function getOrCreateDefaultGroupsMinistry(churchId: string, supabase: ApiC
       name: 'Groups',
       name_ar: 'المجموعات',
       is_active: true,
-      is_default: true,
     })
     .select('id')
     .single()

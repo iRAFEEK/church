@@ -15,6 +15,7 @@ export type NotificationType =
   | 'need_message'
   | 'group_join_request'
   | 'ministry_member_added'
+  | 'meeting_action_assigned'
   | 'general'
 
 export interface MessagePayload {

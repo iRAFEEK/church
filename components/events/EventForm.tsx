@@ -244,7 +244,7 @@ export function EventForm({ event }: EventFormProps) {
       }
 
       toast.success(event ? t('eventUpdated') : t('eventCreated'))
-      router.push(event ? `/admin/events/${event.id}` : '/events')
+      router.push(eventId ? `/admin/events/${eventId}` : '/admin/events')
       router.refresh()
     } catch {
       toast.error(t('errorGeneral'))

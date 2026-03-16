@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Plus, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Props {
   profileId: string
@@ -63,7 +64,12 @@ export function LogVisitDialog({ profileId, trigger, onSaved }: Props) {
         resetForm()
         setOpen(false)
         onSaved?.()
+        toast.success(t('saved'))
+      } else {
+        toast.error(t('error'))
       }
+    } catch {
+      toast.error(t('error'))
     } finally {
       setLoading(false)
     }
