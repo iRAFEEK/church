@@ -371,7 +371,22 @@
     "statusLost": "Lost Contact",
     "searchPlaceholder": "Search by visitor name or phone...",
     "queueEmptyTitle": "No visitors yet",
-    "queueEmptyBody": "New visitors will appear here as they register through the QR form."
+    "queueEmptyBody": "New visitors will appear here as they register through the QR form.",
+    "pipelineTitle": "Visitor Pipeline",
+    "overdueAlert": "{count} visitors overdue (SLA: {hours}h)",
+    "detailContactNotes": "Contact Notes",
+    "ageRangeUnder18": "Under 18",
+    "ageRange1825": "18–25",
+    "ageRange2635": "26–35",
+    "ageRange3645": "36–45",
+    "ageRange4655": "46–55",
+    "ageRange56Plus": "56+",
+    "howHeardFriend": "Friend",
+    "howHeardSocialMedia": "Social Media",
+    "howHeardWebsite": "Website",
+    "howHeardEvent": "Event",
+    "howHeardWalkIn": "Walk-in",
+    "howHeardOther": "Other"
   },
   "groups": {
     "backToGroups": "Groups",
@@ -574,7 +589,28 @@
     "upcoming": "Upcoming",
     "openItems": "open items",
     "markDone": "Mark as done",
-    "markOpen": "Mark as open"
+    "markOpen": "Mark as open",
+    "assignTo": "Assign to",
+    "dueDate": "Due date",
+    "removeItem": "Remove item",
+    "noActionItems": "No action items yet — add tasks to track"
+  },
+  "actionItems": {
+    "title": "Tasks",
+    "addTask": "Add Task",
+    "taskPlaceholder": "What needs to be done?",
+    "assignTo": "Assign to",
+    "dueDate": "Due date",
+    "unassigned": "Unassigned",
+    "cancel": "Cancel",
+    "itemAdded": "Task added",
+    "itemError": "Could not add task",
+    "markDone": "Mark as done",
+    "markOpen": "Reopen",
+    "deleteItem": "Delete task",
+    "empty": "No tasks yet",
+    "emptyHint": "Add tasks to keep your team organized",
+    "completedCount": "{count} completed"
   },
   "ministryForm": {
     "name": "Name",
@@ -1096,7 +1132,9 @@
     "spotsRemaining": "{count} spots remaining",
     "registered": "registered",
     "registrationClosed": "Registration Closed",
-    "serviceRequests": "Service Requests"
+    "serviceRequests": "Service Requests",
+    "rolePresets": "Role Presets",
+    "addRolePreset": "Add Role"
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -1926,6 +1964,7 @@
     "followupNeeded": "Follow-up needed",
     "followupDate": "Follow-up date",
     "followupNotes": "Follow-up notes",
+    "searchPlaceholder": "Search by name or city...",
     "filterCity": "Filter by city",
     "filterFollowup": "Needs follow-up",
     "filterNotVisited": "Not visited recently",
@@ -1960,7 +1999,16 @@
     "updateStatus": "Update Status",
     "noAssignments": "No outreach assignments yet",
     "assignmentCreated": "Assignment created",
-    "assignmentUpdated": "Assignment updated"
+    "assignmentUpdated": "Assignment updated",
+    "emptyTitle": "No members found",
+    "emptyBody": "Members will appear here once they are registered in the church.",
+    "noVisitsTitle": "No visits recorded",
+    "noVisitsBody": "Log your first visit to start tracking outreach.",
+    "deleteVisitTitle": "Delete Visit",
+    "deleteVisitBody": "Are you sure you want to delete this visit record? This action cannot be undone.",
+    "deleteVisitCancel": "Cancel",
+    "deleteVisitConfirm": "Delete",
+    "loadMore": "Load More"
   },
   "settings": {
     "pageTitle": "Settings",

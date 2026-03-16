@@ -745,3 +745,45 @@ export async function notifyGatheringReminder(gatheringId: string, churchId: str
     logger.error('notifyGatheringReminder failed', { module: 'messaging', churchId, error })
   }
 }
+
+/**
+ * Notify members when they are assigned action items from a ministry meeting.
+ * Called from POST /api/ministries/[id]/meetings after creating action items.
+ */
+export async function notifyMeetingActionAssigned(
+  churchId: string,
+  meetingTitle: string,
+  ministryName: string,
+  actionItems: Array<{ title: string; assigned_to?: string | null; due_date?: string | null }>
+) {
+  try {
+    const template = TEMPLATES.meeting_action_assigned
+    const assignedItems = actionItems.filter(item => item.assigned_to)
+
+    for (const item of assignedItems) {
+      const dueDateInfo = item.due_date
+        ? ` Due: ${new Date(item.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+        : ''
+      const dueDateInfoAr = item.due_date
+        ? ` الموعد: ${new Date(item.due_date).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}`
+        : ''
+
+      const paramsEn = { taskTitle: item.title, meetingTitle, ministryName, dueDateInfo }
+      const paramsAr = { taskTitle: item.title, meetingTitle, ministryName, dueDateInfo: dueDateInfoAr }
+
+      await sendNotification({
+        profileId: item.assigned_to!,
+        churchId,
+        type: 'meeting_action_assigned',
+        titleEn: template.titleEn,
+        titleAr: template.titleAr,
+        bodyEn: interpolate(template.bodyEn, paramsEn),
+        bodyAr: interpolate(template.bodyAr, paramsAr),
+        referenceType: 'ministry_meeting',
+        data: { taskTitle: item.title, meetingTitle, ministryName },
+      })
+    }
+  } catch (error) {
+    logger.error('notifyMeetingActionAssigned failed', { module: 'messaging', churchId, error })
+  }
+}

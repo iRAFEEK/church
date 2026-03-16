@@ -371,7 +371,22 @@
     "statusLost": "فقدنا التواصل",
     "searchPlaceholder": "ابحث بالاسم أو الهاتف...",
     "queueEmptyTitle": "مفيش زوار لسه",
-    "queueEmptyBody": "الزوار الجدد هيظهروا هنا لما يسجلوا من خلال نموذج QR."
+    "queueEmptyBody": "الزوار الجدد هيظهروا هنا لما يسجلوا من خلال نموذج QR.",
+    "pipelineTitle": "مسار الزوار",
+    "overdueAlert": "{count} زوار متأخرين (SLA: {hours} ساعة)",
+    "detailContactNotes": "ملاحظات التواصل",
+    "ageRangeUnder18": "أقل من 18",
+    "ageRange1825": "18–25",
+    "ageRange2635": "26–35",
+    "ageRange3645": "36–45",
+    "ageRange4655": "46–55",
+    "ageRange56Plus": "56+",
+    "howHeardFriend": "صاحب",
+    "howHeardSocialMedia": "السوشيال ميديا",
+    "howHeardWebsite": "الموقع",
+    "howHeardEvent": "حدث",
+    "howHeardWalkIn": "زيارة مباشرة",
+    "howHeardOther": "تاني"
   },
   "groups": {
     "backToGroups": "المجموعات",
@@ -574,7 +589,28 @@
     "upcoming": "جاي",
     "openItems": "بنود مفتوحة",
     "markDone": "خلص",
-    "markOpen": "فتح تاني"
+    "markOpen": "فتح تاني",
+    "assignTo": "اسنده لـ",
+    "dueDate": "الميعاد",
+    "removeItem": "امسح البند",
+    "noActionItems": "مفيش بنود عمل لسه — ضيف مهام للمتابعة"
+  },
+  "actionItems": {
+    "title": "المهام",
+    "addTask": "ضيف مهمة",
+    "taskPlaceholder": "إيه اللي محتاج يتعمل؟",
+    "assignTo": "اسنده لـ",
+    "dueDate": "الميعاد",
+    "unassigned": "مش مسند",
+    "cancel": "إلغاء",
+    "itemAdded": "المهمة اتضافت",
+    "itemError": "مقدرش أضيف المهمة",
+    "markDone": "خلص",
+    "markOpen": "فتح تاني",
+    "deleteItem": "امسح المهمة",
+    "empty": "مفيش مهام لسه",
+    "emptyHint": "ضيف مهام عشان تنظم شغل الفريق",
+    "completedCount": "{count} مكتملة"
   },
   "ministryForm": {
     "name": "الاسم",
@@ -1096,7 +1132,9 @@
     "spotsRemaining": "{count} أماكن فاضية",
     "registered": "مسجّل",
     "registrationClosed": "التسجيل مقفول",
-    "serviceRequests": "طلبات الخدمة"
+    "serviceRequests": "طلبات الخدمة",
+    "rolePresets": "إعدادات الأدوار",
+    "addRolePreset": "إضافة دور"
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1926,6 +1964,7 @@
     "followupNeeded": "يحتاج متابعة",
     "followupDate": "تاريخ المتابعة",
     "followupNotes": "ملاحظات المتابعة",
+    "searchPlaceholder": "ابحث بالاسم أو المدينة...",
     "filterCity": "تصفية حسب المدينة",
     "filterFollowup": "يحتاج متابعة",
     "filterNotVisited": "لم تتم زيارته مؤخراً",
@@ -1960,7 +1999,16 @@
     "updateStatus": "تحديث الحالة",
     "noAssignments": "لا توجد مهام تواصل بعد",
     "assignmentCreated": "تم إنشاء المهمة",
-    "assignmentUpdated": "تم تحديث المهمة"
+    "assignmentUpdated": "تم تحديث المهمة",
+    "emptyTitle": "مفيش أعضاء",
+    "emptyBody": "الأعضاء هيظهروا هنا لما يتسجلوا في الكنيسة.",
+    "noVisitsTitle": "مفيش زيارات مسجلة",
+    "noVisitsBody": "سجّل أول زيارة عشان تبدأ تتبع التواصل.",
+    "deleteVisitTitle": "حذف الزيارة",
+    "deleteVisitBody": "متأكد إنك عايز تحذف السجل ده؟ مينفعش ترجع فيه.",
+    "deleteVisitCancel": "إلغاء",
+    "deleteVisitConfirm": "حذف",
+    "loadMore": "تحميل المزيد"
   },
   "settings": {
     "pageTitle": "الإعدادات",

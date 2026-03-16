@@ -1,9 +1,21 @@
 'use client'
 
+import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Calendar, Trash2, AlertCircle } from 'lucide-react'
 
 interface Visit {
@@ -34,7 +46,15 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
   const isAr = locale.startsWith('ar')
 
   if (visits.length === 0) {
-    return <p className="text-sm text-muted-foreground text-center py-8">{t('noVisits')}</p>
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-8 text-center">
+        <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
+          <Calendar className="h-6 w-6 text-zinc-400" />
+        </div>
+        <h3 className="text-sm font-semibold text-zinc-900 mb-1">{t('noVisitsTitle')}</h3>
+        <p className="text-xs text-zinc-500 max-w-[220px]">{t('noVisitsBody')}</p>
+      </div>
+    )
   }
 
   return (
@@ -51,7 +71,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
           : '?'
 
         return (
-          <div key={visit.id} className="p-3 rounded-lg border bg-card">
+          <div key={visit.id} className="p-3 rounded-xl border bg-card">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -70,14 +90,32 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                 )}
               </div>
               {onDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 px-2 text-destructive hover:text-destructive"
-                  onClick={() => onDelete(visit.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 px-2 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('deleteVisitTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>{t('deleteVisitBody')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('deleteVisitCancel')}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => onDelete(visit.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {t('deleteVisitConfirm')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </div>
 

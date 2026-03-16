@@ -8,7 +8,6 @@ import {
   Upload, Link as LinkIcon, Trash2,
 } from 'lucide-react'
 import Image from 'next/image'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -353,7 +352,7 @@ export function NotificationComposer({
     </div>
   )
 
-  // Image upload handler
+  // Image upload handler — uses server-side API to bypass storage RLS
   const fileInputRef = useRef<HTMLInputElement>(null)
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -362,32 +361,24 @@ export function NotificationComposer({
     if (file.size > 5 * 1024 * 1024) { toast.error(tc('imageTooLarge')); return }
 
     setUploading(true)
-    const supabase = createClient()
-    const ext = file.name.split('.').pop()
-    const path = `notifications/${Date.now()}.${ext}`
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'notifications')
 
-    const { error } = await supabase.storage
-      .from('notification-images')
-      .upload(path, file, { upsert: true })
-
-    if (error) {
-      // Fallback: try profile-photos bucket
-      const { error: err2 } = await supabase.storage
-        .from('profile-photos')
-        .upload(path, file, { upsert: true })
-      if (err2) {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
         toast.error(tc('uploadFailed'))
-        setUploading(false)
         return
       }
-      const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path)
-      setImageUrl(urlData.publicUrl)
-    } else {
-      const { data: urlData } = supabase.storage.from('notification-images').getPublicUrl(path)
-      setImageUrl(urlData.publicUrl)
+      const json = await res.json()
+      setImageUrl(json.url)
+    } catch {
+      toast.error(tc('uploadFailed'))
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
-    setUploading(false)
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const messageSection = (

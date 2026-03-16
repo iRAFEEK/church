@@ -149,6 +149,16 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectAr: 'تمت إضافتك إلى {ministryName}',
   },
 
+  meeting_action_assigned: {
+    whatsappTemplate: 'meeting_action_assigned',
+    titleEn: 'New Task Assigned',
+    titleAr: 'مهمة جديدة مُسنَدة إليك',
+    bodyEn: 'You have been assigned a task "{taskTitle}" from the meeting "{meetingTitle}" in {ministryName}.{dueDateInfo}',
+    bodyAr: 'تم إسناد مهمة "{taskTitle}" إليك من اجتماع "{meetingTitle}" في {ministryName}.{dueDateInfo}',
+    emailSubjectEn: 'New task: {taskTitle}',
+    emailSubjectAr: 'مهمة جديدة: {taskTitle}',
+  },
+
   need_message: {
     whatsappTemplate: 'need_message',
     titleEn: 'New Message on Need',

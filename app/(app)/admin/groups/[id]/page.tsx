@@ -49,7 +49,7 @@ export default async function GroupDetailPage({ params }: Params) {
       .from('groups')
       .select(`
         *,
-        ministry:ministry_id(id,name,name_ar,is_default),
+        ministry:ministry_id(id,name,name_ar),
         leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,email),
         co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
         group_members(
@@ -91,7 +91,7 @@ export default async function GroupDetailPage({ params }: Params) {
             <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
               {GROUP_TYPE_KEY[group.type] ? t(GROUP_TYPE_KEY[group.type] as any) : group.type}
             </span>
-            {group.ministry && !(group.ministry as { is_default?: boolean }).is_default && (
+            {group.ministry && (group.ministry as { name: string }).name !== 'Groups' && (
               <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
                 {(group.ministry as { name_ar?: string; name: string }).name_ar || (group.ministry as { name: string }).name}
               </span>

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { useTranslations, useLocale } from 'next-intl'
 import { toast } from 'sonner'
-import { Plus, Calendar, MapPin, CheckCircle2, Circle, Loader2, Clock } from 'lucide-react'
+import { Plus, Calendar, MapPin, CheckCircle2, Circle, Loader2, Clock, Trash2, CalendarDays, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ActionItem {
@@ -218,42 +218,83 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
               {/* Action Items */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>{t('actionItems')}</Label>
+                  <Label className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t('actionItems')}
+                  </Label>
                   <Button type="button" size="sm" variant="ghost" onClick={addActionItem} className="min-h-[36px]">
                     <Plus className="h-3 w-3 me-1" /> {t('addItem')}
                   </Button>
                 </div>
                 {actionItems.map((item, idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <Input
-                      value={item.title}
-                      onChange={(e) => {
-                        const next = [...actionItems]
-                        next[idx] = { ...next[idx], title: e.target.value }
-                        setActionItems(next)
-                      }}
-                      dir="auto"
-                      className="min-h-[44px] flex-1"
-                      placeholder={t('actionItemPlaceholder')}
-                    />
-                    <select
-                      value={item.assigned_to || ''}
-                      onChange={(e) => {
-                        const next = [...actionItems]
-                        next[idx] = { ...next[idx], assigned_to: e.target.value || undefined }
-                        setActionItems(next)
-                      }}
-                      className="h-[44px] rounded-md border border-zinc-200 px-2 text-sm min-w-[100px]"
-                    >
-                      <option value="">{t('unassigned')}</option>
-                      {members.map(m => (
-                        <option key={m.id} value={m.id}>
-                          {m.first_name_ar || m.first_name} {m.last_name_ar || m.last_name}
-                        </option>
-                      ))}
-                    </select>
+                  <div key={idx} className="rounded-lg border border-zinc-200 p-3 mb-2 space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        value={item.title}
+                        onChange={(e) => {
+                          const next = [...actionItems]
+                          next[idx] = { ...next[idx], title: e.target.value }
+                          setActionItems(next)
+                        }}
+                        dir="auto"
+                        className="min-h-[44px] flex-1"
+                        placeholder={t('actionItemPlaceholder')}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-[44px] w-[44px] shrink-0 text-zinc-400 hover:text-red-500"
+                        onClick={() => setActionItems(prev => prev.filter((_, i) => i !== idx))}
+                        aria-label={t('removeItem')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <label className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
+                          <User className="h-3 w-3" /> {t('assignTo')}
+                        </label>
+                        <select
+                          value={item.assigned_to || ''}
+                          onChange={(e) => {
+                            const next = [...actionItems]
+                            next[idx] = { ...next[idx], assigned_to: e.target.value || undefined }
+                            setActionItems(next)
+                          }}
+                          className="h-[44px] w-full rounded-md border border-zinc-200 px-2 text-sm"
+                        >
+                          <option value="">{t('unassigned')}</option>
+                          {members.map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.first_name_ar || m.first_name} {m.last_name_ar || m.last_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="w-[140px] shrink-0">
+                        <label className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
+                          <CalendarDays className="h-3 w-3" /> {t('dueDate')}
+                        </label>
+                        <Input
+                          type="date"
+                          value={item.due_date || ''}
+                          onChange={(e) => {
+                            const next = [...actionItems]
+                            next[idx] = { ...next[idx], due_date: e.target.value || undefined }
+                            setActionItems(next)
+                          }}
+                          className="h-[44px]"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
+                {actionItems.length === 0 && (
+                  <p className="text-xs text-zinc-400 text-center py-2">{t('noActionItems')}</p>
+                )}
               </div>
 
               <Button
@@ -324,9 +365,10 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
 
                 {/* Action Items */}
                 {meeting.ministry_action_items?.length > 0 && (
-                  <div className="mt-3 border-t border-zinc-100 pt-3 space-y-2">
+                  <div className="mt-3 border-t border-zinc-100 pt-3 space-y-1">
+                    <p className="text-xs font-medium text-zinc-500 mb-2">{t('actionItems')} ({meeting.ministry_action_items.length})</p>
                     {meeting.ministry_action_items.map(item => (
-                      <div key={item.id} className="flex items-center gap-2">
+                      <div key={item.id} className="flex items-center gap-2 rounded-lg hover:bg-zinc-50 transition-colors">
                         <button
                           onClick={() => toggleActionItem(item.id, item.status)}
                           disabled={togglingItem === item.id}
@@ -336,25 +378,43 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                           {togglingItem === item.id ? (
                             <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
                           ) : item.status === 'done' ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            <CheckCircle2 className="h-5 w-5 text-green-500" />
                           ) : (
-                            <Circle className="h-4 w-4 text-zinc-300" />
+                            <Circle className="h-5 w-5 text-zinc-300" />
                           )}
                         </button>
-                        <span className={cn(
-                          'text-sm flex-1',
-                          item.status === 'done' && 'line-through text-zinc-400'
-                        )}>
-                          {item.title}
-                        </span>
-                        {item.assigned && (
-                          <Avatar className="h-5 w-5 shrink-0">
-                            <AvatarImage src={item.assigned.photo_url || undefined} />
-                            <AvatarFallback className="text-[10px]">
-                              {(item.assigned.first_name_ar || item.assigned.first_name || '?')[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <span className={cn(
+                            'text-sm block',
+                            item.status === 'done' && 'line-through text-zinc-400'
+                          )}>
+                            {item.title}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {item.assigned && (
+                              <span className="text-xs text-zinc-400 flex items-center gap-1">
+                                <Avatar className="h-4 w-4">
+                                  <AvatarImage src={item.assigned.photo_url || undefined} />
+                                  <AvatarFallback className="text-[8px]">
+                                    {(item.assigned.first_name_ar || item.assigned.first_name || '?')[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {item.assigned.first_name_ar || item.assigned.first_name} {item.assigned.last_name_ar || item.assigned.last_name}
+                              </span>
+                            )}
+                            {item.due_date && (
+                              <span className={cn(
+                                'text-xs flex items-center gap-0.5',
+                                new Date(item.due_date) < new Date() && item.status !== 'done'
+                                  ? 'text-red-500'
+                                  : 'text-zinc-400'
+                              )}>
+                                <CalendarDays className="h-3 w-3" />
+                                {new Date(item.due_date).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-EG', { month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

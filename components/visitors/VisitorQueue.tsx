@@ -2,15 +2,16 @@
 
 import { useState, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { SearchInput } from '@/components/ui/search-input'
 import { toast } from 'sonner'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Phone, Mail, Cake, Info, Briefcase, ChevronRight } from 'lucide-react'
 import { formatDistanceToNow } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 type Leader = {
   id: string
@@ -37,11 +38,29 @@ type Visitor = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-700',
-  assigned: 'bg-yellow-100 text-yellow-700',
-  contacted: 'bg-green-100 text-green-700',
+  new: 'bg-sky-100 text-sky-700',
+  assigned: 'bg-amber-100 text-amber-700',
+  contacted: 'bg-emerald-100 text-emerald-700',
   converted: 'bg-zinc-100 text-zinc-600',
   lost: 'bg-red-100 text-red-600',
+}
+
+const AGE_RANGE_KEYS: Record<string, string> = {
+  under_18: 'ageRangeUnder18',
+  '18_25': 'ageRange1825',
+  '26_35': 'ageRange2635',
+  '36_45': 'ageRange3645',
+  '46_55': 'ageRange4655',
+  '56_plus': 'ageRange56Plus',
+}
+
+const HOW_HEARD_KEYS: Record<string, string> = {
+  friend: 'howHeardFriend',
+  social_media: 'howHeardSocialMedia',
+  website: 'howHeardWebsite',
+  event: 'howHeardEvent',
+  walk_in: 'howHeardWalkIn',
+  other: 'howHeardOther',
 }
 
 export function VisitorQueue({
@@ -58,6 +77,7 @@ export function VisitorQueue({
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Visitor | null>(null)
   const [mode, setMode] = useState<'assign' | 'contact' | 'convert' | null>(null)
+  const [detailVisitor, setDetailVisitor] = useState<Visitor | null>(null)
   const [assignTo, setAssignTo] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
@@ -91,11 +111,28 @@ export function VisitorQueue({
     return ['new', 'assigned'].includes(v.status) && now - new Date(v.visited_at).getTime() > slaMs
   }
 
+  function getInitials(v: Visitor) {
+    return `${v.first_name[0] || ''}${v.last_name[0] || ''}`.toUpperCase()
+  }
+
   function openAction(v: Visitor, m: 'assign' | 'contact' | 'convert') {
     setSelected(v)
     setMode(m)
     setAssignTo(v.assigned_profile?.id || '')
     setNotes(v.contact_notes || '')
+    setDetailVisitor(null)
+  }
+
+  function getPrimaryCTA(v: Visitor) {
+    if (v.status === 'new') return { label: t('queueAssignButton'), action: 'assign' as const }
+    if (v.status === 'assigned') return { label: t('queueLogContactButton'), action: 'contact' as const }
+    if (v.status === 'contacted') return { label: t('queueConvertButton'), action: 'convert' as const }
+    return null
+  }
+
+  function getSecondaryCTA(v: Visitor) {
+    if (v.status === 'new') return { label: t('queueLogContactButton'), action: 'contact' as const }
+    return null
   }
 
   async function submitAction() {
@@ -104,7 +141,7 @@ export function VisitorQueue({
     submittingRef.current = true
     setLoading(true)
     try {
-      let body: Record<string, unknown> = { action: mode }
+      const body: Record<string, unknown> = { action: mode }
       if (mode === 'assign') body.assigned_to = assignTo
       if (mode === 'contact') body.contact_notes = notes
 
@@ -165,17 +202,18 @@ export function VisitorQueue({
         />
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+      {/* Filter pills with counts */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
         {['all', 'new', 'assigned', 'contacted'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={cn(
+              'px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors min-h-[44px]',
               filter === f
                 ? 'bg-zinc-900 text-white'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-            }`}
+            )}
           >
             {f === 'all' ? t('queueFilterAll') : STATUS_LABELS[f]}
             <span className="ms-1.5 text-xs opacity-60">
@@ -185,7 +223,7 @@ export function VisitorQueue({
         ))}
       </div>
 
-      {/* Table */}
+      {/* Visitor list */}
       <div className="rounded-xl border border-zinc-200 overflow-hidden">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
@@ -197,55 +235,190 @@ export function VisitorQueue({
           </div>
         ) : (
           <div className="divide-y divide-zinc-100">
-            {filtered.map(v => (
-              <div key={v.id} className="flex items-center gap-4 px-4 py-3 hover:bg-zinc-50 transition-colors">
-                {/* Name & info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-zinc-900">
-                      {v.first_name} {v.last_name}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[v.status]}`}>
-                      {STATUS_LABELS[v.status]}
-                    </span>
-                    {isOverdue(v) && (
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
-                        {t('queueOverdueSla')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-3 mt-1 text-xs text-zinc-400 flex-wrap">
-                    {v.phone && <span>{v.phone}</span>}
-                    <span>{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</span>
-                    {v.assigned_profile && (
-                      <span>{t('queueAssignedTo')} {v.assigned_profile.first_name} {v.assigned_profile.last_name}</span>
-                    )}
-                  </div>
-                </div>
+            {filtered.map(v => {
+              const primary = getPrimaryCTA(v)
+              const secondary = getSecondaryCTA(v)
 
-                {/* Actions */}
-                <div className="flex gap-2 shrink-0">
-                  {v.status === 'new' && (
-                    <Button size="sm" variant="outline" onClick={() => openAction(v, 'assign')}>
-                      {t('queueAssignButton')}
-                    </Button>
-                  )}
-                  {['assigned', 'new'].includes(v.status) && (
-                    <Button size="sm" variant="outline" onClick={() => openAction(v, 'contact')}>
-                      {t('queueLogContactButton')}
-                    </Button>
-                  )}
-                  {v.status === 'contacted' && (
-                    <Button size="sm" variant="outline" onClick={() => openAction(v, 'convert')}>
-                      {t('queueConvertButton')}
-                    </Button>
+              return (
+                <div key={v.id} className="hover:bg-zinc-50/50 transition-colors">
+                  <div className="flex items-center gap-3 px-4 py-3.5">
+                    {/* Avatar */}
+                    <div
+                      className={cn(
+                        'h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-medium',
+                        isOverdue(v) ? 'bg-red-100 text-red-700' : 'bg-zinc-100 text-zinc-600'
+                      )}
+                    >
+                      {getInitials(v)}
+                    </div>
+
+                    {/* Info — tappable for detail sheet */}
+                    <button
+                      type="button"
+                      className="flex-1 min-w-0 text-start"
+                      onClick={() => setDetailVisitor(v)}
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-zinc-900 text-sm">
+                          {v.first_name} {v.last_name}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[v.status]}`}>
+                          {STATUS_LABELS[v.status]}
+                        </span>
+                        {isOverdue(v) && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
+                            {t('queueOverdueSla')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-3 mt-1 text-xs text-zinc-400 flex-wrap">
+                        {v.phone && <span dir="ltr">{v.phone}</span>}
+                        <span>{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</span>
+                        {v.assigned_profile && (
+                          <span>{t('queueAssignedTo')} {v.assigned_profile.first_name} {v.assigned_profile.last_name}</span>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Desktop actions */}
+                    <div className="hidden sm:flex gap-2 shrink-0">
+                      {primary && (
+                        <Button size="sm" className="h-9" onClick={() => openAction(v, primary.action)}>
+                          {primary.label}
+                        </Button>
+                      )}
+                      {secondary && (
+                        <Button size="sm" variant="outline" className="h-9" onClick={() => openAction(v, secondary.action)}>
+                          {secondary.label}
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Mobile chevron */}
+                    <ChevronRight
+                      className="h-4 w-4 text-zinc-300 shrink-0 sm:hidden rtl:rotate-180"
+                      onClick={() => setDetailVisitor(v)}
+                    />
+                  </div>
+
+                  {/* Mobile action button */}
+                  {primary && (
+                    <div className="px-4 pb-3 sm:hidden">
+                      <Button
+                        size="sm"
+                        className="w-full h-10"
+                        onClick={() => openAction(v, primary.action)}
+                      >
+                        {primary.label}
+                      </Button>
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
+
+      {/* Visitor Detail Bottom Sheet */}
+      <Sheet open={!!detailVisitor} onOpenChange={() => setDetailVisitor(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl pb-8 max-h-[85vh] overflow-y-auto">
+          {detailVisitor && (
+            <>
+              <SheetHeader className="mb-4">
+                <SheetTitle>{detailVisitor.first_name} {detailVisitor.last_name}</SheetTitle>
+              </SheetHeader>
+
+              {/* Status */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[detailVisitor.status]}`}>
+                  {STATUS_LABELS[detailVisitor.status]}
+                </span>
+                {isOverdue(detailVisitor) && (
+                  <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700">
+                    {t('queueOverdueSla')}
+                  </span>
+                )}
+                <span className="text-xs text-zinc-400">
+                  {t('queueVisitedAgo')} {formatDistanceToNow(detailVisitor.visited_at)}
+                </span>
+              </div>
+
+              {/* Contact info */}
+              <div className="space-y-2.5 mb-6">
+                {detailVisitor.phone && (
+                  <a href={`tel:${detailVisitor.phone}`} className="flex items-center gap-3 text-sm text-zinc-700 hover:text-primary">
+                    <Phone className="h-4 w-4 text-zinc-400 shrink-0" />
+                    <span dir="ltr">{detailVisitor.phone}</span>
+                  </a>
+                )}
+                {detailVisitor.email && (
+                  <a href={`mailto:${detailVisitor.email}`} className="flex items-center gap-3 text-sm text-zinc-700 hover:text-primary">
+                    <Mail className="h-4 w-4 text-zinc-400 shrink-0" />
+                    <span dir="ltr">{detailVisitor.email}</span>
+                  </a>
+                )}
+                {detailVisitor.age_range && (
+                  <div className="flex items-center gap-3 text-sm text-zinc-700">
+                    <Cake className="h-4 w-4 text-zinc-400 shrink-0" />
+                    {t(AGE_RANGE_KEYS[detailVisitor.age_range] || detailVisitor.age_range)}
+                  </div>
+                )}
+                {detailVisitor.occupation && (
+                  <div className="flex items-center gap-3 text-sm text-zinc-700">
+                    <Briefcase className="h-4 w-4 text-zinc-400 shrink-0" />
+                    {detailVisitor.occupation}
+                  </div>
+                )}
+                {detailVisitor.how_heard && (
+                  <div className="flex items-center gap-3 text-sm text-zinc-700">
+                    <Info className="h-4 w-4 text-zinc-400 shrink-0" />
+                    {t(HOW_HEARD_KEYS[detailVisitor.how_heard] || detailVisitor.how_heard)}
+                  </div>
+                )}
+              </div>
+
+              {/* Assigned to */}
+              {detailVisitor.assigned_profile && (
+                <div className="mb-4 p-3 bg-zinc-50 rounded-lg text-sm">
+                  <span className="text-zinc-500">{t('queueAssignedTo')}</span>{' '}
+                  <span className="font-medium">{detailVisitor.assigned_profile.first_name} {detailVisitor.assigned_profile.last_name}</span>
+                </div>
+              )}
+
+              {/* Contact notes */}
+              {detailVisitor.contact_notes && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-zinc-900 mb-2">{t('detailContactNotes')}</h4>
+                  <p className="text-sm text-zinc-600 bg-zinc-50 rounded-lg p-3 whitespace-pre-wrap">{detailVisitor.contact_notes}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="space-y-2">
+                {(() => {
+                  const primary = getPrimaryCTA(detailVisitor)
+                  const secondary = getSecondaryCTA(detailVisitor)
+                  return (
+                    <>
+                      {primary && (
+                        <Button className="w-full h-11" onClick={() => openAction(detailVisitor, primary.action)}>
+                          {primary.label}
+                        </Button>
+                      )}
+                      {secondary && (
+                        <Button variant="outline" className="w-full h-11" onClick={() => openAction(detailVisitor, secondary.action)}>
+                          {secondary.label}
+                        </Button>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Action Dialog */}
       <Dialog open={!!selected && !!mode} onOpenChange={() => { setSelected(null); setMode(null) }}>
@@ -285,6 +458,8 @@ export function VisitorQueue({
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   rows={4}
+                  dir="auto"
+                  className="text-base"
                 />
               )}
 
@@ -294,11 +469,11 @@ export function VisitorQueue({
                 </p>
               )}
 
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => { setSelected(null); setMode(null) }}>
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+                <Button variant="outline" className="h-11 sm:h-auto" onClick={() => { setSelected(null); setMode(null) }}>
                   {t('queueDialogCancel')}
                 </Button>
-                <Button onClick={submitAction} disabled={loading || (mode === 'assign' && !assignTo)}>
+                <Button className="h-11 sm:h-auto" onClick={submitAction} disabled={loading || (mode === 'assign' && !assignTo)}>
                   {loading ? t('queueDialogSubmitting') : t('queueDialogConfirm')}
                 </Button>
               </div>

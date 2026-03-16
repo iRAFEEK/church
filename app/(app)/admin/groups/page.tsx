@@ -20,7 +20,7 @@ export default async function GroupsPage() {
     .from('groups')
     .select(`
       *,
-      ministry:ministry_id(id,name,name_ar,is_default),
+      ministry:ministry_id(id,name,name_ar),
       leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
       group_members(count)
     `)

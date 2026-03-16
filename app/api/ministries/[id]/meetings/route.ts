@@ -3,6 +3,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { logger } from '@/lib/logger'
 import { revalidateTag } from 'next/cache'
+import { notifyMeetingActionAssigned } from '@/lib/messaging/triggers'
 import { z } from 'zod'
 
 const createMeetingSchema = z.object({
@@ -73,7 +74,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   // Verify ministry belongs to this church before creating meeting
   const { data: ministry } = await supabase
     .from('ministries')
-    .select('id')
+    .select('id, name, name_ar')
     .eq('id', ministry_id)
     .eq('church_id', profile.church_id)
     .single()
@@ -118,6 +119,15 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
 
     if (itemsError) {
       logger.error('[/api/ministries/[id]/meetings POST] action items', { module: 'ministries', error: itemsError })
+    } else {
+      // Notify assigned members (fire-and-forget)
+      const ministryName = ministry.name_ar || ministry.name
+      notifyMeetingActionAssigned(
+        profile.church_id,
+        body.title,
+        ministryName,
+        body.action_items
+      ).catch(() => {}) // silent — notifications are best-effort
     }
   }
 
