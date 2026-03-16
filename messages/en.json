@@ -221,7 +221,11 @@
     "qlEvents": "Events",
     "qlSongs": "Songs",
     "qlAnnouncements": "Announcements",
-    "qlServing": "Serving Areas"
+    "qlServing": "Serving Areas",
+    "iLead": "I Lead",
+    "noLeadershipRoles": "No leadership assignments yet",
+    "leaderRoleLeader": "Leader",
+    "leaderRoleCoLeader": "Co-Leader"
   },
   "profileEdit": {
     "pageTitle": "Edit Profile",
@@ -2361,6 +2365,8 @@
     "locationRequired": "Location is required",
     "descriptionRequired": "Description is required",
     "selectRequired": "Please select an option",
-    "fixErrors": "Please fix the errors before continuing"
+    "fixErrors": "Please fix the errors before continuing",
+    "endBeforeStart": "End date must be after the start date",
+    "invalidDate": "Invalid date/time format"
   }
 }

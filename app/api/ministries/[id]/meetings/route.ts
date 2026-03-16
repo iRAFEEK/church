@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { logger } from '@/lib/logger'
+import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const createMeetingSchema = z.object({
@@ -32,6 +33,16 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const ministry_id = params?.id
   if (!ministry_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  // Verify ministry belongs to this church
+  const { data: ministry } = await supabase
+    .from('ministries')
+    .select('id')
+    .eq('id', ministry_id)
+    .eq('church_id', profile.church_id)
+    .single()
+
+  if (!ministry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const { data, error } = await supabase
     .from('ministry_meetings')
     .select(`
@@ -58,6 +69,16 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   const ministry_id = params?.id
   if (!ministry_id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Verify ministry belongs to this church before creating meeting
+  const { data: ministry } = await supabase
+    .from('ministries')
+    .select('id')
+    .eq('id', ministry_id)
+    .eq('church_id', profile.church_id)
+    .single()
+
+  if (!ministry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = validate(createMeetingSchema, await req.json())
 
@@ -100,6 +121,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
     }
   }
 
+  revalidateTag(`ministry-meetings-${profile.church_id}`)
   return NextResponse.json({ data: meeting }, { status: 201 })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 
@@ -126,6 +148,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
       logger.error('[/api/ministries/[id]/meetings PATCH] action item', { module: 'ministries', error })
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
+    revalidateTag(`ministry-meetings-${profile.church_id}`)
     return NextResponse.json({ data })
   }
 
@@ -134,6 +157,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   const update: Record<string, string> = {}
   if (body.status) update.status = body.status
   if (body.notes !== undefined) update.notes = body.notes
+  update.updated_at = new Date().toISOString()
 
   const { data, error } = await supabase
     .from('ministry_meetings')
@@ -149,5 +173,6 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 
+  revalidateTag(`ministry-meetings-${profile.church_id}`)
   return NextResponse.json({ data })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })

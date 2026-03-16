@@ -20,10 +20,11 @@ export default async function GroupsPage() {
     .from('groups')
     .select(`
       *,
-      ministry:ministry_id(id,name,name_ar),
+      ministry:ministry_id(id,name,name_ar,is_default),
       leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
       group_members(count)
     `)
+    .eq('church_id', user.profile.church_id)
     .order('name')
 
   if (!isSuperAdmin) {

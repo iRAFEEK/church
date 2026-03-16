@@ -64,10 +64,12 @@ export default async function MinistryDetailPage({ params }: Params) {
         groups(id,name,name_ar,type,is_active)
       `)
       .eq('id', id)
+      .eq('church_id', user.profile.church_id)
       .single(),
     supabase
       .from('profiles')
       .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
+      .eq('church_id', user.profile.church_id)
       .eq('status', 'active')
       .order('first_name'),
   ])
@@ -77,6 +79,7 @@ export default async function MinistryDetailPage({ params }: Params) {
       .from('ministries')
       .select('*, leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone), groups(id,name,name_ar,type,is_active)')
       .eq('id', id)
+      .eq('church_id', user.profile.church_id)
       .single()
     ministry = fallback.data ? { ...fallback.data, ministry_members: [] } as MinistryDetail : null
   } else {

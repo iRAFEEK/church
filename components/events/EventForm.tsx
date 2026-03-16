@@ -142,8 +142,17 @@ export function EventForm({ event }: EventFormProps) {
   const eventTypes = ['service', 'conference', 'retreat', 'workshop', 'social', 'outreach', 'other']
 
   const handleSubmit = async () => {
+    if (loading) return
+
     if (!form.title || !form.starts_at) {
       toast.error(t('requiredFields'))
+      return
+    }
+
+    // Client-side ends_at validation
+    if (form.ends_at && new Date(form.ends_at) <= new Date(form.starts_at)) {
+      setErrors({ ends_at: tV('endBeforeStart') })
+      toast.error(tV('fixErrors'))
       return
     }
 
@@ -166,8 +175,8 @@ export function EventForm({ event }: EventFormProps) {
         hide_from_non_invited: audience.hide_from_non_invited,
         visibility_targets: audience.visibility === 'restricted'
           ? [
-              ...audience.ministry_ids.map(id => ({ target_type: 'ministry', target_id: id })),
-              ...audience.group_ids.map(id => ({ target_type: 'group', target_id: id })),
+              ...audience.ministry_ids.map(id => ({ target_type: 'ministry' as const, target_id: id })),
+              ...audience.group_ids.map(id => ({ target_type: 'group' as const, target_id: id })),
             ]
           : [],
       }
@@ -184,7 +193,27 @@ export function EventForm({ event }: EventFormProps) {
       const responseData = await res.json()
 
       if (!res.ok) {
-        throw new Error(responseData.error || 'Failed')
+        // Handle API validation errors (422) with field-level detail
+        if (res.status === 422 && responseData.fields) {
+          const fieldErrors: StepErrors = {}
+          for (const [field, message] of Object.entries(responseData.fields)) {
+            fieldErrors[field] = message as string
+          }
+          setErrors(fieldErrors)
+
+          // Navigate to the step containing the first error field
+          const errorFields = Object.keys(fieldErrors)
+          if (errorFields.some(f => f === 'title' || f === 'event_type')) {
+            setStep(0)
+          } else if (errorFields.some(f => f === 'starts_at' || f === 'ends_at')) {
+            setStep(1)
+          }
+
+          toast.error(tV('fixErrors'))
+          return
+        }
+        toast.error(t('errorGeneral'))
+        return
       }
 
       // Get the event ID — for new events, parse from response; for edits, use the prop
@@ -217,8 +246,8 @@ export function EventForm({ event }: EventFormProps) {
       toast.success(event ? t('eventUpdated') : t('eventCreated'))
       router.push(event ? `/admin/events/${event.id}` : '/events')
       router.refresh()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('errorGeneral'))
+    } catch {
+      toast.error(t('errorGeneral'))
     } finally {
       setLoading(false)
     }
@@ -231,6 +260,9 @@ export function EventForm({ event }: EventFormProps) {
     }
     if (step === 1) {
       if (!form.starts_at) errs.starts_at = tV('dateRequired')
+      if (form.ends_at && form.starts_at && new Date(form.ends_at) <= new Date(form.starts_at)) {
+        errs.ends_at = tV('endBeforeStart')
+      }
     }
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -239,7 +271,7 @@ export function EventForm({ event }: EventFormProps) {
     }
     setErrors({})
     return null
-  }, [step, form.title, form.starts_at, tV])
+  }, [step, form.title, form.starts_at, form.ends_at, tV])
 
   const totalVolunteers = serviceNeeds.reduce((sum, n) => sum + n.volunteers_needed, 0)
 
@@ -317,10 +349,11 @@ export function EventForm({ event }: EventFormProps) {
             <Input
               type="datetime-local"
               value={form.ends_at}
-              onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
+              onChange={(e) => { setForm({ ...form, ends_at: e.target.value }); if (errors.ends_at) setErrors(prev => { const next = { ...prev }; delete next.ends_at; return next }) }}
               dir="ltr"
-              className="min-h-[48px]"
+              className={cn('min-h-[48px]', errors.ends_at && 'border-red-500 focus-visible:ring-red-500')}
             />
+            <FieldError error={errors.ends_at} />
           </div>
         </div>
       )}
