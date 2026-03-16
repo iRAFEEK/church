@@ -1095,7 +1095,8 @@
     "eventFull": "Full",
     "spotsRemaining": "{count} spots remaining",
     "registered": "registered",
-    "registrationClosed": "Registration Closed"
+    "registrationClosed": "Registration Closed",
+    "serviceRequests": "Service Requests"
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -2368,5 +2369,42 @@
     "fixErrors": "Please fix the errors before continuing",
     "endBeforeStart": "End date must be after the start date",
     "invalidDate": "Invalid date/time format"
+  },
+  "serviceRequests": {
+    "pendingRequests": "Pending Service Requests",
+    "accept": "Accept",
+    "decline": "Decline",
+    "assignSomeone": "Assign Someone",
+    "requestedBy": "Requested by",
+    "requestedRole": "Requested Role",
+    "requestedRolePlaceholder": "e.g. Sound Engineer, Usher, Worship Leader",
+    "assignTo": "Assign to",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes for the request",
+    "responseNote": "Response Note",
+    "responseNotePlaceholder": "Optional note about why you are reassigning",
+    "searchMember": "Search Member",
+    "searchMemberPlaceholder": "Search by name...",
+    "noMembersFound": "No members found",
+    "requestAccepted": "Service request accepted",
+    "requestDeclined": "Service request declined",
+    "requestReassigned": "Service request reassigned",
+    "serviceRequestCreated": "Service request created",
+    "errorResponding": "Failed to respond to request",
+    "errorCreating": "Failed to create service request",
+    "errorLoadingMembers": "Failed to load members",
+    "confirmAssign": "Assign",
+    "sendRequest": "Send Request",
+    "createRequest": "Request Service Lead",
+    "noRequests": "No service requests yet",
+    "serviceRequestCount": "{count, plural, one {# request} other {# requests}}",
+    "assignedTo": "Assigned to",
+    "statusPending": "Pending",
+    "statusAccepted": "Accepted",
+    "statusDeclined": "Declined",
+    "statusReassigned": "Reassigned",
+    "unknown": "Unknown",
+    "saving": "Saving...",
+    "cancel": "Cancel"
   }
 }

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { StatCard } from './StatCard'
 import { LeaderServiceNeeds } from '@/components/events/LeaderServiceNeeds'
+import { PendingServiceRequests } from '@/components/dashboard/PendingServiceRequests'
 import type { LeaderDashboardData } from '@/types/dashboard'
 
 interface Props {
@@ -197,7 +198,10 @@ export function LeaderDashboard({ data }: Props) {
         </Card>
       </div>
 
-      {/* Row 2.5: Upcoming Service Needs */}
+      {/* Row 2.5: Pending Service Requests */}
+      <PendingServiceRequests />
+
+      {/* Row 2.6: Upcoming Service Needs */}
       <LeaderServiceNeeds />
 
       {/* Row 3: Quick Actions + Recent Gatherings */}

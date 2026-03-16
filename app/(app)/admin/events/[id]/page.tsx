@@ -9,6 +9,7 @@ import { EventRegistrations } from '@/components/events/EventRegistrations'
 import { InlineStaffingManager } from '@/components/events/InlineStaffingManager'
 import { EventRunOfShow } from '@/components/events/EventRunOfShow'
 import { EventDeleteButton } from '@/components/events/EventDeleteButton'
+import { EventServiceRequests } from '@/components/events/EventServiceRequests'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Calendar, MapPin, Users, Clock } from 'lucide-react'
 
@@ -126,6 +127,11 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">{t('staffing')}</h2>
         <InlineStaffingManager eventId={id} />
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t('serviceRequests')}</h2>
+        <EventServiceRequests eventId={id} />
       </div>
 
       <div className="space-y-3">

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
 import { AttentionList } from './AttentionList'
+import { PendingServiceRequests } from '@/components/dashboard/PendingServiceRequests'
 import type { MinistryLeaderDashboardData } from '@/types/dashboard'
 
 interface Props {
@@ -76,6 +77,9 @@ export function MinistryLeaderDashboard({ data }: Props) {
           </CardContent>
         </Card>
       )}
+
+      {/* Pending Service Requests */}
+      <PendingServiceRequests />
 
       {/* Two-column: Events + Assignments */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
