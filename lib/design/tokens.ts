@@ -74,6 +74,12 @@ export const NEED_RESPONSE_STATUS_COLORS = {
   completed: 'bg-blue-100 text-blue-800',
 } as const
 
+export const CALENDAR_TYPE_COLORS = {
+  event:     { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200',    dot: 'bg-blue-500' },
+  serving:   { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  gathering: { bg: 'bg-amber-50',   text: 'text-amber-700',   border: 'border-amber-200',   dot: 'bg-amber-500' },
+} as const
+
 export type StatusKey = keyof typeof STATUS_COLORS
 export type RoleKey = keyof typeof ROLE_COLORS
 export type VisitorStatusKey = keyof typeof VISITOR_STATUS_COLORS

@@ -371,6 +371,30 @@ export const analytics = {
     },
   },
 
+  // ── Calendar ──────────────────────────────────────────────
+
+  calendar: {
+    viewed: (props: BaseProperties & { month: string; item_count: number }) => {
+      posthog.capture('calendar_viewed', props)
+    },
+
+    monthChanged: (props: BaseProperties & { month: string; direction: 'prev' | 'next' | 'today' }) => {
+      posthog.capture('calendar_month_changed', props)
+    },
+
+    daySelected: (props: BaseProperties & { date: string; item_count: number }) => {
+      posthog.capture('calendar_day_selected', props)
+    },
+
+    itemClicked: (props: BaseProperties & { item_type: string; item_id: string }) => {
+      posthog.capture('calendar_item_clicked', props)
+    },
+
+    filterToggled: (props: BaseProperties & { filter_type: string; enabled: boolean }) => {
+      posthog.capture('calendar_filter_toggled', props)
+    },
+  },
+
   // ── Settings / Permissions ─────────────────────────────────
 
   settings: {
