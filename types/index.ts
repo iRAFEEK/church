@@ -35,6 +35,9 @@ export type PermissionKey =
   | 'can_submit_expenses'
   | 'can_manage_campaigns'
   | 'can_reconcile_bank'
+  // ─── Locations ────────────────────────────────────────────
+  | 'can_manage_locations'
+  | 'can_book_locations'
 
 export type PermissionMap = Partial<Record<PermissionKey, boolean>>
 export type UserStatus = 'active' | 'inactive' | 'at_risk' | 'visitor'
@@ -1108,4 +1111,82 @@ export interface ChurchNeedMessage {
 
 export interface ChurchNeedMessageWithSender extends ChurchNeedMessage {
   sender_church: Pick<Church, 'id' | 'name' | 'name_ar' | 'logo_url'>
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+
+export type CalendarItemType = 'event' | 'serving' | 'gathering'
+
+export interface CalendarItem {
+  id: string
+  type: CalendarItemType
+  title: string
+  title_ar: string | null
+  date: string              // YYYY-MM-DD
+  starts_at: string | null  // ISO datetime or HH:MM time
+  ends_at: string | null    // ISO datetime or HH:MM time
+  location: string | null
+  // Type-specific metadata
+  event_type?: string
+  event_status?: string
+  area_name?: string
+  area_name_ar?: string | null
+  group_name?: string
+  group_name_ar?: string | null
+  group_id?: string
+  gathering_status?: string
+  topic?: string | null
+  topic_ar?: string | null
+}
+
+// ============================================================
+// LOCATIONS & BOOKINGS
+// ============================================================
+
+export type LocationType = 'sanctuary' | 'hall' | 'classroom' | 'prayer_room' | 'office' | 'nursery' | 'other'
+export type BookingStatus = 'confirmed' | 'cancelled'
+
+export interface Location {
+  id: string
+  church_id: string
+  name: string
+  name_ar: string | null
+  location_type: LocationType
+  capacity: number | null
+  features: string[]
+  notes: string | null
+  notes_ar: string | null
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LocationBooking {
+  id: string
+  church_id: string
+  location_id: string
+  booked_by: string
+  title: string
+  title_ar: string | null
+  starts_at: string
+  ends_at: string
+  notes: string | null
+  status: BookingStatus
+  is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface LocationBookingWithDetails extends LocationBooking {
+  location: Pick<Location, 'id' | 'name' | 'name_ar'>
+  booker: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    first_name_ar: string | null
+    last_name_ar: string | null
+  }
 }

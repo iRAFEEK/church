@@ -29,8 +29,8 @@ const ALL_ROLES: UserRole[] = ['member', 'group_leader', 'ministry_leader', 'sup
 // ---------------------------------------------------------------------------
 
 describe('NAV_ITEMS', () => {
-  it('has exactly 26 items', () => {
-    expect(NAV_ITEMS).toHaveLength(26)
+  it('has exactly 29 items', () => {
+    expect(NAV_ITEMS).toHaveLength(29)
   })
 
   it('every item has required properties', () => {
