@@ -10,7 +10,10 @@ import { Label } from '@/components/ui/label'
 import { Stepper, type StepErrors } from '@/components/ui/stepper'
 import { FieldError, RequiredMark } from '@/components/ui/field-error'
 import { toast } from 'sonner'
-import { Calendar, MapPin, FileText, Settings, Type, Users } from 'lucide-react'
+import {
+  Calendar, MapPin, FileText, Settings, Type, Users,
+  Church, Mic, TreePine, GraduationCap, PartyPopper, Handshake, Flag,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ServiceNeedsPicker, type ServiceNeedDraft } from './ServiceNeedsPicker'
 import { EventAudienceSelector, type AudienceConfig } from './EventAudienceSelector'
@@ -32,6 +35,8 @@ interface EventFormProps {
     registration_closes_at: string | null
     status: string
   }
+  /** Pre-fill start date when creating from calendar (YYYY-MM-DD format) */
+  defaultDate?: string
 }
 
 const STEPS = [
@@ -44,12 +49,12 @@ const STEPS = [
   { title: 'Review', titleAr: 'مراجعة' },
 ]
 
-const EVENT_TYPE_ICONS: Record<string, string> = {
-  service: '⛪', conference: '🎤', retreat: '🏕️', workshop: '📝',
-  social: '🎉', outreach: '🤝', other: '📌',
+const EVENT_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  service: Church, conference: Mic, retreat: TreePine, workshop: GraduationCap,
+  social: PartyPopper, outreach: Handshake, other: Flag,
 }
 
-export function EventForm({ event }: EventFormProps) {
+export function EventForm({ event, defaultDate }: EventFormProps) {
   const router = useRouter()
   const t = useTranslations('events')
   const tc = useTranslations('common')
@@ -64,8 +69,8 @@ export function EventForm({ event }: EventFormProps) {
     title: event?.title || event?.title_ar || '',
     description: event?.description || event?.description_ar || '',
     event_type: event?.event_type || 'service',
-    starts_at: event?.starts_at ? event.starts_at.slice(0, 16) : '',
-    ends_at: event?.ends_at ? event.ends_at.slice(0, 16) : '',
+    starts_at: event?.starts_at ? event.starts_at.slice(0, 16) : defaultDate ? `${defaultDate}T09:00` : '',
+    ends_at: event?.ends_at ? event.ends_at.slice(0, 16) : defaultDate ? `${defaultDate}T10:00` : '',
     location: event?.location || '',
     capacity: event?.capacity || '',
     is_public: event?.is_public ?? true,
@@ -318,7 +323,7 @@ export function EventForm({ event }: EventFormProps) {
                       : 'border-zinc-100 hover:border-zinc-200'
                   )}
                 >
-                  <span className="text-xl">{EVENT_TYPE_ICONS[type]}</span>
+                  {(() => { const Icon = EVENT_TYPE_ICONS[type]; return Icon ? <Icon className="h-5 w-5 text-muted-foreground" /> : null })()}
                   <span className="text-xs">{t(`type_${type}`)}</span>
                 </button>
               ))}
@@ -441,7 +446,7 @@ export function EventForm({ event }: EventFormProps) {
       {step === 6 && (
         <div className="space-y-3 pt-4">
           <ReviewItem icon={<Type className="h-4 w-4" />} label={t('title')} value={form.title} />
-          <ReviewItem icon={<Settings className="h-4 w-4" />} label={t('eventType')} value={`${EVENT_TYPE_ICONS[form.event_type]} ${t(`type_${form.event_type}`)}`} />
+          <ReviewItem icon={(() => { const Icon = EVENT_TYPE_ICONS[form.event_type]; return Icon ? <Icon className="h-4 w-4" /> : <Settings className="h-4 w-4" /> })()} label={t('eventType')} value={t(`type_${form.event_type}`)} />
           {form.starts_at && (
             <ReviewItem
               icon={<Calendar className="h-4 w-4" />}

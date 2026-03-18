@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { Users, CalendarCheck, BarChart3, Calendar, Building2 } from 'lucide-react'
+import { Users, UsersRound, CalendarCheck, BarChart3, Calendar, Building2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
@@ -39,7 +39,7 @@ export function MinistryLeaderDashboard({ data }: Props) {
         <StatCard
           title={t('mlGroups')}
           value={data.groupCount}
-          icon={Users}
+          icon={UsersRound}
         />
         <StatCard
           title={t('kpiAttendanceRate')}

@@ -1,8 +1,10 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { CalendarOff, CalendarCheck } from 'lucide-react'
+import { CalendarOff, CalendarCheck, Plus } from 'lucide-react'
+import Link from 'next/link'
 
+import { Button } from '@/components/ui/button'
 import { CalendarEventCard } from './CalendarEventCard'
 import type { CalendarItem, CalendarItemType } from '@/types'
 
@@ -35,11 +37,22 @@ export function CalendarAgendaList({ date, items, activeFilters }: CalendarAgend
           {formatDateHeading(date, locale)}
         </p>
         {dayItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center">
-            <div className="h-12 w-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-2.5">
-              <CalendarOff className="h-6 w-6 text-zinc-400" />
+          <div className="flex flex-col items-center justify-center py-10 px-8 text-center">
+            <div className="h-14 w-14 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
+              <CalendarOff className="h-7 w-7 text-zinc-400" />
             </div>
-            <p className="text-sm text-muted-foreground">{t('nothingScheduled')}</p>
+            <h3 className="text-sm font-semibold text-zinc-900 mb-1">
+              {t('nothingScheduled')}
+            </h3>
+            <p className="text-xs text-zinc-500 mb-4 max-w-[240px]">
+              {t('emptyDay.body')}
+            </p>
+            <Button asChild size="sm" className="h-11 gap-1.5">
+              <Link href={`/admin/events/new?date=${date}`}>
+                <Plus className="h-4 w-4" />
+                {t('addEvent')}
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -75,11 +88,22 @@ export function CalendarAgendaList({ date, items, activeFilters }: CalendarAgend
         {t('upcoming')}
       </p>
       {upcoming.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="h-12 w-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-2.5">
-            <CalendarCheck className="h-6 w-6 text-zinc-400" />
+        <div className="flex flex-col items-center justify-center py-10 px-8 text-center">
+          <div className="h-14 w-14 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
+            <CalendarCheck className="h-7 w-7 text-zinc-400" />
           </div>
-          <p className="text-sm text-muted-foreground">{t('noUpcoming')}</p>
+          <h3 className="text-sm font-semibold text-zinc-900 mb-1">
+            {t('noUpcoming')}
+          </h3>
+          <p className="text-xs text-zinc-500 mb-4 max-w-[240px]">
+            {t('emptyMonth.body')}
+          </p>
+          <Button asChild size="sm" className="h-11 gap-1.5">
+            <Link href="/admin/events/new">
+              <Plus className="h-4 w-4" />
+              {t('addEvent')}
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">

@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { Plus, X, Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus, Network } from 'lucide-react'
+import { Plus, X, Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFABActions } from '@/lib/hooks/useFABActions'
 import type { Profile } from '@/types'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus, Network,
+  Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus,
 }
 
 interface FABProps {

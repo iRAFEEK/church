@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { CalendarCheck, Trophy, Users, Bell, Calendar, Heart, Megaphone, Pin, BookOpen, HandHeart } from 'lucide-react'
+import { CalendarCheck, Trophy, Users, Bell, Calendar, Heart, Megaphone, Pin, BookOpen, HandHeart, User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StatCard } from './StatCard'
@@ -28,7 +28,7 @@ export function MemberDashboard({ data }: Props) {
         <QuickActionCard href="/bible" icon={BookOpen} label={isAr ? 'الكتاب' : 'Bible'} />
         <QuickActionCard href="/announcements" icon={Megaphone} label={isAr ? 'إعلانات' : 'News'} count={data.recentAnnouncements.length} />
         <QuickActionCard href="/notifications" icon={Bell} label={isAr ? 'تنبيهات' : 'Alerts'} count={data.kpis.unreadNotifications || undefined} />
-        <QuickActionCard href="/profile" icon={Trophy} label={isAr ? 'ملفي' : 'Profile'} />
+        <QuickActionCard href="/profile" icon={User} label={isAr ? 'ملفي' : 'Profile'} />
       </div>
 
       {/* Desktop KPIs (hidden on mobile) */}

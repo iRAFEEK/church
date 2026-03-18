@@ -1607,8 +1607,8 @@
   "bottomNav": {
     "home": "Home",
     "groups": "Groups",
+    "ministries": "Ministries",
     "events": "Events",
-    "bible": "Bible",
     "more": "More"
   },
   "moreSheet": {
@@ -2028,8 +2028,19 @@
     "group": "Group",
     "topic": "Topic",
     "more": "more",
+    "moreCount": "+{count} more",
     "upcoming": "Upcoming",
     "noUpcoming": "No upcoming activities",
+    "addEvent": "Add Event",
+    "backToMonth": "Back to month view",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "emptyDay": {
+      "body": "No events, serving slots, or meetings are scheduled for this day."
+    },
+    "emptyMonth": {
+      "body": "No upcoming activities this month. Schedule an event to get started."
+    },
     "error": {
       "load": "Failed to load calendar"
     },

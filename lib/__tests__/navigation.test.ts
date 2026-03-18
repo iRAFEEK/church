@@ -66,8 +66,8 @@ describe('NAV_ITEMS', () => {
 // ---------------------------------------------------------------------------
 
 describe('PRIMARY_MOBILE_PATHS', () => {
-  it('has exactly 4 entries', () => {
-    expect(PRIMARY_MOBILE_PATHS).toHaveLength(4)
+  it('has exactly 5 entries', () => {
+    expect(PRIMARY_MOBILE_PATHS).toHaveLength(5)
   })
 })
 

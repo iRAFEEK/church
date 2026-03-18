@@ -82,7 +82,7 @@ export function CalendarMiniMonth({ month, items, activeFilters, selectedDate, o
       {/* Day name headers */}
       <div className="grid grid-cols-7">
         {dayNames.map(day => (
-          <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1.5">
+          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-1.5">
             {t(`dayNames.${day}`)}
           </div>
         ))}

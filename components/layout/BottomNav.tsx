@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { LayoutDashboard, Users, Calendar, BookOpen, Menu } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, Calendar, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MoreSheet } from './MoreSheet'
 import type { Profile, PermissionKey } from '@/types'
@@ -19,11 +19,11 @@ interface BottomNavProps {
 }
 
 const TABS = [
-  { key: 'home', href: '/dashboard', icon: LayoutDashboard },
-  { key: 'groups', href: '/admin/ministries', icon: Users },
-  { key: 'events', href: '/events', icon: Calendar },
-  { key: 'bible', href: '/bible', icon: BookOpen },
-  { key: 'more', href: '#', icon: Menu },
+  { key: 'home', href: '/dashboard', icon: LayoutDashboard, roles: null },
+  { key: 'groups', href: '/admin/groups', icon: Users, roles: null },
+  { key: 'ministries', href: '/admin/ministries', icon: Building2, roles: ['ministry_leader', 'super_admin'] as string[] },
+  { key: 'events', href: '/events', icon: Calendar, roles: null },
+  { key: 'more', href: '#', icon: Menu, roles: null },
 ] as const
 
 export function BottomNav({ profile, churchName, churchNameAr, onLangChange, resolvedPermissions }: BottomNavProps) {
@@ -36,17 +36,22 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
 
   useEffect(() => { setMounted(true) }, [])
 
-  // For members without group admin access, groups tab goes to their first group or profile
-  const groupsHref = ['ministry_leader', 'super_admin', 'group_leader'].includes(profile.role)
-    ? '/admin/ministries'
-    : '/profile'
+  // Groups tab: admins see all groups, everyone else goes to my-group (redirects to their group)
+  const groupsHref = profile.role === 'super_admin'
+    ? '/admin/groups'
+    : '/my-group'
+
+  // Filter tabs by role
+  const visibleTabs = TABS.filter(tab =>
+    tab.roles === null || tab.roles.includes(profile.role)
+  )
 
   const nav = (
     <>
       <nav className="fixed bottom-0 inset-x-0 z-[9999] h-16 bg-background border-t border-border flex items-center justify-around md:hidden"
         style={{ paddingBottom: 'var(--safe-area-bottom)' }}
       >
-        {TABS.map(tab => {
+        {visibleTabs.map(tab => {
           const Icon = tab.icon
           const href = tab.key === 'groups' ? groupsHref : tab.href
           const isMore = tab.key === 'more'
