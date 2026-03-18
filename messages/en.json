@@ -2618,7 +2618,19 @@
     "todayBookings": "Today's Bookings",
     "viewAll": "View all",
     "noBookingsToday": "No bookings today",
-    "andMore": "and {count} more"
+    "andMore": "and {count} more",
+    "allLocations": "All",
+    "today": "Today",
+    "todaySummary": "Today",
+    "bookingsCount": "bookings today",
+    "noBookingsWeek": "No bookings this week",
+    "noLocationsTitle": "No rooms set up yet",
+    "noLocationsBody": "Add your church rooms and spaces to start booking.",
+    "noLocationsAction": "Add a Location",
+    "tapToBook": "Tap + to reserve a room for your group or event.",
+    "emptyDayAction": "Book a Room",
+    "you": "You",
+    "yourBooking": "Your booking"
   },
   "locations": {
     "pageTitle": "Locations",

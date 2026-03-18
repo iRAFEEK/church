@@ -33,7 +33,7 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
   return (
     <>
       <OfflineBanner />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-dvh overflow-hidden">
         {/* Sidebar: desktop only */}
         <div className="hidden md:block">
           <Sidebar

@@ -2280,6 +2280,18 @@
     "todayBookings": "حجوزات النهارده",
     "viewAll": "اعرض الكل",
     "noBookingsToday": "مفيش حجوزات النهارده",
-    "andMore": "و{count} كمان"
+    "andMore": "و{count} كمان",
+    "allLocations": "الكل",
+    "today": "النهارده",
+    "todaySummary": "النهارده",
+    "bookingsCount": "حجوزات النهارده",
+    "noBookingsWeek": "مفيش حجوزات الأسبوع ده",
+    "noLocationsTitle": "لسه ما ضفتش أوض",
+    "noLocationsBody": "ضيف أوض ومساحات كنيستك عشان تبدأ تحجز.",
+    "noLocationsAction": "ضيف موقع",
+    "tapToBook": "دوس + عشان تحجز أوضة لمجموعتك أو فعاليتك.",
+    "emptyDayAction": "احجز أوضة",
+    "you": "أنت",
+    "yourBooking": "حجزك"
   }
 }
