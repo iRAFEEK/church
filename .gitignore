@@ -42,8 +42,9 @@ next-env.d.ts
 *.html
 *Supabase_files/
 
-# large bible seed data
+# large seed data
 data/bible/
+data/songs/
 
 # Firebase service account keys (contain private keys - NEVER commit)
 *-firebase-adminsdk-*.json

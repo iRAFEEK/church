@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "extract:songs": "tsx scripts/extract-songs.ts",
+    "seed:songs": "tsx scripts/seed-songs.ts"
   },
   "engines": {
     "node": "22.x"
@@ -66,9 +68,11 @@
     "@next/bundle-analyzer": "^16.1.6",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.37",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "better-sqlite3": "^12.8.0",
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",

@@ -21,7 +21,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .from('songs')
     .update({ display_settings })
     .eq('id', params!.id)
-    .eq('church_id', profile.church_id)
+    .or(`church_id.eq.${profile.church_id},church_id.is.null`)
     .select('display_settings')
     .single()
 
