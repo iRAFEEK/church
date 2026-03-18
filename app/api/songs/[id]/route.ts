@@ -9,9 +9,9 @@ import { UpdateSongSchema } from '@/lib/schemas/song'
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_at')
+    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_at')
     .eq('id', params!.id)
-    .eq('church_id', profile.church_id)
+    .or(`church_id.eq.${profile.church_id},church_id.is.null`)
     .single()
 
   if (error) {
