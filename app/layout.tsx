@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
-import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { PostHogProvider } from '@/components/shared/PostHogProvider'
 import './globals.css'
@@ -51,7 +50,6 @@ export default async function RootLayout({
           richColors
           closeButton
         />
-        <Analytics />
       </body>
     </html>
   )
