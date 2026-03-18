@@ -392,6 +392,12 @@
     "backToGroups": "المجموعات",
     "adminPageTitle": "المجموعات",
     "adminPageSubtitle": "جميع مجموعات الكنيسة",
+    "myGroupsTitle": "مجموعاتي",
+    "yourGroupsSection": "مجموعاتك",
+    "openGroupsSection": "مجموعات مفتوحة",
+    "openGroupsDescription": "إنت لسه مش في أي مجموعة. دي المجموعات المفتوحة لأعضاء جداد:",
+    "noOpenGroupsTitle": "مفيش مجموعات مفتوحة دلوقتي",
+    "noOpenGroupsDescription": "مفيش مجموعات مفتوحة لأعضاء جداد دلوقتي. هنقولك أول ما يبقى فيه مجموعة متاحة.",
     "ministriesButton": "الخدمات",
     "newGroupButton": "مجموعة جديدة",
     "newGroupPageTitle": "مجموعة جديدة",
@@ -1608,7 +1614,7 @@
     "home": "الرئيسية",
     "groups": "المجموعات",
     "ministries": "الخدمات",
-    "events": "الفعاليات",
+    "notifications": "الإشعارات",
     "more": "المزيد"
   },
   "moreSheet": {

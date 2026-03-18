@@ -20,18 +20,20 @@ export default async function AppLayout({
   }
 
   return (
-    <AppShell
-      profile={authUser.profile}
-      church={authUser.church}
-      resolvedPermissions={authUser.resolvedPermissions}
-    >
-      <AnalyticsIdentifier
-        userId={authUser.id}
-        churchId={authUser.profile.church_id}
-        role={authUser.profile.role}
-        locale={locale}
-      />
-      {children}
-    </AppShell>
+    <div className="app-shell-active">
+      <AppShell
+        profile={authUser.profile}
+        church={authUser.church}
+        resolvedPermissions={authUser.resolvedPermissions}
+      >
+        <AnalyticsIdentifier
+          userId={authUser.id}
+          churchId={authUser.profile.church_id}
+          role={authUser.profile.role}
+          locale={locale}
+        />
+        {children}
+      </AppShell>
+    </div>
   )
 }

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
-import { LayoutDashboard, Users, Building2, Calendar, Menu } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, Calendar, Bell, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MoreSheet } from './MoreSheet'
 import type { Profile, PermissionKey } from '@/types'
@@ -22,7 +22,7 @@ const TABS = [
   { key: 'home', href: '/dashboard', icon: LayoutDashboard, roles: null },
   { key: 'groups', href: '/admin/groups', icon: Users, roles: null },
   { key: 'ministries', href: '/admin/ministries', icon: Building2, roles: ['ministry_leader', 'super_admin'] as string[] },
-  { key: 'events', href: '/events', icon: Calendar, roles: null },
+  { key: 'notifications', href: '/notifications', icon: Bell, roles: null },
   { key: 'more', href: '#', icon: Menu, roles: null },
 ] as const
 
@@ -36,7 +36,8 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Groups tab: admins see all groups, everyone else goes to my-group (redirects to their group)
+  // Groups tab: admins go to admin groups page, everyone else to my-group
+  // my-group handles the logic: redirect to their group, show multiple groups, or show open groups
   const groupsHref = profile.role === 'super_admin'
     ? '/admin/groups'
     : '/my-group'

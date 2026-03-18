@@ -96,6 +96,12 @@ html {
   transition: none;
 }
 
+/* Prevent body scroll when app shell is active — only <main> should scroll */
+.app-shell-active {
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* ─── Mobile & PWA ─────────────────────────────────── */
 
 :root {
