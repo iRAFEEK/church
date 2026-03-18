@@ -4,16 +4,19 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import {
   ChevronLeft, ChevronRight, Settings, X, Maximize, Minimize,
-  Upload, ArrowLeft
+  Upload, ArrowLeft, Search
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { splitIntoSlides } from '@/lib/utils/song-slides'
+import { PresenterSearch } from './PresenterSearch'
 import type { Song, SongDisplaySettings } from '@/types'
 
 interface SongPresenterProps {
   song: Song
+  initialSlide?: number
 }
 
 const FONT_MAP: Record<string, string> = {
@@ -23,21 +26,24 @@ const FONT_MAP: Record<string, string> = {
   arabic: '"Noto Naskh Arabic", "Traditional Arabic", serif',
 }
 
-export function SongPresenter({ song }: SongPresenterProps) {
+export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   const t = useTranslations('songs')
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
 
-  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
-  const slides = lyrics
-    ? lyrics.split(/\n\s*\n/).filter(s => s.trim())
-    : []
+  // Active song state — allows switching songs via in-presenter search
+  const [activeSong, setActiveSong] = useState<Song>(song)
 
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const lyrics = isAr ? (activeSong.lyrics_ar || activeSong.lyrics) : activeSong.lyrics
+  const slides = lyrics ? splitIntoSlides(lyrics) : []
+  const songTitle = isAr ? (activeSong.title_ar || activeSong.title) : activeSong.title
+
+  const [currentSlide, setCurrentSlide] = useState(Math.min(initialSlide, Math.max(slides.length - 1, 0)))
   const [showSettings, setShowSettings] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [settings, setSettings] = useState<SongDisplaySettings>(
-    song.display_settings || {
+    activeSong.display_settings || {
       bg_color: '#000000',
       bg_image: null,
       text_color: '#ffffff',
@@ -54,13 +60,13 @@ export function SongPresenter({ song }: SongPresenterProps) {
   const saveSettings = useCallback(async (newSettings: SongDisplaySettings) => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     saveTimeoutRef.current = setTimeout(async () => {
-      await fetch(`/api/songs/${song.id}/display`, {
+      await fetch(`/api/songs/${activeSong.id}/display`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSettings),
       })
     }, 500)
-  }, [song.id])
+  }, [activeSong.id])
 
   const updateSetting = <K extends keyof SongDisplaySettings>(key: K, value: SongDisplaySettings[K]) => {
     const newSettings = { ...settings, [key]: value }
@@ -80,8 +86,15 @@ export function SongPresenter({ song }: SongPresenterProps) {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture keys when search is open (it handles its own keys)
+      if (showSearch) return
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
+
       switch (e.key) {
+        case '/':
+          e.preventDefault()
+          setShowSearch(true)
+          break
         case 'ArrowRight':
           isAr ? goPrev() : goNext()
           break
@@ -108,7 +121,7 @@ export function SongPresenter({ song }: SongPresenterProps) {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goNext, goPrev, isAr, showSettings])
+  }, [goNext, goPrev, isAr, showSettings, showSearch])
 
   // Fullscreen
   const toggleFullscreen = () => {
@@ -125,6 +138,26 @@ export function SongPresenter({ song }: SongPresenterProps) {
     return () => document.removeEventListener('fullscreenchange', handleFSChange)
   }, [])
 
+  // Handle song switch from search
+  const handleSongSelect = useCallback(async (searchResult: { id: string }, slideIndex: number) => {
+    try {
+      const res = await fetch(`/api/songs/${searchResult.id}`)
+      if (!res.ok) return
+      const { data } = await res.json()
+      if (data) {
+        setActiveSong(data)
+        setSettings(data.display_settings || settings)
+        // Compute slides for new song to clamp slideIndex
+        const newLyrics = isAr ? (data.lyrics_ar || data.lyrics) : data.lyrics
+        const newSlides = newLyrics ? splitIntoSlides(newLyrics) : []
+        setCurrentSlide(Math.min(slideIndex, Math.max(newSlides.length - 1, 0)))
+        setShowSearch(false)
+      }
+    } catch {
+      // Silently fail — user can try again
+    }
+  }, [isAr, settings])
+
   // Background image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -134,7 +167,7 @@ export function SongPresenter({ song }: SongPresenterProps) {
     try {
       const supabase = createClient()
       const ext = file.name.split('.').pop()
-      const path = `${song.id}/${Date.now()}.${ext}`
+      const path = `${activeSong.id}/${Date.now()}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('song-backgrounds')
@@ -184,10 +217,18 @@ export function SongPresenter({ song }: SongPresenterProps) {
         <div className="absolute inset-0 bg-black/40" />
       )}
 
+      {/* Song title indicator */}
+      <div className="absolute top-0 inset-x-0 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-b from-black/60 to-transparent p-4">
+        <p className="text-white/70 text-sm truncate text-center" dir={isAr ? 'rtl' : 'ltr'}>
+          {songTitle}
+        </p>
+      </div>
+
       {/* Slide content */}
       <div
         className="absolute inset-0 flex items-center justify-center p-8 cursor-pointer"
         onClick={(e) => {
+          if (showSearch) return
           const rect = (e.target as HTMLElement).getBoundingClientRect()
           const clickX = e.clientX - rect.left
           if (clickX < rect.width / 2) {
@@ -248,6 +289,16 @@ export function SongPresenter({ song }: SongPresenterProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Search button — always visible */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/20"
+            onClick={() => setShowSearch(true)}
+            title={t('shortcutSearch')}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -389,11 +440,20 @@ export function SongPresenter({ song }: SongPresenterProps) {
             <div className="text-xs text-zinc-500 space-y-1">
               <p>← → {t('shortcutNav')}</p>
               <p>Space {t('shortcutNext')}</p>
+              <p>/ {t('shortcutSearch')}</p>
               <p>F {t('shortcutFullscreen')}</p>
               <p>Esc {t('shortcutClose')}</p>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Search overlay */}
+      {showSearch && (
+        <PresenterSearch
+          onSelect={handleSongSelect}
+          onClose={() => setShowSearch(false)}
+        />
       )}
     </div>
   )
