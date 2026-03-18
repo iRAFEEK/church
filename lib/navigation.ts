@@ -305,7 +305,7 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 /** Paths that appear in the mobile bottom tab bar */
-export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/groups', '/my-group', '/admin/ministries', '/events']
+export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/groups', '/my-group', '/admin/ministries', '/notifications']
 
 /** @deprecated Use getNavForUser() instead for permission-aware filtering */
 export function getNavForRole(role: UserRole): NavItem[] {

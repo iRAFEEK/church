@@ -392,6 +392,12 @@
     "backToGroups": "Groups",
     "adminPageTitle": "Groups",
     "adminPageSubtitle": "All church groups",
+    "myGroupsTitle": "My Groups",
+    "yourGroupsSection": "Your Groups",
+    "openGroupsSection": "Open Groups",
+    "openGroupsDescription": "You're not part of a group yet. Here are groups open for new members:",
+    "noOpenGroupsTitle": "No open groups at the moment",
+    "noOpenGroupsDescription": "There are no groups open for new members right now. We'll keep you updated when one becomes available.",
     "ministriesButton": "Ministries",
     "newGroupButton": "New Group",
     "newGroupPageTitle": "New Group",
@@ -1608,7 +1614,7 @@
     "home": "Home",
     "groups": "Groups",
     "ministries": "Ministries",
-    "events": "Events",
+    "notifications": "Notifications",
     "more": "More"
   },
   "moreSheet": {
