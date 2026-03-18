@@ -19,7 +19,6 @@ interface BaseProperties {
   church_id: string
   role: string
   locale: string
-  platform?: 'web' | 'ios' | 'android'
 }
 
 export const analytics = {
