@@ -5,9 +5,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { toast } from 'sonner'
 import {
-  LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
-  Calendar, Heart, Megaphone, Music, BookOpen, BarChart3,
-  Settings, LogOut, Building2, QrCode, UserRound, Bell, Globe,
+  LayoutDashboard, User, Users, UsersRound, UserCheck, UserPlus,
+  Calendar, CalendarDays, Heart, Megaphone, Music, BookOpen, BarChart3,
+  Settings, LogOut, Building, Building2, QrCode, UserRound, Bell, Globe,
+  DollarSign, HandHeart, HandHelping, HeartHandshake, LayoutTemplate,
+  Lock, MapPin, ShieldCheck, HandCoins, DoorOpen,
 } from 'lucide-react'
 import {
   Sheet,
@@ -26,9 +28,10 @@ import type { Profile, PermissionKey } from '@/types'
 import { getAvatarUrl } from '@/lib/utils/storage'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
-  Calendar, Heart, Megaphone, Music, BookOpen, BarChart3, Settings,
-  Building2, QrCode, UserRound, Bell,
+  LayoutDashboard, User, Users, UsersRound, UserCheck, UserPlus, UserRound,
+  Calendar, CalendarDays, Heart, Megaphone, Music, BookOpen, BarChart3, Settings,
+  Building, Building2, QrCode, Bell, DollarSign, HandHeart, HandHelping,
+  HeartHandshake, LayoutTemplate, Lock, MapPin, ShieldCheck, HandCoins, DoorOpen,
 }
 
 interface MoreSheetProps {

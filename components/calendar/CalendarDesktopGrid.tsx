@@ -64,6 +64,15 @@ function getMonthGrid(year: number, month: number): DayCell[] {
   return cells
 }
 
+function formatDateA11y(dateStr: string, locale: string): string {
+  const d = new Date(dateStr + 'T12:00:00')
+  return d.toLocaleDateString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 function getItemsForDate(date: string, items: CalendarItem[], activeFilters: Set<CalendarItemType>): CalendarItem[] {
   return items.filter(item => item.date === date && activeFilters.has(item.type))
 }
@@ -102,6 +111,7 @@ export function CalendarDesktopGrid({ month, items, activeFilters, selectedDate,
               key={cell.date}
               type="button"
               onClick={() => onDayClick(cell.date)}
+              aria-label={formatDateA11y(cell.date, locale)}
               className={`
                 min-h-[100px] border-b border-e border-zinc-200 p-1.5 flex flex-col text-start
                 transition-colors hover:bg-zinc-50/80
@@ -138,13 +148,13 @@ export function CalendarDesktopGrid({ month, items, activeFilters, selectedDate,
                       className={`flex items-center gap-1 rounded px-1.5 py-0.5 ${colors.bg} ${colors.text} truncate`}
                     >
                       <span className={`w-1 h-3 rounded-full shrink-0 ${colors.dot}`} />
-                      <span className="text-[11px] leading-tight truncate font-medium">{title}</span>
+                      <span className="text-xs leading-tight truncate font-medium">{title}</span>
                     </div>
                   )
                 })}
                 {overflowCount > 0 && (
-                  <span className="text-[11px] text-primary font-medium px-1 hover:underline">
-                    +{overflowCount} {t('more')}
+                  <span className="text-xs text-primary font-medium ps-1 hover:underline">
+                    {t('moreCount', { count: overflowCount })}
                   </span>
                 )}
               </div>

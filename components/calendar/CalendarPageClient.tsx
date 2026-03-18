@@ -2,17 +2,17 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { ChevronLeft, ChevronRight, CalendarOff } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CALENDAR_TYPE_COLORS } from '@/lib/design/tokens'
 import { CalendarDesktopGrid } from './CalendarDesktopGrid'
 import { CalendarMiniMonth } from './CalendarMiniMonth'
 import { CalendarAgendaList } from './CalendarAgendaList'
-import { CalendarEventCard } from './CalendarEventCard'
+import { CalendarDayView } from './CalendarDayView'
 import type { CalendarItem, CalendarItemType } from '@/types'
 
 type CalendarPageClientProps = {
@@ -39,25 +39,16 @@ function formatMonthYear(date: Date, locale: string): string {
   })
 }
 
-function formatDateHeading(dateStr: string, locale: string): string {
-  const d = new Date(dateStr + 'T12:00:00')
-  return d.toLocaleDateString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageClientProps) {
   const t = useTranslations('calendar')
   const locale = useLocale()
   const [currentMonth, setCurrentMonth] = useState(() => new Date(initialMonth + 'T12:00:00'))
   const [items, setItems] = useState(initialItems)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [showDayView, setShowDayView] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [activeFilters, setActiveFilters] = useState<Set<CalendarItemType>>(() => new Set(ALL_TYPES))
   const abortRef = useRef<AbortController | null>(null)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
 
   const fetchMonth = useCallback(async (date: Date) => {
     abortRef.current?.abort()
@@ -97,6 +88,7 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
     }
     setCurrentMonth(newDate)
     setSelectedDate(null)
+    setShowDayView(false)
     fetchMonth(newDate)
   }, [currentMonth, fetchMonth])
 
@@ -113,25 +105,21 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
   }, [])
 
   const handleDayClick = useCallback((date: string) => {
-    setSelectedDate(prev => prev === date ? null : date)
+    setSelectedDate(date)
+    setShowDayView(true)
   }, [])
 
-  // Mobile swipe gesture for month navigation
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  const handleBackToMonth = useCallback(() => {
+    setShowDayView(false)
   }, [])
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return
-    const dx = e.changedTouches[0].clientX - touchStartRef.current.x
-    const dy = e.changedTouches[0].clientY - touchStartRef.current.y
-    touchStartRef.current = null
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-      const isRtl = document.documentElement.dir === 'rtl'
-      if (dx > 0) navigateMonth(isRtl ? 'next' : 'prev')
-      else navigateMonth(isRtl ? 'prev' : 'next')
-    }
-  }, [navigateMonth])
+  const handleNavigateDay = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedDate) return
+    const d = new Date(selectedDate + 'T12:00:00')
+    d.setDate(d.getDate() + (direction === 'next' ? 1 : -1))
+    const newDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    setSelectedDate(newDate)
+  }, [selectedDate])
 
   const filterLabels: Record<CalendarItemType, string> = {
     event: t('events'),
@@ -139,11 +127,49 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
     gathering: t('gatherings'),
   }
 
-  // Day items for the desktop dialog
-  const dayItems = selectedDate
-    ? items.filter(item => item.date === selectedDate && activeFilters.has(item.type))
-    : []
+  // ── Day View ──────────────────────────────────────────────
+  if (showDayView && selectedDate) {
+    return (
+      <div className="space-y-3">
+        {/* Filter toggles in day view too */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {ALL_TYPES.map(type => {
+            const active = activeFilters.has(type)
+            const colors = CALENDAR_TYPE_COLORS[type]
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleFilter(type)}
+                aria-pressed={active}
+                className={`
+                  inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-medium
+                  transition-all border shrink-0 min-h-[44px]
+                  ${active
+                    ? `${colors.bg} ${colors.text} ${colors.border}`
+                    : 'bg-zinc-50 text-zinc-400 border-zinc-200'
+                  }
+                `}
+              >
+                <span className={`h-2 w-2 rounded-full ${active ? colors.dot : 'bg-zinc-300'}`} />
+                {filterLabels[type]}
+              </button>
+            )
+          })}
+        </div>
 
+        <CalendarDayView
+          date={selectedDate}
+          items={items}
+          activeFilters={activeFilters}
+          onBack={handleBackToMonth}
+          onNavigateDay={handleNavigateDay}
+        />
+      </div>
+    )
+  }
+
+  // ── Month View ────────────────────────────────────────────
   return (
     <div className="space-y-4">
       {/* Month navigation */}
@@ -171,14 +197,22 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
             <ChevronRight className="h-5 w-5 rtl:rotate-180" />
           </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9"
-          onClick={() => navigateMonth('today')}
-        >
-          {t('today')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={() => navigateMonth('today')}
+          >
+            {t('today')}
+          </Button>
+          <Button asChild size="sm" className="h-11 gap-1.5" aria-label={t('addEvent')}>
+            <Link href="/admin/events/new">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('addEvent')}</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filter toggles */}
@@ -191,9 +225,10 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
               key={type}
               type="button"
               onClick={() => toggleFilter(type)}
+              aria-pressed={active}
               className={`
-                inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
-                transition-all border shrink-0
+                inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-medium
+                transition-all border shrink-0 min-h-[44px]
                 ${active
                   ? `${colors.bg} ${colors.text} ${colors.border}`
                   : 'bg-zinc-50 text-zinc-400 border-zinc-200'
@@ -259,11 +294,7 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
           </div>
 
           {/* Mobile: mini calendar + agenda list */}
-          <div
-            className="md:hidden"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
+          <div className="md:hidden">
             <CalendarMiniMonth
               month={currentMonth}
               items={items}
@@ -272,38 +303,13 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
               onDayClick={handleDayClick}
             />
             <CalendarAgendaList
-              date={selectedDate}
+              date={null}
               items={items}
               activeFilters={activeFilters}
             />
           </div>
         </>
       )}
-
-      {/* Desktop: day detail dialog */}
-      <Dialog open={!!selectedDate} onOpenChange={open => { if (!open) setSelectedDate(null) }}>
-        <DialogContent className="hidden md:flex md:flex-col max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-start">
-              {selectedDate ? formatDateHeading(selectedDate, locale) : ''}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 pt-2">
-            {dayItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="h-12 w-12 rounded-xl bg-zinc-100 flex items-center justify-center mb-2.5">
-                  <CalendarOff className="h-6 w-6 text-zinc-400" />
-                </div>
-                <p className="text-sm text-muted-foreground">{t('nothingScheduled')}</p>
-              </div>
-            ) : (
-              dayItems.map(item => (
-                <CalendarEventCard key={`${item.type}-${item.id}`} item={item} />
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

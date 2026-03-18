@@ -37,7 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'My Group',
     label_ar: 'مجموعتي',
     href: '/my-group',
-    iconName: 'Users',
+    iconName: 'UsersRound',
     roles: ['group_leader'],
     section: 'Groups',
     section_ar: 'المجموعات',
@@ -126,7 +126,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Room Booking',
     label_ar: 'حجز المواقع',
     href: '/bookings',
-    iconName: 'CalendarDays',
+    iconName: 'DoorOpen',
     roles: ['group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_book_locations',
     section: 'Ministry',
@@ -296,7 +296,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'My Giving',
     label_ar: 'تبرعاتي',
     href: '/finance/my-giving',
-    iconName: 'HeartHandshake',
+    iconName: 'HandCoins',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_own_giving',
     section: 'Finance',
@@ -305,7 +305,7 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 /** Paths that appear in the mobile bottom tab bar */
-export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/ministries', '/events', '/bible']
+export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/groups', '/my-group', '/admin/ministries', '/events']
 
 /** @deprecated Use getNavForUser() instead for permission-aware filtering */
 export function getNavForRole(role: UserRole): NavItem[] {

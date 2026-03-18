@@ -79,7 +79,7 @@ export function CalendarEventCard({ item, onItemClick }: CalendarEventCardProps)
       <div className={`w-1 self-stretch rounded-full ${colors.dot} shrink-0`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${colors.text} ${colors.border}`}>
+          <Badge variant="outline" className={`text-xs px-1.5 py-0 ${colors.text} ${colors.border}`}>
             {typeLabels[item.type]}
           </Badge>
           {item.event_type && (

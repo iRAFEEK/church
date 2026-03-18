@@ -5,9 +5,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import {
-  LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
-  Calendar, Heart, Megaphone, Music, BookOpen, BarChart3,
-  Settings, ChevronLeft, ChevronRight, LogOut, Building2, QrCode, UserRound
+  LayoutDashboard, User, Users, UserCheck, UserPlus,
+  Calendar, CalendarDays, Heart, Megaphone, Music, BookOpen, BarChart3,
+  Settings, ChevronLeft, ChevronRight, LogOut, Building, Building2, QrCode, UserRound,
+  Bell, DollarSign, HandHeart, HandHelping, HeartHandshake, LayoutTemplate,
+  Lock, MapPin, ShieldCheck, HandCoins, DoorOpen, UsersRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -22,9 +24,10 @@ import { analytics } from '@/lib/analytics'
 import { useRouter } from 'next/navigation'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  LayoutDashboard, User, Users, Network, UserCheck, UserPlus,
-  Calendar, Heart, Megaphone, Music, BookOpen, BarChart3, Settings,
-  Building2, QrCode, UserRound,
+  LayoutDashboard, User, Users, UsersRound, UserCheck, UserPlus, UserRound,
+  Calendar, CalendarDays, Heart, Megaphone, Music, BookOpen, BarChart3, Settings,
+  Building, Building2, QrCode, Bell, DollarSign, HandHeart, HandHelping,
+  HeartHandshake, LayoutTemplate, Lock, MapPin, ShieldCheck, HandCoins, DoorOpen,
 }
 
 interface SidebarProps {
@@ -65,6 +68,7 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
     router.refresh()
   }
 
+  // Ternary instead of rtl:rotate-180 — collapse direction is semantic (toward the edge), which flips in RTL
   const CollapseIcon = isRTL
     ? (collapsed ? ChevronLeft : ChevronRight)
     : (collapsed ? ChevronRight : ChevronLeft)
