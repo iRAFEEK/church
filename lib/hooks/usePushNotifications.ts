@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Messaging } from 'firebase/messaging'
 import { getFirebaseMessaging, isFirebaseClientConfigured } from '@/lib/firebase/client'
+import { getPlatform, getPlatformSync, isNativePlatform } from '@/lib/capacitor/platform'
 
 export type PushPermissionState = 'default' | 'granted' | 'denied' | 'unsupported'
 
@@ -20,9 +21,104 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [currentToken, setCurrentToken] = useState<string | null>(null)
 
-  // On mount: pre-register the service worker and check permission state
+  // On mount: detect platform, check permission state, refresh token if granted
   useEffect(() => {
     if (typeof window === 'undefined') return
+
+    getPlatform().then(async (platform) => {
+      if (platform === 'ios' || platform === 'android') {
+        await initNative()
+      } else {
+        initWeb()
+      }
+    })
+  }, [])
+
+  // --- Native (Capacitor) flow ---
+
+  async function initNative() {
+    try {
+      const { checkNativePushPermission } = await import('@/lib/capacitor/push')
+      const status = await checkNativePushPermission()
+
+      if (status === 'granted') {
+        setPermission('granted')
+        await refreshTokenNative()
+      } else if (status === 'denied') {
+        setPermission('denied')
+      } else {
+        setPermission('default')
+      }
+    } catch (error) {
+      console.warn('[Push/Native] Init failed:', error)
+    }
+  }
+
+  async function refreshTokenNative() {
+    try {
+      const { registerNativePush, setupNativePushListeners } = await import('@/lib/capacitor/push')
+      const token = await registerNativePush()
+
+      if (token) {
+        setCurrentToken(token)
+        setIsSubscribed(true)
+
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, deviceHint: getDeviceHint() }),
+        })
+
+        // Set up notification tap listener
+        setupNativePushListeners((url) => {
+          // Navigate via window.location — works in Capacitor WebView
+          window.location.href = url
+        })
+      }
+    } catch (error) {
+      console.warn('[Push/Native] Token refresh failed:', error)
+      setIsSubscribed(false)
+    }
+  }
+
+  async function subscribeNative() {
+    setIsLoading(true)
+    try {
+      const { registerNativePush, setupNativePushListeners } = await import('@/lib/capacitor/push')
+      const token = await registerNativePush()
+
+      if (!token) {
+        setPermission('denied')
+        setIsLoading(false)
+        return
+      }
+
+      setPermission('granted')
+      setCurrentToken(token)
+
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, deviceHint: getDeviceHint() }),
+      })
+
+      if (res.ok) {
+        setIsSubscribed(true)
+      }
+
+      setupNativePushListeners((url) => {
+        window.location.href = url
+      })
+    } catch (error) {
+      console.error('[Push/Native] Subscribe failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // --- Web (browser FCM) flow ---
+
+  function initWeb() {
     if (!('Notification' in window)) return
     if (!isFirebaseClientConfigured()) return
 
@@ -32,11 +128,11 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     getServiceWorkerRegistration()
 
     if (Notification.permission === 'granted') {
-      refreshToken()
+      refreshTokenWeb()
     }
-  }, [])
+  }
 
-  async function refreshToken() {
+  async function refreshTokenWeb() {
     try {
       const messaging = await getFirebaseMessaging()
       if (!messaging) return
@@ -55,16 +151,12 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token,
-            deviceHint: getDeviceHint(),
-          }),
+          body: JSON.stringify({ token, deviceHint: getDeviceHint() }),
         })
 
         // Listen for foreground messages (app is open)
         const { onMessage } = await import('firebase/messaging')
         onMessage(messaging, (payload) => {
-          // App is open — don't show an OS popup, just let the notification bell handle it
           console.log('[Push] Foreground message received:', payload.notification?.title)
         })
 
@@ -78,7 +170,6 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   }
 
   function setupTokenRefresh(messaging: Messaging) {
-    // FCM tokens are rotated periodically — re-register when they change
     const { onTokenRefresh } = require('firebase/messaging')
     if (typeof onTokenRefresh !== 'function') return
 
@@ -103,8 +194,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     })
   }
 
-  const subscribe = useCallback(async () => {
-    if (typeof window === 'undefined') return
+  async function subscribeWeb() {
     if (!('Notification' in window)) return
 
     setIsLoading(true)
@@ -158,6 +248,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // --- Unified API ---
+
+  const subscribe = useCallback(async () => {
+    if (typeof window === 'undefined') return
+    if (isNativePlatform()) {
+      await subscribeNative()
+    } else {
+      await subscribeWeb()
+    }
   }, [])
 
   const unsubscribe = useCallback(async () => {
@@ -171,6 +272,12 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       })
       setIsSubscribed(false)
       setCurrentToken(null)
+
+      // Cleanup native listeners if applicable
+      if (isNativePlatform()) {
+        const { removeAllNativePushListeners } = await import('@/lib/capacitor/push')
+        await removeAllNativePushListeners()
+      }
     } catch (error) {
       console.error('[Push] Unsubscribe failed:', error)
     } finally {
@@ -181,6 +288,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   return { permission, isSubscribed, isLoading, subscribe, unsubscribe }
 }
 
+// --- Helpers ---
+
+/** Service worker registration — web only (service workers don't exist in Capacitor WebViews) */
 async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | undefined> {
   if (!('serviceWorker' in navigator)) return undefined
   try {
@@ -215,6 +325,11 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
 
 function getDeviceHint(): string {
   if (typeof window === 'undefined') return ''
+  // Capacitor native apps
+  const platform = getPlatformSync()
+  if (platform === 'ios') return 'Capacitor/iOS'
+  if (platform === 'android') return 'Capacitor/Android'
+  // Fallback to UA detection for web
   const ua = navigator.userAgent
   if (/iPhone|iPad/.test(ua)) return 'Safari/iOS'
   if (/Android/.test(ua)) return 'Chrome/Android'

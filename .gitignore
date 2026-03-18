@@ -59,3 +59,14 @@ public/firebase-messaging-sw.js
 
 .env.local
 .claude/worktrees/
+
+# Capacitor native build artifacts
+android/app/build/
+android/.gradle/
+ios/App/Pods/
+ios/App/DerivedData/
+ios/App/App.xcworkspace/xcuserdata/
+
+# Capacitor sensitive files (download from Firebase Console per environment)
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
