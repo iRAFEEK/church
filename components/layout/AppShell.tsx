@@ -44,14 +44,14 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
           />
         </div>
 
-        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <div className="flex flex-col flex-1 min-w-0">
           <Topbar
             profile={profile}
             churchName={church.name}
             churchNameAr={church.name_ar ?? church.name}
             onLangChange={handleLangChange}
           />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6"
+          <main className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
             style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
           >
             {children}
