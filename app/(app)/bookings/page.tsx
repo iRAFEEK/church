@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { getTranslations } from 'next-intl/server'
 import { redirect } from 'next/navigation'
-import { BookingCalendar } from '@/components/locations/BookingCalendar'
+import { BookingsPageClient } from '@/components/locations/BookingsPageClient'
 
 export default async function BookingsPage() {
   const user = await getCurrentUserWithRole()
@@ -23,17 +23,11 @@ export default async function BookingsPage() {
     .limit(100)
 
   return (
-    <div className="space-y-4 pb-24 md:pb-0">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
-      </div>
-
-      <BookingCalendar
-        locations={locations ?? []}
-        currentUserId={user.profile.id}
-        isSuperAdmin={user.profile.role === 'super_admin'}
-      />
-    </div>
+    <BookingsPageClient
+      locations={locations ?? []}
+      currentUserId={user.profile.id}
+      isSuperAdmin={user.profile.role === 'super_admin'}
+    />
   )
 }
 

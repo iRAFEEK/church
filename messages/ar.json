@@ -2618,7 +2618,19 @@
     "todayBookings": "حجوزات اليوم",
     "viewAll": "عرض الكل",
     "noBookingsToday": "لا توجد حجوزات اليوم",
-    "andMore": "و{count} أخرى"
+    "andMore": "و{count} أخرى",
+    "allLocations": "الكل",
+    "today": "اليوم",
+    "todaySummary": "اليوم",
+    "bookingsCount": "حجوزات اليوم",
+    "noBookingsWeek": "لا توجد حجوزات هذا الأسبوع",
+    "noLocationsTitle": "لم يتم إعداد غرف بعد",
+    "noLocationsBody": "أضف غرف ومساحات كنيستك لبدء الحجز.",
+    "noLocationsAction": "إضافة موقع",
+    "tapToBook": "اضغط + لحجز غرفة لمجموعتك أو فعاليتك.",
+    "emptyDayAction": "احجز غرفة",
+    "you": "أنت",
+    "yourBooking": "حجزك"
   },
   "locations": {
     "pageTitle": "المواقع",
