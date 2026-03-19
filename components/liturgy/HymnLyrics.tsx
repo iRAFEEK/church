@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import type { Hymn, LiturgicalLanguage } from '@/types'
+import { convertCopticEncoding } from '@/lib/utils/coptic'
 
 type HymnLyricsProps = {
   hymn: Hymn
@@ -29,7 +30,7 @@ export function HymnLyrics({ hymn, locale }: HymnLyricsProps) {
     tabs.push({ lang: 'en', label: t('english'), content: hymn.lyrics_en })
   }
   if (hymn.lyrics_coptic) {
-    tabs.push({ lang: 'coptic', label: t('coptic'), content: hymn.lyrics_coptic })
+    tabs.push({ lang: 'coptic', label: t('coptic'), content: convertCopticEncoding(hymn.lyrics_coptic) })
   }
 
   // No lyrics available
@@ -48,6 +49,7 @@ export function HymnLyrics({ hymn, locale }: HymnLyricsProps) {
       <div
         className="whitespace-pre-wrap text-base leading-relaxed"
         dir={tab.lang === 'coptic' ? 'ltr' : 'auto'}
+        style={tab.lang === 'coptic' ? { fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif' } : undefined}
       >
         {tab.content}
       </div>
@@ -77,6 +79,7 @@ export function HymnLyrics({ hymn, locale }: HymnLyricsProps) {
           <div
             className="whitespace-pre-wrap text-base leading-relaxed pt-2"
             dir={tab.lang === 'coptic' ? 'ltr' : 'auto'}
+            style={tab.lang === 'coptic' ? { fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif' } : undefined}
           >
             {tab.content}
           </div>
