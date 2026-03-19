@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { LiturgicalContent, LiturgicalSection, LiturgicalLanguage } from '@/types'
+import { convertCopticEncoding } from '@/lib/utils/coptic'
 
 interface LiturgyPresenterProps {
   section: LiturgicalSection
@@ -48,11 +49,12 @@ function BlockContent({
   const texts: { text: string; lang: LiturgicalLanguage }[] = []
   if (showLanguages.includes('ar') && block.body_ar) texts.push({ text: block.body_ar, lang: 'ar' })
   if (showLanguages.includes('en') && block.body_en) texts.push({ text: block.body_en, lang: 'en' })
-  if (showLanguages.includes('coptic') && block.body_coptic) texts.push({ text: block.body_coptic, lang: 'coptic' })
+  if (showLanguages.includes('coptic') && block.body_coptic) texts.push({ text: convertCopticEncoding(block.body_coptic), lang: 'coptic' })
 
   if (texts.length === 0) {
-    const fallback = block.body_ar || block.body_en || block.body_coptic
-    if (fallback) texts.push({ text: fallback, lang: block.body_ar ? 'ar' : block.body_en ? 'en' : 'coptic' })
+    const fallbackLang: LiturgicalLanguage = block.body_ar ? 'ar' : block.body_en ? 'en' : 'coptic'
+    const fallbackText = block.body_ar || block.body_en || (block.body_coptic ? convertCopticEncoding(block.body_coptic) : '')
+    if (fallbackText) texts.push({ text: fallbackText, lang: fallbackLang })
   }
 
   const typeStyle = CONTENT_TYPE_COLORS[block.content_type] || 'text-white'
@@ -77,7 +79,7 @@ function BlockContent({
           style={{
             fontSize: i === 0 ? fontSize : fontSize * 0.85,
             fontFamily: lang === 'coptic'
-              ? '"Noto Naskh Arabic", "Traditional Arabic", serif'
+              ? '"Noto Sans Coptic", "Segoe UI Historic", serif'
               : undefined,
           }}
         >
