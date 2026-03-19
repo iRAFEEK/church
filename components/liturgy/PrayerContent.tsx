@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 import type { LiturgicalContent } from '@/types'
+import { convertCopticEncoding } from '@/lib/utils/coptic'
 
 type PrayerContentProps = {
   content: LiturgicalContent[]
@@ -67,8 +68,8 @@ function ContentBlock({ block, locale }: ContentBlockProps) {
             </p>
           )}
           {block.body_coptic && (
-            <p className="text-sm italic text-muted-foreground font-serif whitespace-pre-wrap">
-              {block.body_coptic}
+            <p className="text-sm italic text-muted-foreground whitespace-pre-wrap" dir="ltr" style={{ fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif' }}>
+              {convertCopticEncoding(block.body_coptic)}
             </p>
           )}
         </div>
@@ -86,8 +87,8 @@ function ContentBlock({ block, locale }: ContentBlockProps) {
             </p>
           )}
           {block.body_coptic && (
-            <p className="text-xs italic text-muted-foreground/60 font-serif whitespace-pre-wrap">
-              {block.body_coptic}
+            <p className="text-xs italic text-muted-foreground/60 whitespace-pre-wrap" dir="ltr" style={{ fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif' }}>
+              {convertCopticEncoding(block.body_coptic)}
             </p>
           )}
         </div>
@@ -148,8 +149,8 @@ function ContentBlock({ block, locale }: ContentBlockProps) {
             {locale === 'en' ? block.body_en : primaryText}
           </p>
           {block.body_coptic && (
-            <p className="text-sm italic text-muted-foreground font-serif whitespace-pre-wrap">
-              {block.body_coptic}
+            <p className="text-sm italic text-muted-foreground whitespace-pre-wrap" dir="ltr" style={{ fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif' }}>
+              {convertCopticEncoding(block.body_coptic)}
             </p>
           )}
         </div>
