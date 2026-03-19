@@ -13,6 +13,7 @@ import type { LiturgicalSection } from '@/types'
 
 // Categories handled by this dynamic route (others have dedicated pages)
 const VALID_CATEGORIES = [
+  'katameros',
   'baptism', 'crowning', 'funeral', 'unction', 'pascha',
   'incense', 'consecrations', 'antiphonary', 'lakkan',
   'papal', 'prostration', 'veneration',
