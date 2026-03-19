@@ -1,13 +1,16 @@
-import { requirePermission } from '@/lib/auth'
+import { getCurrentUserWithRole } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SongsTable } from '@/components/songs/SongsTable'
 import { getTranslations } from 'next-intl/server'
 
 export default async function AdminSongsPage() {
-  const user = await requirePermission('can_manage_songs')
+  const user = await getCurrentUserWithRole()
+  if (!user) redirect('/login')
 
   const t = await getTranslations('songs')
+  const canManage = ['super_admin', 'ministry_leader'].includes(user.profile.role)
 
   return (
     <div className="space-y-6 pb-24">
@@ -16,12 +19,14 @@ export default async function AdminSongsPage() {
           <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
           <p className="text-sm text-zinc-500 mt-1">{t('pageSubtitle')}</p>
         </div>
-        <Link href="/admin/songs/new">
-          <Button>{t('addSong')}</Button>
-        </Link>
+        {canManage && (
+          <Link href="/admin/songs/new">
+            <Button>{t('addSong')}</Button>
+          </Link>
+        )}
       </div>
 
-      <SongsTable />
+      <SongsTable role={user.profile.role} />
     </div>
   )
 }

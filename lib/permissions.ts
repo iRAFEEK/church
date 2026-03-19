@@ -30,6 +30,8 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
   'can_submit_expenses',
   'can_manage_campaigns',
   'can_reconcile_bank',
+  // Liturgy
+  'can_manage_liturgy',
   // Locations
   'can_manage_locations',
   'can_book_locations',
@@ -65,6 +67,8 @@ export const PERMISSION_LABELS: Record<PermissionKey, { en: string; ar: string }
   can_submit_expenses:     { en: 'Submit Expenses',       ar: 'تقديم طلبات المصروفات' },
   can_manage_campaigns:    { en: 'Manage Campaigns',      ar: 'إدارة الحملات' },
   can_reconcile_bank:      { en: 'Reconcile Bank',        ar: 'تسوية الحسابات البنكية' },
+  // Liturgy
+  can_manage_liturgy:      { en: 'Manage Liturgy',        ar: 'إدارة الطقوس' },
   // Locations
   can_manage_locations:    { en: 'Manage Locations',      ar: 'إدارة المواقع' },
   can_book_locations:      { en: 'Book Locations',        ar: 'حجز المواقع' },
@@ -87,6 +91,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: false,
     can_submit_expenses: false, can_manage_campaigns: false, can_reconcile_bank: false,
+    can_manage_liturgy: false,
     can_manage_locations: false, can_book_locations: false,
   },
   group_leader: {
@@ -101,6 +106,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: false,
     can_submit_expenses: true, can_manage_campaigns: false, can_reconcile_bank: false,
+    can_manage_liturgy: false,
     can_manage_locations: false, can_book_locations: true,
   },
   ministry_leader: {
@@ -115,6 +121,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_donations: false, can_view_own_giving: true,
     can_manage_budgets: false, can_approve_expenses: true,
     can_submit_expenses: true, can_manage_campaigns: false, can_reconcile_bank: false,
+    can_manage_liturgy: false,
     can_manage_locations: true, can_book_locations: true,
   },
   super_admin: {
@@ -129,6 +136,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_manage_donations: true, can_view_own_giving: true,
     can_manage_budgets: true, can_approve_expenses: true,
     can_submit_expenses: true, can_manage_campaigns: true, can_reconcile_bank: true,
+    can_manage_liturgy: true,
     can_manage_locations: true, can_book_locations: true,
   },
 }

@@ -1292,7 +1292,13 @@
     "shortcutClose": "إغلاق الإعدادات",
     "stepTitleArtist": "العنوان والفنان",
     "stepLyrics": "الكلمات",
-    "stepTagsReview": "التصنيفات والمراجعة"
+    "stepTagsReview": "التصنيفات والمراجعة",
+    "publishedBy": "نُشرت بواسطة {church}",
+    "publishToAll": "مشاركة عالمية",
+    "publishing": "بينشر...",
+    "publishConfirmTitle": "مشاركة مع كل الكنائس؟",
+    "publishConfirmDescription": "هيتم خلي \"{title}\" متاحة لكل الكنائس على المنصة. كنيستك هتظهر كناشر. مش هتقدر ترجع في الإجراء ده.",
+    "publishConfirmAction": "أيوه، شارك عالمياً"
   },
   "announcements": {
     "adminPageTitle": "الإعلانات",
@@ -2381,6 +2387,18 @@
     "backToLiturgyList": "الرجوع للقداسات",
     "notFound": "مش موجود",
     "sectionNotFound": "القسم المطلوب مش موجود",
-    "hymnNotFound": "اللحن المطلوب مش موجود"
+    "hymnNotFound": "اللحن المطلوب مش موجود",
+    "baptism": "المعمودية",
+    "crowning": "الإكليل",
+    "funeral": "الجنازات",
+    "unction": "القنديل",
+    "pascha": "أسبوع الآلام",
+    "incense": "رفع بخور",
+    "consecrations": "التكريسات",
+    "antiphonary": "الأنتيفونا",
+    "lakkan": "اللقان",
+    "papal": "الطقوس البابوية",
+    "prostration": "المطانيات",
+    "veneration": "التبجيل"
   }
 }

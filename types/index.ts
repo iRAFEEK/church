@@ -35,6 +35,8 @@ export type PermissionKey =
   | 'can_submit_expenses'
   | 'can_manage_campaigns'
   | 'can_reconcile_bank'
+  // ─── Liturgy ──────────────────────────────────────────────
+  | 'can_manage_liturgy'
   // ─── Locations ────────────────────────────────────────────
   | 'can_manage_locations'
   | 'can_book_locations'
@@ -1116,6 +1118,121 @@ export interface ChurchNeedMessageWithSender extends ChurchNeedMessage {
 // ============================================================
 // CALENDAR
 // ============================================================
+
+// ============================================================
+// LITURGICAL RESOURCES
+// ============================================================
+
+export type LiturgicalContentType = 'prayer' | 'reading' | 'response' | 'hymn' | 'rubric' | 'instruction'
+export type LiturgicalLanguage = 'ar' | 'en' | 'coptic'
+
+export interface LiturgicalTradition {
+  id: string
+  slug: string
+  name: string
+  name_ar: string
+  created_at: string
+}
+
+export interface LiturgicalCategory {
+  id: string
+  tradition_id: string
+  slug: string
+  name: string
+  name_ar: string
+  icon: string | null
+  sort_order: number
+}
+
+export interface LiturgicalSection {
+  id: string
+  category_id: string
+  slug: string
+  title: string
+  title_ar: string
+  description: string | null
+  description_ar: string | null
+  sort_order: number
+  metadata: Record<string, unknown>
+}
+
+export interface LiturgicalContent {
+  id: string
+  section_id: string
+  content_type: LiturgicalContentType
+  title: string | null
+  title_ar: string | null
+  body_en: string | null
+  body_ar: string | null
+  body_coptic: string | null
+  audio_url: string | null
+  sort_order: number
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface LectionaryReading {
+  id: string
+  tradition_id: string
+  reading_date: string
+  coptic_date: string | null
+  season: string | null
+  occasion: string | null
+  occasion_ar: string | null
+  readings: LectionaryReadingEntry[]
+  synaxarium_en: string | null
+  synaxarium_ar: string | null
+  created_at: string
+}
+
+export interface LectionaryReadingEntry {
+  type: string
+  reference: string
+  text_en?: string
+  text_ar?: string
+}
+
+export interface Hymn {
+  id: string
+  tradition_id: string
+  title: string
+  title_ar: string | null
+  title_coptic: string | null
+  lyrics_en: string | null
+  lyrics_ar: string | null
+  lyrics_coptic: string | null
+  audio_url: string | null
+  season: string | null
+  occasion: string | null
+  tags: string[]
+  sort_order: number
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface ChurchLiturgicalSettings {
+  church_id: string
+  tradition_id: string
+  preferred_language: LiturgicalLanguage
+  created_at: string
+  updated_at: string
+}
+
+export interface LiturgicalBookmark {
+  id: string
+  profile_id: string
+  church_id: string
+  content_id: string | null
+  hymn_id: string | null
+  note: string | null
+  created_at: string
+}
+
+export interface LiturgicalBookmarkWithDetails extends LiturgicalBookmark {
+  content?: LiturgicalContent | null
+  hymn?: Hymn | null
+}
 
 export type CalendarItemType = 'event' | 'serving' | 'gathering'
 

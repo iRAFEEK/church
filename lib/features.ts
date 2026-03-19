@@ -12,6 +12,7 @@ export type FeatureFlag =
   | 'audit_log_ui'
   | 'outreach_module'
   | 'song_presenter'
+  | 'liturgy_module'
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   advanced_reporting: false,
@@ -21,6 +22,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   audit_log_ui: false,
   outreach_module: true,
   song_presenter: true,
+  liturgy_module: true,
 }
 
 // ARCH: Synchronous check against defaults + env overrides.

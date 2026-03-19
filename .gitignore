@@ -60,3 +60,4 @@ public/firebase-messaging-sw.js
 
 .env.local
 .claude/worktrees/
+supabase/seeds/coptic-reader-import.sql

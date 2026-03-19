@@ -35,7 +35,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   const { data, error, count } = await supabase
     .from('songs')
-    .select('id, church_id, title, title_ar, artist, artist_ar, tags, is_active, created_at, updated_at, lyrics, lyrics_ar', { count: 'exact' })
+    .select('id, church_id, title, title_ar, artist, artist_ar, tags, is_active, created_at, updated_at, lyrics, lyrics_ar, published_by_church:published_by_church_id(name, name_ar)', { count: 'exact' })
     .or(`church_id.eq.${profile.church_id},church_id.is.null`)
     .order('title', { ascending: true })
     .range(from, to)

@@ -1292,7 +1292,13 @@
     "shortcutClose": "Close settings",
     "stepTitleArtist": "Title & Artist",
     "stepLyrics": "Lyrics",
-    "stepTagsReview": "Tags & Review"
+    "stepTagsReview": "Tags & Review",
+    "publishedBy": "Published by {church}",
+    "publishToAll": "Share globally",
+    "publishing": "Publishing...",
+    "publishConfirmTitle": "Share with all churches?",
+    "publishConfirmDescription": "This will make \"{title}\" available to all churches on the platform. Your church will be shown as the publisher. This action cannot be undone.",
+    "publishConfirmAction": "Yes, share globally"
   },
   "announcements": {
     "adminPageTitle": "Announcements",
@@ -2766,6 +2772,18 @@
     "settings": "Liturgy Settings",
     "tradition": "Tradition",
     "preferredLanguage": "Preferred Language",
-    "settingsSaved": "Settings saved"
+    "settingsSaved": "Settings saved",
+    "baptism": "Baptism",
+    "crowning": "Crowning (Wedding)",
+    "funeral": "Funeral",
+    "unction": "Anointing of the Sick",
+    "pascha": "Holy Week",
+    "incense": "Raising of Incense",
+    "consecrations": "Consecrations",
+    "antiphonary": "Antiphonary",
+    "lakkan": "Foot Washing",
+    "papal": "Papal Rites",
+    "prostration": "Prostration",
+    "veneration": "Veneration"
   }
 }

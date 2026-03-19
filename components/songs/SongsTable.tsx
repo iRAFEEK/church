@@ -6,14 +6,26 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Music, Search, ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { Music, Search, ChevronLeft, ChevronRight, Play, Globe, Share2 } from 'lucide-react'
 import { ListShimmer } from '@/components/ui/list-shimmer'
 import { splitIntoSlides, findSlideForText } from '@/lib/utils/song-slides'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 const PAGE_SIZE = 50
 
 interface SongResult {
   id: string
+  church_id: string | null
   title: string
   title_ar: string | null
   artist: string | null
@@ -23,9 +35,14 @@ interface SongResult {
   tags: string[]
   is_active: boolean
   snippet?: string
+  published_by_church?: { name: string; name_ar: string | null } | null
 }
 
-export function SongsTable() {
+interface SongsTableProps {
+  role?: string
+}
+
+export function SongsTable({ role }: SongsTableProps) {
   const t = useTranslations('songs')
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
@@ -76,6 +93,23 @@ export function SongsTable() {
     return () => controller.abort()
   }, [debouncedSearch, page, fetchSongs])
 
+  const [publishing, setPublishing] = useState<string | null>(null)
+
+  const handlePublish = async (songId: string) => {
+    setPublishing(songId)
+    try {
+      const res = await fetch(`/api/songs/${songId}/publish`, { method: 'POST' })
+      if (res.ok) {
+        // Refresh the list
+        const controller = new AbortController()
+        await fetchSongs(debouncedSearch, page, controller.signal)
+      }
+    } finally {
+      setPublishing(null)
+    }
+  }
+
+  const isSuperAdmin = role === 'super_admin'
   const isSearching = debouncedSearch.trim().length > 0
 
   const parentRef = useRef<HTMLDivElement>(null)
@@ -153,15 +187,53 @@ export function SongsTable() {
                     <Play className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate">{title}</p>
                       {!isSearching && slideCount > 0 && (
                         <Badge variant="secondary" className="shrink-0">{slideCount} {t('slides')}</Badge>
                       )}
+                      {song.published_by_church && (
+                        <Badge variant="outline" className="shrink-0 gap-1 text-xs">
+                          <Globe className="h-3 w-3" />
+                          {t('publishedBy', { church: isAr ? (song.published_by_church.name_ar || song.published_by_church.name) : song.published_by_church.name })}
+                        </Badge>
+                      )}
                     </div>
-                    {artist && (
-                      <p className="text-sm text-muted-foreground truncate">{artist}</p>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {artist && (
+                        <p className="text-sm text-muted-foreground truncate">{artist}</p>
+                      )}
+                      {isSuperAdmin && song.church_id !== null && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs shrink-0"
+                              disabled={publishing === song.id}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Share2 className="h-3 w-3 me-1" />
+                              {publishing === song.id ? t('publishing') : t('publishToAll')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t('publishConfirmTitle')}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('publishConfirmDescription', { title })}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handlePublish(song.id)}>
+                                {t('publishConfirmAction')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
                     {/* Lyrics snippet when searching */}
                     {isSearching && song.snippet && (
                       <div className="mt-1 flex items-start gap-2 text-xs">
