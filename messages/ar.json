@@ -1292,7 +1292,13 @@
     "shortcutClose": "إغلاق الإعدادات",
     "stepTitleArtist": "العنوان والفنان",
     "stepLyrics": "الكلمات",
-    "stepTagsReview": "التصنيفات والمراجعة"
+    "stepTagsReview": "التصنيفات والمراجعة",
+    "publishedBy": "نُشرت بواسطة {church}",
+    "publishToAll": "مشاركة عالمية",
+    "publishing": "جاري النشر...",
+    "publishConfirmTitle": "مشاركة مع جميع الكنائس؟",
+    "publishConfirmDescription": "سيتم جعل \"{title}\" متاحة لجميع الكنائس على المنصة. ستظهر كنيستك كناشر. لا يمكن التراجع عن هذا الإجراء.",
+    "publishConfirmAction": "نعم، شارك عالمياً"
   },
   "announcements": {
     "adminPageTitle": "الإعلانات",
@@ -2810,6 +2816,18 @@
     "settings": "إعدادات الطقوس",
     "tradition": "التقليد",
     "preferredLanguage": "اللغة المفضلة",
-    "settingsSaved": "تم حفظ الإعدادات"
+    "settingsSaved": "تم حفظ الإعدادات",
+    "baptism": "المعمودية",
+    "crowning": "الإكليل",
+    "funeral": "الجنازات",
+    "unction": "القنديل",
+    "pascha": "أسبوع الآلام",
+    "incense": "رفع بخور",
+    "consecrations": "التكريسات",
+    "antiphonary": "الأنتيفونا",
+    "lakkan": "اللقان",
+    "papal": "الطقوس البابوية",
+    "prostration": "المطانيات",
+    "veneration": "التبجيل"
   }
 }

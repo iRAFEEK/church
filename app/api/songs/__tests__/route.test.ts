@@ -10,13 +10,14 @@ describe('Songs [id] route — IDOR prevention', () => {
     expect(routeCode).not.toContain('supabase.auth.getUser()')
   })
 
-  it('GET should filter by church_id', () => {
-    expect(routeCode).toContain("eq('church_id', profile.church_id)")
+  it('GET is globally readable (no church_id filter — songs are shared)', () => {
+    // GET should NOT filter by church_id since songs are a shared library
+    expect(routeCode).toContain('export const GET = apiHandler')
   })
 
-  it('PATCH should filter by church_id', () => {
+  it('PATCH should filter by church_id (only edit own church songs)', () => {
     const churchIdCount = (routeCode.match(/eq\('church_id', profile\.church_id\)/g) || []).length
-    expect(churchIdCount).toBeGreaterThanOrEqual(3) // GET + PATCH + DELETE
+    expect(churchIdCount).toBeGreaterThanOrEqual(2) // PATCH + DELETE
   })
 
   it('DELETE should filter by church_id', () => {
@@ -49,8 +50,8 @@ describe('Songs [id]/display route — IDOR prevention', () => {
     expect(displayRouteCode).not.toContain('supabase.auth.getUser()')
   })
 
-  it('should filter by church_id', () => {
-    expect(displayRouteCode).toContain("eq('church_id', profile.church_id)")
+  it('should scope updates to own church or global songs', () => {
+    expect(displayRouteCode).toContain('church_id')
   })
 
   it('should validate input with Zod', () => {
