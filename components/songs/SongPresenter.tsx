@@ -34,7 +34,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   // Active song state — allows switching songs via in-presenter search
   const [activeSong, setActiveSong] = useState<Song>(song)
 
-  const lyrics = isAr ? (activeSong.lyrics_ar || activeSong.lyrics) : activeSong.lyrics
+  const lyrics = isAr ? (activeSong.lyrics_ar || activeSong.lyrics) : (activeSong.lyrics || activeSong.lyrics_ar)
   const slides = lyrics ? splitIntoSlides(lyrics) : []
   const songTitle = isAr ? (activeSong.title_ar || activeSong.title) : activeSong.title
 
@@ -148,7 +148,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
         setActiveSong(data)
         setSettings(data.display_settings || settings)
         // Compute slides for new song to clamp slideIndex
-        const newLyrics = isAr ? (data.lyrics_ar || data.lyrics) : data.lyrics
+        const newLyrics = isAr ? (data.lyrics_ar || data.lyrics) : (data.lyrics || data.lyrics_ar)
         const newSlides = newLyrics ? splitIntoSlides(newLyrics) : []
         setCurrentSlide(Math.min(slideIndex, Math.max(newSlides.length - 1, 0)))
         setShowSearch(false)
