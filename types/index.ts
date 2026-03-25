@@ -40,6 +40,11 @@ export type PermissionKey =
   // ─── Locations ────────────────────────────────────────────
   | 'can_manage_locations'
   | 'can_book_locations'
+  // ─── Conference ───────────────────────────────────────────
+  | 'can_manage_conference'
+  | 'can_view_conference_dashboard'
+  | 'can_manage_conference_teams'
+  | 'can_plan_conference_board'
 
 export type PermissionMap = Partial<Record<PermissionKey, boolean>>
 export type UserStatus = 'active' | 'inactive' | 'at_risk' | 'visitor'
@@ -1306,4 +1311,272 @@ export interface LocationBookingWithDetails extends LocationBooking {
     first_name_ar: string | null
     last_name_ar: string | null
   }
+}
+
+// ============================================================
+// CONFERENCE MODE
+// ============================================================
+
+export type ConferenceTeamRole = 'conference_director' | 'area_director' | 'team_leader' | 'sub_leader' | 'volunteer'
+export type ConferenceTaskStatus = 'open' | 'in_progress' | 'blocked' | 'done'
+export type ConferenceTaskPriority = 'low' | 'normal' | 'high' | 'critical'
+export type ConferenceResourceType = 'equipment' | 'supply' | 'food' | 'transport' | 'other'
+export type ConferenceResourceStatus = 'needed' | 'requested' | 'confirmed' | 'delivered'
+export type ConferenceCheckinStatus = 'not_arrived' | 'checked_in' | 'checked_out' | 'no_show'
+export type ConferenceCardStatus = 'planning' | 'leader_notified' | 'in_progress' | 'ready'
+export type ConferenceCollaboratorRole = 'co_planner' | 'ministry_lead'
+
+export interface ConferenceSettings {
+  campaign_id?: string
+  budget_id?: string
+  checkin_open_minutes_before?: number
+  show_volunteer_qr?: boolean
+  published_at?: string
+  show_ministries?: boolean
+  show_schedule?: boolean
+  allow_public?: boolean
+  public_tagline?: string
+  public_tagline_ar?: string
+}
+
+export interface ConferenceArea {
+  id: string
+  church_id: string
+  event_id: string
+  parent_area_id: string | null
+  name: string
+  name_ar: string | null
+  description: string | null
+  description_ar: string | null
+  location_hint: string | null
+  location_hint_ar: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceAreaWithChildren extends ConferenceArea {
+  children: ConferenceAreaWithChildren[]
+  teams: ConferenceTeam[]
+}
+
+export interface ConferenceTeam {
+  id: string
+  church_id: string
+  event_id: string
+  area_id: string
+  name: string
+  name_ar: string | null
+  description: string | null
+  description_ar: string | null
+  muster_point: string | null
+  muster_point_ar: string | null
+  target_headcount: number | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceTeamWithStats extends ConferenceTeam {
+  total_members: number
+  checked_in: number
+  open_tasks: number
+  blocked_tasks: number
+}
+
+export interface ConferenceTeamMember {
+  id: string
+  church_id: string
+  event_id: string
+  team_id: string
+  profile_id: string
+  role: ConferenceTeamRole
+  shift_start: string | null
+  shift_end: string | null
+  checkin_status: ConferenceCheckinStatus
+  checked_in_at: string | null
+  checked_out_at: string | null
+  checked_in_by: string | null
+  task_notes: string | null
+  assigned_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceTeamMemberWithProfile extends ConferenceTeamMember {
+  profile: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'first_name_ar' | 'last_name_ar' | 'photo_url' | 'phone'>
+}
+
+export interface ConferenceTask {
+  id: string
+  church_id: string
+  event_id: string
+  team_id: string | null
+  area_id: string | null
+  card_id: string | null
+  title: string
+  title_ar: string | null
+  description: string | null
+  description_ar: string | null
+  status: ConferenceTaskStatus
+  priority: ConferenceTaskPriority
+  assignee_id: string | null
+  due_at: string | null
+  completed_at: string | null
+  completed_by: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceTaskWithAssignee extends ConferenceTask {
+  assignee: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'first_name_ar' | 'last_name_ar' | 'photo_url'> | null
+}
+
+export interface ConferenceResource {
+  id: string
+  church_id: string
+  event_id: string
+  team_id: string | null
+  card_id: string | null
+  name: string
+  name_ar: string | null
+  resource_type: ConferenceResourceType
+  quantity_needed: number
+  quantity_confirmed: number | null
+  status: ConferenceResourceStatus
+  estimated_cost: number | null
+  notes: string | null
+  notes_ar: string | null
+  requested_by: string | null
+  fulfilled_by: string | null
+  fulfilled_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceBroadcast {
+  id: string
+  church_id: string
+  event_id: string
+  team_id: string | null
+  area_id: string | null
+  sent_by: string
+  message: string
+  message_ar: string | null
+  is_urgent: boolean
+  created_at: string
+}
+
+export interface ConferenceBroadcastWithSender extends ConferenceBroadcast {
+  sender: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'first_name_ar' | 'last_name_ar' | 'photo_url'>
+  read_count: number
+}
+
+export interface ConferenceDashboard {
+  totals: {
+    volunteers: number
+    checked_in: number
+    checked_out: number
+    no_show: number
+  }
+  by_area: Array<{
+    area_id: string
+    area_name: string
+    area_name_ar: string | null
+    total: number
+    checked_in: number
+    open_tasks: number
+    blocked_tasks: number
+  }>
+  by_team: Array<{
+    team_id: string
+    team_name: string
+    team_name_ar: string | null
+    area_id: string
+    total: number
+    checked_in: number
+    target_headcount: number | null
+  }>
+  tasks: {
+    open: number
+    in_progress: number
+    blocked: number
+    done: number
+    critical_open: number
+  }
+  resources: {
+    needed: number
+    requested: number
+    confirmed: number
+    delivered: number
+  }
+  recent_broadcasts: ConferenceBroadcastWithSender[]
+  alert_flags: Array<{
+    type: 'blocked_task' | 'team_understaffed' | 'no_show'
+    task_id?: string
+    team_id?: string
+    message: string
+    message_ar: string
+  }>
+}
+
+// ─── Planning Board ──────────────────────────────────────────
+
+export interface ConferenceBoardColumn {
+  id: string
+  church_id: string
+  event_id: string
+  name: string
+  name_ar: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceBoardCard {
+  id: string
+  church_id: string
+  event_id: string
+  column_id: string | null
+  team_id: string | null
+  ministry_id: string | null
+  custom_name: string | null
+  custom_name_ar: string | null
+  assigned_leader_id: string | null
+  assigned_leader_external_phone: string | null
+  headcount_target: number | null
+  status: ConferenceCardStatus
+  sort_order: number
+  leader_notified_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ConferenceBoardCardWithDetails extends ConferenceBoardCard {
+  ministry: Pick<Ministry, 'id' | 'name' | 'name_ar'> | null
+  assigned_leader: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'first_name_ar' | 'last_name_ar' | 'photo_url'> | null
+  task_count: number
+  done_task_count: number
+  resource_count: number
+}
+
+export interface ConferenceBoardColumnWithCards extends ConferenceBoardColumn {
+  cards: ConferenceBoardCardWithDetails[]
+}
+
+export interface ConferenceCollaborator {
+  id: string
+  church_id: string
+  event_id: string
+  card_id: string | null
+  invited_by: string
+  user_id: string | null
+  external_email: string | null
+  external_phone: string | null
+  external_church_name: string | null
+  role: ConferenceCollaboratorRole
+  invite_token: string | null
+  accepted_at: string | null
+  created_at: string
 }

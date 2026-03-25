@@ -45,6 +45,8 @@ class FCMPushProvider implements MessageProvider {
 
       const messaging = getAdminMessaging()
 
+      const url = payload.params.url || this.buildUrl(referenceType, referenceId)
+
       const message = {
         tokens,
         notification: { title, body },
@@ -52,7 +54,7 @@ class FCMPushProvider implements MessageProvider {
           type: payload.template,
           referenceId,
           referenceType,
-          url: this.buildUrl(referenceType, referenceId),
+          url,
         },
         webpush: {
           notification: {
@@ -63,7 +65,7 @@ class FCMPushProvider implements MessageProvider {
             tag: payload.template,
           },
           fcmOptions: {
-            link: this.buildUrl(referenceType, referenceId),
+            link: url,
           },
         },
       }
@@ -101,12 +103,16 @@ class FCMPushProvider implements MessageProvider {
   private buildUrl(referenceType: string, referenceId: string): string {
     if (!referenceType || !referenceId) return '/'
     switch (referenceType) {
-      case 'visitor':    return `/admin/visitors`
-      case 'event':      return `/events/${referenceId}`
-      case 'group':      return `/groups/${referenceId}`
-      case 'prayer':     return `/prayer`
-      case 'serving':    return `/serving`
-      default:           return '/notifications'
+      case 'visitor':            return `/admin/visitors`
+      case 'event':              return `/events/${referenceId}`
+      case 'group':              return `/groups/${referenceId}`
+      case 'prayer':             return `/prayer`
+      case 'serving':            return `/serving`
+      case 'conference_team':    return `/notifications`
+      case 'conference_card':    return `/notifications`
+      case 'conference_task':    return `/notifications`
+      case 'conference_broadcast': return `/notifications`
+      default:                   return '/notifications'
     }
   }
 }

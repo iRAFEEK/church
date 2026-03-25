@@ -16,6 +16,10 @@ export type NotificationType =
   | 'group_join_request'
   | 'ministry_member_added'
   | 'meeting_action_assigned'
+  | 'conference_team_assigned'
+  | 'conference_broadcast'
+  | 'conference_task_assigned'
+  | 'conference_task_blocked'
   | 'general'
 
 export interface MessagePayload {

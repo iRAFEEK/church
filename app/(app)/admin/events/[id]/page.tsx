@@ -11,7 +11,7 @@ import { EventRunOfShow } from '@/components/events/EventRunOfShow'
 import { EventDeleteButton } from '@/components/events/EventDeleteButton'
 import { EventServiceRequests } from '@/components/events/EventServiceRequests'
 import { getTranslations, getLocale } from 'next-intl/server'
-import { Calendar, MapPin, Users, Clock } from 'lucide-react'
+import { Calendar, MapPin, Users, Clock, Radio } from 'lucide-react'
 
 export default async function AdminEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -26,7 +26,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
   const [{ data: event }, { count: registrationCount }] = await Promise.all([
     supabase
       .from('events')
-      .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, status')
+      .select('id, title, title_ar, description, description_ar, event_type, starts_at, ends_at, location, capacity, status, conference_mode')
       .eq('id', id)
       .eq('church_id', user.profile.church_id)
       .single(),
@@ -64,8 +64,32 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
     completed: 'bg-zinc-100 text-zinc-800',
   }
 
+  const tConf = await getTranslations('conference')
+
   return (
     <div className="space-y-6 pb-24">
+
+      {/* Conference Mode Banner */}
+      {event.conference_mode && user.resolvedPermissions.can_view_conference_dashboard && (
+        <Link href={`/admin/events/${id}/conference`}>
+          <div className="flex items-center justify-between gap-3 rounded-xl border-2 border-primary/30 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                <Radio className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-primary text-sm">{tConf('mode')}</p>
+                <p className="text-xs text-muted-foreground">{tConf('dashboard')} · {tConf('board')} · {tConf('volunteers')}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-primary text-sm font-medium shrink-0">
+              {tConf('backToBoard').replace('Back to ', '').replace('العودة إلى ', '')}
+              <span className="rtl:rotate-180 inline-block">→</span>
+            </div>
+          </div>
+        </Link>
+      )}
+
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>

@@ -1,13 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 
 export interface AudienceTarget {
-  type: 'all_church' | 'roles' | 'groups' | 'ministries' | 'statuses' | 'visitors' | 'gender'
+  type: 'all_church' | 'roles' | 'groups' | 'ministries' | 'statuses' | 'visitors' | 'gender' | 'conference_team'
   roles?: ('member' | 'group_leader' | 'ministry_leader' | 'super_admin')[]
   groupIds?: string[]
   ministryIds?: string[]
   statuses?: ('active' | 'inactive' | 'at_risk' | 'visitor')[]
   visitorStatuses?: ('new' | 'assigned' | 'contacted')[]
   gender?: 'male' | 'female'
+  // Conference team targeting
+  conferenceTeamId?: string
+  conferenceCheckedInOnly?: boolean  // only notify volunteers who are checked_in
 }
 
 export interface AudienceResult {
@@ -123,6 +126,21 @@ export async function resolveAudience(
           .eq('onboarding_completed', true)
           .eq('gender', target.gender)
         data?.forEach(p => profileIds.push(p.id))
+        break
+      }
+
+      case 'conference_team': {
+        if (!target.conferenceTeamId) break
+        let query = supabase
+          .from('conference_team_members')
+          .select('profile_id')
+          .eq('team_id', target.conferenceTeamId)
+          .eq('church_id', churchId)
+        if (target.conferenceCheckedInOnly) {
+          query = query.eq('checkin_status', 'checked_in')
+        }
+        const { data } = await query
+        data?.forEach(m => profileIds.push(m.profile_id))
         break
       }
     }

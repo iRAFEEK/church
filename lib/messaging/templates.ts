@@ -168,6 +168,46 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectEn: 'New message about: {needTitle}',
     emailSubjectAr: 'رسالة جديدة بخصوص: {needTitle}',
   },
+
+  conference_team_assigned: {
+    whatsappTemplate: 'conference_team_assigned',
+    titleEn: 'Conference Team Assignment',
+    titleAr: 'تكليف فريق المؤتمر',
+    bodyEn: "You've been assigned to {teamName} at {eventTitle}. Tap to see your assignment.",
+    bodyAr: 'تم تكليفك بفريق {teamName} في {eventTitle}. اضغط لعرض مهمتك.',
+    emailSubjectEn: 'Conference Team Assignment: {teamName}',
+    emailSubjectAr: 'تكليف فريق المؤتمر: {teamName}',
+  },
+
+  conference_task_assigned: {
+    whatsappTemplate: 'conference_task_assigned',
+    titleEn: 'Conference Assignment: {eventTitle}',
+    titleAr: 'تكليف مؤتمر: {eventTitle}',
+    bodyEn: "You've been assigned to coordinate: {cardName}. Tap to view your planning page.",
+    bodyAr: 'تم تكليفك بتنسيق: {cardName}. اضغط لعرض صفحة التخطيط.',
+    emailSubjectEn: 'Conference Assignment: {cardName}',
+    emailSubjectAr: 'تكليف مؤتمر: {cardName}',
+  },
+
+  conference_broadcast: {
+    whatsappTemplate: 'conference_broadcast',
+    titleEn: 'Conference Broadcast',
+    titleAr: 'بث المؤتمر',
+    bodyEn: '{message}',
+    bodyAr: '{message}',
+    emailSubjectEn: 'Conference Broadcast',
+    emailSubjectAr: 'بث المؤتمر',
+  },
+
+  conference_task_blocked: {
+    whatsappTemplate: 'conference_task_blocked',
+    titleEn: 'Task Blocked: {taskTitle}',
+    titleAr: 'مهمة محجوبة: {taskTitle}',
+    bodyEn: 'A task in your area is blocked and needs attention.',
+    bodyAr: 'إحدى المهام في منطقتك محجوبة وتحتاج انتباهك.',
+    emailSubjectEn: 'Task Blocked: {taskTitle}',
+    emailSubjectAr: 'مهمة محجوبة: {taskTitle}',
+  },
 }
 
 /**

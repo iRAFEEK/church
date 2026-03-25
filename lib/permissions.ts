@@ -35,6 +35,11 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
   // Locations
   'can_manage_locations',
   'can_book_locations',
+  // Conference
+  'can_manage_conference',
+  'can_view_conference_dashboard',
+  'can_manage_conference_teams',
+  'can_plan_conference_board',
 ]
 
 // ============================================================
@@ -68,10 +73,15 @@ export const PERMISSION_LABELS: Record<PermissionKey, { en: string; ar: string }
   can_manage_campaigns:    { en: 'Manage Campaigns',      ar: 'إدارة الحملات' },
   can_reconcile_bank:      { en: 'Reconcile Bank',        ar: 'تسوية الحسابات البنكية' },
   // Liturgy
-  can_manage_liturgy:      { en: 'Manage Liturgy',        ar: 'إدارة الطقوس' },
+  can_manage_liturgy:              { en: 'Manage Liturgy',              ar: 'إدارة الطقوس' },
   // Locations
-  can_manage_locations:    { en: 'Manage Locations',      ar: 'إدارة المواقع' },
-  can_book_locations:      { en: 'Book Locations',        ar: 'حجز المواقع' },
+  can_manage_locations:            { en: 'Manage Locations',            ar: 'إدارة المواقع' },
+  can_book_locations:              { en: 'Book Locations',              ar: 'حجز المواقع' },
+  // Conference
+  can_manage_conference:           { en: 'Manage Conference',           ar: 'إدارة المؤتمر' },
+  can_view_conference_dashboard:   { en: 'View Conference Dashboard',   ar: 'عرض لوحة المؤتمر' },
+  can_manage_conference_teams:     { en: 'Manage Conference Teams',     ar: 'إدارة فرق المؤتمر' },
+  can_plan_conference_board:       { en: 'Plan Conference Board',       ar: 'تخطيط لوحة المؤتمر' },
 }
 
 // ============================================================
@@ -93,6 +103,8 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_submit_expenses: false, can_manage_campaigns: false, can_reconcile_bank: false,
     can_manage_liturgy: false,
     can_manage_locations: false, can_book_locations: false,
+    can_manage_conference: false, can_view_conference_dashboard: false,
+    can_manage_conference_teams: false, can_plan_conference_board: false,
   },
   group_leader: {
     can_view_members: false, can_manage_members: false,
@@ -108,6 +120,8 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_submit_expenses: true, can_manage_campaigns: false, can_reconcile_bank: false,
     can_manage_liturgy: false,
     can_manage_locations: false, can_book_locations: true,
+    can_manage_conference: false, can_view_conference_dashboard: false,
+    can_manage_conference_teams: false, can_plan_conference_board: false,
   },
   ministry_leader: {
     can_view_members: false, can_manage_members: false,
@@ -123,6 +137,8 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_submit_expenses: true, can_manage_campaigns: false, can_reconcile_bank: false,
     can_manage_liturgy: false,
     can_manage_locations: true, can_book_locations: true,
+    can_manage_conference: true, can_view_conference_dashboard: true,
+    can_manage_conference_teams: true, can_plan_conference_board: true,
   },
   super_admin: {
     can_view_members: true, can_manage_members: true,
@@ -138,6 +154,8 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
     can_submit_expenses: true, can_manage_campaigns: true, can_reconcile_bank: true,
     can_manage_liturgy: true,
     can_manage_locations: true, can_book_locations: true,
+    can_manage_conference: true, can_view_conference_dashboard: true,
+    can_manage_conference_teams: true, can_plan_conference_board: true,
   },
 }
 
