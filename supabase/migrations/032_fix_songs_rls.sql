@@ -28,11 +28,11 @@ CREATE POLICY "Leaders create songs" ON songs
     AND public.get_user_role() IN ('super_admin', 'ministry_leader', 'group_leader')
   );
 
--- Leaders+ can update songs in their active church
+-- Leaders+ can update any song (shared library — songs may have NULL church_id)
 DROP POLICY IF EXISTS "Leaders update songs" ON songs;
 CREATE POLICY "Leaders update songs" ON songs
   FOR UPDATE USING (
-    church_id = public.get_church_id()
+    auth.uid() IS NOT NULL
     AND public.get_user_role() IN ('super_admin', 'ministry_leader', 'group_leader')
   );
 
