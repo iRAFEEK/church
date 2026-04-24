@@ -4,8 +4,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getTranslations } from 'next-intl/server'
-import { cookies } from 'next/headers'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { Pencil, Presentation, Trash2 } from 'lucide-react'
 import { SongDeleteButton } from './SongDeleteButton'
 
@@ -15,14 +14,13 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   if (!user) redirect('/login')
 
   const t = await getTranslations('songs')
-  const cookieStore = await cookies()
-  const lang = cookieStore.get('lang')?.value || 'ar'
-  const isAr = lang.startsWith('ar')
+  const locale = await getLocale()
+  const isAr = locale === 'ar'
 
   const supabase = await createClient()
   const { data: song } = await supabase
     .from('songs')
-    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_at, updated_at')
+    .select('*')
     .eq('id', id)
     .single()
 
@@ -40,13 +38,13 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
-          {artist && <p className="text-sm text-zinc-500 mt-1">{artist}</p>}
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+          {artist && <p className="text-sm text-muted-foreground mt-1">{artist}</p>}
         </div>
-        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+        <div className="flex items-center gap-2">
           {lyrics && (
             <a href={`/presenter/songs/${song.id}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="default" className="w-full sm:w-auto">
+              <Button variant="default">
                 <Presentation className="h-4 w-4 me-2" />
                 {t('present')}
               </Button>
@@ -54,7 +52,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           )}
           {isLeader && (
             <Link href={`/admin/songs/${song.id}/edit`}>
-              <Button variant="outline" className="w-full sm:w-auto">
+              <Button variant="outline">
                 <Pencil className="h-4 w-4 me-2" />
                 {t('edit')}
               </Button>

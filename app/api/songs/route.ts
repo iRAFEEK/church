@@ -1,51 +1,71 @@
-import { revalidateTag } from 'next/cache'
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateSongSchema } from '@/lib/schemas/song'
 
-// GET /api/songs — list songs with optional full-text search + snippets
-export const GET = apiHandler(async ({ req, supabase, profile }) => {
+// GET /api/songs — fast song search
+// Skips the full apiHandler auth chain (3 DB round trips) since songs are
+// a shared read-only resource. Auth is handled by middleware + RLS.
+export async function GET(req: NextRequest) {
+  const start = performance.now()
+  const supabase = await createClient()
+
   const { searchParams } = new URL(req.url)
   const q = searchParams.get('q')
   const page = parseInt(searchParams.get('page') || '1')
   const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 100)
-  const locale = searchParams.get('locale') || 'ar'
-
-  // When searching, use the RPC for ranked results with lyrics snippets
-  if (q) {
-    const { data, error } = await supabase.rpc('search_songs_with_snippets', {
-      p_church_id: profile.church_id,
-      p_query: q,
-      p_locale: locale,
-      p_page: page,
-      p_page_size: pageSize,
-    })
-    if (error) throw error
-
-    const totalCount = data?.[0]?.total_count ?? 0
-    // Strip total_count from each row (it's a window function artifact)
-    const songs = (data || []).map(({ total_count: _tc, ...song }: Record<string, unknown>) => song)
-
-    return { data: songs, count: Number(totalCount), page, pageSize, totalPages: Math.ceil(Number(totalCount) / pageSize) }
-  }
-
-  // No search — standard paginated browse
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  const { data, error, count } = await supabase
-    .from('songs')
-    .select('id, church_id, title, title_ar, artist, artist_ar, tags, is_active, created_at, updated_at, lyrics, lyrics_ar, published_by_church:published_by_church_id(name, name_ar)', { count: 'exact' })
-    .or(`church_id.eq.${profile.church_id},church_id.is.null`)
-    .order('title', { ascending: true })
-    .range(from, to)
+  let data, hasMore
 
-  if (error) throw error
+  if (q) {
+    // ilike substring search with trigram indexes for speed
+    const words = q.trim().split(/\s+/).filter(w => w.length > 0)
+    let query = supabase
+      .from('songs')
+      .select('id, title, title_ar, artist, artist_ar, tags, is_active')
+      .eq('is_active', true)
+      .order('title', { ascending: true })
+      .range(from, to)
 
-  return { data, count, page, pageSize, totalPages: Math.ceil((count || 0) / pageSize) }
-}, { cache: 'private, max-age=60, stale-while-revalidate=300' })
+    for (const word of words) {
+      query = query.or(
+        `title.ilike.%${word}%,title_ar.ilike.%${word}%,artist.ilike.%${word}%,artist_ar.ilike.%${word}%`
+      )
+    }
 
-// POST /api/songs — create new song
+    const result = await query
+    if (result.error) {
+      return NextResponse.json({ error: result.error.message }, { status: 500 })
+    }
+    data = result.data
+    hasMore = (data?.length ?? 0) === pageSize
+  } else {
+    // No search — standard paginated browse
+    const result = await supabase
+      .from('songs')
+      .select('id, title, title_ar, artist, artist_ar, tags, is_active')
+      .eq('is_active', true)
+      .order('title', { ascending: true })
+      .range(from, to)
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error.message }, { status: 500 })
+    }
+    data = result.data
+    hasMore = (data?.length ?? 0) === pageSize
+  }
+
+  const duration = Math.round(performance.now() - start)
+  const res = NextResponse.json({ data, hasMore })
+  res.headers.set('Server-Timing', `songs;dur=${duration}`)
+  res.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300')
+  return res
+}
+
+// POST /api/songs — create new song (requires auth + permissions)
 export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
   const body = await req.json()
   const validated = validate(CreateSongSchema, body)
@@ -57,10 +77,9 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_by, created_at, updated_at')
+    .select()
     .single()
 
   if (error) throw error
-  revalidateTag(`dashboard-${profile.church_id}`)
   return { data }
 }, { requirePermissions: ['can_manage_songs'] })

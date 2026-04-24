@@ -16,8 +16,8 @@ export default async function AdminSongsPage() {
     <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">{t('pageTitle')}</h1>
-          <p className="text-sm text-zinc-500 mt-1">{t('pageSubtitle')}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('pageTitle')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('pageSubtitle')}</p>
         </div>
         {canManage && (
           <Link href="/admin/songs/new">
@@ -26,7 +26,7 @@ export default async function AdminSongsPage() {
         )}
       </div>
 
-      <SongsTable role={user.profile.role} />
+      <SongsTable />
     </div>
   )
 }

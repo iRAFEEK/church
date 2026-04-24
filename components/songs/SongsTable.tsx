@@ -1,286 +1,244 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslations, useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Music, Search, ChevronLeft, ChevronRight, Play, Globe, Share2 } from 'lucide-react'
+import { Music, Search, Loader2, Presentation } from 'lucide-react'
 import { ListShimmer } from '@/components/ui/list-shimmer'
-import { splitIntoSlides, findSlideForText } from '@/lib/utils/song-slides'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 
-const PAGE_SIZE = 50
-
-interface SongResult {
+interface SongListItem {
   id: string
-  church_id: string | null
   title: string
   title_ar: string | null
   artist: string | null
   artist_ar: string | null
-  lyrics: string | null
-  lyrics_ar: string | null
   tags: string[]
   is_active: boolean
-  snippet?: string
-  published_by_church?: { name: string; name_ar: string | null } | null
 }
 
-interface SongsTableProps {
-  role?: string
+const PAGE_SIZE = 50
+
+// Simple LRU cache for search results — avoids re-fetching on backspace/re-type
+const queryCache = new Map<string, { data: SongListItem[]; hasMore: boolean; ts: number }>()
+const CACHE_TTL = 30_000 // 30s
+const CACHE_MAX = 50
+
+function getCached(key: string) {
+  const entry = queryCache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > CACHE_TTL) { queryCache.delete(key); return null }
+  return entry
 }
 
-export function SongsTable({ role }: SongsTableProps) {
+function setCache(key: string, data: SongListItem[], hasMore: boolean) {
+  if (queryCache.size >= CACHE_MAX) {
+    // Evict oldest
+    const first = queryCache.keys().next().value
+    if (first !== undefined) queryCache.delete(first)
+  }
+  queryCache.set(key, { data, hasMore, ts: Date.now() })
+}
+
+export function SongsTable() {
   const t = useTranslations('songs')
   const locale = useLocale()
-  const isAr = locale.startsWith('ar')
+  const isAr = locale === 'ar'
+  const router = useRouter()
 
-  const [songs, setSongs] = useState<SongResult[]>([])
-  const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [songs, setSongs] = useState<SongListItem[]>([])
+  const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState(false)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
 
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-      setPage(1)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [search])
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
-  const fetchSongs = useCallback(async (q: string, p: number, signal: AbortSignal) => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({ page: String(p), pageSize: String(PAGE_SIZE), locale })
-      if (q.trim()) params.set('q', q.trim())
-      const res = await fetch(`/api/songs?${params}`, { signal })
-      if (res.ok) {
-        const json = await res.json()
-        if (!signal.aborted) {
-          setSongs(json.data || [])
-          setTotalPages(json.totalPages || 1)
-          setTotalCount(json.count || 0)
-        }
-      }
-    } catch (e) {
-      if (e instanceof Error && e.name !== 'AbortError') {
-        console.error('[SongsTable] Failed to fetch:', e)
-      }
-    } finally {
-      if (!signal.aborted) setLoading(false)
+  const fetchSongs = useCallback(async (q: string, pageNum: number, append: boolean) => {
+    const cacheKey = `${q.trim()}|${pageNum}`
+
+    // Check cache first
+    const cached = getCached(cacheKey)
+    if (cached) {
+      setSongs(prev => append ? [...prev, ...cached.data] : cached.data)
+      setHasMore(cached.hasMore)
+      setError(false)
+      setLoading(false)
+      setSearching(false)
+      setLoadingMore(false)
+      return
     }
-  }, [locale])
 
-  useEffect(() => {
+    if (abortRef.current) abortRef.current.abort()
     const controller = new AbortController()
-    fetchSongs(debouncedSearch, page, controller.signal)
-    return () => controller.abort()
-  }, [debouncedSearch, page, fetchSongs])
+    abortRef.current = controller
 
-  const [publishing, setPublishing] = useState<string | null>(null)
+    if (!append) setSearching(true)
+    else setLoadingMore(true)
 
-  const handlePublish = async (songId: string) => {
-    setPublishing(songId)
     try {
-      const res = await fetch(`/api/songs/${songId}/publish`, { method: 'POST' })
-      if (res.ok) {
-        // Refresh the list
-        const controller = new AbortController()
-        await fetchSongs(debouncedSearch, page, controller.signal)
-      }
+      const params = new URLSearchParams({
+        page: String(pageNum),
+        pageSize: String(PAGE_SIZE),
+      })
+      if (q.trim()) params.set('q', q.trim())
+
+      const res = await fetch(`/api/songs?${params}`, { signal: controller.signal })
+      if (!res.ok) throw new Error('Failed to load songs')
+      const json = await res.json()
+
+      const newSongs: SongListItem[] = json.data || []
+      const more: boolean = json.hasMore ?? false
+
+      // Cache the result
+      setCache(cacheKey, newSongs, more)
+
+      setSongs(prev => append ? [...prev, ...newSongs] : newSongs)
+      setHasMore(more)
+      setError(false)
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+      setError(true)
+      if (!append) setSongs([])
+      toast.error(t('errorGeneral'))
     } finally {
-      setPublishing(null)
+      setLoading(false)
+      setSearching(false)
+      setLoadingMore(false)
     }
-  }
+  }, [t])
 
-  const isSuperAdmin = role === 'super_admin'
-  const isSearching = debouncedSearch.trim().length > 0
+  // Initial load
+  useEffect(() => {
+    fetchSongs('', 1, false)
+  }, [fetchSongs])
 
-  const parentRef = useRef<HTMLDivElement>(null)
-  const virtualizer = useVirtualizer({
-    count: songs.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => isSearching ? 100 : 72,
-    overscan: 5,
-  })
+  // Debounced search — 150ms
+  const handleSearchChange = useCallback((value: string) => {
+    setQuery(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
 
-  const handlePresent = (song: SongResult) => {
-    const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
-    let slideIndex = 0
-    if (song.snippet && lyrics) {
-      slideIndex = Math.max(0, findSlideForText(lyrics, song.snippet))
+    // Skip server call for empty query typed then cleared — use cache
+    const cacheKey = `${value.trim()}|1`
+    const cached = getCached(cacheKey)
+    if (cached) {
+      setSongs(cached.data)
+      setHasMore(cached.hasMore)
+      setPage(1)
+      setSearching(false)
+      return
     }
-    window.open(`/presenter/songs/${song.id}?slide=${slideIndex}`, '_blank')
-  }
 
-  const getSlideInfo = (song: SongResult) => {
-    if (!song.snippet) return null
-    const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
-    if (!lyrics) return null
-    const slideIndex = findSlideForText(lyrics, song.snippet)
-    if (slideIndex < 0) return null
-    return { index: slideIndex, total: splitIntoSlides(lyrics).length }
-  }
+    setSearching(true)
+    debounceRef.current = setTimeout(() => {
+      setPage(1)
+      setSongs([])
+      setHasMore(true)
+      fetchSongs(value, 1, false)
+    }, 150)
+  }, [fetchSongs])
+
+  // Infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !searching && !loadingMore) {
+          const nextPage = page + 1
+          setPage(nextPage)
+          fetchSongs(query, nextPage, true)
+        }
+      },
+      { root: scrollRef.current, rootMargin: '200px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, loading, searching, loadingMore, page, query, fetchSongs])
 
   return (
     <div className="space-y-4">
       <div className="relative">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
           placeholder={t('searchPlaceholder')}
-          className="ps-10 text-base"
-          dir="auto"
+          value={query}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="ps-10 h-10"
+          autoComplete="off"
         />
+        {searching && (
+          <Loader2 className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
       </div>
 
-      {totalCount > 0 && (
-        <p className="text-sm text-muted-foreground">
-          {totalCount.toLocaleString()} {t('songsCount')}
-        </p>
-      )}
-
-      {loading ? (
-        <ListShimmer count={6} />
-      ) : songs.length === 0 ? (
+      {loading && !searching ? (
+        <ListShimmer count={8} />
+      ) : error ? (
         <div className="text-center py-12 text-muted-foreground">
-          {search ? t('noSearchResults') : t('noSongs')}
+          {t('errorGeneral')}
+        </div>
+      ) : songs.length === 0 && !searching ? (
+        <div className="text-center py-12 text-muted-foreground text-sm">
+          {query.trim() ? t('noSearchResults') : t('noSongs')}
         </div>
       ) : (
-        <div ref={parentRef} className="rounded-lg border overflow-auto max-h-[70vh]">
-          <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
-            {virtualizer.getVirtualItems().map((virtualRow) => {
-              const song = songs[virtualRow.index]
-              const title = isAr ? (song.title_ar || song.title) : song.title
-              const artist = isAr ? (song.artist_ar || song.artist) : song.artist
-              const slideInfo = isSearching ? getSlideInfo(song) : null
-              const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
-              const slideCount = lyrics ? splitIntoSlides(lyrics).length : 0
+        <div ref={scrollRef} className="rounded-lg border overflow-auto max-h-[70vh]">
+          {songs.map((song) => {
+            const title = isAr ? (song.title_ar || song.title) : song.title
+            const artist = isAr ? (song.artist_ar || song.artist) : song.artist
 
-              return (
-                <button
-                  key={song.id}
-                  data-index={virtualRow.index}
-                  ref={virtualizer.measureElement}
-                  className="flex items-start gap-3 p-3 hover:bg-muted/50 transition-colors absolute w-full border-b last:border-b-0 text-start"
-                  style={{ top: `${virtualRow.start}px` }}
-                  onClick={() => handlePresent(song)}
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0 mt-0.5">
-                    <Play className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium truncate">{title}</p>
-                      {!isSearching && slideCount > 0 && (
-                        <Badge variant="secondary" className="shrink-0">{slideCount} {t('slides')}</Badge>
-                      )}
-                      {song.published_by_church && (
-                        <Badge variant="outline" className="shrink-0 gap-1 text-xs">
-                          <Globe className="h-3 w-3" />
-                          {t('publishedBy', { church: isAr ? (song.published_by_church.name_ar || song.published_by_church.name) : song.published_by_church.name })}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {artist && (
-                        <p className="text-sm text-muted-foreground truncate">{artist}</p>
-                      )}
-                      {isSuperAdmin && song.church_id !== null && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-xs shrink-0"
-                              disabled={publishing === song.id}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Share2 className="h-3 w-3 me-1" />
-                              {publishing === song.id ? t('publishing') : t('publishToAll')}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{t('publishConfirmTitle')}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t('publishConfirmDescription', { title })}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handlePublish(song.id)}>
-                                {t('publishConfirmAction')}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                    {/* Lyrics snippet when searching */}
-                    {isSearching && song.snippet && (
-                      <div className="mt-1 flex items-start gap-2 text-xs">
-                        {slideInfo && (
-                          <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0">
-                            {t('matchInSlide', { number: slideInfo.index + 1 })}
-                          </Badge>
-                        )}
-                        <p
-                          className="text-muted-foreground line-clamp-2 [&>mark]:bg-primary/20 [&>mark]:text-foreground [&>mark]:rounded-sm [&>mark]:px-0.5"
-                          dir="auto"
-                          dangerouslySetInnerHTML={{ __html: song.snippet }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
+            return (
+              <div
+                key={song.id}
+                onClick={() => router.push(`/admin/songs/${song.id}`)}
+                className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                  <Music className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{title}</p>
+                  {artist && (
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{artist}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {song.tags?.slice(0, 2).map(tag => (
+                    <Badge key={tag} variant="outline" className="hidden sm:inline-flex text-xs">{tag}</Badge>
+                  ))}
+                  <a
+                    href={`/presenter/songs/${song.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                    title={t('present')}
+                  >
+                    <Presentation className="h-4 w-4 text-primary" />
+                  </a>
+                </div>
+              </div>
+            )
+          })}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page <= 1 || loading}
-          >
-            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-            {t('previous')}
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages || loading}
-          >
-            {t('next')}
-            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
-          </Button>
+          <div ref={sentinelRef} className="h-1" />
+
+          {loadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          )}
         </div>
       )}
     </div>
