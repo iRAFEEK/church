@@ -1,60 +1,45 @@
-import { NextResponse } from 'next/server'
-import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
-import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { UpdateSongSchema } from '@/lib/schemas/song'
+import { NextResponse } from 'next/server'
 
 // GET /api/songs/[id] — get song detail
-export const GET = apiHandler(async ({ supabase, profile, params }) => {
+export const GET = apiHandler(async ({ supabase, params }) => {
   const { data, error } = await supabase
     .from('songs')
-    .select('id, church_id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, created_at, published_by_church:published_by_church_id(name, name_ar)')
+    .select('*')
     .eq('id', params!.id)
-    .or(`church_id.eq.${profile.church_id},church_id.is.null`)
     .single()
 
-  if (error) {
-    logger.error('[/api/songs/[id] GET]', { module: 'songs', error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  if (error) throw error
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  return NextResponse.json({ data })
+  return { data }
 })
 
 // PATCH /api/songs/[id] — update song (leaders+)
-export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
-  const body = validate(UpdateSongSchema, await req.json())
+export const PATCH = apiHandler(async ({ req, supabase, params }) => {
+  const body = await req.json()
+  const validated = validate(UpdateSongSchema, body)
 
   const { data, error } = await supabase
     .from('songs')
-    .update(body)
+    .update(validated)
     .eq('id', params!.id)
-    .eq('church_id', profile.church_id)
-    .select('id, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active')
+    .select()
     .single()
 
-  if (error) {
-    logger.error('[/api/songs/[id] PATCH]', { module: 'songs', error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ data })
+  if (error) throw error
+  return { data }
 }, { requirePermissions: ['can_manage_songs'] })
 
 // DELETE /api/songs/[id] — delete song (admins only)
-export const DELETE = apiHandler(async ({ supabase, profile, params }) => {
+export const DELETE = apiHandler(async ({ supabase, params }) => {
   const { error } = await supabase
     .from('songs')
     .delete()
     .eq('id', params!.id)
-    .eq('church_id', profile.church_id)
 
-  if (error) {
-    logger.error('[/api/songs/[id] DELETE]', { module: 'songs', error })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-  revalidateTag(`dashboard-${profile.church_id}`)
-  return NextResponse.json({ success: true })
+  if (error) throw error
+  return { success: true }
 }, { requirePermissions: ['can_manage_songs'] })

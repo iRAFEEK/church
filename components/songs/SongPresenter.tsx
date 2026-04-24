@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import {
   ChevronLeft, ChevronRight, Settings, X, Maximize, Minimize,
-  Upload, ArrowLeft, Search
+  Upload, ArrowLeft, Search, Loader2, Music
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { splitIntoSlides } from '@/lib/utils/song-slides'
-import { PresenterSearch } from './PresenterSearch'
+import { useRouter } from 'next/navigation'
 import type { Song, SongDisplaySettings } from '@/types'
 
 interface SongPresenterProps {
@@ -29,21 +29,22 @@ const FONT_MAP: Record<string, string> = {
 export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   const t = useTranslations('songs')
   const locale = useLocale()
-  const isAr = locale.startsWith('ar')
+  const isAr = locale === 'ar'
+  const router = useRouter()
 
-  // Active song state — allows switching songs via in-presenter search
-  const [activeSong, setActiveSong] = useState<Song>(song)
+  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
+  const slides = lyrics
+    ? lyrics.split(/\n\s*\n/).filter(s => s.trim())
+    : []
 
-  const lyrics = isAr ? (activeSong.lyrics_ar || activeSong.lyrics) : activeSong.lyrics
-  const slides = lyrics ? splitIntoSlides(lyrics) : []
-  const songTitle = isAr ? (activeSong.title_ar || activeSong.title) : activeSong.title
+  const title = isAr ? (song.title_ar || song.title) : song.title
 
-  const [currentSlide, setCurrentSlide] = useState(Math.min(initialSlide, Math.max(slides.length - 1, 0)))
+  const [currentSlide, setCurrentSlide] = useState(initialSlide)
   const [showSettings, setShowSettings] = useState(false)
-  const [showSearch, setShowSearch] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [controlsVisible, setControlsVisible] = useState(true)
   const [settings, setSettings] = useState<SongDisplaySettings>(
-    activeSong.display_settings || {
+    song.display_settings || {
       bg_color: '#000000',
       bg_image: null,
       text_color: '#ffffff',
@@ -53,20 +54,94 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   )
   const [uploading, setUploading] = useState(false)
 
+  // Song search state
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<{ id: string; title: string; title_ar: string | null; artist: string | null; artist_ar: string | null }[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchAbortRef = useRef<AbortController | null>(null)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Auto-hide controls after 3s of no mouse movement
+  const showControls = useCallback(() => {
+    setControlsVisible(true)
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    hideTimerRef.current = setTimeout(() => {
+      if (!showSettings) setControlsVisible(false)
+    }, 3000)
+  }, [showSettings])
+
+  useEffect(() => {
+    showControls()
+    const handleMouseMove = () => showControls()
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    }
+  }, [showControls])
+
+  // Keep controls visible while settings or search panel is open
+  useEffect(() => {
+    if (showSettings || showSearch) {
+      setControlsVisible(true)
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    }
+  }, [showSettings, showSearch])
+
+  // Song search
+  const handleSearchInput = useCallback((value: string) => {
+    setSearchQuery(value)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    if (!value.trim()) { setSearchResults([]); setSearchLoading(false); return }
+
+    setSearchLoading(true)
+    searchDebounceRef.current = setTimeout(async () => {
+      if (searchAbortRef.current) searchAbortRef.current.abort()
+      const controller = new AbortController()
+      searchAbortRef.current = controller
+      try {
+        const res = await fetch(`/api/songs?q=${encodeURIComponent(value.trim())}&pageSize=10`, { signal: controller.signal })
+        if (!res.ok) throw new Error()
+        const json = await res.json()
+        setSearchResults(json.data || [])
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        setSearchResults([])
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 150)
+  }, [])
+
+  const openSearch = useCallback(() => {
+    setShowSearch(true)
+    setShowSettings(false)
+    setTimeout(() => searchInputRef.current?.focus(), 100)
+  }, [])
+
+  const closeSearch = useCallback(() => {
+    setShowSearch(false)
+    setSearchQuery('')
+    setSearchResults([])
+  }, [])
 
   // Auto-save settings on change
   const saveSettings = useCallback(async (newSettings: SongDisplaySettings) => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     saveTimeoutRef.current = setTimeout(async () => {
-      await fetch(`/api/songs/${activeSong.id}/display`, {
+      await fetch(`/api/songs/${song.id}/display`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSettings),
       })
     }, 500)
-  }, [activeSong.id])
+  }, [song.id])
 
   const updateSetting = <K extends keyof SongDisplaySettings>(key: K, value: SongDisplaySettings[K]) => {
     const newSettings = { ...settings, [key]: value }
@@ -86,15 +161,8 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't capture keys when search is open (it handles its own keys)
-      if (showSearch) return
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
-
       switch (e.key) {
-        case '/':
-          e.preventDefault()
-          setShowSearch(true)
-          break
         case 'ArrowRight':
           isAr ? goPrev() : goNext()
           break
@@ -114,14 +182,19 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
         case 'F':
           toggleFullscreen()
           break
+        case 's':
+        case 'S':
+          openSearch()
+          break
         case 'Escape':
-          if (showSettings) setShowSettings(false)
+          if (showSearch) closeSearch()
+          else if (showSettings) setShowSettings(false)
           break
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goNext, goPrev, isAr, showSettings, showSearch])
+  }, [goNext, goPrev, isAr, showSettings, showSearch, openSearch, closeSearch])
 
   // Fullscreen
   const toggleFullscreen = () => {
@@ -138,26 +211,6 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
     return () => document.removeEventListener('fullscreenchange', handleFSChange)
   }, [])
 
-  // Handle song switch from search
-  const handleSongSelect = useCallback(async (searchResult: { id: string }, slideIndex: number) => {
-    try {
-      const res = await fetch(`/api/songs/${searchResult.id}`)
-      if (!res.ok) return
-      const { data } = await res.json()
-      if (data) {
-        setActiveSong(data)
-        setSettings(data.display_settings || settings)
-        // Compute slides for new song to clamp slideIndex
-        const newLyrics = isAr ? (data.lyrics_ar || data.lyrics) : data.lyrics
-        const newSlides = newLyrics ? splitIntoSlides(newLyrics) : []
-        setCurrentSlide(Math.min(slideIndex, Math.max(newSlides.length - 1, 0)))
-        setShowSearch(false)
-      }
-    } catch {
-      // Silently fail — user can try again
-    }
-  }, [isAr, settings])
-
   // Background image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -167,7 +220,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
     try {
       const supabase = createClient()
       const ext = file.name.split('.').pop()
-      const path = `${activeSong.id}/${Date.now()}.${ext}`
+      const path = `${song.id}/${Date.now()}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('song-backgrounds')
@@ -191,6 +244,10 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
     updateSetting('bg_image', null)
   }
 
+  const handleBack = () => {
+    router.back()
+  }
+
   if (slides.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-black text-white">
@@ -206,6 +263,9 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
     backgroundPosition: 'center',
   }
 
+  const PrevIcon = isAr ? ChevronRight : ChevronLeft
+  const NextIcon = isAr ? ChevronLeft : ChevronRight
+
   return (
     <div
       ref={containerRef}
@@ -217,19 +277,61 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
         <div className="absolute inset-0 bg-black/40" />
       )}
 
-      {/* Song title indicator */}
-      <div className="absolute top-0 inset-x-0 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-b from-black/60 to-transparent p-4">
-        <p className="text-white/70 text-sm truncate text-center" dir={isAr ? 'rtl' : 'ltr'}>
-          {songTitle}
-        </p>
+      {/* Song title — top bar */}
+      <div
+        className="absolute top-0 inset-x-0 z-20 flex items-center gap-3 px-5 py-3 transition-opacity duration-300 bg-gradient-to-b from-black/60 to-transparent"
+        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white/90 hover:bg-white/20 shrink-0"
+          onClick={handleBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-white/90 text-sm font-medium truncate flex-1" dir={isAr ? 'rtl' : 'ltr'}>
+          {title}
+        </h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white/90 hover:bg-white/20 shrink-0"
+          onClick={openSearch}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
+
+      {/* Side navigation arrows — always-visible large touch targets */}
+      <button
+        className="absolute start-0 top-0 bottom-0 w-20 z-10 flex items-center justify-start ps-4 transition-opacity duration-300 group"
+        style={{ opacity: controlsVisible && currentSlide > 0 ? 1 : 0, pointerEvents: currentSlide > 0 ? 'auto' : 'none' }}
+        onClick={isAr ? goNext : goPrev}
+        aria-label="Previous"
+      >
+        <div className="rounded-full bg-black/30 group-hover:bg-black/50 p-2 transition-colors">
+          <PrevIcon className="h-7 w-7 text-white" />
+        </div>
+      </button>
+      <button
+        className="absolute end-0 top-0 bottom-0 w-20 z-10 flex items-center justify-end pe-4 transition-opacity duration-300 group"
+        style={{ opacity: controlsVisible && currentSlide < slides.length - 1 ? 1 : 0, pointerEvents: currentSlide < slides.length - 1 ? 'auto' : 'none' }}
+        onClick={isAr ? goPrev : goNext}
+        aria-label="Next"
+      >
+        <div className="rounded-full bg-black/30 group-hover:bg-black/50 p-2 transition-colors">
+          <NextIcon className="h-7 w-7 text-white" />
+        </div>
+      </button>
 
       {/* Slide content */}
       <div
-        className="absolute inset-0 flex items-center justify-center p-8 cursor-pointer"
+        className="absolute inset-0 flex items-center justify-center px-24 py-20 cursor-pointer"
         onClick={(e) => {
-          if (showSearch) return
-          const rect = (e.target as HTMLElement).getBoundingClientRect()
+          // Ignore clicks on side nav or controls
+          if ((e.target as HTMLElement).closest('button')) return
+          const rect = (e.currentTarget).getBoundingClientRect()
           const clickX = e.clientX - rect.left
           if (clickX < rect.width / 2) {
             isAr ? goNext() : goPrev()
@@ -252,57 +354,42 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
       </div>
 
       {/* Bottom controls bar */}
-      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={() => window.close()}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <span className="text-white text-sm">
+      <div
+        className="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between px-5 py-3 transition-opacity duration-300 bg-gradient-to-t from-black/60 to-transparent"
+        style={{ opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? 'auto' : 'none' }}
+      >
+        {/* Slide progress */}
+        <div className="flex items-center gap-3">
+          <span className="text-white/90 text-sm font-medium tabular-nums">
             {currentSlide + 1} / {slides.length}
           </span>
+          {/* Progress dots */}
+          <div className="flex items-center gap-1">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className="transition-all duration-200"
+                aria-label={`${t('slide')} ${i + 1}`}
+              >
+                <div
+                  className={`rounded-full transition-all duration-200 ${
+                    i === currentSlide
+                      ? 'w-3 h-3 bg-white'
+                      : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right-side actions */}
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={goPrev}
-            disabled={currentSlide === 0}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={goNext}
-            disabled={currentSlide === slides.length - 1}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Search button — always visible */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={() => setShowSearch(true)}
-            title={t('shortcutSearch')}
-          >
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
+            className="text-white/90 hover:bg-white/20"
             onClick={() => setShowSettings(!showSettings)}
           >
             <Settings className="h-5 w-5" />
@@ -310,7 +397,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/20"
+            className="text-white/90 hover:bg-white/20"
             onClick={toggleFullscreen}
           >
             {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
@@ -440,7 +527,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
             <div className="text-xs text-zinc-500 space-y-1">
               <p>← → {t('shortcutNav')}</p>
               <p>Space {t('shortcutNext')}</p>
-              <p>/ {t('shortcutSearch')}</p>
+              <p>S {t('searchPlaceholder')}</p>
               <p>F {t('shortcutFullscreen')}</p>
               <p>Esc {t('shortcutClose')}</p>
             </div>
@@ -450,10 +537,67 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
 
       {/* Search overlay */}
       {showSearch && (
-        <PresenterSearch
-          onSelect={handleSongSelect}
-          onClose={() => setShowSearch(false)}
-        />
+        <div
+          className="absolute inset-0 z-40 flex items-start justify-center pt-[15vh] bg-black/70 backdrop-blur-sm"
+          onClick={closeSearch}
+        >
+          <div
+            className="w-full max-w-lg mx-4 bg-zinc-900/95 rounded-xl border border-zinc-700 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Search input */}
+            <div className="p-4 border-b border-zinc-700">
+              <div className="relative">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Input
+                  ref={searchInputRef}
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => handleSearchInput(e.target.value)}
+                  className="ps-10 h-10 bg-zinc-800 border-zinc-600 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
+                  autoComplete="off"
+                />
+                {searchLoading && (
+                  <Loader2 className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-zinc-400" />
+                )}
+              </div>
+            </div>
+
+            {/* Results */}
+            <div className="max-h-[40vh] overflow-y-auto">
+              {!searchLoading && searchQuery.trim() && searchResults.length === 0 && (
+                <div className="text-center py-8 text-zinc-500 text-sm">
+                  {t('noSearchResults')}
+                </div>
+              )}
+
+              {searchResults.map((result) => {
+                const rTitle = isAr ? (result.title_ar || result.title) : result.title
+                const rArtist = isAr ? (result.artist_ar || result.artist) : result.artist
+                return (
+                  <button
+                    key={result.id}
+                    onClick={() => {
+                      router.replace(`/presenter/songs/${result.id}`)
+                      closeSearch()
+                    }}
+                    className="w-full text-start flex items-center gap-3 px-4 py-3 hover:bg-zinc-700/50 transition-colors border-b border-zinc-800 last:border-b-0"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 shrink-0">
+                      <Music className="h-4 w-4 text-zinc-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-zinc-200 truncate">{rTitle}</p>
+                      {rArtist && (
+                        <p className="text-xs text-zinc-500 truncate mt-0.5">{rArtist}</p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
