@@ -1,6 +1,6 @@
 # End-to-End Tests (Playwright)
 
-Full-journey browser tests for the critical paths. Complements the 972 unit/integration
+Full-journey browser tests for the critical paths. Complements the unit/integration
 tests (which test pieces in isolation) by driving the real app like a user.
 
 ## One-time setup
@@ -23,33 +23,51 @@ npm run test:e2e -- --headed
 npm run test:e2e -- --debug
 ```
 
-## What runs out of the box
+## What runs with no setup
 
-`auth-gating.spec.ts` needs **no data** — it verifies the middleware auth gate
-(unauthenticated → `/login`) and that public pages render. Safe to run anywhere.
+- **`auth-gating.spec.ts`** — middleware auth gate (unauthenticated → `/login`),
+  public pages render. No data required.
+- **Finance-is-OFF** (in `critical-paths.spec.ts`) — `/api/finance/*` returns 404.
+  The finance gate runs before auth, so this needs no user.
+- **`/join` with no church id** (in `visitor-intake.spec.ts`) → redirects to `/login`.
 
 ## Data-dependent journeys
 
-`critical-paths.spec.ts` (sign-up, giving, permission enforcement) needs known test
-users in a **disposable test Supabase project** — never point these at production.
+The remaining specs need known users/ids in a **disposable test Supabase project** —
+never point these at production. They `test.skip()` automatically until the matching
+env vars are set, so the suite stays green without them.
 
-1. Create/seed a test project and two users:
-   - a `member`-role user
-   - a `super_admin`-role user
-   (The repo's `supabase/migrations/003_seed_test_data.sql` + finance seeds are a starting point.)
-2. Provide their credentials via env (e.g. a local `.env.e2e`, git-ignored):
-   ```
-   E2E_BASE_URL=http://localhost:3000
-   E2E_MEMBER_EMAIL=member@test.local
-   E2E_MEMBER_PASSWORD=...
-   E2E_ADMIN_EMAIL=admin@test.local
-   E2E_ADMIN_PASSWORD=...
-   ```
-3. Run. The specs un-skip automatically when the vars are present.
+| Spec | Covers | Needs |
+|---|---|---|
+| `critical-paths.spec.ts` | member blocked from admin pages; admin reaches them; finance pages blocked for admin | `E2E_MEMBER_*`, `E2E_ADMIN_*` |
+| `onboarding.spec.ts` | incomplete user forced into `/onboarding`; onboarded member reaches `/dashboard` | `E2E_ONBOARDING_*`, `E2E_MEMBER_*` |
+| `visitor-intake.spec.ts` | public `/join` form submits → success page | `E2E_CHURCH_ID` |
 
-## Next specs to add before launch
+Provide them via a git-ignored `.env.e2e` (see `.env.e2e.example`) or your shell:
 
-- [ ] Full sign-up → onboarding → dashboard
-- [ ] Admin records a donation → it appears in reports → member sees it in My Giving
-- [ ] Visitor QR intake (`/join`) → appears in the visitor pipeline
+```
+E2E_BASE_URL=http://localhost:3000
+E2E_MEMBER_EMAIL=member@gracechurch.test
+E2E_MEMBER_PASSWORD=password123
+E2E_ADMIN_EMAIL=pastor@gracechurch.test
+E2E_ADMIN_PASSWORD=password123
+E2E_ONBOARDING_EMAIL=newmember@gracechurch.test   # onboarding_completed=false
+E2E_ONBOARDING_PASSWORD=password123
+E2E_CHURCH_ID=a0000000-0000-0000-0000-000000000001
+```
+
+> The values above match `supabase/seed_data.sql` (all test users share the
+> password `password123`). Load the file before running:
+> `set -a; source .env.e2e; set +a; npm run test:e2e`
+
+The visitor-intake spec creates one visitor named `[E2E] Visitor` per run; clean it
+with `DELETE FROM visitors WHERE first_name = '[E2E]';` on the test DB.
+
+## Coverage status
+
+- [x] Permission enforcement (member vs super_admin)
+- [x] Finance is OFF (pages redirect, API 404)
+- [x] Onboarding gate (incomplete → `/onboarding`)
+- [x] Public visitor intake (`/join` → success)
 - [ ] Two-church isolation: user A cannot see church B's data
+- [ ] Full sign-up → complete onboarding → dashboard (mutates state; needs a fresh disposable user per run)

@@ -1,16 +1,29 @@
 import { z } from 'zod'
 
+// The public visitor form submits every enabled field, sending "" for blanks.
+// Treat an empty string as "not provided" so optional email/age_range/how_heard
+// don't fail validation when a visitor leaves them blank.
+const blankToUndefined = (v: unknown) => (v === '' ? undefined : v)
+const optionalText = (max: number) =>
+  z.preprocess(blankToUndefined, z.string().max(max).optional().nullable())
+
 // Public visitor form (QR code / join page) — no auth required
 export const CreateVisitorSchema = z.object({
   first_name: z.string().min(1).max(100),
   last_name: z.string().min(1).max(100),
-  first_name_ar: z.string().max(100).optional().nullable(),
-  last_name_ar: z.string().max(100).optional().nullable(),
-  phone: z.string().max(20).optional().nullable(),
-  email: z.string().email().optional().nullable(),
-  age_range: z.enum(['under_18', '18_25', '26_35', '36_45', '46_55', '56_plus']).optional().nullable(),
-  occupation: z.string().max(100).optional().nullable(),
-  how_heard: z.enum(['friend', 'social_media', 'website', 'event', 'walk_in', 'other']).optional().nullable(),
+  first_name_ar: optionalText(100),
+  last_name_ar: optionalText(100),
+  phone: optionalText(20),
+  email: z.preprocess(blankToUndefined, z.string().email().optional().nullable()),
+  age_range: z.preprocess(
+    blankToUndefined,
+    z.enum(['under_18', '18_25', '26_35', '36_45', '46_55', '56_plus']).optional().nullable(),
+  ),
+  occupation: optionalText(100),
+  how_heard: z.preprocess(
+    blankToUndefined,
+    z.enum(['friend', 'social_media', 'website', 'event', 'walk_in', 'other']).optional().nullable(),
+  ),
   visited_at: z.string().optional(),
   church_id: z.string().uuid().optional().nullable(),
 })

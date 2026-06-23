@@ -31,6 +31,23 @@ describe('CreateVisitorSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  // Regression: the public /join form submits every enabled field, sending ""
+  // for blanks. Empty optional fields must be treated as "not provided", not
+  // rejected — otherwise a visitor who leaves email/age/how-heard blank can't
+  // submit. (Caught by e2e/visitor-intake.spec.ts.)
+  it('accepts empty strings for optional fields (blank join-form inputs)', () => {
+    const result = CreateVisitorSchema.safeParse({
+      first_name: 'John',
+      last_name: 'Doe',
+      phone: '',
+      email: '',
+      age_range: '',
+      occupation: '',
+      how_heard: '',
+    })
+    expect(result.success).toBe(true)
+  })
+
   it('rejects missing first_name', () => {
     const result = CreateVisitorSchema.safeParse({
       last_name: 'Doe',

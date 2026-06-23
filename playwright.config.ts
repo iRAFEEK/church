@@ -19,7 +19,11 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
+  // The auto-started `npm run dev` compiles routes on demand, so several workers
+  // hitting fresh routes at once can time out. Keep it serial by default; raise
+  // E2E_WORKERS (ideally against a production build) for faster parallel runs.
+  workers: process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : 1,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL,
