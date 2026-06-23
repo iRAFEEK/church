@@ -1,7 +1,9 @@
 # Ekklesia — Project Context
 
 > This file is auto-maintained. Every agent that completes a task must update the relevant sections.
-> Last updated: 2026-06-22 | Updated by: Pre-launch hardening (migrations 056–073, rate limiting, i18n parity, CI)
+> Last updated: 2026-06-22 | Updated by: Pre-launch hardening + finance flagged off + onboarding role fixes (migrations 056–076)
+
+> ⚠️ **FINANCE IS OFF.** The finance module is gated behind a feature flag (`finance`, default off in `lib/features.ts`) and **unreachable** — middleware redirects `/admin/finance/*` and `/finance/my-giving`, and returns 404 for all `/api/finance/*`. It is treated as in-development (it has deeper schema/code drift: budget creation + double-entry transactions still fail). Re-enable with `NEXT_PUBLIC_FEATURE_FINANCE=true` once reconciled. Do not assume finance works.
 
 ---
 
@@ -436,6 +438,9 @@ supabase/
 | 071 | songs_scoped_global.sql | Scoped + global song access RLS (own church OR NULL) |
 | 072 | song_publish.sql | Publish a song to the global library (published_by_church_id) |
 | 073 | fix_songs_update_scope.sql | **SECURITY:** scope song UPDATE to global-or-own-church + WITH CHECK (fixes cross-church write IDOR) |
+| 074 | repair_schema_drift.sql | Add `funds.currency` + `budgets.currency` (code-required, never migrated), re-apply `songs.published_by_church_id`, drop 5 duplicate FKs (donations/campaigns/pledges/transaction_line_items.fund_id, event_registrations.event_id) that broke PostgREST embeds |
+| 075 | fix_church_creator_role.sql | Backfill: promote `user_churches.role` to super_admin where `profiles.role` is super_admin but user_churches isn't (church creators were stuck as members) |
+| 076 | sync_user_churches_role.sql | **Trigger** keeping `user_churches.role` (the authoritative per-church role) in sync with `profiles.role` on every change, + full backfill. Fixes the systemic role-desync that locked out registered admins/leaders |
 
 > ⚠️ **Duplicate migration numbers on disk:** there are two `032_*` (`fix_songs_rls`, `push_tokens`) and two `033_*` (`seed_finance_test_data`, `songs_trigram_indexes`). They apply in filename order today, but renumber before this causes an ordering ambiguity in a fresh environment.
 
@@ -669,7 +674,13 @@ Last measured: 2026-03-11
 - [x] Production readiness hardening — test credentials removed from prod bundle (login page), security headers added (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy), /api/health endpoint created, .env.example updated with Sentry vars. 948 tests, 0 TS errors.
 
 ### In Progress
-- See [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) (prioritized to-do) and [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) (operational steps) for the pre-launch plan.
+- See [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) (prioritized to-do), [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) (operational steps), and [supabase/REBUILD_AND_VERIFY.md](supabase/REBUILD_AND_VERIFY.md) (the #1 launch gate: clean DB rebuild + `npm run verify:schema`).
+
+### Pre-launch decisions & fixes (2026-06-22)
+- [x] **Finance flagged OFF** (in-development) — gated in middleware + nav; unreachable. See header warning.
+- [x] **CRITICAL onboarding fixes** — church creators AND registered leaders were silently demoted to `member` (403 on all admin actions) because write paths set `profiles.role` but not the authoritative `user_churches.role`. Fixed at the source with a sync trigger (migration 076) + backfill (075) + register-route upsert. Verified live: fresh church + leader registration now work end-to-end.
+- [x] **Schema-drift repair** (migration 074) + **schema verification gate** (`npm run verify:schema`, `scripts/verify-prod-schema.mjs`).
+- [x] Onboarding verified: self-signup → correct member role/access; fresh church admin can use all core features.
 
 ### Additional completed modules (post-March, were undocumented)
 - [x] Coptic liturgy module — Agpeya hours, psalmody, lectionary readings, clergy-only resources (migration 065)
@@ -888,6 +899,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-06-22 | Finance-off + onboarding fixes | (1) **Finance flagged OFF** — `finance` flag (default off), enforced in middleware (pages redirect, /api/finance/* → 404) + nav hidden. (2) **CRITICAL onboarding bugs fixed** — fresh-church + leader registration left admins/leaders stuck as `member` (user_churches.role not synced with profiles.role; apiHandler trusts user_churches). Fixed via register-route upsert, migration 075 (backfill), and migration 076 (sync trigger + full backfill). (3) **Migration 074** repairs schema drift (funds/budgets.currency, song-publish column, 5 duplicate FKs). (4) **Schema verification gate** — `scripts/verify-prod-schema.mjs` + `npm run verify:schema` (10 checks) + REBUILD_AND_VERIFY.md runbook. (5) Onboarding edge cases verified (self-signup member role/access; fresh-church + leader e2e). 973 tests, 0 TS errors. | lib/features.ts, middleware.ts, lib/navigation.ts (+test), app/api/churches/register/route.ts (+test), supabase/migrations/074-076 (NEW), scripts/verify-prod-schema.mjs (NEW), supabase/REBUILD_AND_VERIFY.md (NEW), package.json, CLAUDE.md |
 | 2026-06-22 | Pre-launch hardening | Working the launch checklist: (1) **SECURITY** — fixed songs cross-church write IDOR via migration 073 (UPDATE policy had no church scope); (2) distributed rate limiting (Upstash Redis + in-memory fallback) in lib/api/rate-limit.ts, handler awaits async path; (3) i18n parity — 332 Egyptian-Arabic translations added, fixed duplicate-key bug (shadowed locations/bookings blocks) in en/ar, all 3 files now 2,558 keys; (4) eliminated select('*') in songs routes/pages; (5) browser-safe logger + converted 24 console.* call sites; (6) declared vitest devDep (was undeclared — npm install pruned it), added test/typecheck scripts + GitHub Actions CI; (7) verified cron auth; (8) doc sync. Discovered the 4 "backend-only" features are actually live+wired. 972 tests, 0 TS errors. | supabase/migrations/073 (NEW), lib/api/rate-limit.ts, lib/api/handler.ts, lib/logger.ts, app/api/songs/**, app/(app)/admin/songs/[id], app/presenter/songs/[id], 14 error.tsx, lib/hooks/usePushNotifications.ts, 3 client pages, messages/{en,ar,ar-eg}.json, package.json, .github/workflows/ci.yml, .env.example, ~9 test files, LAUNCH_CHECKLIST.md + OPERATIONS_RUNBOOK.md (NEW), CLAUDE.md |
 | 2026-03-14 | UX full fixes (Phase 2) | 207 remaining issues: pb-24 on ~76 pages, finance responsive layout (13 pages), 6 AlertDialog confirmations, mobile overflow fixes (6 locations + visitor mobile cards), 8 empty states with icons/CTAs, dir="auto" on ~20 inputs, text-base iOS zoom, aria-label on ~15 buttons, text-[9px]→text-xs in 23 files, Help FAB icon, landing mobile menu, tabs dir fix, role badge translated, SongForm steps translated, MySignups deleted, dev buttons hidden. ~90 translation keys. | 151 files: ~76 page.tsx (pb-24), 13 finance pages (responsive), 6 components (dialogs), 11 components (overflow/cards), 22 components (a11y/dir-auto), 23 files (text sizes), 3 translation files |
 | 2026-03-15 | Production readiness hardening | Test credentials removed from prod bundle (NODE_ENV guard on login arrays), security headers added to next.config.ts (5 headers on all routes), /api/health endpoint for monitoring, .env.example updated with Sentry vars. 948 tests, 0 TS errors. | app/(auth)/login/page.tsx, next.config.ts, app/api/health/route.ts (NEW), .env.example |
