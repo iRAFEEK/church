@@ -64,6 +64,7 @@ function buildMockSupabase(overrides: {
   const profileUpdateFn = vi.fn()
   const profileEqFn = vi.fn().mockResolvedValue(profileUpdateReturn)
   const userChurchesInsertFn = vi.fn().mockResolvedValue(userChurchesInsertReturn)
+  const userChurchesUpsertFn = vi.fn().mockResolvedValue(userChurchesInsertReturn)
   const leadersInsertFn = vi.fn().mockResolvedValue(leadersInsertReturn)
   const churchDeleteEqFn = vi.fn().mockResolvedValue(churchDeleteReturn)
   const churchDeleteFn = vi.fn().mockReturnValue({ eq: churchDeleteEqFn })
@@ -83,7 +84,7 @@ function buildMockSupabase(overrides: {
       case 'profiles':
         return { update: profileUpdateFn }
       case 'user_churches':
-        return { insert: userChurchesInsertFn }
+        return { insert: userChurchesInsertFn, upsert: userChurchesUpsertFn }
       case 'church_leaders':
         return { insert: leadersInsertFn }
       default:
@@ -102,6 +103,7 @@ function buildMockSupabase(overrides: {
       profileUpdateFn,
       profileEqFn,
       userChurchesInsertFn,
+      userChurchesUpsertFn,
       leadersInsertFn,
       churchDeleteFn,
       churchDeleteEqFn,
@@ -211,18 +213,21 @@ describe('POST /api/churches/register', () => {
     expect(mock._mocks.profileEqFn).toHaveBeenCalledWith('id', USER_ID)
   })
 
-  // 8. Inserts user_churches with super_admin role
-  it('inserts user_churches with super_admin role and correct church_id', async () => {
+  // 8. Promotes user_churches to super_admin (upsert over the trigger's 'member' row)
+  it('upserts user_churches with super_admin role and correct church_id', async () => {
     const mock = buildMockSupabase()
     vi.mocked(createAdminClient).mockResolvedValue(mock as never)
 
     await POST(makeRequest(validBody))
 
-    expect(mock._mocks.userChurchesInsertFn).toHaveBeenCalledWith({
-      user_id: USER_ID,
-      church_id: CHURCH_ID,
-      role: 'super_admin',
-    })
+    expect(mock._mocks.userChurchesUpsertFn).toHaveBeenCalledWith(
+      {
+        user_id: USER_ID,
+        church_id: CHURCH_ID,
+        role: 'super_admin',
+      },
+      { onConflict: 'user_id,church_id' }
+    )
   })
 
   // 9. Returns 409 when email is already registered

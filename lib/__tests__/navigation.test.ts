@@ -139,10 +139,23 @@ describe('getNavForUser', () => {
     const perms = makePermissions(true)
     const items = getNavForUser('member', perms)
 
-    // All permission-gated items available to member should be included
-    const permissionGatedItems = NAV_ITEMS.filter(i => i.permission && i.roles.includes('member'))
+    // All permission-gated items available to member (and not gated behind a
+    // disabled feature flag) should be included.
+    const permissionGatedItems = NAV_ITEMS.filter(
+      i => i.permission && i.roles.includes('member') && !i.feature
+    )
     for (const gatedItem of permissionGatedItems) {
       expect(items.some(i => i.href === gatedItem.href)).toBe(true)
+    }
+  })
+
+  it('hides feature-gated items when the feature is disabled (finance off by default)', () => {
+    const perms = makePermissions(true)
+    const items = getNavForUser('super_admin', perms)
+    const financeItems = NAV_ITEMS.filter(i => i.feature === 'finance')
+    expect(financeItems.length).toBeGreaterThan(0)
+    for (const fi of financeItems) {
+      expect(items.some(i => i.href === fi.href)).toBe(false)
     }
   })
 })

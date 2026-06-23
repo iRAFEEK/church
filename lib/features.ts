@@ -13,6 +13,7 @@ export type FeatureFlag =
   | 'outreach_module'
   | 'song_presenter'
   | 'liturgy_module'
+  | 'finance'
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   advanced_reporting: false,
@@ -23,6 +24,11 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   outreach_module: true,
   song_presenter: true,
   liturgy_module: true,
+  // Finance is OFF until the module is production-ready. The whole surface
+  // (nav, pages, /finance/my-giving, and all /api/finance/* routes) is gated
+  // in middleware + navigation. Re-enable with NEXT_PUBLIC_FEATURE_FINANCE=true
+  // (globally) when ready; per-church enablement can layer on top later.
+  finance: false,
 }
 
 // ARCH: Synchronous check against defaults + env overrides.

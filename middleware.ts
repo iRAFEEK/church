@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isFeatureEnabled } from '@/lib/features'
 
 // Public routes that don't require authentication
 const PUBLIC_PATHS = [
@@ -87,6 +88,23 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
 
   const { pathname } = request.nextUrl
+
+  // Finance is gated behind a feature flag while the module is in development.
+  // Block the entire surface (admin finance, member giving, and the finance API)
+  // so nothing is reachable until the flag is enabled.
+  if (
+    !isFeatureEnabled('finance') &&
+    (pathname.startsWith('/admin/finance') ||
+      pathname.startsWith('/finance/my-giving') ||
+      pathname.startsWith('/api/finance'))
+  ) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    const target = request.nextUrl.clone()
+    target.pathname = session ? '/dashboard' : '/login'
+    return NextResponse.redirect(target)
+  }
 
   // Allow public paths without auth
   if (isPublicPath(pathname)) {

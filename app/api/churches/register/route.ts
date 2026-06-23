@@ -157,14 +157,27 @@ export async function POST(request: NextRequest) {
       logger.error('[church-register] Profile upgrade to super_admin failed after retries', { module: 'churches', userId })
     }
 
-    // 3b. Insert into user_churches with super_admin role
-    // This is the authoritative per-church role used for privilege checks
+    // 3b. Set the church creator's user_churches role to super_admin.
+    // The handle_new_user trigger (migration 048) already inserted a row with
+    // role 'member', so a plain insert here hits a duplicate and is ignored —
+    // which previously left the creator stuck as a member (user_churches.role is
+    // the AUTHORITATIVE per-church role the apiHandler uses for privilege checks).
+    // Upsert so the role is corrected whether or not the trigger row exists.
     const { error: ucError } = await supabase
       .from('user_churches')
-      .insert({ user_id: userId, church_id: church.id, role: 'super_admin' })
+      .upsert(
+        { user_id: userId, church_id: church.id, role: 'super_admin' },
+        { onConflict: 'user_id,church_id' }
+      )
 
-    if (ucError && !ucError.message?.includes('duplicate')) {
-      logger.error('user_churches insert failed (non-fatal)', { module: 'churches', error: ucError })
+    if (ucError) {
+      logger.error('user_churches super_admin promotion failed', { module: 'churches', userId, error: ucError })
+      // Fallback: explicit update in case the upsert conflict target differs.
+      await supabase
+        .from('user_churches')
+        .update({ role: 'super_admin' })
+        .eq('user_id', userId)
+        .eq('church_id', church.id)
     }
 
     // 4. Insert church leaders if provided

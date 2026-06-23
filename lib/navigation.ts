@@ -1,4 +1,5 @@
 import type { UserRole, PermissionKey } from '@/types'
+import { isFeatureEnabled, type FeatureFlag } from '@/lib/features'
 
 export interface NavItem {
   label: string
@@ -7,6 +8,8 @@ export interface NavItem {
   iconName: string
   roles: UserRole[]
   permission?: PermissionKey
+  /** When set, the item is only shown if this feature flag is enabled. */
+  feature?: FeatureFlag
   section?: string
   section_ar?: string
 }
@@ -249,6 +252,7 @@ export const NAV_ITEMS: NavItem[] = [
     iconName: 'BarChart3',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_reports',
+    feature: 'finance',
     section: 'Admin',
     section_ar: 'الإدارة',
   },
@@ -297,6 +301,7 @@ export const NAV_ITEMS: NavItem[] = [
     iconName: 'DollarSign',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_finances',
+    feature: 'finance',
     section: 'Finance',
     section_ar: 'المالية',
   },
@@ -307,6 +312,7 @@ export const NAV_ITEMS: NavItem[] = [
     iconName: 'HandCoins',
     roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
     permission: 'can_view_own_giving',
+    feature: 'finance',
     section: 'Finance',
     section_ar: 'المالية',
   },
@@ -328,6 +334,7 @@ export function getNavForUser(
   return NAV_ITEMS.filter(item => {
     if (!item.roles.includes(role)) return false
     if (item.permission && !resolvedPermissions[item.permission]) return false
+    if (item.feature && !isFeatureEnabled(item.feature)) return false
     return true
   })
 }
