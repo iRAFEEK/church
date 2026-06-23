@@ -7,7 +7,7 @@ import { ChurchRegistrationSchema } from '@/lib/schemas/church'
 import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
-  const limited = rateLimitSensitive(request)
+  const limited = await rateLimitSensitive(request)
   if (limited) return limited
 
   try {

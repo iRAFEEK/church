@@ -15,6 +15,7 @@ vi.mock('@/lib/messaging/triggers', () => ({
 vi.mock('@/lib/api/rate-limit', () => ({
   rateLimitPublic: vi.fn().mockReturnValue(null),
   checkRateLimit: vi.fn().mockReturnValue(null),
+  checkRateLimitAsync: vi.fn().mockResolvedValue(null),
 }))
 vi.mock('@/lib/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },

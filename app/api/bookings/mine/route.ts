@@ -12,7 +12,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const now = new Date().toISOString()
 
   let query = supabase
-    .from('bookings')
+    .from('location_bookings')
     .select(
       'id, location_id, title, title_ar, starts_at, ends_at, status, notes, is_public, created_at, location:locations!location_id(id, name, name_ar)',
       { count: 'exact' }

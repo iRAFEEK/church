@@ -23,7 +23,7 @@ export const GET = apiHandler(async ({ req, supabase, profile, params }) => {
   // Find confirmed bookings that overlap with the given time range
   // Overlap condition: existing.starts_at < requested.ends_at AND existing.ends_at > requested.starts_at
   let query = supabase
-    .from('bookings')
+    .from('location_bookings')
     .select('id, title, title_ar, starts_at, ends_at, booked_by')
     .eq('location_id', locationId)
     .eq('church_id', profile.church_id)

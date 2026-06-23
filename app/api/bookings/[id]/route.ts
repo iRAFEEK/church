@@ -10,7 +10,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const id = params!.id
 
   const { data, error } = await supabase
-    .from('bookings')
+    .from('location_bookings')
     .select(
       'id, location_id, booked_by, title, title_ar, starts_at, ends_at, status, notes, is_public, created_at, location:locations!location_id(id, name, name_ar), booker:profiles!booked_by(id, first_name, last_name, first_name_ar, last_name_ar)'
     )
@@ -34,7 +34,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
   // Fetch existing booking to check ownership
   const { data: existing, error: fetchError } = await supabase
-    .from('bookings')
+    .from('location_bookings')
     .select('id, booked_by')
     .eq('id', id)
     .eq('church_id', profile.church_id)
@@ -58,7 +58,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
   }
 
   const { data, error } = await supabase
-    .from('bookings')
+    .from('location_bookings')
     .update(updateData)
     .eq('id', id)
     .eq('church_id', profile.church_id)

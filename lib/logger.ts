@@ -52,6 +52,9 @@ interface LogEntry {
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const IS_TEST = process.env.NODE_ENV === 'test'
+// Browser consoles don't render ANSI escape codes — detect so we can emit plain
+// output client-side while keeping colorized output on the server.
+const IS_BROWSER = typeof window !== 'undefined'
 
 // In production, show info+ (skip debug). In dev, show everything.
 const MIN_LEVEL: LogLevel = IS_PRODUCTION ? 'info' : 'debug'
@@ -100,14 +103,17 @@ function buildEntry(level: LogLevel, message: string, context?: LogContext): Log
 }
 
 function formatPretty(entry: LogEntry): string {
-  const levelColors: Record<LogLevel, string> = {
-    debug: '\x1b[36m',  // cyan
-    info: '\x1b[32m',   // green
-    warn: '\x1b[33m',   // yellow
-    error: '\x1b[31m',  // red
-  }
-  const reset = '\x1b[0m'
-  const dim = '\x1b[2m'
+  // ANSI colors only on a server TTY; browsers render the codes as literal text.
+  const levelColors: Record<LogLevel, string> = IS_BROWSER
+    ? { debug: '', info: '', warn: '', error: '' }
+    : {
+        debug: '\x1b[36m',  // cyan
+        info: '\x1b[32m',   // green
+        warn: '\x1b[33m',   // yellow
+        error: '\x1b[31m',  // red
+      }
+  const reset = IS_BROWSER ? '' : '\x1b[0m'
+  const dim = IS_BROWSER ? '' : '\x1b[2m'
 
   const color = levelColors[entry.level]
   const { timestamp, level, message, error: errorInfo, ...rest } = entry

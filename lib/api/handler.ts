@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
 import { logger } from '@/lib/logger'
-import { checkRateLimit } from '@/lib/api/rate-limit'
+import { checkRateLimitAsync } from '@/lib/api/rate-limit'
 import type { PermissionKey, UserRole, PermissionMap } from '@/types'
 
 export type ApiContext = {
@@ -51,7 +51,7 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
     try {
       // Pre-auth brute force protection — IP-based, generous limit (200/min)
       // Prevents unauthenticated abuse without blocking shared church WiFi users
-      const ipBrute = checkRateLimit(req, {
+      const ipBrute = await checkRateLimitAsync(req, {
         limit: 200,
         windowSeconds: 60,
         prefix: `brute:${routeName}`,
@@ -121,7 +121,7 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
 
         if (rateLimitTier !== 'none') {
           const config = RATE_LIMIT_CONFIG[rateLimitTier]
-          const rateLimited = checkRateLimit(req, {
+          const rateLimited = await checkRateLimitAsync(req, {
             ...config,
             prefix: `${rateLimitTier}:${routeName}`,
             userId: user.id,

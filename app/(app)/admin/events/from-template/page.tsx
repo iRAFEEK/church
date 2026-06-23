@@ -97,7 +97,7 @@ export default function CreateFromTemplatePage() {
   const [step, setStep] = useState(preselectedId ? 1 : 0)
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({})
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | number | boolean>>({})
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
 
@@ -245,7 +245,7 @@ export default function CreateFromTemplatePage() {
                         )}
                         {tmpl.recurrence_type && tmpl.recurrence_type !== 'none' && (
                           <span className="flex items-center gap-1">
-                            <Repeat className="h-3 w-3" /> {t(`recurrence${tmpl.recurrence_type.charAt(0).toUpperCase() + tmpl.recurrence_type.slice(1)}` as any)}
+                            <Repeat className="h-3 w-3" /> {t(`recurrence${tmpl.recurrence_type.charAt(0).toUpperCase() + tmpl.recurrence_type.slice(1)}` as Parameters<typeof t>[0])}
                           </span>
                         )}
                       </div>

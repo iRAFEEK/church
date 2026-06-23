@@ -10,7 +10,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 
   const { data, error } = await supabase
     .from('campaigns')
-    .select('id, name, name_ar, description, description_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, image_url, created_at, fund:fund_id (id, name, name_ar)')
+    .select('id, name, name_ar, description, description_ar, goal_amount, raised_amount, currency, start_date, end_date, status, is_public, image_url, created_at, fund:fund_id (id, name, name_ar)')
     .eq('id', id)
     .eq('church_id', profile.church_id)
     .single()
@@ -50,7 +50,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
     .update(updateData)
     .eq('id', id)
     .eq('church_id', profile.church_id)
-    .select('id, name, name_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, created_at')
+    .select('id, name, name_ar, goal_amount, raised_amount, currency, start_date, end_date, status, is_public, created_at')
     .single()
 
   if (error) {

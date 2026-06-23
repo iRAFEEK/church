@@ -44,6 +44,7 @@ vi.mock('@/lib/logger', () => ({
 
 vi.mock('@/lib/api/rate-limit', () => ({
   checkRateLimit: vi.fn().mockReturnValue(null),
+  checkRateLimitAsync: vi.fn().mockResolvedValue(null),
 }))
 
 vi.mock('next/cache', () => ({

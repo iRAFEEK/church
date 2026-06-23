@@ -65,6 +65,7 @@ vi.mock('@/lib/api/rate-limit', () => ({
   rateLimitPublic: vi.fn(() => null),
   rateLimitSensitive: vi.fn(() => null),
   checkRateLimit: vi.fn(() => null),
+  checkRateLimitAsync: vi.fn(async () => null),
 }))
 
 vi.mock('@/lib/messaging/triggers', () => ({

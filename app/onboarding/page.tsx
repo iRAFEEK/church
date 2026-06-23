@@ -10,6 +10,7 @@ import { Loader2, Search, Building2, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { logger } from '@/lib/logger'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -61,7 +62,7 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
         if (res.ok && !controller.signal.aborted) setResults(await res.json())
       } catch (e) {
         if (e instanceof Error && e.name !== 'AbortError') {
-          console.error('[ChurchSearch] Failed to fetch:', e)
+          logger.error('Church search failed', { module: 'onboarding', error: e })
         }
       } finally {
         if (!controller.signal.aborted) setSearching(false)

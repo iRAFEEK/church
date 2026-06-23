@@ -31,6 +31,7 @@ vi.mock('@/lib/logger', () => ({
 
 vi.mock('@/lib/api/rate-limit', () => ({
   checkRateLimit: vi.fn().mockReturnValue(null),
+  checkRateLimitAsync: vi.fn().mockResolvedValue(null),
 }))
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -133,15 +134,15 @@ describe('/api/bible/bookmarks', () => {
     const res = await postBookmarks(makeReq('/api/bible/bookmarks', 'POST', body))
     expect(res.status).toBe(201)
 
-    // Verify upsert was called with profile_id from user and church_id from profile
-    // DB-1 fix: bookmarks now use upsert with unique constraint to prevent duplicates
-    expect(mockChain.upsert).toHaveBeenCalledWith(
+    // Verify insert was called with profile_id from user and church_id from profile.
+    // Bookmarks use insert + 23505 catch (the unique guard is a COALESCE expression
+    // index that a column-list .upsert(onConflict) cannot match).
+    expect(mockChain.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_id: 'user-55',
         church_id: 'church-9',
         bible_id: 'svd',
       }),
-      { onConflict: 'profile_id,bible_id,book_id,chapter_id,verse_id' },
     )
   })
 })

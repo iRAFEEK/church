@@ -49,21 +49,42 @@ export const POST = apiHandler(async ({ req, supabase, user, profile, params }) 
 
   // DB-3 fix: upsert with unique constraint on (event_id, profile_id) prevents duplicates
   // from concurrent requests or network retries without TOCTOU race
+  const regName = body.name || (profileData ? `${profileData.first_name} ${profileData.last_name}` : '')
+  const regPhone = body.phone || profileData?.phone || null
+  const regEmail = body.email || profileData?.email || null
+  const cols = 'id, event_id, profile_id, name, status, registered_at'
+
+  // The uniqueness guard is a PARTIAL index (mig 049: WHERE profile_id IS NOT NULL),
+  // which a column-list .upsert(onConflict) cannot match. Insert, then on a unique
+  // violation update the existing registration (re-registering reactivates it).
   const { data, error } = await supabase
     .from('event_registrations')
-    .upsert({
+    .insert({
       event_id: eventId,
       church_id: profile.church_id,
       profile_id: user.id,
-      name: body.name || (profileData ? `${profileData.first_name} ${profileData.last_name}` : ''),
-      phone: body.phone || profileData?.phone || null,
-      email: body.email || profileData?.email || null,
+      name: regName,
+      phone: regPhone,
+      email: regEmail,
       status: 'registered',
-    }, { onConflict: 'event_id,profile_id' })
-    .select('id, event_id, profile_id, name, status, registered_at')
+    })
+    .select(cols)
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (error.code === '23505') {
+      // Already registered — idempotent. (RLS lets members read but not update
+      // their own registration, so we return the existing row rather than merge.)
+      const { data: existing } = await supabase
+        .from('event_registrations')
+        .select(cols)
+        .eq('event_id', eventId)
+        .eq('profile_id', user.id)
+        .single()
+      return Response.json({ data: existing }, { status: 200 })
+    }
+    throw error
+  }
   revalidateTag(`dashboard-${profile.church_id}`)
   return Response.json({ data }, { status: 201 })
 })

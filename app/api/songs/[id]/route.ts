@@ -7,7 +7,9 @@ import { NextResponse } from 'next/server'
 export const GET = apiHandler(async ({ supabase, params }) => {
   const { data, error } = await supabase
     .from('songs')
-    .select('*')
+    .select(
+      'id, church_id, created_by, title, title_ar, artist, artist_ar, lyrics, lyrics_ar, tags, display_settings, is_active, published_by_church_id, created_at, updated_at'
+    )
     .eq('id', params!.id)
     .single()
 

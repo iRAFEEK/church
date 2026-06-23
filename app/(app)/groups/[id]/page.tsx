@@ -136,7 +136,7 @@ export default async function GroupLeaderPage({ params }: Params) {
         <div>
           <h1 className="text-xl font-bold text-zinc-900">{group.name_ar || group.name}</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as any) : group.meeting_day}
+            {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as Parameters<typeof t>[0]) : group.meeting_day}
             {group.meeting_time && ` · ${group.meeting_time}`}
             {group.meeting_location && ` · ${group.meeting_location_ar || group.meeting_location}`}
           </p>

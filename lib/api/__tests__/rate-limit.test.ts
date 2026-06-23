@@ -198,9 +198,9 @@ describe('rate-limit', () => {
       const ip = uniqueIp()
 
       for (let i = 0; i < 20; i++) {
-        expect(rateLimitPublic(makeReq(ip))).toBeNull()
+        expect(await rateLimitPublic(makeReq(ip))).toBeNull()
       }
-      const result = rateLimitPublic(makeReq(ip))
+      const result = await rateLimitPublic(makeReq(ip))
       expect(result).not.toBeNull()
       expect(result!.status).toBe(429)
     })
@@ -210,9 +210,9 @@ describe('rate-limit', () => {
       const ip = uniqueIp()
 
       for (let i = 0; i < 5; i++) {
-        expect(rateLimitSensitive(makeReq(ip))).toBeNull()
+        expect(await rateLimitSensitive(makeReq(ip))).toBeNull()
       }
-      const result = rateLimitSensitive(makeReq(ip))
+      const result = await rateLimitSensitive(makeReq(ip))
       expect(result).not.toBeNull()
       expect(result!.status).toBe(429)
     })
@@ -222,9 +222,9 @@ describe('rate-limit', () => {
       const ip = uniqueIp()
 
       for (let i = 0; i < 30; i++) {
-        expect(rateLimitMutation(makeReq(ip))).toBeNull()
+        expect(await rateLimitMutation(makeReq(ip))).toBeNull()
       }
-      const result = rateLimitMutation(makeReq(ip))
+      const result = await rateLimitMutation(makeReq(ip))
       expect(result).not.toBeNull()
       expect(result!.status).toBe(429)
     })
@@ -234,9 +234,9 @@ describe('rate-limit', () => {
       const ip = uniqueIp()
 
       for (let i = 0; i < 10; i++) {
-        expect(rateLimitNotify(makeReq(ip))).toBeNull()
+        expect(await rateLimitNotify(makeReq(ip))).toBeNull()
       }
-      const result = rateLimitNotify(makeReq(ip))
+      const result = await rateLimitNotify(makeReq(ip))
       expect(result).not.toBeNull()
       expect(result!.status).toBe(429)
     })
