@@ -84,7 +84,9 @@ const APIHANDLER_ROUTES: Array<{ method: string; path: string; module: string }>
   { method: 'POST', path: '/api/announcements', module: '@/app/api/announcements/route' },
 
   // Songs
-  { method: 'GET', path: '/api/songs', module: '@/app/api/songs/route' },
+  // NOTE: GET /api/songs is intentionally a manual public route (songs are a
+  // shared read-only resource; auth is enforced by middleware + RLS), so it is
+  // NOT in this apiHandler 401 list. Only POST goes through apiHandler.
   { method: 'POST', path: '/api/songs', module: '@/app/api/songs/route' },
 
   // Notifications

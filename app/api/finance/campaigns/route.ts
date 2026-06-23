@@ -16,7 +16,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   let query = supabase
     .from('campaigns')
-    .select('id, name, name_ar, description, description_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, image_url, created_at, fund:fund_id (id, name, name_ar)', { count: 'exact' })
+    .select('id, name, name_ar, description, description_ar, goal_amount, raised_amount, currency, start_date, end_date, status, is_public, image_url, created_at, fund:fund_id (id, name, name_ar)', { count: 'exact' })
     .eq('church_id', profile.church_id)
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -64,7 +64,7 @@ export const POST = apiHandler(async ({ req, supabase, user, profile }) => {
       church_id: profile.church_id,
       created_by: user.id,
     })
-    .select('id, name, name_ar, goal_amount, current_amount, currency, start_date, end_date, status, is_public, created_at')
+    .select('id, name, name_ar, goal_amount, raised_amount, currency, start_date, end_date, status, is_public, created_at')
     .single()
 
   if (error) {

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { analytics } from '@/lib/analytics'
 import posthog from 'posthog-js'
+import { logger } from '@/lib/logger'
 
 export default function ErrorPage({
   error,
@@ -18,7 +19,7 @@ export default function ErrorPage({
   const pathname = usePathname()
 
   useEffect(() => {
-    console.error(error)
+    logger.error('Error boundary triggered', { error, route: pathname ?? undefined })
     posthog.captureException(error)
     analytics.error.boundaryTriggered({
       page: pathname ?? 'unknown',

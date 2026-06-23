@@ -89,7 +89,7 @@ export default async function GroupDetailPage({ params }: Params) {
           {group.name_ar && <p className="text-sm text-zinc-400">{group.name}</p>}
           <div className="flex gap-2 mt-2 flex-wrap">
             <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
-              {GROUP_TYPE_KEY[group.type] ? t(GROUP_TYPE_KEY[group.type] as any) : group.type}
+              {GROUP_TYPE_KEY[group.type] ? t(GROUP_TYPE_KEY[group.type] as Parameters<typeof t>[0]) : group.type}
             </span>
             {group.ministry && (group.ministry as { name: string }).name !== 'Groups' && (
               <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
@@ -136,12 +136,12 @@ export default async function GroupDetailPage({ params }: Params) {
           <p className="text-xs font-medium text-zinc-500 mb-3">{t('detailMeeting')}</p>
           <div className="space-y-1 text-sm text-zinc-700">
             {group.meeting_day && (
-              <p>📅 {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as any) : group.meeting_day}
+              <p>📅 {DAYS_KEY[group.meeting_day] ? t(DAYS_KEY[group.meeting_day] as Parameters<typeof t>[0]) : group.meeting_day}
                 {group.meeting_time && ` - ${group.meeting_time}`}
               </p>
             )}
             {group.meeting_location && <p>📍 {group.meeting_location_ar || group.meeting_location}</p>}
-            <p>🔄 {FREQUENCY_KEY[group.meeting_frequency] ? t(FREQUENCY_KEY[group.meeting_frequency] as any) : group.meeting_frequency}</p>
+            <p>🔄 {FREQUENCY_KEY[group.meeting_frequency] ? t(FREQUENCY_KEY[group.meeting_frequency] as Parameters<typeof t>[0]) : group.meeting_frequency}</p>
             <p>👥 {activeMembers.length} {t('leaderStatsMembers')}{group.max_members ? ` / ${group.max_members}` : ''}</p>
           </div>
         </div>

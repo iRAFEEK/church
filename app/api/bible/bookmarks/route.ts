@@ -22,11 +22,15 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
 export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const { bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note } = validate(CreateBookmarkSchema, await req.json())
 
-  // Upsert: DB-1 fix — unique constraint on (profile_id, bible_id, book_id, chapter_id, COALESCE(verse_id, ''))
-  // prevents duplicate bookmarks; upsert avoids TOCTOU race on concurrent requests
+  const cols = 'id, profile_id, church_id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note, created_at'
+
+  // Insert, then treat a unique violation as idempotent success. The uniqueness
+  // is enforced by a partial/expression index (mig 049: COALESCE(verse_id,'')),
+  // which a column-list .upsert(onConflict) cannot match — so we insert and
+  // gracefully handle the duplicate instead.
   const { data, error } = await supabase
     .from('bible_bookmarks')
-    .upsert({
+    .insert({
       bible_id,
       book_id,
       chapter_id,
@@ -36,11 +40,26 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
       note: note || null,
       profile_id: profile.id,
       church_id: profile.church_id,
-    }, { onConflict: 'profile_id,bible_id,book_id,chapter_id,verse_id' })
-    .select('id, profile_id, church_id, bible_id, book_id, chapter_id, verse_id, reference_label, reference_label_ar, note, created_at')
+    })
+    .select(cols)
     .single()
 
-  if (error) throw error
+  if (error) {
+    if (error.code === '23505') {
+      // Already bookmarked — return the existing row (idempotent).
+      let q = supabase
+        .from('bible_bookmarks')
+        .select(cols)
+        .eq('profile_id', profile.id)
+        .eq('bible_id', bible_id)
+        .eq('book_id', book_id)
+        .eq('chapter_id', chapter_id)
+      q = verse_id ? q.eq('verse_id', verse_id) : q.is('verse_id', null)
+      const { data: existing } = await q.single()
+      return NextResponse.json({ data: existing }, { status: 200 })
+    }
+    throw error
+  }
 
   return NextResponse.json({ data }, { status: 201 })
 })

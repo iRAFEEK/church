@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Messaging } from 'firebase/messaging'
 import { getFirebaseMessaging, isFirebaseClientConfigured } from '@/lib/firebase/client'
+import { logger } from '@/lib/logger'
 
 export type PushPermissionState = 'default' | 'granted' | 'denied' | 'unsupported'
 
@@ -65,14 +66,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         const { onMessage } = await import('firebase/messaging')
         onMessage(messaging, (payload) => {
           // App is open — don't show an OS popup, just let the notification bell handle it
-          console.log('[Push] Foreground message received:', payload.notification?.title)
+          logger.debug('Foreground message received', { module: 'push', title: payload.notification?.title })
         })
 
         // Listen for token refresh
         setupTokenRefresh(messaging)
       }
     } catch (error) {
-      console.warn('[Push] Token refresh failed:', error)
+      logger.warn('Token refresh failed', { module: 'push', error })
       setIsSubscribed(false)
     }
   }
@@ -98,7 +99,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
           })
         }
       } catch (error) {
-        console.warn('[Push] Token refresh handler failed:', error)
+        logger.warn('Token refresh handler failed', { module: 'push', error })
       }
     })
   }
@@ -119,7 +120,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
       const messaging = await getFirebaseMessaging()
       if (!messaging) {
-        console.warn('[Push] Firebase messaging not available')
+        logger.warn('Firebase messaging not available', { module: 'push' })
         setIsLoading(false)
         return
       }
@@ -131,7 +132,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       })
 
       if (!token) {
-        console.warn('[Push] No token returned from FCM')
+        logger.warn('No token returned from FCM', { module: 'push' })
         setIsLoading(false)
         return
       }
@@ -151,10 +152,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       // Start listening for foreground messages
       const { onMessage } = await import('firebase/messaging')
       onMessage(messaging, (payload) => {
-        console.log('[Push] Foreground message received:', payload.notification?.title)
+        logger.debug('Foreground message received', { module: 'push', title: payload.notification?.title })
       })
     } catch (error) {
-      console.error('[Push] Subscribe failed:', error)
+      logger.error('Subscribe failed', { module: 'push', error })
     } finally {
       setIsLoading(false)
     }
@@ -172,7 +173,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       setIsSubscribed(false)
       setCurrentToken(null)
     } catch (error) {
-      console.error('[Push] Unsubscribe failed:', error)
+      logger.error('Unsubscribe failed', { module: 'push', error })
     } finally {
       setIsLoading(false)
     }

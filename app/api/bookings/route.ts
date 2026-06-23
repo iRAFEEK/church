@@ -18,7 +18,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
   const to = from + pageSize - 1
 
   let query = supabase
-    .from('bookings')
+    .from('location_bookings')
     .select(
       'id, location_id, booked_by, title, title_ar, starts_at, ends_at, status, notes, is_public, created_at, location:locations!location_id(id, name, name_ar), booker:profiles!booked_by(id, first_name, last_name, first_name_ar, last_name_ar)',
       { count: 'exact' }
@@ -56,7 +56,7 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
   const isPublic = profile.role === 'super_admin' ? (validated.is_public ?? false) : false
 
   const { data, error } = await supabase
-    .from('bookings')
+    .from('location_bookings')
     .insert({
       location_id: validated.location_id,
       title: validated.title,

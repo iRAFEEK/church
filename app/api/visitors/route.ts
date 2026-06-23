@@ -12,7 +12,7 @@ import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 // POST /api/visitors — public, no auth required (QR visitor form)
 // Cannot use apiHandler because this is a public endpoint with no session.
 export async function POST(req: NextRequest) {
-  const limited = rateLimitPublic(req)
+  const limited = await rateLimitPublic(req)
   if (limited) return limited
 
   try {

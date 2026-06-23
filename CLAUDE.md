@@ -1,7 +1,7 @@
 # Ekklesia — Project Context
 
 > This file is auto-maintained. Every agent that completes a task must update the relevant sections.
-> Last updated: 2026-03-15 | Updated by: Production readiness hardening
+> Last updated: 2026-06-22 | Updated by: Pre-launch hardening (migrations 056–073, rate limiting, i18n parity, CI)
 
 ---
 
@@ -406,13 +406,38 @@ supabase/
 | 036 | seed_church_needs_test_data.sql | Test data: 2 additional churches + admins, 8 needs, 6 cross-church responses |
 | 042 | new_test_churches_and_needs.sql | 2 more test churches (Amman, Baghdad) + admins + 7 needs + 3 responses |
 | 043 | church_need_messages.sql | church_need_messages table for inter-church messaging threads on accepted responses |
+| 044 | church_need_message_reads.sql | Read receipts for church need messages |
+| 045 | fix_rls_push_tokens_notifications.sql | RLS fix scoping push_tokens + notifications |
+| 046 | missing_fk_indexes.sql | Add missing foreign-key indexes |
+| 047 | fund_deletion_restrict.sql | RESTRICT deletion of funds with dependents |
+| 048 | handle_new_user_require_church.sql | New-user trigger requires a church |
 | 049 | constraints_and_atomic_signup.sql | Unique constraints on event_registrations + bible_bookmarks, atomic signup_for_serving_slot() RPC |
 | 050 | rls_hardening_and_index_fixes.sql | RLS policy hardening: self-role-escalation trigger, scoped push_tokens/notifications RLS, financial_transactions read/write split, index fixes, CHECK constraints on amounts, CASCADE→RESTRICT FKs |
 | 051 | atomic_transaction_update.sql | Atomic update_transaction_with_items() RPC with SELECT FOR UPDATE, balance validation, posted tx immutability |
-| 052 | idempotency.sql | Idempotency key columns for mutation tables |
-| 053 | rate_limit_user_based.sql | User-based rate limiting support |
-| 054 | finance_form_validation.sql | Finance FK validation constraints |
+| 052 | drop_soft_delete_columns.sql | Drop unused soft-delete columns |
+| 053 | outreach_visits_rls_fix.sql | RLS fix for outreach_visits |
+| 054 | notification_retention_index.sql | Index supporting notification retention/cleanup |
 | 055 | finance_atomic_rpcs.sql | Finance atomic RPC functions (create_transaction_with_items, activate_fiscal_year, switch_default_fund) |
+| 056 | visitor_form_config.sql | Per-church visitor intake form configuration |
+| 057 | default_groups_ministry.sql | Default groups / ministry provisioning |
+| 058 | group_join_requests.sql | Group join requests (member request → leader approve/decline) |
+| 059 | ministry_meetings.sql | Ministry meetings table |
+| 060 | outreach_assignments.sql | Assign members to outreach leaders for accountability |
+| 061 | prayer_responses.sql | "I'm praying" responses on prayer requests |
+| 062 | event_service_requests.sql | Members express interest in serving (service requests) |
+| 063 | standalone_action_items.sql | Standalone + meeting-linked action items / tasks |
+| 064 | locations_and_bookings.sql | Locations + room bookings with availability checks |
+| 065 | liturgical_resources.sql | Coptic liturgy: Agpeya hours, psalmody, lectionary readings, clergy resources |
+| 066 | shared_song_library.sql | Make church_id nullable for global/shared songs |
+| 067 | song_search_snippets.sql | Song full-text search snippet RPC |
+| 068 | arabic_search_normalization.sql | Arabic normalization for song search |
+| 069 | songs_global_access.sql | Global song read RLS (shared hymnal) |
+| 070 | song_search_prefix.sql | Prefix matching in song search |
+| 071 | songs_scoped_global.sql | Scoped + global song access RLS (own church OR NULL) |
+| 072 | song_publish.sql | Publish a song to the global library (published_by_church_id) |
+| 073 | fix_songs_update_scope.sql | **SECURITY:** scope song UPDATE to global-or-own-church + WITH CHECK (fixes cross-church write IDOR) |
+
+> ⚠️ **Duplicate migration numbers on disk:** there are two `032_*` (`fix_songs_rls`, `push_tokens`) and two `033_*` (`seed_finance_test_data`, `songs_trigram_indexes`). They apply in filename order today, but renumber before this causes an ordering ambiguity in a fresh environment.
 
 ---
 
@@ -644,18 +669,36 @@ Last measured: 2026-03-11
 - [x] Production readiness hardening — test credentials removed from prod bundle (login page), security headers added (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy), /api/health endpoint created, .env.example updated with Sentry vars. 948 tests, 0 TS errors.
 
 ### In Progress
+- See [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) (prioritized to-do) and [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) (operational steps) for the pre-launch plan.
+
+### Additional completed modules (post-March, were undocumented)
+- [x] Coptic liturgy module — Agpeya hours, psalmody, lectionary readings, clergy-only resources (migration 065)
+- [x] Shared/global song library — cross-church song sharing + publish, scoped+global RLS (migrations 066–073)
+- [x] Locations & room bookings — availability checks, "my bookings" (migration 064)
+- [x] Ministry meetings + standalone action items/tasks (migrations 059, 063) — UI live in ministry detail
+- [x] Outreach assignments — assign members to outreach leaders (migration 060) — UI live
+- [x] Group join requests — request → approve/decline (migration 058)
+- [x] "I'm praying" prayer responses (migration 061) — wired in PrayerFeedCard
+- [x] Event service requests — members express serving interest (migration 062)
+- [x] Per-church visitor intake form config (migration 056)
+- [x] Distributed rate limiting via Upstash Redis with in-memory fallback (lib/api/rate-limit.ts)
+- [x] vitest declared as devDependency (was undeclared); `npm test` / `npm run typecheck` scripts; GitHub Actions CI (.github/workflows/ci.yml)
+- [x] i18n parity restored — ar + ar-eg complete to 2,558 keys; duplicate-key bug in en/ar message files fixed
+- [x] SECURITY: fixed songs cross-church write IDOR (migration 073)
 
 ### Pending / Not Started
-- [ ] Production deployment hardening
-- [ ] Apply migrations 022-055 to production Supabase project
+- [ ] Apply migrations to production Supabase project (now 001–073) — see OPERATIONS_RUNBOOK §1
+- [ ] Rotate production keys; enable Upstash env vars — RUNBOOK §2–3
 - [ ] Lighthouse baseline on production URL
-- [ ] Sentry error monitoring (free tier)
+- [ ] Sentry error monitoring + PostHog prod verification + DB backups/restore test
 - [ ] Vercel Analytics + Speed Insights
 - [ ] Real device testing: Android, Arabic mode, airplane mode, PWA install
 - [ ] PWA icons — real brand icons (192px, 512px, maskable) — currently placeholders
+- [ ] e2e tests for critical paths (sign-up, giving, permissions)
 - [ ] Capacitor for native app wrapper + FCM push notifications
-- [ ] Finance module: bank reconciliation, recurring donations, donation receipts
+- [ ] Finance module: bank reconciliation, recurring donations, donation receipts, Stripe online giving
 - [ ] Supabase CLI type generation (replace manual types/database.ts)
+- [ ] Renumber duplicate migrations (two 032_*, two 033_*)
 
 ---
 
@@ -845,6 +888,7 @@ If your task involves both new code AND performance considerations (e.g., buildi
 
 | Date | Agent Task | Key Changes | Files Modified |
 |------|-----------|-------------|----------------|
+| 2026-06-22 | Pre-launch hardening | Working the launch checklist: (1) **SECURITY** — fixed songs cross-church write IDOR via migration 073 (UPDATE policy had no church scope); (2) distributed rate limiting (Upstash Redis + in-memory fallback) in lib/api/rate-limit.ts, handler awaits async path; (3) i18n parity — 332 Egyptian-Arabic translations added, fixed duplicate-key bug (shadowed locations/bookings blocks) in en/ar, all 3 files now 2,558 keys; (4) eliminated select('*') in songs routes/pages; (5) browser-safe logger + converted 24 console.* call sites; (6) declared vitest devDep (was undeclared — npm install pruned it), added test/typecheck scripts + GitHub Actions CI; (7) verified cron auth; (8) doc sync. Discovered the 4 "backend-only" features are actually live+wired. 972 tests, 0 TS errors. | supabase/migrations/073 (NEW), lib/api/rate-limit.ts, lib/api/handler.ts, lib/logger.ts, app/api/songs/**, app/(app)/admin/songs/[id], app/presenter/songs/[id], 14 error.tsx, lib/hooks/usePushNotifications.ts, 3 client pages, messages/{en,ar,ar-eg}.json, package.json, .github/workflows/ci.yml, .env.example, ~9 test files, LAUNCH_CHECKLIST.md + OPERATIONS_RUNBOOK.md (NEW), CLAUDE.md |
 | 2026-03-14 | UX full fixes (Phase 2) | 207 remaining issues: pb-24 on ~76 pages, finance responsive layout (13 pages), 6 AlertDialog confirmations, mobile overflow fixes (6 locations + visitor mobile cards), 8 empty states with icons/CTAs, dir="auto" on ~20 inputs, text-base iOS zoom, aria-label on ~15 buttons, text-[9px]→text-xs in 23 files, Help FAB icon, landing mobile menu, tabs dir fix, role badge translated, SongForm steps translated, MySignups deleted, dev buttons hidden. ~90 translation keys. | 151 files: ~76 page.tsx (pb-24), 13 finance pages (responsive), 6 components (dialogs), 11 components (overflow/cards), 22 components (a11y/dir-auto), 23 files (text sizes), 3 translation files |
 | 2026-03-15 | Production readiness hardening | Test credentials removed from prod bundle (NODE_ENV guard on login arrays), security headers added to next.config.ts (5 headers on all routes), /api/health endpoint for monitoring, .env.example updated with Sentry vars. 948 tests, 0 TS errors. | app/(auth)/login/page.tsx, next.config.ts, app/api/health/route.ts (NEW), .env.example |
 | 2026-03-15 | Production readiness audit | 60+ fixes in 4 parallel waves: 7 new migrations (049-055), RLS hardening (self-escalation trigger, scoped policies, CASCADE→RESTRICT), atomic RPCs (serving signup, transaction update), unique constraints (event_registrations, bible_bookmarks), upsert patterns, PII stripping on cross-church needs, sanitizeLikePattern on 5 search routes, finance FK validation (donations + expenses), double-submit guards on 8 forms, dashboard caching (unstable_cache 300s), conditional Sentry/Firebase imports, batched cron processing, error boundaries, 21 RTL icon fixes, bilingual global-error, BudgetForm i18n, onboarding error.message leak fix. 948 tests, 0 TS errors. | supabase/migrations/049-055, ~30 app/api/**/route.ts, 6 finance form files, lib/dashboard/queries.ts, lib/api/rate-limit.ts, lib/api/handler.ts, middleware.ts, app/global-error.tsx, app/onboarding/page.tsx, 15+ component files, messages/*.json |

@@ -79,6 +79,8 @@ vi.mock('@/lib/messaging/dispatcher', () => ({
 }))
 
 vi.mock('@/lib/api/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockReturnValue(null),
+  checkRateLimitAsync: vi.fn().mockResolvedValue(null),
   rateLimitPublic: vi.fn().mockReturnValue(null),
   rateLimitMutation: vi.fn().mockReturnValue(null),
 }))

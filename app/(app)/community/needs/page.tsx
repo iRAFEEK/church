@@ -91,8 +91,8 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
   if (allMyResponses && allMyResponses.length > 0) {
     const responseIds = allMyResponses.map(r => r.id)
     const [{ data: readStatuses }, { data: messageCounts }] = await Promise.all([
-      admin.from('church_need_message_reads' as any).select('response_id, last_read_at').eq('church_id', myChurchId).in('response_id', responseIds),
-      admin.from('church_need_messages' as any).select('response_id, created_at').in('response_id', responseIds),
+      admin.from('church_need_message_reads').select('response_id, last_read_at').eq('church_id', myChurchId).in('response_id', responseIds),
+      admin.from('church_need_messages').select('response_id, created_at').in('response_id', responseIds),
     ])
     const readMap = new Map(((readStatuses || []) as Array<{ response_id: string; last_read_at: string }>).map((r) => [r.response_id, r.last_read_at]))
     for (const msg of (messageCounts || []) as Array<{ response_id: string; created_at: string }>) {
@@ -121,8 +121,8 @@ export default async function ChurchNeedsPage({ searchParams }: { searchParams: 
       const responseIds = allMyResponses.map(r => r.id)
 
       const [{ data: allMessages }, { data: readStatuses2 }, { data: needsData }] = await Promise.all([
-        admin.from('church_need_messages' as any).select('id, response_id, message, message_ar, created_at, sender_church_id').in('response_id', responseIds).order('created_at', { ascending: false }),
-        admin.from('church_need_message_reads' as any).select('response_id, last_read_at').eq('church_id', myChurchId).in('response_id', responseIds),
+        admin.from('church_need_messages').select('id, response_id, message, message_ar, created_at, sender_church_id').in('response_id', responseIds).order('created_at', { ascending: false }),
+        admin.from('church_need_message_reads').select('response_id, last_read_at').eq('church_id', myChurchId).in('response_id', responseIds),
         admin.from('church_needs').select('id, title, title_ar, church_id').in('id', allMyResponses.map(r => r.need_id)),
       ])
 

@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import type { UserChurchWithDetails } from '@/types'
+import { logger } from '@/lib/logger'
 
 export default function SelectChurchPage() {
   const t = useTranslations('SelectChurch')
@@ -31,7 +32,7 @@ export default function SelectChurchPage() {
     fetch('/api/churches/my-churches', { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => { if (!controller.signal.aborted) setChurches(Array.isArray(data) ? data : []) })
-      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') console.error('[SelectChurch] Failed to fetch:', e) })
+      .catch((e) => { if (e instanceof Error && e.name !== 'AbortError') logger.error('Failed to fetch churches', { module: 'select-church', error: e }) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [])

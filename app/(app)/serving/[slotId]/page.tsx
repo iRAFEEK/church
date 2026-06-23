@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Calendar, Clock, Users } from 'lucide-react'
 import { toast } from 'sonner'
+import { logger } from '@/lib/logger'
 
 export default function SlotDetailMemberPage() {
   const { slotId } = useParams<{ slotId: string }>()
@@ -46,7 +47,7 @@ export default function SlotDetailMemberPage() {
         }
       } catch (e) {
         if (e instanceof Error && e.name !== 'AbortError') {
-          console.error('[SlotDetail] Failed to fetch:', e)
+          logger.error('Failed to fetch slot detail', { module: 'serving', error: e })
         }
       } finally {
         if (!controller.signal.aborted) setLoading(false)

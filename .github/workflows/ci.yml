@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Type-check, tests, RTL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check (0 errors required)
+        run: npm run typecheck
+
+      - name: Unit + integration tests
+        run: npm test
+
+      - name: RTL violation check (must be 0)
+        run: |
+          count=$(grep -rn "\bml-[0-9]\|\bmr-[0-9]\|\btext-right\b\|\btext-left\b" \
+            app/ components/ --include="*.tsx" | grep -v "//" | wc -l | tr -d ' ')
+          echo "RTL violations: $count"
+          if [ "$count" -ne 0 ]; then
+            echo "::error::Found $count RTL violation(s). Use logical properties (ms-/me-/ps-/pe-/text-start/text-end)."
+            grep -rn "\bml-[0-9]\|\bmr-[0-9]\|\btext-right\b\|\btext-left\b" \
+              app/ components/ --include="*.tsx" | grep -v "//"
+            exit 1
+          fi
+
+      - name: Translation key parity (en / ar / ar-eg)
+        run: |
+          node -e '
+            const fs = require("fs");
+            const leaves = (o, p = "", a = {}) => {
+              for (const k in o) {
+                const v = o[k], np = p ? p + "." + k : k;
+                if (v && typeof v === "object" && !Array.isArray(v)) leaves(v, np, a);
+                else a[np] = v;
+              }
+              return a;
+            };
+            const en = leaves(JSON.parse(fs.readFileSync("messages/en.json")));
+            let bad = 0;
+            for (const loc of ["ar", "ar-eg"]) {
+              const m = leaves(JSON.parse(fs.readFileSync(`messages/${loc}.json`)));
+              const missing = Object.keys(en).filter(k => !(k in m));
+              if (missing.length) {
+                bad += missing.length;
+                console.error(`${loc}: ${missing.length} missing keys (first 10): ${missing.slice(0,10).join(", ")}`);
+              }
+            }
+            if (bad) { console.error(`::error::${bad} missing translation key(s)`); process.exit(1); }
+            console.log("Translation parity OK");
+          '
+
+  # NOTE: A full `next build` job is intentionally omitted here because the build
+  # validates production env (Supabase / Firebase) and needs repository secrets.
+  # To enable it, add the required secrets under Settings → Secrets → Actions and
+  # add a job that runs `npm run build` with those secrets in `env:`.
