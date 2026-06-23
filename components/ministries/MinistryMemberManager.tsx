@@ -215,7 +215,7 @@ export function MinistryMemberManager({
                 <div className="flex gap-2 shrink-0 items-center">
                   {canManage && (
                     <Select value={m.role_in_ministry} onValueChange={v => changeRole(m, v)}>
-                      <SelectTrigger className="h-7 text-xs w-24">
+                      <SelectTrigger className="h-9 text-xs w-24">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -225,13 +225,13 @@ export function MinistryMemberManager({
                       </SelectContent>
                     </Select>
                   )}
-                  <Link href={`/admin/members/${p.id}`} className="text-xs text-zinc-500 hover:text-zinc-700">
+                  <Link href={`/admin/members/${p.id}`} className="inline-flex items-center min-h-[40px] px-1 text-xs text-zinc-500 hover:text-zinc-700">
                     {t('viewLink')}
                   </Link>
                   {canManage && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <button className="text-xs text-red-500 hover:text-red-700">
+                        <button className="inline-flex items-center min-h-[40px] px-1 text-xs text-red-500 hover:text-red-700">
                           {t('removeButton')}
                         </button>
                       </AlertDialogTrigger>

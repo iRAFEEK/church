@@ -222,7 +222,7 @@ export function SongsTable() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                    className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
                     title={t('present')}
                   >
                     <Presentation className="h-4 w-4 text-primary" />

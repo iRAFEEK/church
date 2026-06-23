@@ -318,7 +318,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
           {/* Font size control */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-9 w-9 p-0" aria-label={t('fontSize')}>
+              <Button variant="ghost" size="sm" className="h-10 w-10 p-0" aria-label={t('fontSize')}>
                 <Type className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -355,7 +355,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
             variant="ghost"
             size="sm"
             onClick={() => setShowBookmarks(!showBookmarks)}
-            className={`h-9 w-9 p-0 ${showBookmarks ? 'bg-muted' : ''}`}
+            className={`h-10 w-10 p-0 ${showBookmarks ? 'bg-muted' : ''}`}
             aria-label={t('bookmarks')}
           >
             <Bookmark className="h-4 w-4" />
@@ -363,7 +363,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
 
           {/* Present button */}
           {chapterContent && (
-            <Button variant="ghost" size="sm" onClick={openPresenter} className="h-9 w-9 p-0" aria-label={t('present')}>
+            <Button variant="ghost" size="sm" onClick={openPresenter} className="h-10 w-10 p-0" aria-label={t('present')}>
               <Presentation className="h-4 w-4" />
             </Button>
           )}
