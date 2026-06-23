@@ -988,7 +988,13 @@
       "need_response_status_changed": "Help Offer Update",
       "need_message": "Need Message",
       "assignment": "Assignment",
-      "general": "General"
+      "general": "General",
+      "announcement": "Announcement",
+      "group_join_request": "Group Join Request",
+      "meeting_action_assigned": "Task Assigned",
+      "ministry_member_added": "Added to Ministry",
+      "visitor": "Visitor",
+      "outreach_assignment": "Outreach Assignment"
     },
     "viewRelated": "View Details"
   },

@@ -988,7 +988,13 @@
       "need_response_status_changed": "تحديث عرض المساعدة",
       "need_message": "رسالة احتياج",
       "assignment": "تعيين",
-      "general": "عام"
+      "general": "عام",
+      "announcement": "إعلان",
+      "group_join_request": "طلب انضمام لمجموعة",
+      "meeting_action_assigned": "مهمة مسندة ليك",
+      "ministry_member_added": "اتضافت لخدمة",
+      "visitor": "زائر",
+      "outreach_assignment": "تكليف تواصل"
     },
     "viewRelated": "عرض التفاصيل"
   },
