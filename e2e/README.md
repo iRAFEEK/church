@@ -79,6 +79,17 @@ Phase B — member/leader/admin mutations (`member-actions.spec.ts`, `leader-adm
 Phase C — cross-church (`leader-admin-crosschurch.spec.ts`):
 - [x] Church A posts a need → Church B responds (cross-church) → duplicate correctly 409'd
 
-Not yet automated:
-- [ ] Full sign-up → complete onboarding → dashboard (mutates state; needs a fresh disposable user per run)
-- [ ] Deep two-church data isolation assertions (RLS-enforced + covered indirectly by the matrix)
+Journeys (`signup-and-isolation.spec.ts`):
+- [x] Onboarding completion: an un-onboarded account is gated into `/onboarding`, completes it, reaches the app
+- [x] Two-church data isolation: a church B admin sees **0** church A members (list + deep-linked detail)
+
+> ⚠️ **Launch dependency (not a code bug):** the project's Supabase has **email
+> confirmation ON with no custom SMTP**, so the public sign-up form can't complete
+> (signup tries to send a rate-limited confirmation email and rejects test
+> domains). Wire Resend/SMTP into Supabase Auth — or disable confirmation for the
+> pilot — before self-signup works. The onboarding spec therefore drives a
+> pre-confirmed user (`E2E_NEWUSER_*`, created via the admin API).
+
+Known minor gap (follow-up, not a leak): a church B admin can POST a gathering
+referencing church A's `group_id` (201) — `/api/gatherings` doesn't verify the
+group belongs to the caller's church. No cross-church data is readable as a result.
