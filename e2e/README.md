@@ -65,9 +65,20 @@ with `DELETE FROM visitors WHERE first_name = '[E2E]';` on the test DB.
 
 ## Coverage status
 
-- [x] Permission enforcement (member vs super_admin)
+Phase A — access (`persona-matrix.spec.ts`, `critical-paths.spec.ts`):
+- [x] Permission/role matrix for all 4 personas (every route, render vs blocked + deep-link probes)
 - [x] Finance is OFF (pages redirect, API 404)
 - [x] Onboarding gate (incomplete → `/onboarding`)
 - [x] Public visitor intake (`/join` → success)
-- [ ] Two-church isolation: user A cannot see church B's data
+
+Phase B — member/leader/admin mutations (`member-actions.spec.ts`, `leader-admin-crosschurch.spec.ts`):
+- [x] Member: RSVP, serving signup, prayer submit, "I'm praying" (with cleanup)
+- [x] Group leader: create gathering + mark attendance
+- [x] Admin: publish an announcement
+
+Phase C — cross-church (`leader-admin-crosschurch.spec.ts`):
+- [x] Church A posts a need → Church B responds (cross-church) → duplicate correctly 409'd
+
+Not yet automated:
 - [ ] Full sign-up → complete onboarding → dashboard (mutates state; needs a fresh disposable user per run)
+- [ ] Deep two-church data isolation assertions (RLS-enforced + covered indirectly by the matrix)
