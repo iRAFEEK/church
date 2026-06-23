@@ -51,8 +51,11 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
             churchNameAr={church.name_ar ?? church.name}
             onLangChange={handleLangChange}
           />
+          {/* Bottom padding clears the bottom nav AND the floating FAB stack
+              (quick-actions + help), so page content — especially bottom-aligned
+              form action buttons — is never hidden behind them on mobile. */}
           <main className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
-            style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 1rem)' }}
+            style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 5rem)' }}
           >
             {children}
           </main>
