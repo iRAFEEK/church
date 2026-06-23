@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -34,6 +34,7 @@ const AGE_RANGE_KEYS: Record<string, string> = {
 
 export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[]; slaHours: number }) {
   const t = useTranslations('visitors')
+  const locale = useLocale()
   const [localVisitors, setLocalVisitors] = useState(visitors)
   const [selected, setSelected] = useState<Visitor | null>(null)
   const [notes, setNotes] = useState('')
@@ -129,7 +130,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
                     {t(AGE_RANGE_KEYS[v.age_range] || v.age_range)}
                   </p>
                 )}
-                <p className="text-xs text-zinc-400 mt-1">{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</p>
+                <p className="text-xs text-zinc-400 mt-1">{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at, locale)}</p>
               </div>
 
               {v.contact_notes && (

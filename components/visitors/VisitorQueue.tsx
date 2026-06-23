@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -73,6 +73,7 @@ export function VisitorQueue({
   slaHours: number
 }) {
   const t = useTranslations('visitors')
+  const locale = useLocale()
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Visitor | null>(null)
@@ -273,7 +274,7 @@ export function VisitorQueue({
                       </div>
                       <div className="flex gap-3 mt-1 text-xs text-zinc-400 flex-wrap">
                         {v.phone && <span dir="ltr">{v.phone}</span>}
-                        <span>{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at)}</span>
+                        <span>{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at, locale)}</span>
                         {v.assigned_profile && (
                           <span>{t('queueAssignedTo')} {v.assigned_profile.first_name} {v.assigned_profile.last_name}</span>
                         )}
@@ -340,7 +341,7 @@ export function VisitorQueue({
                   </span>
                 )}
                 <span className="text-xs text-zinc-400">
-                  {t('queueVisitedAgo')} {formatDistanceToNow(detailVisitor.visited_at)}
+                  {t('queueVisitedAgo')} {formatDistanceToNow(detailVisitor.visited_at, locale)}
                 </span>
               </div>
 
