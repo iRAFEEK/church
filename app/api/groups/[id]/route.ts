@@ -4,6 +4,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { logger } from '@/lib/logger'
 import { validate } from '@/lib/api/validate'
 import { UpdateGroupSchema } from '@/lib/schemas/group'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
   const id = params?.id
@@ -31,7 +32,27 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
     logger.error('[/api/groups/[id] GET]', { module: 'groups', error })
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ data })
+
+  // Member-directory privacy (A5, church-wide): strip member phone (leader + members)
+  // unless the caller's role is allowed by the church's visibility setting.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const gated =
+    canSeePhone || !data
+      ? data
+      : {
+          ...data,
+          leader: data.leader
+            ? { ...(data.leader as unknown as Record<string, unknown>), phone: null }
+            : data.leader,
+          group_members: ((data.group_members ?? []) as unknown as Array<Record<string, unknown>>).map(
+            (gm) => {
+              const prof = gm.profile as Record<string, unknown> | null
+              return prof ? { ...gm, profile: { ...prof, phone: null } } : gm
+            }
+          ),
+        }
+
+  return NextResponse.json({ data: gated })
 })
 
 export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {

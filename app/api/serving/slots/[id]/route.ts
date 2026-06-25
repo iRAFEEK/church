@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateServingSlotSchema } from '@/lib/schemas/serving'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
 // GET /api/serving/slots/[id] — slot detail with signups
 export const GET = apiHandler(async ({ supabase, user, profile, resolvedPermissions, params }) => {
@@ -29,7 +30,19 @@ export const GET = apiHandler(async ({ supabase, user, profile, resolvedPermissi
         (s: Record<string, unknown>) => s.profile_id === user.id
       )
 
-  return { data: { ...data, serving_signups: signups } }
+  // Member-directory privacy (A5, church-wide): strip OTHER volunteers' phone unless
+  // the caller's role is allowed by the church's visibility setting. Callers always
+  // see their OWN phone.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const gatedSignups = canSeePhone
+    ? signups
+    : (signups ?? []).map((s: Record<string, unknown>) => {
+        if (s.profile_id === user.id) return s
+        const prof = s.profiles as Record<string, unknown> | null
+        return prof ? { ...s, profiles: { ...prof, phone: null } } : s
+      })
+
+  return { data: { ...data, serving_signups: gatedSignups } }
 })
 
 // PATCH /api/serving/slots/[id] — update slot (admin only)

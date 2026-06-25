@@ -11,6 +11,8 @@
 //
 // super_admin ALWAYS sees phone numbers regardless of the setting.
 
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 export type MemberDirectoryVisibility = 'everyone' | 'leaders_only' | 'hidden'
 
 export type ViewerRole = 'member' | 'group_leader' | 'ministry_leader' | 'super_admin'
@@ -46,5 +48,32 @@ export function canViewMemberPhone(
     default:
       // Unknown / null setting → fail closed to the privacy-safe default.
       return role === 'ministry_leader'
+  }
+}
+
+/**
+ * Server helper: fetch the church's directory-visibility setting (one lookup) and
+ * decide whether the caller (by role) may see member phone numbers. Used to apply the
+ * same privacy gate church-wide (outreach, serving rosters, group/ministry detail,
+ * at-risk) — not just the member directory. Fails closed to the privacy-safe default
+ * ('leaders_only') on any error.
+ */
+export async function canCallerViewMemberPhones(
+  supabase: SupabaseClient,
+  churchId: string,
+  role: string,
+): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('churches')
+      .select('member_directory_visibility')
+      .eq('id', churchId)
+      .single()
+    const visibility = (!error && data?.member_directory_visibility
+      ? data.member_directory_visibility
+      : 'leaders_only') as MemberDirectoryVisibility
+    return canViewMemberPhone(visibility, role as ViewerRole)
+  } catch {
+    return canViewMemberPhone('leaders_only', role as ViewerRole)
   }
 }

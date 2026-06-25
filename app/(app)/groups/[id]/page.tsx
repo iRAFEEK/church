@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -45,6 +46,16 @@ export default async function GroupLeaderPage({ params }: Params) {
     .single()
 
   if (!group) notFound()
+
+  // Member-directory privacy (A5, church-wide): hide member phone unless the viewer's
+  // role is allowed by the church's visibility setting.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role)
+  if (!canSeePhone) {
+    if (group.leader) group.leader.phone = null
+    for (const m of group.group_members || []) {
+      if (m.profile) m.profile.phone = null
+    }
+  }
 
   const isLeaderOrAdmin = (
     group.leader_id === user.profile.id ||

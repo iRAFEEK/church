@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateMinistrySchema } from '@/lib/schemas/ministry'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
 // GET /api/ministries/[id] — get ministry detail with members
 export const GET = apiHandler(async ({ supabase, profile, params }) => {
@@ -23,7 +24,21 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
   if (error || !data) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  return NextResponse.json({ data })
+
+  // Member-directory privacy (A5, church-wide): strip member phone unless the caller's
+  // role is allowed by the church's visibility setting.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const gated = canSeePhone
+    ? data
+    : {
+        ...data,
+        ministry_members: (data.ministry_members ?? []).map((mm: Record<string, unknown>) => {
+          const prof = mm.profile as Record<string, unknown> | null
+          return prof ? { ...mm, profile: { ...prof, phone: null } } : mm
+        }),
+      }
+
+  return NextResponse.json({ data: gated })
 })
 
 // PATCH /api/ministries/[id] — update ministry

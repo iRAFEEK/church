@@ -1,5 +1,6 @@
 import { apiHandler } from '@/lib/api/handler'
 import { sanitizeLikePattern } from '@/lib/utils/sanitize'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
 const PAGE_SIZE = 25
 
@@ -75,6 +76,13 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
     needs_followup: visitMap.get(m.id)?.needsFollowup || false,
     total_visits: visitMap.get(m.id)?.totalVisits || 0,
   }))
+
+  // Member-directory privacy (A5, church-wide): strip phone unless the caller's role
+  // is allowed by the church's visibility setting. super_admin always sees it.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  if (!canSeePhone) {
+    results = results.map((r) => ({ ...r, phone: null }))
+  }
 
   // Compute stats from full unfiltered results
   const thirtyDaysAgo = new Date()

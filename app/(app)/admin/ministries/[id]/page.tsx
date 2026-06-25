@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -85,6 +86,18 @@ export default async function MinistryDetailPage({ params }: Params) {
     ministry = fallback.data ? { ...fallback.data, ministry_members: [] } as MinistryDetail : null
   } else {
     ministry = result.data as MinistryDetail | null
+  }
+
+  // Member-directory privacy (A5, church-wide): hide member phone unless the viewer's
+  // role is allowed by the church's visibility setting.
+  if (ministry) {
+    const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role)
+    if (!canSeePhone) {
+      if (ministry.leader) ministry.leader.phone = null
+      for (const mm of ministry.ministry_members || []) {
+        if (mm.profile) mm.profile.phone = null
+      }
+    }
   }
 
   if (!ministry) notFound()

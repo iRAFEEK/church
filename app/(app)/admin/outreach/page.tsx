@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 import { getTranslations } from 'next-intl/server'
 import { MapPin } from 'lucide-react'
 import { OutreachMemberList } from '@/components/outreach/OutreachMemberList'
@@ -28,6 +29,10 @@ export default async function OutreachPage() {
   const members = membersResult.data ?? []
   const visits = visitsResult.data ?? []
 
+  // Member-directory privacy (A5, church-wide): hide phone unless the viewer's role
+  // is allowed by the church's visibility setting.
+  const canSeePhone = await canCallerViewMemberPhones(supabase, churchId, user.profile.role)
+
   // Build visit summary map
   const visitMap = new Map<string, { lastDate: string; needsFollowup: boolean; totalVisits: number }>()
   for (const v of visits as Array<{ profile_id: string; visit_date: string; needs_followup: boolean }>) {
@@ -45,7 +50,7 @@ export default async function OutreachPage() {
     last_name: m.last_name,
     first_name_ar: m.first_name_ar,
     last_name_ar: m.last_name_ar,
-    phone: m.phone,
+    phone: canSeePhone ? m.phone : null,
     address: m.address,
     address_ar: m.address_ar,
     city: m.city,

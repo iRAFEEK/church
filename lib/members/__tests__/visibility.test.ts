@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   canViewMemberPhone,
+  canCallerViewMemberPhones,
   MEMBER_DIRECTORY_VISIBILITY_VALUES,
   type MemberDirectoryVisibility,
   type ViewerRole,
@@ -54,5 +56,42 @@ describe('canViewMemberPhone', () => {
       'leaders_only',
       'hidden',
     ])
+  })
+})
+
+describe('canCallerViewMemberPhones (server helper)', () => {
+  const mockSupabase = (result: {
+    data: { member_directory_visibility: string | null } | null
+    error: unknown
+  }) =>
+    ({
+      from: () => ({
+        select: () => ({
+          eq: () => ({ single: async () => result }),
+        }),
+      }),
+    }) as unknown as SupabaseClient
+
+  it('reads the church visibility and applies the role rule (hidden)', async () => {
+    const sb = mockSupabase({ data: { member_directory_visibility: 'hidden' }, error: null })
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'ministry_leader')).toBe(false)
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'super_admin')).toBe(true)
+  })
+
+  it('everyone visibility lets any role see phone', async () => {
+    const sb = mockSupabase({ data: { member_directory_visibility: 'everyone' }, error: null })
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'member')).toBe(true)
+  })
+
+  it('fails closed to leaders_only on lookup error', async () => {
+    const sb = mockSupabase({ data: null, error: { message: 'boom' } })
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'member')).toBe(false)
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'ministry_leader')).toBe(true)
+  })
+
+  it('defaults to leaders_only when the column is null', async () => {
+    const sb = mockSupabase({ data: { member_directory_visibility: null }, error: null })
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'group_leader')).toBe(false)
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'ministry_leader')).toBe(true)
   })
 })
