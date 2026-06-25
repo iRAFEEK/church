@@ -112,6 +112,28 @@
     "registerNewChurch": "سجّل كنيسة جديدة",
     "searchChurchHint": "اكتب اسم كنيستك عشان تدور"
   },
+  "phoneAuth": {
+    "emailTab": "الإيميل",
+    "phoneTab": "الموبايل",
+    "phoneLabel": "رقم الموبايل",
+    "phonePlaceholder": "+20 100 000 0000",
+    "phoneHint": "اكتب كود بلدك، زي +20 لمصر.",
+    "sendCodeButton": "ابعت الكود على واتساب",
+    "sending": "بيتبعت…",
+    "codeLabel": "كود التأكيد",
+    "codePlaceholder": "123456",
+    "codeSentTo": "بعتنا كود من 6 أرقام لـ {phone} على واتساب.",
+    "codeSentTitle": "الكود اتبعت",
+    "codeSentDescription": "بصّ على واتساب هتلاقي الكود المكوّن من 6 أرقام.",
+    "verifyButton": "أكّد وادخل",
+    "verifying": "بيتأكد…",
+    "changeNumber": "غيّر الرقم",
+    "errorTitle": "حصل حاجة غلط",
+    "validationPhone": "اكتب رقم موبايل صح مع كود البلد (زي +20100000000).",
+    "validationCode": "اكتب الكود المكوّن من 6 أرقام.",
+    "sendFailed": "مقدرناش نبعت الكود. جرّب تاني.",
+    "verifyFailed": "الكود غلط أو خلصت صلاحيته. جرّب تاني."
+  },
   "push": {
     "title": "فعّل الإشعارات",
     "description": "هيوصلك إشعارات لطلبات الصلاة والخدمة والأحداث — حتى لو التطبيق مقفول.",

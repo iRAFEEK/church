@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   '/welcome',     // Church landing page
   '/join',        // QR visitor form (Phase 2)
   '/api/webhooks', // Twilio/external webhooks
+  '/api/auth/sms-hook', // Supabase Send-SMS auth hook (protected by signature, not auth)
   '/api/visitors', // Public visitor submission (Phase 2)
   '/api/cron',     // Cron jobs (secured by CRON_SECRET)
   '/api/churches/register', // Public church registration

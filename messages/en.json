@@ -112,6 +112,28 @@
     "registerNewChurch": "Register a new church",
     "searchChurchHint": "Type your church name to search"
   },
+  "phoneAuth": {
+    "emailTab": "Email",
+    "phoneTab": "Phone",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "+20 100 000 0000",
+    "phoneHint": "Include your country code, e.g. +20 for Egypt.",
+    "sendCodeButton": "Send code via WhatsApp",
+    "sending": "Sending…",
+    "codeLabel": "Verification code",
+    "codePlaceholder": "123456",
+    "codeSentTo": "We sent a 6-digit code to {phone} on WhatsApp.",
+    "codeSentTitle": "Code sent",
+    "codeSentDescription": "Check WhatsApp for your 6-digit code.",
+    "verifyButton": "Verify and sign in",
+    "verifying": "Verifying…",
+    "changeNumber": "Change number",
+    "errorTitle": "Something went wrong",
+    "validationPhone": "Enter a valid phone number with country code (e.g. +20100000000).",
+    "validationCode": "Enter the 6-digit code.",
+    "sendFailed": "Could not send the code. Please try again.",
+    "verifyFailed": "The code is incorrect or expired. Please try again."
+  },
   "push": {
     "title": "Enable push notifications",
     "description": "Get notified for prayer requests, serving assignments, and events — even when the app is closed.",

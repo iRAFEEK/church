@@ -12,6 +12,8 @@ import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { analytics } from '@/lib/analytics'
+import { PhoneLoginForm } from '@/components/auth/PhoneLoginForm'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -52,6 +54,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [devLoading, setDevLoading] = useState<string | null>(null)
   const t = useTranslations('auth')
+  const tPhone = useTranslations('phoneAuth')
 
   const loginSchema = z.object({
     email: z.string().email(t('validationEmail')),
@@ -157,6 +160,13 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Tabs defaultValue="email" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="email" className="h-9">{tPhone('emailTab')}</TabsTrigger>
+            <TabsTrigger value="phone" className="h-9">{tPhone('phoneTab')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="email" className="mt-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -215,6 +225,12 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+          </TabsContent>
+
+          <TabsContent value="phone" className="mt-4">
+            <PhoneLoginForm />
+          </TabsContent>
+        </Tabs>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           {t('newToEkklesia')}{' '}

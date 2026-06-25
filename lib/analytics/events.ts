@@ -26,7 +26,7 @@ export const analytics = {
   // ── Auth ───────────────────────────────────────────────────
 
   auth: {
-    loggedIn: (props: BaseProperties & { method: 'email' | 'magic_link' }) => {
+    loggedIn: (props: BaseProperties & { method: 'email' | 'magic_link' | 'phone' }) => {
       posthog.capture('auth_logged_in', props)
     },
 

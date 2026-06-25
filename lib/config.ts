@@ -21,6 +21,16 @@ const ConfigSchema = z.object({
     apiKey: z.string().min(1).optional(),
     apiUrl: z.string().url().optional(),
     webhookSecret: z.string().min(1).optional(),
+    // Meta WhatsApp Cloud API — used directly for OTP delivery via the
+    // Supabase Send-SMS auth hook (separate from the 360dialog messaging path above).
+    otpPhoneNumberId: z.string().min(1).optional(),
+    otpAccessToken: z.string().min(1).optional(),
+    otpTemplate: z.string().min(1).default('otp_login'),
+  }),
+  auth: z.object({
+    // Standard Webhooks symmetric secret for verifying the Supabase Send-SMS hook.
+    // Format: "v1,whsec_<base64>". Fail closed if unset.
+    sendSmsHookSecret: z.string().min(1).optional(),
   }),
   cron: z.object({
     secret: z.string().min(1).optional(),
@@ -58,6 +68,12 @@ function loadConfig(): AppConfig {
       apiKey: process.env.WHATSAPP_API_KEY,
       apiUrl: process.env.WHATSAPP_API_URL,
       webhookSecret: process.env.WHATSAPP_WEBHOOK_SECRET,
+      otpPhoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+      otpAccessToken: process.env.WHATSAPP_ACCESS_TOKEN,
+      otpTemplate: process.env.WHATSAPP_OTP_TEMPLATE,
+    },
+    auth: {
+      sendSmsHookSecret: process.env.SEND_SMS_HOOK_SECRET,
     },
     cron: {
       secret: process.env.CRON_SECRET,
