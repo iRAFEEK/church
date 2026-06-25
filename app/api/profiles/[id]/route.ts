@@ -6,7 +6,7 @@ import { UpdateProfileSchema } from '@/lib/schemas/profile'
 import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 // GET /api/profiles/[id]
-export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
+export const GET = apiHandler(async ({ supabase, user, profile, params, resolvedPermissions }) => {
   const id = params!.id
 
   // Users can read own profile; admins can read any in church
@@ -39,7 +39,7 @@ export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
       .single()
 
     const visibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
-    if (!canViewMemberPhone(visibility, profile.role)) {
+    if (!canViewMemberPhone(visibility, profile.role, resolvedPermissions.can_view_member_phone)) {
       const { phone: _phone, ...rest } = data
       return rest
     }

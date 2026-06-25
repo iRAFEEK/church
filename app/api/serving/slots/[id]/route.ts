@@ -33,7 +33,7 @@ export const GET = apiHandler(async ({ supabase, user, profile, resolvedPermissi
   // Member-directory privacy (A5, church-wide): strip OTHER volunteers' phone unless
   // the caller's role is allowed by the church's visibility setting. Callers always
   // see their OWN phone.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role, resolvedPermissions.can_view_member_phone)
   const gatedSignups = canSeePhone
     ? signups
     : (signups ?? []).map((s: Record<string, unknown>) => {

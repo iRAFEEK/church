@@ -7,6 +7,7 @@ import type { UserRole, PermissionKey, PermissionMap } from '@/types'
 export const ALL_PERMISSIONS: PermissionKey[] = [
   'can_view_members',
   'can_manage_members',
+  'can_view_member_phone',
   'can_view_visitors',
   'can_manage_visitors',
   'can_manage_events',
@@ -44,6 +45,7 @@ export const ALL_PERMISSIONS: PermissionKey[] = [
 export const PERMISSION_LABELS: Record<PermissionKey, { en: string; ar: string }> = {
   can_view_members:        { en: 'View Members',          ar: 'عرض الأعضاء' },
   can_manage_members:      { en: 'Manage Members',        ar: 'إدارة الأعضاء' },
+  can_view_member_phone:   { en: 'View Member Phone Numbers', ar: 'عرض أرقام هواتف الأعضاء' },
   can_view_visitors:       { en: 'View Visitors',         ar: 'عرض الزوار' },
   can_manage_visitors:     { en: 'Manage Visitors',       ar: 'إدارة الزوار' },
   can_manage_events:       { en: 'Manage Events',         ar: 'إدارة الفعاليات' },
@@ -81,6 +83,7 @@ export const PERMISSION_LABELS: Record<PermissionKey, { en: string; ar: string }
 export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boolean>> = {
   member: {
     can_view_members: false, can_manage_members: false,
+    can_view_member_phone: false,
     can_view_visitors: false, can_manage_visitors: false,
     can_manage_events: false, can_manage_templates: false,
     can_manage_serving: false, can_manage_announcements: false,
@@ -96,6 +99,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
   },
   group_leader: {
     can_view_members: false, can_manage_members: false,
+    can_view_member_phone: false,
     can_view_visitors: true, can_manage_visitors: false,
     can_manage_events: false, can_manage_templates: false,
     can_manage_serving: false, can_manage_announcements: false,
@@ -111,6 +115,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
   },
   ministry_leader: {
     can_view_members: false, can_manage_members: false,
+    can_view_member_phone: false,
     can_view_visitors: true, can_manage_visitors: true,
     can_manage_events: true, can_manage_templates: true,
     can_manage_serving: true, can_manage_announcements: false,
@@ -126,6 +131,7 @@ export const HARDCODED_ROLE_DEFAULTS: Record<UserRole, Record<PermissionKey, boo
   },
   super_admin: {
     can_view_members: true, can_manage_members: true,
+    can_view_member_phone: true,
     can_view_visitors: true, can_manage_visitors: true,
     can_manage_events: true, can_manage_templates: true,
     can_manage_serving: true, can_manage_announcements: true,

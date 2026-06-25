@@ -91,7 +91,7 @@ export default async function MinistryDetailPage({ params }: Params) {
   // Member-directory privacy (A5, church-wide): hide member phone unless the viewer's
   // role is allowed by the church's visibility setting.
   if (ministry) {
-    const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role)
+    const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role, user.resolvedPermissions.can_view_member_phone)
     if (!canSeePhone) {
       if (ministry.leader) ministry.leader.phone = null
       for (const mm of ministry.ministry_members || []) {

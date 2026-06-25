@@ -38,7 +38,7 @@ export default async function MemberDetailPage({
 
   // Per-church member-directory privacy (migration 081): gate phone display.
   const directoryVisibility = (authUser.church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
-  const canSeePhone = canViewMemberPhone(directoryVisibility, currentUser.role)
+  const canSeePhone = canViewMemberPhone(directoryVisibility, currentUser.role, authUser.resolvedPermissions.can_view_member_phone)
 
   const t = await getTranslations('memberDetail')
   const locale = await getLocale()

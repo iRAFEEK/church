@@ -6,7 +6,7 @@ import { validate } from '@/lib/api/validate'
 import { UpdateGroupSchema } from '@/lib/schemas/group'
 import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
-export const GET = apiHandler(async ({ supabase, profile, params }) => {
+export const GET = apiHandler(async ({ supabase, profile, params, resolvedPermissions }) => {
   const id = params?.id
   if (!id) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -35,7 +35,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 
   // Member-directory privacy (A5, church-wide): strip member phone (leader + members)
   // unless the caller's role is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role, resolvedPermissions.can_view_member_phone)
   const gated =
     canSeePhone || !data
       ? data

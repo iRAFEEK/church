@@ -5,7 +5,7 @@ import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 const PAGE_SIZE = 25
 
 // GET /api/outreach — list congregation members with visit summaries (paginated)
-export const GET = apiHandler(async ({ req, supabase, profile }) => {
+export const GET = apiHandler(async ({ req, supabase, profile, resolvedPermissions }) => {
   const { searchParams } = new URL(req.url)
   const needsFollowup = searchParams.get('needs_followup') === 'true'
   const notVisitedDays = searchParams.get('not_visited_days')
@@ -79,7 +79,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   // Member-directory privacy (A5, church-wide): strip phone unless the caller's role
   // is allowed by the church's visibility setting. super_admin always sees it.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role, resolvedPermissions.can_view_member_phone)
   if (!canSeePhone) {
     results = results.map((r) => ({ ...r, phone: null }))
   }

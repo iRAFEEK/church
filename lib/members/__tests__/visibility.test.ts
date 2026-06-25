@@ -42,6 +42,15 @@ describe('canViewMemberPhone', () => {
     }
   })
 
+  it('the can_view_member_phone permission override beats a restrictive setting', () => {
+    // Under 'hidden' a leader normally cannot see phone — the per-user grant overrides.
+    expect(canViewMemberPhone('hidden', 'group_leader', true)).toBe(true)
+    expect(canViewMemberPhone('hidden', 'ministry_leader', true)).toBe(true)
+    expect(canViewMemberPhone('hidden', 'member', true)).toBe(true)
+    // Without the grant, 'hidden' still hides from non-super_admins.
+    expect(canViewMemberPhone('hidden', 'group_leader', false)).toBe(false)
+  })
+
   it('fails closed to leaders_only behavior for an unknown visibility value', () => {
     const bogus = 'something_else' as unknown as MemberDirectoryVisibility
     expect(canViewMemberPhone(bogus, 'member')).toBe(false)
@@ -93,5 +102,10 @@ describe('canCallerViewMemberPhones (server helper)', () => {
     const sb = mockSupabase({ data: { member_directory_visibility: null }, error: null })
     expect(await canCallerViewMemberPhones(sb, 'c1', 'group_leader')).toBe(false)
     expect(await canCallerViewMemberPhones(sb, 'c1', 'ministry_leader')).toBe(true)
+  })
+
+  it('the can_view_member_phone grant short-circuits even a hidden church (no lookup)', async () => {
+    const sb = mockSupabase({ data: { member_directory_visibility: 'hidden' }, error: null })
+    expect(await canCallerViewMemberPhones(sb, 'c1', 'group_leader', true)).toBe(true)
   })
 })

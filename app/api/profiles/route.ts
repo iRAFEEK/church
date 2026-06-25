@@ -3,7 +3,7 @@ import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 // GET /api/profiles — list members (admin only, paginated)
-export const GET = apiHandler(async ({ req, supabase, profile }) => {
+export const GET = apiHandler(async ({ req, supabase, profile, resolvedPermissions }) => {
   const { searchParams } = new URL(req.url)
 
   // Pagination
@@ -49,7 +49,7 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
     .single()
 
   const visibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
-  const canSeePhone = canViewMemberPhone(visibility, profile.role)
+  const canSeePhone = canViewMemberPhone(visibility, profile.role, resolvedPermissions.can_view_member_phone)
 
   const sanitized = canSeePhone
     ? data

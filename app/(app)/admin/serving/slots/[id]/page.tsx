@@ -33,7 +33,7 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
 
   // Member-directory privacy (A5, church-wide): hide volunteer phone unless the
   // viewer's role is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role, user.resolvedPermissions.can_view_member_phone)
   if (!canSeePhone) {
     for (const s of slot.serving_signups || []) {
       if (s.profiles) s.profiles.phone = null

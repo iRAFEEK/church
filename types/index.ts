@@ -12,6 +12,7 @@ export type UserRole = 'member' | 'group_leader' | 'ministry_leader' | 'super_ad
 export type PermissionKey =
   | 'can_view_members'
   | 'can_manage_members'
+  | 'can_view_member_phone'
   | 'can_view_visitors'
   | 'can_manage_visitors'
   | 'can_manage_events'

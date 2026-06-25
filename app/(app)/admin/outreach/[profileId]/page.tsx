@@ -40,7 +40,7 @@ export default async function OutreachMemberDetailPage({ params }: { params: Pro
 
   // Member-directory privacy (A5, church-wide): hide phone unless the viewer's role
   // is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, churchId, user.profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, churchId, user.profile.role, user.resolvedPermissions.can_view_member_phone)
   if (!canSeePhone) profileResult.data.phone = null
 
   const memberProfile = profileResult.data

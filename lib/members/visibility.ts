@@ -33,9 +33,14 @@ export const MEMBER_DIRECTORY_VISIBILITY_VALUES: readonly MemberDirectoryVisibil
 export function canViewMemberPhone(
   visibility: MemberDirectoryVisibility,
   role: ViewerRole,
+  hasPhonePermission = false,
 ): boolean {
   // super_admin always sees phone, no matter the setting.
   if (role === 'super_admin') return true
+
+  // A super_admin can grant the per-user `can_view_member_phone` permission to a
+  // specific leader — that override wins over the church-wide setting.
+  if (hasPhonePermission) return true
 
   switch (visibility) {
     case 'everyone':
@@ -62,7 +67,10 @@ export async function canCallerViewMemberPhones(
   supabase: SupabaseClient,
   churchId: string,
   role: string,
+  hasPhonePermission = false,
 ): Promise<boolean> {
+  // Per-user grant short-circuits the church lookup entirely.
+  if (role === 'super_admin' || hasPhonePermission) return true
   try {
     const { data, error } = await supabase
       .from('churches')
@@ -72,8 +80,8 @@ export async function canCallerViewMemberPhones(
     const visibility = (!error && data?.member_directory_visibility
       ? data.member_directory_visibility
       : 'leaders_only') as MemberDirectoryVisibility
-    return canViewMemberPhone(visibility, role as ViewerRole)
+    return canViewMemberPhone(visibility, role as ViewerRole, hasPhonePermission)
   } catch {
-    return canViewMemberPhone('leaders_only', role as ViewerRole)
+    return canViewMemberPhone('leaders_only', role as ViewerRole, hasPhonePermission)
   }
 }

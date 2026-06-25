@@ -25,13 +25,13 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { profile, church } = await requirePermission('can_view_members')
+  const { profile, church, resolvedPermissions } = await requirePermission('can_view_members')
   const isSuperAdmin = profile.role === 'super_admin'
   // Only approvers (super_admin / ministry_leader) can add members (Track A3).
   const canManageMembers = profile.role === 'super_admin' || profile.role === 'ministry_leader'
   // Per-church member-directory privacy (migration 081): gate phone display.
   const directoryVisibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
-  const canSeePhone = canViewMemberPhone(directoryVisibility, profile.role)
+  const canSeePhone = canViewMemberPhone(directoryVisibility, profile.role, resolvedPermissions.can_view_member_phone)
   const params = await searchParams
 
   const t = await getTranslations('members')

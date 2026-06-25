@@ -75,7 +75,7 @@ export default async function GroupDetailPage({ params }: Params) {
 
   // Member-directory privacy (A5, church-wide): hide member phone unless the viewer's
   // role is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role, user.resolvedPermissions.can_view_member_phone)
   if (!canSeePhone) {
     if (group.leader) group.leader.phone = null
     for (const m of group.group_members || []) {

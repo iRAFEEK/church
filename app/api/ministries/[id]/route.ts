@@ -6,7 +6,7 @@ import { UpdateMinistrySchema } from '@/lib/schemas/ministry'
 import { canCallerViewMemberPhones } from '@/lib/members/visibility'
 
 // GET /api/ministries/[id] — get ministry detail with members
-export const GET = apiHandler(async ({ supabase, profile, params }) => {
+export const GET = apiHandler(async ({ supabase, profile, params, resolvedPermissions }) => {
   const { data, error } = await supabase
     .from('ministries')
     .select(`
@@ -27,7 +27,7 @@ export const GET = apiHandler(async ({ supabase, profile, params }) => {
 
   // Member-directory privacy (A5, church-wide): strip member phone unless the caller's
   // role is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role)
+  const canSeePhone = await canCallerViewMemberPhones(supabase, profile.church_id, profile.role, resolvedPermissions.can_view_member_phone)
   const gated = canSeePhone
     ? data
     : {
