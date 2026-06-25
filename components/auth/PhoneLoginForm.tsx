@@ -88,6 +88,16 @@ export function PhoneLoginForm() {
       if (error) throw error
 
       if (data.user) {
+        // Track A3 — the "claim": a leader-added (shadow) member signs in via OTP as the
+        // SAME user the leader created; flip their managed memberships -> active. Idempotent
+        // and best-effort — a normal sign-in has nothing managed and this is a no-op; a
+        // failure here must never block login, so swallow errors.
+        try {
+          await fetch('/api/members/claim', { method: 'POST' })
+        } catch {
+          // non-fatal — login proceeds regardless
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_completed, church_id, role')

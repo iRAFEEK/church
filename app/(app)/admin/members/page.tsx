@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserCheck } from 'lucide-react'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { MembersSearchInput } from './MembersSearchInput'
+import { AddMemberDialog } from '@/components/members/AddMemberDialog'
 import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 interface SearchParams {
@@ -26,6 +27,8 @@ export default async function MembersPage({
 }) {
   const { profile, church } = await requirePermission('can_view_members')
   const isSuperAdmin = profile.role === 'super_admin'
+  // Only approvers (super_admin / ministry_leader) can add members (Track A3).
+  const canManageMembers = profile.role === 'super_admin' || profile.role === 'ministry_leader'
   // Per-church member-directory privacy (migration 081): gate phone display.
   const directoryVisibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
   const canSeePhone = canViewMemberPhone(directoryVisibility, profile.role)
@@ -65,6 +68,21 @@ export default async function MembersPage({
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
   const currentPage = page + 1
 
+  // Membership status for the current church (Track A3) — surfaces a "pending claim"
+  // badge for leader-added members who haven't claimed via OTP yet ('managed').
+  const memberIds = (members ?? []).map((m) => m.id)
+  const membershipStatus = new Map<string, string>()
+  if (memberIds.length > 0) {
+    const { data: memberships } = await supabase
+      .from('user_churches')
+      .select('user_id, status')
+      .eq('church_id', profile.church_id)
+      .in('user_id', memberIds)
+    for (const m of memberships ?? []) {
+      membershipStatus.set(m.user_id, m.status)
+    }
+  }
+
   const ROLE_LABELS: Record<string, { label: string; color: string }> = {
     member: { label: t('roleMember'), color: 'secondary' },
     group_leader: { label: t('roleGroupLeader'), color: 'default' },
@@ -89,11 +107,14 @@ export default async function MembersPage({
   return (
     <div className="space-y-6 pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{t('pageTitle')}</h1>
           <p className="text-muted-foreground text-sm">{t('pageSubtitle', { count: count ?? 0 })}</p>
         </div>
+        {canManageMembers && (
+          <AddMemberDialog churchId={profile.church_id} role={profile.role} locale={locale} />
+        )}
       </div>
 
       {/* Search & Filters */}
@@ -141,6 +162,8 @@ export default async function MembersPage({
               const displayName = nameAr || nameEn || member.email || '—'
               const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
+              const isUnclaimed = membershipStatus.get(member.id) === 'managed'
+
               const cardContent = (
                 <div className="flex items-center gap-3 px-4 py-3 active:bg-muted/30 transition-colors">
                   <Avatar className="h-10 w-10 shrink-0">
@@ -152,9 +175,13 @@ export default async function MembersPage({
                     <p className="text-xs text-muted-foreground truncate" dir="ltr">{member.email}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <Badge variant="secondary" className="text-xs">
-                      {ROLE_LABELS[member.role]?.label ?? member.role}
-                    </Badge>
+                    {isUnclaimed ? (
+                      <Badge variant="outline" className="text-xs">{t('badgeUnclaimed')}</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        {ROLE_LABELS[member.role]?.label ?? member.role}
+                      </Badge>
+                    )}
                     <Badge
                       variant={STATUS_COLORS[member.status] as 'default' | 'secondary' | 'destructive' | 'outline' ?? 'default'}
                       className="text-xs"
@@ -227,12 +254,17 @@ export default async function MembersPage({
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant={STATUS_COLORS[member.status] as 'default' | 'secondary' | 'destructive' | 'outline' ?? 'default'}
-                          className="text-xs"
-                        >
-                          {STATUS_LABELS[member.status] ?? member.status}
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant={STATUS_COLORS[member.status] as 'default' | 'secondary' | 'destructive' | 'outline' ?? 'default'}
+                            className="text-xs"
+                          >
+                            {STATUS_LABELS[member.status] ?? member.status}
+                          </Badge>
+                          {membershipStatus.get(member.id) === 'managed' && (
+                            <Badge variant="outline" className="text-xs">{t('badgeUnclaimed')}</Badge>
+                          )}
+                        </div>
                       </td>
                       {canSeePhone && (
                         <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
