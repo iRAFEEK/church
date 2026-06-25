@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { UpdateProfileSchema } from '@/lib/schemas/profile'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 // GET /api/profiles/[id]
 export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
@@ -25,6 +26,23 @@ export const GET = apiHandler(async ({ supabase, user, profile, params }) => {
 
   if (error || !data) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  // Per-church member-directory privacy (migration 081): an admin viewing ANOTHER
+  // member's profile only sees phone if the church setting + their role allow it.
+  // Viewing your own profile always shows your own phone.
+  if (!isSelf) {
+    const { data: church } = await supabase
+      .from('churches')
+      .select('member_directory_visibility')
+      .eq('id', profile.church_id)
+      .single()
+
+    const visibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
+    if (!canViewMemberPhone(visibility, profile.role)) {
+      const { phone: _phone, ...rest } = data
+      return rest
+    }
   }
 
   return data

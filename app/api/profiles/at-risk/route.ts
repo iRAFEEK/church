@@ -1,6 +1,8 @@
 import { apiHandler } from '@/lib/api/handler'
 
-// GET /api/profiles/at-risk — members flagged as at-risk
+// GET /api/profiles/at-risk — members flagged as at-risk.
+// Returns member contact info (incl. phone); gated to those who can view members
+// (SEC: previously ungated — any authenticated member could read it).
 export const GET = apiHandler(async ({ supabase, profile }) => {
   const { data, error } = await supabase
     .from('profiles')
@@ -12,4 +14,4 @@ export const GET = apiHandler(async ({ supabase, profile }) => {
   if (error) throw error
 
   return { data }
-})
+}, { requirePermissions: ['can_view_members'] })

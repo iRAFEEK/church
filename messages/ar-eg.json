@@ -2131,7 +2131,21 @@
     "notificationsWhatsappLabel": "ابعت الإشعارات على واتساب",
     "notificationsWhatsappHelp": "رسايل واتساب ليها تكلفة لكل رسالة. لما تكون مقفولة، الأعضاء لسه هيستلموا إشعارات التطبيق الفورية المجانية.",
     "notificationsSaved": "تم حفظ إعدادات الإشعارات",
-    "notificationsSaveFailed": "حصل خطأ في حفظ إعدادات الإشعارات"
+    "notificationsSaveFailed": "حصل خطأ في حفظ إعدادات الإشعارات",
+    "privacyCardTitle": "الخصوصية",
+    "privacyCardDesc": "اتحكم في مين يقدر يشوف بيانات التواصل بتاعة الأعضاء",
+    "privacyTitle": "الخصوصية",
+    "privacySubtitle": "اتحكم في مين يقدر يشوف بيانات التواصل بتاعة الأعضاء في الدليل",
+    "privacyDirectoryTitle": "ظهور بيانات تواصل الأعضاء",
+    "privacyDirectorySubtitle": "اختار مين يقدر يشوف أرقام تليفونات الأعضاء في دليل الأعضاء.",
+    "privacyOption_everyone_label": "كل اللي عنده صلاحية الدخول للدليل",
+    "privacyOption_everyone_help": "أي حد يقدر يشوف دليل الأعضاء يقدر كمان يشوف أرقام التليفونات.",
+    "privacyOption_leaders_only_label": "القادة بس",
+    "privacyOption_leaders_only_help": "قادة الخدمات والمسؤولين بس اللي يقدروا يشوفوا أرقام التليفونات.",
+    "privacyOption_hidden_label": "المسؤولين بس",
+    "privacyOption_hidden_help": "المسؤولين العامين بس اللي يقدروا يشوفوا أرقام التليفونات.",
+    "privacySaved": "اتحفظت إعدادات الخصوصية",
+    "privacySaveFailed": "مش قادرين نحفظ إعدادات الخصوصية"
   },
   "SelectChurch": {
     "title": "اختار كنيسة",

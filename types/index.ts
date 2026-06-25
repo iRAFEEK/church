@@ -135,6 +135,10 @@ export interface Church {
   // Opt-in for the paid WhatsApp notification channel (migration 080).
   // Default false = free push + in-app only. Does not affect WhatsApp OTP/verification.
   whatsapp_notifications_enabled?: boolean
+  // Who sees member phone numbers in the directory (migration 081, Track A5).
+  // 'everyone' = anyone with can_view_members, 'leaders_only' = ministry_leader + super_admin,
+  // 'hidden' = super_admin only. Default 'leaders_only'. super_admin always sees phone.
+  member_directory_visibility?: 'everyone' | 'leaders_only' | 'hidden'
   stripe_account_id: string | null
   financial_settings: Record<string, unknown>
   is_active: boolean

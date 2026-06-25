@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserCheck } from 'lucide-react'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { MembersSearchInput } from './MembersSearchInput'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 interface SearchParams {
   q?: string
@@ -23,8 +24,11 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const { profile } = await requirePermission('can_view_members')
+  const { profile, church } = await requirePermission('can_view_members')
   const isSuperAdmin = profile.role === 'super_admin'
+  // Per-church member-directory privacy (migration 081): gate phone display.
+  const directoryVisibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
+  const canSeePhone = canViewMemberPhone(directoryVisibility, profile.role)
   const params = await searchParams
 
   const t = await getTranslations('members')
@@ -181,7 +185,9 @@ export default async function MembersPage({
                   <th className="ps-6 py-3 text-sm font-medium text-muted-foreground">{t('tableMember')}</th>
                   <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableRole')}</th>
                   <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableStatus')}</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tablePhone')}</th>
+                  {canSeePhone && (
+                    <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tablePhone')}</th>
+                  )}
                   <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableJoinedAt')}</th>
                   <th className="pe-6 py-3"></th>
                 </tr>
@@ -228,9 +234,11 @@ export default async function MembersPage({
                           {STATUS_LABELS[member.status] ?? member.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
-                        {member.phone ?? '—'}
-                      </td>
+                      {canSeePhone && (
+                        <td className="px-4 py-3 text-sm text-muted-foreground" dir="ltr">
+                          {member.phone ?? '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {member.joined_church_at
                           ? new Date(member.joined_church_at).toLocaleDateString(locale)

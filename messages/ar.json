@@ -2131,7 +2131,21 @@
     "notificationsWhatsappLabel": "إرسال الإشعارات عبر واتساب",
     "notificationsWhatsappHelp": "إرسال رسائل واتساب له تكلفة لكل رسالة. عند الإيقاف، يستمر الأعضاء في تلقي إشعارات التطبيق الفورية المجانية.",
     "notificationsSaved": "تم حفظ إعدادات الإشعارات",
-    "notificationsSaveFailed": "فشل حفظ إعدادات الإشعارات"
+    "notificationsSaveFailed": "فشل حفظ إعدادات الإشعارات",
+    "privacyCardTitle": "الخصوصية",
+    "privacyCardDesc": "تحكم في من يمكنه رؤية بيانات التواصل الخاصة بالأعضاء",
+    "privacyTitle": "الخصوصية",
+    "privacySubtitle": "تحكم في من يمكنه رؤية بيانات التواصل الخاصة بالأعضاء في الدليل",
+    "privacyDirectoryTitle": "ظهور بيانات تواصل الأعضاء",
+    "privacyDirectorySubtitle": "اختر من يمكنه رؤية أرقام هواتف الأعضاء في دليل الأعضاء.",
+    "privacyOption_everyone_label": "كل من لديه صلاحية الوصول إلى الدليل",
+    "privacyOption_everyone_help": "أي شخص يمكنه عرض دليل الأعضاء يمكنه أيضًا رؤية أرقام الهواتف.",
+    "privacyOption_leaders_only_label": "القادة فقط",
+    "privacyOption_leaders_only_help": "يمكن لقادة الخدمات والمسؤولين فقط رؤية أرقام الهواتف.",
+    "privacyOption_hidden_label": "المسؤولون فقط",
+    "privacyOption_hidden_help": "يمكن للمسؤولين العامين فقط رؤية أرقام الهواتف.",
+    "privacySaved": "تم حفظ إعدادات الخصوصية",
+    "privacySaveFailed": "تعذّر حفظ إعدادات الخصوصية"
   },
   "finance": {
     "title": "المالية",

@@ -1,5 +1,6 @@
 import { apiHandler } from '@/lib/api/handler'
 import { sanitizeLikePattern } from '@/lib/utils/sanitize'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 
 // GET /api/profiles — list members (admin only, paginated)
 export const GET = apiHandler(async ({ req, supabase, profile }) => {
@@ -39,8 +40,23 @@ export const GET = apiHandler(async ({ req, supabase, profile }) => {
 
   if (error) throw error
 
+  // Per-church member-directory privacy (migration 081): strip phone for viewers
+  // whose role isn't allowed to see contact info under this church's setting.
+  const { data: church } = await supabase
+    .from('churches')
+    .select('member_directory_visibility')
+    .eq('id', profile.church_id)
+    .single()
+
+  const visibility = (church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
+  const canSeePhone = canViewMemberPhone(visibility, profile.role)
+
+  const sanitized = canSeePhone
+    ? data
+    : (data ?? []).map(({ phone: _phone, ...rest }) => rest)
+
   return {
-    data,
+    data: sanitized,
     count,
     page,
     pageSize,

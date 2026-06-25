@@ -2131,7 +2131,21 @@
     "notificationsWhatsappLabel": "Send notifications over WhatsApp",
     "notificationsWhatsappHelp": "WhatsApp delivery incurs a per-message cost. When off, members still receive free in-app push notifications.",
     "notificationsSaved": "Notification settings saved",
-    "notificationsSaveFailed": "Failed to save notification settings"
+    "notificationsSaveFailed": "Failed to save notification settings",
+    "privacyCardTitle": "Privacy",
+    "privacyCardDesc": "Control who can see member contact information",
+    "privacyTitle": "Privacy",
+    "privacySubtitle": "Control who can see member contact information in the directory",
+    "privacyDirectoryTitle": "Member contact visibility",
+    "privacyDirectorySubtitle": "Choose who can see member phone numbers in the member directory.",
+    "privacyOption_everyone_label": "Everyone with directory access",
+    "privacyOption_everyone_help": "Anyone who can view the member directory can also see phone numbers.",
+    "privacyOption_leaders_only_label": "Leaders only",
+    "privacyOption_leaders_only_help": "Only ministry leaders and administrators can see phone numbers.",
+    "privacyOption_hidden_label": "Administrators only",
+    "privacyOption_hidden_help": "Only super administrators can see phone numbers.",
+    "privacySaved": "Privacy settings saved",
+    "privacySaveFailed": "Failed to save privacy settings"
   },
   "finance": {
     "title": "Finance",

@@ -12,6 +12,7 @@ import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
 import { ConnectionSummary } from '@/components/profile/ConnectionSummary'
 import { MemberPermissionEditor } from '@/components/permissions/MemberPermissionEditor'
 import { getTranslations, getLocale } from 'next-intl/server'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import type { Profile, ProfileMilestone } from '@/types'
 
 const MILESTONE_ICONS: Record<string, string> = {
@@ -34,6 +35,10 @@ export default async function MemberDetailPage({
 
   // Only users with can_view_members permission can access member profiles
   if (!authUser.resolvedPermissions.can_view_members) redirect('/dashboard')
+
+  // Per-church member-directory privacy (migration 081): gate phone display.
+  const directoryVisibility = (authUser.church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility
+  const canSeePhone = canViewMemberPhone(directoryVisibility, currentUser.role)
 
   const t = await getTranslations('memberDetail')
   const locale = await getLocale()
@@ -144,7 +149,7 @@ export default async function MemberDetailPage({
         <TabsContent value="info">
           <Card>
             <CardContent className="pt-6 space-y-4">
-              {memberProfile.phone && (
+              {canSeePhone && memberProfile.phone && (
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <span dir="ltr">{memberProfile.phone}</span>
@@ -188,7 +193,7 @@ export default async function MemberDetailPage({
                 </div>
               )}
 
-              {!memberProfile.phone && !memberProfile.email && !memberProfile.occupation_ar && (
+              {!(canSeePhone && memberProfile.phone) && !memberProfile.email && !memberProfile.occupation_ar && (
                 <p className="text-muted-foreground text-sm text-center py-4">
                   {t('infoProfileIncomplete')}
                 </p>
