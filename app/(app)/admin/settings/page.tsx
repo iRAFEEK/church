@@ -2,7 +2,7 @@ import { requireRole } from '@/lib/auth'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { QrCode, ShieldCheck } from 'lucide-react'
+import { QrCode, ShieldCheck, BellRing } from 'lucide-react'
 
 export default async function SettingsPage() {
   await requireRole('super_admin')
@@ -23,6 +23,18 @@ export default async function SettingsPage() {
               <div>
                 <CardTitle className="text-base">{t('qrCodeTitle')}</CardTitle>
                 <CardDescription>{t('qrCodeDesc')}</CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/admin/settings/notifications">
+          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+            <CardHeader className="flex flex-row items-center gap-3 pb-2">
+              <BellRing className="h-5 w-5 text-primary shrink-0" />
+              <div>
+                <CardTitle className="text-base">{t('notificationsCardTitle')}</CardTitle>
+                <CardDescription>{t('notificationsCardDesc')}</CardDescription>
               </div>
             </CardHeader>
           </Card>

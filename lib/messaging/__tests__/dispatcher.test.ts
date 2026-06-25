@@ -87,7 +87,7 @@ const successResult: MessageResult = { success: true, messageId: 'msg-1' }
  */
 function setupProfileAndChurchQuery(
   profile: { notification_pref?: string; phone?: string; email?: string; church_id?: string },
-  church: { primary_language?: string }
+  church: { primary_language?: string; whatsapp_notifications_enabled?: boolean }
 ) {
   // When channels are provided: call 1 = profiles (getProfileContactInfo), call 2 = churches
   // When channels are NOT provided: call 1 = profiles (resolveChannels), call 2 = profiles (getProfileContactInfo), call 3 = churches
@@ -124,10 +124,10 @@ describe('sendNotification', () => {
     mockPushIsConfigured.mockReturnValue(true)
     mockInsert.mockResolvedValue({ error: null })
 
-    // Default: profile with phone/email, Arabic church
+    // Default: profile with phone/email, Arabic church, WhatsApp notifications enabled
     setupProfileAndChurchQuery(
       { phone: '+201234567890', email: 'test@test.com', church_id: 'church-1' },
-      { primary_language: 'ar' }
+      { primary_language: 'ar', whatsapp_notifications_enabled: true }
     )
   })
 
@@ -160,6 +160,69 @@ describe('sendNotification', () => {
         template: 'gathering_reminder',
       })
     )
+  })
+
+  it('sends WhatsApp when the church has enabled WhatsApp notifications', async () => {
+    setupProfileAndChurchQuery(
+      { phone: '+201234567890', email: 'test@test.com', church_id: 'church-1' },
+      { primary_language: 'ar', whatsapp_notifications_enabled: true }
+    )
+
+    await callSendNotification({ ...baseRequest, channels: ['in_app', 'whatsapp'] })
+
+    expect(mockWhatsappSend).toHaveBeenCalledTimes(1)
+  })
+
+  it('drops the WhatsApp channel when the church has NOT enabled WhatsApp notifications', async () => {
+    setupProfileAndChurchQuery(
+      { phone: '+201234567890', email: 'test@test.com', church_id: 'church-1' },
+      { primary_language: 'ar', whatsapp_notifications_enabled: false }
+    )
+
+    // Even though the channel is requested and a phone exists, the paid channel is gated.
+    await callSendNotification({ ...baseRequest, channels: ['in_app', 'whatsapp'] })
+
+    expect(mockWhatsappSend).not.toHaveBeenCalled()
+    // Free in-app channel still fires.
+    expect(mockInAppSend).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to free channels when church WhatsApp is off but other channels requested', async () => {
+    setupProfileAndChurchQuery(
+      { phone: '+201234567890', email: 'test@test.com', church_id: 'church-1' },
+      { primary_language: 'ar', whatsapp_notifications_enabled: false }
+    )
+
+    await callSendNotification({ ...baseRequest, channels: ['in_app', 'whatsapp', 'push'] })
+
+    expect(mockWhatsappSend).not.toHaveBeenCalled()
+    expect(mockInAppSend).toHaveBeenCalledTimes(1)
+    expect(mockPushSend).toHaveBeenCalledTimes(1)
+  })
+
+  it('fails closed — drops the paid WhatsApp channel when the church lookup errors', async () => {
+    ;(mockFrom.mockImplementation as Function)((table: string) => {
+      if (table === 'notifications_log') return { insert: mockInsert }
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(() => {
+              if (table === 'churches') return Promise.reject(new Error('db unavailable'))
+              return Promise.resolve({
+                data: { phone: '+201234567890', email: 'test@test.com', church_id: 'church-1' },
+                error: null,
+              })
+            }),
+          })),
+        })),
+      }
+    })
+
+    await callSendNotification({ ...baseRequest, channels: ['in_app', 'whatsapp'] })
+
+    // On any uncertainty about the flag, never send the paid channel; free in-app still fires.
+    expect(mockWhatsappSend).not.toHaveBeenCalled()
+    expect(mockInAppSend).toHaveBeenCalledTimes(1)
   })
 
   it('sends email when channels include email and email available', async () => {

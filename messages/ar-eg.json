@@ -2122,7 +2122,16 @@
     "qrCodeTitle": "رمز QR",
     "qrCodeDesc": "اعمل رمز QR لتسجيل الزوار",
     "rolePermissionsTitle": "صلاحيات الأدوار",
-    "rolePermissionsDesc": "ظبّط الصلاحيات لكل دور"
+    "rolePermissionsDesc": "ظبّط الصلاحيات لكل دور",
+    "notificationsCardTitle": "الإشعارات",
+    "notificationsCardDesc": "اختار القنوات اللي توصل للأعضاء",
+    "notificationsTitle": "قنوات الإشعارات",
+    "notificationsSubtitle": "اتحكم في طريقة وصول الإشعارات لأعضائك",
+    "notificationsPushAlwaysOn": "إشعارات التطبيق الفورية مجانية وشغّالة على طول لكل عضو.",
+    "notificationsWhatsappLabel": "ابعت الإشعارات على واتساب",
+    "notificationsWhatsappHelp": "رسايل واتساب ليها تكلفة لكل رسالة. لما تكون مقفولة، الأعضاء لسه هيستلموا إشعارات التطبيق الفورية المجانية.",
+    "notificationsSaved": "تم حفظ إعدادات الإشعارات",
+    "notificationsSaveFailed": "حصل خطأ في حفظ إعدادات الإشعارات"
   },
   "SelectChurch": {
     "title": "اختار كنيسة",

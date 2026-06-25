@@ -132,6 +132,9 @@ export interface Church {
   donation_receipt_enabled: boolean
   donation_min_receipt_amount: number | null
   online_giving_enabled: boolean
+  // Opt-in for the paid WhatsApp notification channel (migration 080).
+  // Default false = free push + in-app only. Does not affect WhatsApp OTP/verification.
+  whatsapp_notifications_enabled?: boolean
   stripe_account_id: string | null
   financial_settings: Record<string, unknown>
   is_active: boolean

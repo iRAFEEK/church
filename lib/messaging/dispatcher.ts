@@ -34,8 +34,14 @@ export async function sendNotification(request: NotificationRequest): Promise<{
     channels = await resolveChannels(request.profileId)
   }
 
-  // Get profile info for phone/email if not provided
-  const { phone, email, locale } = await getProfileContactInfo(request.profileId, request.phone, request.email)
+  // Get profile info for phone/email if not provided.
+  // Also resolves the recipient church's WhatsApp-notification opt-in flag — the
+  // paid WhatsApp channel is only used when the church has explicitly enabled it.
+  const { phone, email, locale, whatsappEnabled } = await getProfileContactInfo(
+    request.profileId,
+    request.phone,
+    request.email
+  )
 
   const template = TEMPLATES[request.type]
   const isAr = locale.startsWith('ar')
@@ -59,8 +65,12 @@ export async function sendNotification(request: NotificationRequest): Promise<{
     locale,
   })
 
-  // 2. WhatsApp (if in channels and phone available)
-  if (channels.includes('whatsapp') && phone && template) {
+  // 2. WhatsApp — paid channel, only when the recipient's church has opted in.
+  //    When the church has NOT enabled WhatsApp notifications, drop the channel and
+  //    rely on the free channels (push + in-app, and email if used). A user whose
+  //    notification_pref is 'whatsapp' gracefully falls back this way.
+  //    NOTE: this does NOT affect WhatsApp OTP/verification (separate auth flow).
+  if (channels.includes('whatsapp') && whatsappEnabled && phone && template) {
     results.whatsapp = await whatsappProvider.send({
       to: phone,
       template: template.whatsappTemplate,
@@ -152,7 +162,7 @@ async function getProfileContactInfo(
   profileId: string,
   overridePhone?: string,
   overrideEmail?: string
-): Promise<{ phone: string | null; email: string | null; locale: 'ar' | 'en' }> {
+): Promise<{ phone: string | null; email: string | null; locale: 'ar' | 'en'; whatsappEnabled: boolean }> {
   try {
     const supabase = await getAdminOrFallback()
     const { data } = await supabase
@@ -161,24 +171,30 @@ async function getProfileContactInfo(
       .eq('id', profileId)
       .single()
 
-    // Determine locale from church primary_language
+    // Determine locale from church primary_language and read the WhatsApp-notification
+    // opt-in flag in the same lookup (one church query per send — no N+1).
     let locale: 'ar' | 'en' = 'ar'
+    let whatsappEnabled = false
     if (data?.church_id) {
       const { data: church } = await supabase
         .from('churches')
-        .select('primary_language')
+        .select('primary_language, whatsapp_notifications_enabled')
         .eq('id', data.church_id)
         .single()
       if (church?.primary_language === 'en') locale = 'en'
+      whatsappEnabled = church?.whatsapp_notifications_enabled === true
     }
 
     return {
       phone: overridePhone || data?.phone || null,
       email: overrideEmail || data?.email || null,
       locale,
+      whatsappEnabled,
     }
   } catch {
-    return { phone: overridePhone || null, email: overrideEmail || null, locale: 'ar' }
+    // Fail closed for the paid channel: if we cannot confirm the church opted in,
+    // do not send paid WhatsApp messages.
+    return { phone: overridePhone || null, email: overrideEmail || null, locale: 'ar', whatsappEnabled: false }
   }
 }
 

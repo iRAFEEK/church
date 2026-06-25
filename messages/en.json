@@ -2122,7 +2122,16 @@
     "qrCodeTitle": "QR Code",
     "qrCodeDesc": "Generate a QR code for visitor registration",
     "rolePermissionsTitle": "Role Permissions",
-    "rolePermissionsDesc": "Configure default permissions for each role"
+    "rolePermissionsDesc": "Configure default permissions for each role",
+    "notificationsCardTitle": "Notifications",
+    "notificationsCardDesc": "Choose which channels are used to reach members",
+    "notificationsTitle": "Notification Channels",
+    "notificationsSubtitle": "Control how notifications reach your members",
+    "notificationsPushAlwaysOn": "In-app push notifications are free and always on for every member.",
+    "notificationsWhatsappLabel": "Send notifications over WhatsApp",
+    "notificationsWhatsappHelp": "WhatsApp delivery incurs a per-message cost. When off, members still receive free in-app push notifications.",
+    "notificationsSaved": "Notification settings saved",
+    "notificationsSaveFailed": "Failed to save notification settings"
   },
   "finance": {
     "title": "Finance",
