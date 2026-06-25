@@ -24,6 +24,8 @@ interface WizardState {
   email: string
   password: string
   confirmPassword: string
+  contactName: string
+  contactPhone: string
   churchNameAr: string
   churchNameEn: string
   country: string
@@ -46,6 +48,8 @@ export function RegistrationWizard() {
     email: '',
     password: '',
     confirmPassword: '',
+    contactName: '',
+    contactPhone: '',
     churchNameAr: '',
     churchNameEn: '',
     country: '',
@@ -82,6 +86,8 @@ export function RegistrationWizard() {
         body: JSON.stringify({
           email: state.email,
           password: state.password,
+          contact_name: state.contactName,
+          contact_phone: state.contactPhone,
           churchNameAr: state.churchNameAr,
           churchNameEn: state.churchNameEn || undefined,
           country: state.country,
@@ -157,6 +163,8 @@ export function RegistrationWizard() {
             email={state.email}
             password={state.password}
             confirmPassword={state.confirmPassword}
+            contactName={state.contactName}
+            contactPhone={state.contactPhone}
             onUpdate={update}
             onNext={goNext}
             error={accountError}

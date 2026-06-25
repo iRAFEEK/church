@@ -1767,7 +1767,13 @@
       "validationPassword": "Password must be at least 6 characters",
       "validationPasswordMatch": "Passwords don't match",
       "emailExists": "This email is already registered",
-      "continue": "Continue"
+      "continue": "Continue",
+      "contactNameLabel": "Your name",
+      "contactNamePlaceholder": "e.g. Pastor John Samaan",
+      "contactPhoneLabel": "Phone number",
+      "contactPhonePlaceholder": "e.g. +20 100 123 4567",
+      "validationContactName": "Please enter your name",
+      "validationContactPhone": "Please enter a phone number"
     },
     "step2": {
       "headline": "What's your church called?",
@@ -2758,5 +2764,24 @@
     "rejectedToast": "Request declined",
     "errorToast": "Something went wrong. Please try again.",
     "unnamed": "Unnamed"
+  },
+  "pendingChurch": {
+    "title": "Your church is under review",
+    "body": "Thank you for registering. Our team is reviewing your church and will activate it shortly. We'll be in touch soon.",
+    "churchLabel": "Church",
+    "contactNote": "This usually takes a short while. You can sign out and come back later.",
+    "signOut": "Sign out"
+  },
+  "platformChurches": {
+    "title": "Pending churches",
+    "subtitle": "New churches awaiting review. Approve to activate, or decline.",
+    "emptyTitle": "No churches awaiting review",
+    "emptyBody": "When a new church registers, it will appear here for you to approve.",
+    "approve": "Approve",
+    "reject": "Decline",
+    "approvedToast": "Church activated",
+    "rejectedToast": "Church declined",
+    "errorToast": "Something went wrong. Please try again.",
+    "unnamed": "Unnamed church"
   }
 }

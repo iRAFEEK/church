@@ -32,6 +32,8 @@ function makeRequest(body: Record<string, unknown>) {
 const validBody = {
   email: 'admin@church.org',
   password: 'secret123',
+  contact_name: 'Pastor John',
+  contact_phone: '+201001234567',
   churchNameAr: 'كنيسة الاختبار',
   country: 'EG',
   timezone: 'Africa/Cairo',
@@ -180,6 +182,43 @@ describe('POST /api/churches/register', () => {
         primary_language: 'ar',
       }),
     )
+  })
+
+  // 5b. A4 review gate — church is created pending + inactive with contact details
+  it('creates the church as pending + inactive with pending contact details', async () => {
+    const mock = buildMockSupabase()
+    vi.mocked(createAdminClient).mockResolvedValue(mock as never)
+
+    await POST(makeRequest(validBody))
+
+    expect(mock._mocks.churchInsertFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'pending',
+        is_active: false,
+        pending_contact_name: 'Pastor John',
+        pending_contact_email: 'admin@church.org',
+        pending_contact_phone: '+201001234567',
+      }),
+    )
+  })
+
+  // 5c. Validation — contact_name and contact_phone are required
+  it('returns 422 when contact_name is missing', async () => {
+    const { contact_name: _n, ...body } = validBody
+    const res = await POST(makeRequest(body))
+
+    expect(res.status).toBe(422)
+    const json = await res.json()
+    expect(json.error).toMatch(/validation failed/i)
+  })
+
+  it('returns 422 when contact_phone is missing', async () => {
+    const { contact_phone: _p, ...body } = validBody
+    const res = await POST(makeRequest(body))
+
+    expect(res.status).toBe(422)
+    const json = await res.json()
+    expect(json.error).toMatch(/validation failed/i)
   })
 
   // 6. Creates auth user with email_confirm and church_id in metadata

@@ -19,6 +19,12 @@ export default async function AppLayout({
     redirect('/onboarding')
   }
 
+  // A4: a church awaiting platform review (or rejected/inactive) can't use the app yet.
+  // Existing churches are 'active' (migration 079 default) → this is a no-op for them.
+  if (authUser.church.status && authUser.church.status !== 'active') {
+    redirect('/pending-church')
+  }
+
   return (
     <div className="app-shell-active">
       <AppShell

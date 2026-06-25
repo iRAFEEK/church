@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
     const {
       email,
       password,
+      contact_name,
+      contact_phone,
       churchNameAr,
       churchNameEn,
       country,
@@ -42,7 +44,10 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createAdminClient()
 
-    // 1. Create church (core fields first)
+    // 1. Create church (core fields first).
+    // A4 review gate: the church starts 'pending' + is_active=false so it is invisible
+    // to member search/join until a platform admin approves it. The status/contact
+    // columns (migration 079) are optional here so registration tolerates a pre-079 DB.
     const churchData: Record<string, unknown> = {
       name: churchNameEn || churchNameAr,
       name_ar: churchNameAr,
@@ -56,6 +61,13 @@ export async function POST(request: NextRequest) {
     // Optional columns (may not exist if migrations haven't been applied)
     if (denomination) churchData.denomination = denomination
     if (defaultBibleId) churchData.default_bible_id = defaultBibleId
+
+    // A4: review-gate columns (migration 079). Stripped on 42703 retry below.
+    churchData.status = 'pending'
+    churchData.is_active = false
+    churchData.pending_contact_name = contact_name
+    churchData.pending_contact_email = email
+    churchData.pending_contact_phone = contact_phone
 
     let church: { id: string } | null = null
 
@@ -72,6 +84,15 @@ export async function POST(request: NextRequest) {
         logger.warn('[church-register] Retrying church insert without optional columns', { module: 'churches', error: churchError })
         delete churchData.denomination
         delete churchData.default_bible_id
+        // SECURITY (SEC-1): do NOT strip status/is_active here. Stripping them
+        // would let the table defaults (active/true) AUTO-APPROVE the church,
+        // bypassing the review gate. Migration 079 is part of the launch migration
+        // set, so these columns exist; if they ever don't, fail loudly below
+        // rather than silently activating an unreviewed church. pending_contact_*
+        // are harmless to drop (display-only), so they may be dropped.
+        delete churchData.pending_contact_name
+        delete churchData.pending_contact_email
+        delete churchData.pending_contact_phone
         const { data: retryResult, error: retryError } = await supabase
           .from('churches')
           .insert(churchData)

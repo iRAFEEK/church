@@ -11,7 +11,15 @@ interface AccountStepProps {
   email: string
   password: string
   confirmPassword: string
-  onUpdate: (fields: { email?: string; password?: string; confirmPassword?: string }) => void
+  contactName: string
+  contactPhone: string
+  onUpdate: (fields: {
+    email?: string
+    password?: string
+    confirmPassword?: string
+    contactName?: string
+    contactPhone?: string
+  }) => void
   onNext: () => void
   error?: string
 }
@@ -20,21 +28,38 @@ export function AccountStep({
   email,
   password,
   confirmPassword,
+  contactName,
+  contactPhone,
   onUpdate,
   onNext,
   error,
 }: AccountStepProps) {
   const t = useTranslations('registration.step1')
   const [showPassword, setShowPassword] = useState(false)
-  const [touched, setTouched] = useState({ email: false, password: false, confirm: false })
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+    confirm: false,
+    contactName: false,
+    contactPhone: false,
+  })
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   const passwordValid = password.length >= 6
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0
-  const canProceed = emailValid && passwordValid && passwordsMatch
+  const contactNameValid = contactName.trim().length > 0
+  const contactPhoneValid = contactPhone.trim().length > 0
+  const canProceed =
+    emailValid && passwordValid && passwordsMatch && contactNameValid && contactPhoneValid
 
   function handleNext() {
-    setTouched({ email: true, password: true, confirm: true })
+    setTouched({
+      email: true,
+      password: true,
+      confirm: true,
+      contactName: true,
+      contactPhone: true,
+    })
     if (canProceed) onNext()
   }
 
@@ -115,6 +140,40 @@ export function AccountStep({
           />
           {touched.confirm && !passwordsMatch && confirmPassword.length > 0 && (
             <p className="text-xs text-destructive">{t('validationPasswordMatch')}</p>
+          )}
+        </div>
+
+        {/* Contact name — the person the platform team contacts before activating */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">{t('contactNameLabel')}</label>
+          <Input
+            type="text"
+            dir="auto"
+            placeholder={t('contactNamePlaceholder')}
+            value={contactName}
+            onChange={(e) => onUpdate({ contactName: e.target.value })}
+            onBlur={() => setTouched((p) => ({ ...p, contactName: true }))}
+            className="h-13 text-base"
+          />
+          {touched.contactName && !contactNameValid && (
+            <p className="text-xs text-destructive">{t('validationContactName')}</p>
+          )}
+        </div>
+
+        {/* Contact phone */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">{t('contactPhoneLabel')}</label>
+          <Input
+            type="tel"
+            dir="ltr"
+            placeholder={t('contactPhonePlaceholder')}
+            value={contactPhone}
+            onChange={(e) => onUpdate({ contactPhone: e.target.value })}
+            onBlur={() => setTouched((p) => ({ ...p, contactPhone: true }))}
+            className="h-13 text-base"
+          />
+          {touched.contactPhone && !contactPhoneValid && (
+            <p className="text-xs text-destructive">{t('validationContactPhone')}</p>
           )}
         </div>
       </div>

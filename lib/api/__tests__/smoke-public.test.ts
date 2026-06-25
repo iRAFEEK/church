@@ -95,6 +95,8 @@ const visitorBody = {
 const registerBody = {
   email: 'admin@test.com',
   password: 'securepass123',
+  contact_name: 'Test Pastor',
+  contact_phone: '+201001234567',
   churchNameAr: 'كنيسة تجريبية',
   country: 'EG',
   timezone: 'Africa/Cairo',

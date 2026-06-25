@@ -135,6 +135,12 @@ export interface Church {
   stripe_account_id: string | null
   financial_settings: Record<string, unknown>
   is_active: boolean
+  // Onboarding review lifecycle (migration 079): 'pending' | 'active' | 'rejected' | 'inactive'.
+  // Existing churches default to 'active'.
+  status?: string
+  pending_contact_name?: string | null
+  pending_contact_email?: string | null
+  pending_contact_phone?: string | null
   created_at: string
   updated_at: string
 }

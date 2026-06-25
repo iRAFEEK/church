@@ -1767,7 +1767,13 @@
       "validationPassword": "كلمة المرور يجب أن تكون ٦ أحرف على الأقل",
       "validationPasswordMatch": "كلمتا المرور غير متطابقتين",
       "emailExists": "هذا البريد الإلكتروني مسجل بالفعل",
-      "continue": "متابعة"
+      "continue": "متابعة",
+      "contactNameLabel": "اسمك",
+      "contactNamePlaceholder": "مثال: القس يوحنا سمعان",
+      "contactPhoneLabel": "رقم الهاتف",
+      "contactPhonePlaceholder": "مثال: ٤٥٦٧ ١٢٣ ١٠٠ ٢٠+",
+      "validationContactName": "يرجى إدخال اسمك",
+      "validationContactPhone": "يرجى إدخال رقم هاتف"
     },
     "step2": {
       "headline": "ما اسم كنيستك؟",
@@ -2758,5 +2764,24 @@
     "rejectedToast": "تم رفض الطلب",
     "errorToast": "حدث خطأ ما. حاول مرة أخرى.",
     "unnamed": "بدون اسم"
+  },
+  "pendingChurch": {
+    "title": "كنيستك قيد المراجعة",
+    "body": "شكرًا لتسجيلك. فريقنا يراجع كنيستك وسيقوم بتفعيلها قريبًا. سنتواصل معك في أقرب وقت.",
+    "churchLabel": "الكنيسة",
+    "contactNote": "عادةً ما يستغرق هذا وقتًا قصيرًا. يمكنك تسجيل الخروج والعودة لاحقًا.",
+    "signOut": "تسجيل الخروج"
+  },
+  "platformChurches": {
+    "title": "الكنائس قيد المراجعة",
+    "subtitle": "كنائس جديدة في انتظار المراجعة. وافق للتفعيل أو ارفض.",
+    "emptyTitle": "لا توجد كنائس في انتظار المراجعة",
+    "emptyBody": "عند تسجيل كنيسة جديدة ستظهر هنا للموافقة عليها.",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "approvedToast": "تم تفعيل الكنيسة",
+    "rejectedToast": "تم رفض الكنيسة",
+    "errorToast": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "unnamed": "كنيسة بدون اسم"
   }
 }

@@ -10,6 +10,10 @@ const LeaderEntrySchema = z.object({
 export const ChurchRegistrationSchema = z.object({
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
+  // Pending-church contact details — the platform admin reaches out to this person
+  // before activating the church. Both required (the A4 review gate).
+  contact_name: z.string().min(1).max(200).trim(),
+  contact_phone: z.string().min(1).max(40).trim(),
   churchNameAr: z.string().min(2).max(200).trim(),
   churchNameEn: z.string().max(200).trim().optional(),
   country: z.string().min(2).max(100).trim(),

@@ -48,6 +48,13 @@ for production and retire the old:
 - [ ] Confirm laptops/backups holding old keys are disk-encrypted
 - [ ] Never commit real keys — only `.env.example` is tracked (verified clean)
 
+> ⚠️ **`PLATFORM_ADMIN_EMAILS` is secret-tier config, not just a setting.** It is the
+> *entire* gate for who can approve/reject churches across all tenants (the church
+> onboarding flow). Anyone who can edit this Vercel env var can grant themselves
+> cross-church approval power. Keep it to the minimum trusted operator emails, set it
+> in Production scope only, and treat changes to it like a key rotation (review who has
+> Vercel env access). The emails must be verified Supabase auth accounts.
+
 ---
 
 ## 3. Enable distributed rate limiting (Upstash)  🟠 LAUNCH-CRITICAL
