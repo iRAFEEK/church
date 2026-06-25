@@ -50,16 +50,57 @@ export const POST = apiHandler(async ({ req, supabase, user }) => {
       .eq('id', user.id)
 
     if (profileError) throw profileError
-  } else {
-    // Subsequent join: just add to user_churches (don't change active church)
-    const { error: insertError } = await supabase
-      .from('user_churches')
-      .insert({ user_id: user.id, church_id, role: 'member' })
-
-    if (insertError && !insertError.message.includes('duplicate')) {
-      throw insertError
-    }
+    return { success: true, status: 'active' }
   }
 
-  return { success: true }
+  // Subsequent join (already onboarded): this is a REQUEST that a church admin
+  // must approve — it does not grant membership instantly.
+  // Already an active member of this church?
+  const { data: existingMembership } = await supabase
+    .from('user_churches')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .eq('church_id', church_id)
+    .maybeSingle()
+
+  if (existingMembership) {
+    return Response.json({ error: 'Already a member of this church' }, { status: 409 })
+  }
+
+  // Already have a pending request?
+  const { data: existingRequest } = await supabase
+    .from('church_join_requests')
+    .select('id')
+    .eq('church_id', church_id)
+    .eq('profile_id', user.id)
+    .eq('status', 'pending')
+    .maybeSingle()
+
+  if (existingRequest) {
+    return Response.json({ error: 'You already have a pending request for this church' }, { status: 409 })
+  }
+
+  // Snapshot the requester's display info onto the request (their profile lives in
+  // their home church, which the target church's admins can't read via RLS).
+  const { data: me } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, first_name_ar, last_name_ar, phone, email')
+    .eq('id', user.id)
+    .single()
+
+  const { error: requestError } = await supabase
+    .from('church_join_requests')
+    .insert({
+      church_id,
+      profile_id: user.id,
+      status: 'pending',
+      requester_name: `${me?.first_name ?? ''} ${me?.last_name ?? ''}`.trim() || null,
+      requester_name_ar: `${me?.first_name_ar ?? ''} ${me?.last_name_ar ?? ''}`.trim() || null,
+      requester_phone: me?.phone ?? null,
+      requester_email: me?.email ?? null,
+    })
+
+  if (requestError) throw requestError
+
+  return { success: true, status: 'pending' }
 }, { rateLimit: 'strict' })

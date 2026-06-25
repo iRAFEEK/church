@@ -94,6 +94,15 @@ export const NAV_ITEMS: NavItem[] = [
     section: 'People',
     section_ar: 'الأشخاص',
   },
+  {
+    label: 'Join Requests',
+    label_ar: 'طلبات الانضمام',
+    href: '/admin/join-requests',
+    iconName: 'UserPlus',
+    roles: ['ministry_leader', 'super_admin'],
+    section: 'People',
+    section_ar: 'الأشخاص',
+  },
 
   // ─── Ministry ───────────────────────────────────────────
   {

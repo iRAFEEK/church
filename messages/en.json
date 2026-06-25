@@ -2746,5 +2746,17 @@
     "papal": "Papal Rites",
     "prostration": "Prostration",
     "veneration": "Veneration"
+  },
+  "joinRequests": {
+    "title": "Join Requests",
+    "subtitle": "People who asked to join your church. Approve to grant membership.",
+    "emptyTitle": "No pending requests",
+    "emptyBody": "When someone requests to join your church, they will appear here for approval.",
+    "approve": "Approve",
+    "reject": "Decline",
+    "approvedToast": "Member approved",
+    "rejectedToast": "Request declined",
+    "errorToast": "Something went wrong. Please try again.",
+    "unnamed": "Unnamed"
   }
 }
