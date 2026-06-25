@@ -9,6 +9,8 @@ Owner column is yours to fill in. Check items off as they land.
 
 ---
 
+> 🆕 **Onboarding rebuild workstream (Track A):** the way churches + members come on board is being rebuilt (phone/WhatsApp OTP identity, leader-add + claim, request→approve membership lifecycle, per-church directory privacy). Full spec: [ONBOARDING_PLAN.md](ONBOARDING_PLAN.md). This runs alongside the P0/P1 hardening below.
+
 ## P0 — Launch Blockers (do before ANY real church touches the app)
 
 These are correctness/safety gates. A real church onboarded before these is a real risk.
@@ -17,19 +19,20 @@ These are correctness/safety gates. A real church onboarded before these is a re
 - [ ] **Independent security / RLS review before onboarding.** 9 of 74 migrations are "fix" migrations, several closing RLS gaps (push tokens, notifications were briefly too open). Gaps are closed, but the reactive pattern warrants one defensive pass. Focus: cross-church isolation, the newer tables (meetings, action items, bookings, liturgy, shared songs, outreach assignments). — `L`
 - [ ] **Rotate ALL keys for production** (Supabase service role, Firebase admin private key, Resend, WhatsApp, PostHog, CRON_SECRET). Treat any key that has lived in a working folder / laptop as compromised-by-default. — `S`
 - [ ] **Verify multi-church isolation with real concurrent data.** Two churches, overlapping users, confirm zero cross-tenant leakage in: members, finance, prayers, notifications, community needs, songs (incl. the new scoped/global song sharing). — `M`
-- [ ] **Gate every backend-only feature behind a feature flag** so half-built UIs can't surface in production. Affected: ministry meetings, action items/tasks, outreach assignments, prayer responses. (`church_features` system already exists.) — `S`
+- [x] ~~Gate every backend-only feature behind a feature flag~~ — **NOT NEEDED.** Verified 2026-06-24: ministry meetings, action items/tasks, outreach assignments, and prayer responses are **fully built and wired with live UI** (the State-of-Product report was stale). Nothing half-built to hide.
 - [ ] **Confirm `CRON_SECRET` is set in prod and cron auth is enforced** on `/api/cron/*` (event reminders, visitor SLA, notification retention). — `S`
 
 ---
 
 ## P1 — Launch-Critical (do before opening the doors)
 
+- [ ] **WhatsApp OTP provider — START NOW (lead time).** Onboarding identity is phone/WhatsApp OTP. Register a Twilio WhatsApp sender + submit the **Meta Business WhatsApp OTP template for approval** (external approval lead time), then wire Supabase phone auth to it. Blocks the new sign-up/claim flow. — `M` (+ external wait)
 - [ ] **Move rate limiting to a shared store (Upstash/Redis).** Current limiter is in-memory (`lib/api/rate-limit.ts` — the code comment already says so). On Vercel's many short-lived instances it's far weaker than it looks. — `M`
 - [ ] **Real-device testing matrix:** budget Android + iOS, Arabic (RTL) mode, offline/airplane (PWA fallback), PWA install flow, push notifications end-to-end (FCM). Document results. — `M`
 - [ ] **Ship real brand PWA icons** (192px, 512px, maskable) — currently placeholders in `public/icons`. — `S`
 - [ ] **Run a Lighthouse baseline on the production URL** for `/dashboard`, `/admin/finance`, `/events`, `/bible`. Record scores in CLAUDE.md §9 (only 3 routes measured today). — `S`
 - [ ] **Finish Egyptian-Arabic translations: 332 missing keys** (`messages/ar-eg.json` has 2,226 of 2,558). Users currently get fallback text. Also close the 12-key `ar` gap. — `M`
-- [ ] **Add end-to-end tests for the critical paths:** sign-up → onboarding, record donation → see it in my-giving, permission enforcement (member cannot reach admin/finance), visitor intake → pipeline. No e2e tests exist today. — `L`
+- [x] **Add end-to-end tests for the critical paths** — **DONE 2026-06-24.** 8 Playwright specs in `e2e/` cover permission enforcement, finance-off, onboarding gate + completion, visitor intake, member/leader/admin mutations, cross-church, and two-church isolation. Caught + fixed a real visitor-form blank-field bug and 2 access-control gaps. (Giving paths deferred — finance is flagged OFF.)
 - [ ] **Wire up Sentry + verify alerts fire** in production (errors, source maps, release tracking). Confirm conditional import doesn't suppress prod errors. — `S`
 - [ ] **Verify PostHog in prod** (EU residency, no PII in events, identify on login). Spot-check 5 key events actually land. — `S`
 - [ ] **Health check + uptime monitor** pointed at `/api/health`. — `S`
