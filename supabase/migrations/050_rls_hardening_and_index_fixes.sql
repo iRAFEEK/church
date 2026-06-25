@@ -37,7 +37,9 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Service role (used by apiHandler routes) can update anything
+  -- The service-role client (admin-only ops, e.g. visitor convert) bypasses these
+  -- guards. NOTE: apiHandler uses the USER-bound client, so its writes ARE still
+  -- subject to this trigger and RLS — apiHandler is not service_role.
   IF current_setting('role') = 'service_role' THEN
     RETURN NEW;
   END IF;

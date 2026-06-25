@@ -9,6 +9,13 @@ const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET
  * Verify the HMAC-SHA256 signature from the X-Hub-Signature-256 header.
  * Uses timing-safe comparison to prevent timing attacks.
  */
+/** Constant-time string compare (returns false on length mismatch instead of throwing). */
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a)
+  const bb = Buffer.from(b)
+  return ab.length === bb.length && timingSafeEqual(ab, bb)
+}
+
 function verifyWebhookSignature(rawBody: string, signature: string, secret: string): boolean {
   const expectedSignature = createHmac('sha256', secret)
     .update(rawBody)
@@ -100,7 +107,8 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get('hub.verify_token')
   const challenge = searchParams.get('hub.challenge')
 
-  if (mode === 'subscribe' && token === WHATSAPP_WEBHOOK_SECRET) {
+  // Fail closed if no secret configured; constant-time compare to avoid timing leaks.
+  if (mode === 'subscribe' && WHATSAPP_WEBHOOK_SECRET && token && safeEqual(token, WHATSAPP_WEBHOOK_SECRET)) {
     return new NextResponse(challenge, { status: 200 })
   }
 

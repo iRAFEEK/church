@@ -21,6 +21,16 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   const body = await req.json()
   const { profile_id, role_in_group } = validate(addGroupMemberSchema, body)
 
+  // Verify both the group and the target profile belong to this church — never
+  // attach a cross-church group_id or profile_id (defense-in-depth on top of RLS).
+  const [{ data: grp }, { data: target }] = await Promise.all([
+    supabase.from('groups').select('id').eq('id', group_id).eq('church_id', profile.church_id).single(),
+    supabase.from('profiles').select('id').eq('id', profile_id).eq('church_id', profile.church_id).single(),
+  ])
+  if (!grp || !target) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   // Upsert — re-activates if previously removed
   const { data, error } = await supabase
     .from('group_members')

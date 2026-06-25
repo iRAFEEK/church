@@ -8,6 +8,18 @@ import { CreateGatheringSchema } from '@/lib/schemas/gathering'
 export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
   const body = validate(CreateGatheringSchema, await req.json())
 
+  // Verify the target group belongs to this church — never create a gathering
+  // against another tenant's group_id (mirrors gatherings/[id]/attendance).
+  const { data: grp } = await supabase
+    .from('groups')
+    .select('id')
+    .eq('id', body.group_id)
+    .eq('church_id', profile.church_id)
+    .single()
+  if (!grp) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const { data, error } = await supabase
     .from('gatherings')
     .insert({ ...body, church_id: profile.church_id, created_by: user.id })

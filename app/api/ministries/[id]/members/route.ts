@@ -14,6 +14,18 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
   const ministry_id = params!.id
   const body = validate(AddMinistryMemberSchema, await req.json())
 
+  // Verify the target profile belongs to this church — never add a cross-church
+  // profile_id (defense-in-depth on top of RLS; prevents orphan rows).
+  const { data: target } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', body.profile_id)
+    .eq('church_id', profile.church_id)
+    .single()
+  if (!target) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   // Upsert — re-activates if previously removed
   const { data, error } = await supabase
     .from('ministry_members')
@@ -33,7 +45,7 @@ export const POST = apiHandler(async ({ req, supabase, profile, params }) => {
 
   // Auto role upgrade: if assigned as leader, upgrade profile role
   if (body.role_in_ministry === 'leader') {
-    await autoUpgradeRole(supabase, body.profile_id)
+    await autoUpgradeRole(supabase, body.profile_id, profile.church_id)
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)
@@ -64,7 +76,7 @@ export const PATCH = apiHandler(async ({ req, supabase, profile, params }) => {
 
   // Auto role upgrade if promoted to leader
   if (body.role_in_ministry === 'leader') {
-    await autoUpgradeRole(supabase, body.profile_id)
+    await autoUpgradeRole(supabase, body.profile_id, profile.church_id)
   }
 
   revalidateTag(`dashboard-${profile.church_id}`)
@@ -91,15 +103,18 @@ export const DELETE = apiHandler(async ({ req, supabase, profile, params }) => {
   return NextResponse.json({ success: true })
 }, { requireRoles: ['ministry_leader', 'super_admin'] })
 
-/** Auto-upgrade profile role to ministry_leader when assigned as ministry leader */
+/** Auto-upgrade profile role to ministry_leader when assigned as ministry leader.
+ *  Scoped by church_id so a role change can never reach another tenant's profile. */
 async function autoUpgradeRole(
   supabase: Awaited<ReturnType<typeof import('@/lib/supabase/server').createClient>>,
-  profileId: string
+  profileId: string,
+  churchId: string
 ) {
   const { data: memberProfile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', profileId)
+    .eq('church_id', churchId)
     .single()
 
   if (memberProfile && ['member', 'group_leader'].includes(memberProfile.role)) {
@@ -107,5 +122,6 @@ async function autoUpgradeRole(
       .from('profiles')
       .update({ role: 'ministry_leader' })
       .eq('id', profileId)
+      .eq('church_id', churchId)
   }
 }
