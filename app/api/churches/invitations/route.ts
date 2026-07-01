@@ -21,10 +21,10 @@ export const GET = apiHandler(async ({ user }) => {
 
   const { data, error } = await admin
     .from('user_churches')
-    .select('church_id, role, created_at, church:church_id(id, name, name_ar, country)')
+    .select('church_id, role, joined_at, church:church_id(id, name, name_ar, country)')
     .eq('user_id', user.id)
     .eq('status', 'invited')
-    .order('created_at', { ascending: false })
+    .order('joined_at', { ascending: false })
     .limit(50)
 
   if (error) {

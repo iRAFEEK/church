@@ -16,7 +16,7 @@ import { logger } from '@/lib/logger'
 interface Invitation {
   church_id: string
   role: string
-  created_at: string
+  joined_at: string
   church: {
     id: string
     name: string
