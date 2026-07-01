@@ -1,6 +1,6 @@
 import { getCurrentUserWithRole, isAdmin } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { canCallerViewMemberPhones } from '@/lib/members/visibility'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,11 @@ export default async function SlotDetailPage({ params }: { params: Promise<{ id:
 
   // Member-directory privacy (A5, church-wide): hide volunteer phone unless the
   // viewer's role is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role, user.resolvedPermissions.can_view_member_phone)
+  const canSeePhone = canViewMemberPhone(
+    (user.church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility,
+    user.profile.role,
+    user.resolvedPermissions.can_view_member_phone,
+  )
   if (!canSeePhone) {
     for (const s of slot.serving_signups || []) {
       if (s.profiles) s.profiles.phone = null

@@ -401,8 +401,9 @@ supabase/
 | 029 | feature_flags.sql | Church feature flags table |
 | 030 | financial_system.sql | Full financial system: fiscal years, accounts, funds, bank accounts, transactions, line items, donations, expenses, campaigns, pledges, budgets, deposit batches |
 | 031 | multi_church.sql | Multi-church membership (user_churches table) |
-| 032 | push_tokens.sql | Push notification tokens table |
+| 032b | push_tokens.sql | Push notification tokens table (renamed from `032_` to resolve the version collision with `032_fix_songs_rls`; still sorts after it and before 045/050 which alter its RLS) |
 | 033 | seed_finance_test_data.sql | Test data for finance module |
+| 033b | songs_trigram_indexes.sql | Trigram indexes for song search (renamed from `033_` to resolve the version collision with `033_seed_finance_test_data`; still sorts after it) |
 | 034 | finance_performance_indexes.sql | Compound indexes for finance queries |
 | 035 | church_needs.sql | Church Needs marketplace: church_needs, church_need_responses tables, cross-church RLS, storage bucket |
 | 036 | seed_church_needs_test_data.sql | Test data: 2 additional churches + admins, 8 needs, 6 cross-church responses |
@@ -448,8 +449,9 @@ supabase/
 | 081 | member_directory_visibility.sql | **A5** `churches.member_directory_visibility` TEXT DEFAULT 'leaders_only' CHECK (everyone/leaders_only/hidden) — per-church control over who sees member phone numbers. **APPLIED.** |
 | 082 | membership_status_and_claim.sql | **A3** `user_churches.status` (active/managed/inactive) + backfill, `profiles.phone_verified_at`, unique partial index on `profiles.phone WHERE phone IS NOT NULL`. Supports leader-add (managed shadow identity) + OTP-claim. **APPLIED.** |
 | 084 | membership_invited_status.sql | **Onboarding FIX 3** — add `'invited'` to `user_churches.status` CHECK (drop + re-add: active/managed/inactive/invited). Cross-church "add a member" now creates an `invited` (consent-required) membership instead of silently pulling the person in; the invitee accepts/declines via `/api/churches/invitations`. **NOT applied — human applies.** |
+| 085 | update_policies_with_check.sql | Add `WITH CHECK` (mirroring each existing `USING`) to three UPDATE RLS policies that had USING but no WITH CHECK: `ministry_action_items` "Leaders can update action items" (059), `locations` "Admins can update locations" (064), `location_bookings` "Booker or admin can update bookings" (064). Prevents a leader from rewriting a row's `church_id` on UPDATE. **NOT applied — human applies.** |
 
-> ⚠️ **Duplicate migration numbers on disk:** there are two `032_*` (`fix_songs_rls`, `push_tokens`) and two `033_*` (`seed_finance_test_data`, `songs_trigram_indexes`). They apply in filename order today, but renumber before this causes an ordering ambiguity in a fresh environment.
+> ✅ **Duplicate migration numbers resolved:** the former collisions were renamed to keep every version unique while preserving apply order — `032_push_tokens.sql` → `032b_push_tokens.sql` (still sorts after `032_fix_songs_rls.sql`, and stays **before** migrations 045/050 which alter its RLS) and `033_songs_trigram_indexes.sql` → `033b_songs_trigram_indexes.sql` (sorts after `033_seed_finance_test_data.sql`). No code references these files by name; only docs.
 
 ---
 

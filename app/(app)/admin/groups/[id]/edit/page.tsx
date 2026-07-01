@@ -28,7 +28,8 @@ export default async function EditGroupPage({ params }: Params) {
       .in('role', ['group_leader', 'ministry_leader', 'super_admin'])
       .eq('church_id', user.profile.church_id)
       .eq('status', 'active')
-      .order('first_name'),
+      .order('first_name')
+      .limit(200),
   ])
 
   if (!group) notFound()

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUserWithRole } from '@/lib/auth'
-import { canCallerViewMemberPhones } from '@/lib/members/visibility'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -73,7 +73,8 @@ export default async function MinistryDetailPage({ params }: Params) {
       .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
       .eq('church_id', user.profile.church_id)
       .eq('status', 'active')
-      .order('first_name'),
+      .order('first_name')
+      .limit(200),
   ])
 
   if (result.error?.message?.includes('ministry_members')) {
@@ -91,7 +92,11 @@ export default async function MinistryDetailPage({ params }: Params) {
   // Member-directory privacy (A5, church-wide): hide member phone unless the viewer's
   // role is allowed by the church's visibility setting.
   if (ministry) {
-    const canSeePhone = await canCallerViewMemberPhones(supabase, user.profile.church_id, user.profile.role, user.resolvedPermissions.can_view_member_phone)
+    const canSeePhone = canViewMemberPhone(
+      (user.church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility,
+      user.profile.role,
+      user.resolvedPermissions.can_view_member_phone,
+    )
     if (!canSeePhone) {
       if (ministry.leader) ministry.leader.phone = null
       for (const mm of ministry.ministry_members || []) {

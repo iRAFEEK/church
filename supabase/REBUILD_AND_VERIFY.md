@@ -29,11 +29,11 @@ The migration **tracker lies** — several migrations were marked applied but th
    supabase link --project-ref <PROD_REF>
    ```
 
-2. **Apply all migrations cleanly, in order** (001 → 076):
+2. **Apply all migrations cleanly, in order** (001 → 085):
    ```bash
    supabase db push --linked
    ```
-   ⚠️ **Duplicate migration numbers** exist on disk — two `032_*` (`fix_songs_rls`, `push_tokens`) and two `033_*` (`seed_finance_test_data`, `songs_trigram_indexes`). They apply in filename order today; if `db push` complains about version collisions, renumber the duplicates first (e.g. `032b_…`, `033b_…`) so each version is unique. Verify the renamed files still capture both original statements.
+   ✅ **Duplicate migration numbers resolved** — the two former collisions were renamed so each version is unique while preserving apply order: `032_push_tokens.sql` → `032b_push_tokens.sql` (sorts after `032_fix_songs_rls.sql`, stays before 045/050 which alter its RLS) and `033_songs_trigram_indexes.sql` → `033b_songs_trigram_indexes.sql` (sorts after `033_seed_finance_test_data.sql`). No further action needed.
 
 3. **Skip the seed/test migrations on a real prod DB** (003, 033, 036, 037–042) — they create test churches/users. Apply only the schema migrations. (If `db push` runs them, delete the seeded test churches afterward.)
 

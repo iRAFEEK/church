@@ -49,6 +49,12 @@ ok('funds.currency present (mig 074)', await hasCol('funds', 'currency'))
 ok('budgets.currency present (mig 074)', await hasCol('budgets', 'currency'))
 ok('songs.published_by_church_id present (mig 072/074)', await hasCol('songs', 'published_by_church_id'))
 ok('churches.visitor_form_config present (mig 056)', await hasCol('churches', 'visitor_form_config'))
+// Onboarding / privacy columns (migs 079–082). Gate fails if a partial rebuild skips them.
+ok('churches.status present (mig 079)', await hasCol('churches', 'status'))
+ok('churches.member_directory_visibility present (mig 081)', await hasCol('churches', 'member_directory_visibility'))
+ok('churches.whatsapp_notifications_enabled present (mig 080)', await hasCol('churches', 'whatsapp_notifications_enabled'))
+ok('user_churches.status present (mig 082)', await hasCol('user_churches', 'status'))
+ok('profiles.phone_verified_at present (mig 082)', await hasCol('profiles', 'phone_verified_at'))
 
 // 4. Role-sync trigger present (mig 076) + no role mismatches
 const trig = await q(`SELECT 1 FROM pg_trigger WHERE tgname='trg_sync_user_churches_role'`)

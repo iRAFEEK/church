@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateSongSchema } from '@/lib/schemas/song'
+import { logger } from '@/lib/logger'
 
 // GET /api/songs — fast song search
 // Skips the full apiHandler auth chain (3 DB round trips) since songs are
@@ -38,7 +39,8 @@ export async function GET(req: NextRequest) {
 
     const result = await query
     if (result.error) {
-      return NextResponse.json({ error: result.error.message }, { status: 500 })
+      logger.error('[/api/songs GET] search query failed', { module: 'songs', error: result.error })
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
     data = result.data
     hasMore = (data?.length ?? 0) === pageSize
@@ -52,7 +54,8 @@ export async function GET(req: NextRequest) {
       .range(from, to)
 
     if (result.error) {
-      return NextResponse.json({ error: result.error.message }, { status: 500 })
+      logger.error('[/api/songs GET] browse query failed', { module: 'songs', error: result.error })
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
     data = result.data
     hasMore = (data?.length ?? 0) === pageSize

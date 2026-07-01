@@ -62,9 +62,17 @@ export const PATCH = apiHandler(async ({ req, supabase, user, profile, params })
   const body = await req.json()
   const parsed = validate(UpdateProfileSchema, body)
 
-  // Non-admins cannot change role
-  if (!isAdmin && parsed.role) {
-    delete parsed.role
+  // Role changes are privileged:
+  //  - Only super_admin may change ANOTHER member's role (a ministry_leader
+  //    is "isAdmin" but must NOT be able to grant/alter roles — RLS blocks it,
+  //    so the app layer must agree).
+  //  - No one may self-escalate their own role via this route.
+  // Non-role fields and self-updates of other fields are unaffected.
+  if (parsed.role !== undefined) {
+    const canChangeRole = !isSelf && profile.role === 'super_admin'
+    if (!canChangeRole) {
+      delete parsed.role
+    }
   }
 
   const { data, error } = await supabase

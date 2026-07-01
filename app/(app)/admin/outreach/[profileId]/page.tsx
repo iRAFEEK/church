@@ -1,6 +1,6 @@
 import { requirePermission } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { canCallerViewMemberPhones } from '@/lib/members/visibility'
+import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +40,11 @@ export default async function OutreachMemberDetailPage({ params }: { params: Pro
 
   // Member-directory privacy (A5, church-wide): hide phone unless the viewer's role
   // is allowed by the church's visibility setting.
-  const canSeePhone = await canCallerViewMemberPhones(supabase, churchId, user.profile.role, user.resolvedPermissions.can_view_member_phone)
+  const canSeePhone = canViewMemberPhone(
+    (user.church?.member_directory_visibility ?? 'leaders_only') as MemberDirectoryVisibility,
+    user.profile.role,
+    user.resolvedPermissions.can_view_member_phone,
+  )
   if (!canSeePhone) profileResult.data.phone = null
 
   const memberProfile = profileResult.data
