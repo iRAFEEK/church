@@ -305,6 +305,8 @@
     "errorAlreadyMember": "This person is already a member of your church.",
     "errorGeneric": "Could not add the member. Please try again.",
     "toastCreated": "Member added",
+    "toastInvited": "Invitation sent",
+    "toastInvitedDescription": "They already belong to another church — they'll join once they accept your invitation.",
     "toastCreatedDescriptionPhone": "They can now sign in with their phone via WhatsApp.",
     "toastCreatedDescriptionNoPhone": "Added as a managed record (no phone)."
   },
@@ -2850,5 +2852,15 @@
     "rejectedToast": "Church declined",
     "errorToast": "Something went wrong. Please try again.",
     "unnamed": "Unnamed church"
+  },
+  "invitations": {
+    "title": "Church invitations",
+    "invitedYou": "invited you to join",
+    "aChurch": "A church",
+    "accept": "Accept",
+    "decline": "Decline",
+    "acceptedToast": "Invitation accepted",
+    "declinedToast": "Invitation declined",
+    "errorToast": "Something went wrong. Please try again."
   }
 }

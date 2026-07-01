@@ -12,6 +12,7 @@ import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
 import { MinistryLeaderDashboard } from '@/components/dashboard/MinistryLeaderDashboard'
 import { LeaderDashboard } from '@/components/dashboard/LeaderDashboard'
 import { MemberDashboard } from '@/components/dashboard/MemberDashboard'
+import { PendingInvitations } from '@/components/churches/PendingInvitations'
 
 const ROLE_KEYS: Record<string, string> = {
   member: 'roleMember',
@@ -51,6 +52,9 @@ export default async function DashboardPage() {
     </div>
   )
 
+  // Cross-church invitations surface (renders nothing when there are none).
+  const invitationsBanner = <PendingInvitations />
+
   const churchId = profile.church_id
   const slaHours = church.visitor_sla_hours ?? 48
 
@@ -59,6 +63,7 @@ export default async function DashboardPage() {
     return (
       <div className="space-y-6">
         {header}
+        {invitationsBanner}
         <AdminDashboard data={data} />
       </div>
     )
@@ -69,6 +74,7 @@ export default async function DashboardPage() {
     return (
       <div className="space-y-6">
         {header}
+        {invitationsBanner}
         <MinistryLeaderDashboard data={data} />
       </div>
     )
@@ -79,6 +85,7 @@ export default async function DashboardPage() {
     return (
       <div className="space-y-6">
         {header}
+        {invitationsBanner}
         <LeaderDashboard data={data} />
       </div>
     )
@@ -99,6 +106,7 @@ export default async function DashboardPage() {
     return (
       <div className="space-y-6">
         {header}
+        {invitationsBanner}
         <LeaderDashboard data={data} />
       </div>
     )
@@ -109,6 +117,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {header}
+      {invitationsBanner}
       <MemberDashboard data={data} />
     </div>
   )

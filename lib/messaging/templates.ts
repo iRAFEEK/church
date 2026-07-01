@@ -168,6 +168,16 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectEn: 'New message about: {needTitle}',
     emailSubjectAr: 'رسالة جديدة بخصوص: {needTitle}',
   },
+
+  church_invitation: {
+    whatsappTemplate: 'church_invitation',
+    titleEn: 'Church Invitation',
+    titleAr: 'دعوة للانضمام إلى كنيسة',
+    bodyEn: '{churchName} invited you to join. Open the app to accept or decline.',
+    bodyAr: 'دعتك {churchName} للانضمام. افتح التطبيق للقبول أو الرفض.',
+    emailSubjectEn: '{churchName} invited you to join',
+    emailSubjectAr: 'دعتك {churchName} للانضمام',
+  },
 }
 
 /**

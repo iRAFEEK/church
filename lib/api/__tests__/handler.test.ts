@@ -29,17 +29,17 @@ import { apiHandler, ValidationError } from '@/lib/api/handler'
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function mockAuthenticated(role = 'super_admin', churchId = 'church-123') {
+function mockAuthenticated(role = 'super_admin', churchId = 'church-123', status = 'active') {
   mockGetUser.mockResolvedValue({
     data: { user: { id: 'user-1', email: 'test@test.com' } },
     error: null,
   })
   // First .single() call → profiles
-  // Second .single() call → user_churches
+  // Second .single() call → user_churches (role + status)
   // Third .single() call → role_permission_defaults
   mockSingle
     .mockResolvedValueOnce({ data: { id: 'user-1', church_id: churchId, role, permissions: null }, error: null })
-    .mockResolvedValueOnce({ data: { role }, error: null })
+    .mockResolvedValueOnce({ data: { role, status }, error: null })
     .mockResolvedValueOnce({ data: null, error: null })
 }
 
@@ -85,6 +85,59 @@ describe('apiHandler', () => {
       const res = await handler(makeReq())
       expect(res.status).toBe(200)
       expect(inner).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('membership status gate (onboarding FIX 1)', () => {
+    // The status gate returns 403 after the user_churches lookup (before role defaults),
+    // so queue exactly the two `.single()` results these paths consume. Queuing a third
+    // would leak into the next test (mockSingle uses persistent mockResolvedValueOnce).
+    function mockMembershipStatus(status: string) {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-1', email: 'test@test.com' } },
+        error: null,
+      })
+      mockSingle
+        .mockResolvedValueOnce({ data: { id: 'user-1', church_id: 'church-123', role: 'member', permissions: null }, error: null })
+        .mockResolvedValueOnce({ data: { role: 'member', status }, error: null })
+    }
+
+    it('returns 403 when membership status is managed (unclaimed shadow)', async () => {
+      mockMembershipStatus('managed')
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }))
+      const res = await handler(makeReq())
+
+      expect(res.status).toBe(403)
+      const body = await res.json()
+      expect(body.error).toBe('Forbidden')
+    })
+
+    it('returns 403 when membership status is invited (cross-church, not accepted)', async () => {
+      mockMembershipStatus('invited')
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }))
+      const res = await handler(makeReq())
+
+      expect(res.status).toBe(403)
+    })
+
+    it('returns 403 when membership status is inactive (archived)', async () => {
+      mockMembershipStatus('inactive')
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }))
+      const res = await handler(makeReq())
+
+      expect(res.status).toBe(403)
+    })
+
+    it('allows access when membership status is active', async () => {
+      mockAuthenticated('member', 'church-123', 'active')
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }))
+      const res = await handler(makeReq())
+
+      expect(res.status).toBe(200)
     })
   })
 

@@ -4,6 +4,7 @@ import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { AddMemberSchema } from '@/lib/schemas/member'
 import { createAdminClient } from '@/lib/supabase/server'
+import { notifyChurchInvitation } from '@/lib/messaging/triggers'
 import { logger } from '@/lib/logger'
 
 // POST /api/members — Track A3: a leader/admin adds a member by name (+ optional phone),
@@ -72,9 +73,13 @@ export const POST = apiHandler(
           return NextResponse.json({ error: 'Already a member of this church' }, { status: 409 })
         }
 
+        // CROSS-CHURCH CONSENT (onboarding FIX 3): this person already exists in ANOTHER
+        // church. Do NOT silently pull them in as 'managed' (which would auto-activate on
+        // their next OTP login). Create the membership as 'invited' — inert (no app access
+        // to this church) until they explicitly accept via /api/churches/invitations.
         const { error: insertErr } = await admin
           .from('user_churches')
-          .insert({ user_id: existing.id, church_id: churchId, role, status: 'managed' })
+          .insert({ user_id: existing.id, church_id: churchId, role, status: 'invited' })
 
         if (insertErr) {
           // Unique(user_id, church_id) race — treat as already-a-member.
@@ -85,9 +90,13 @@ export const POST = apiHandler(
           throw insertErr
         }
 
+        // Notify the invited person (best-effort — the invitation already exists and is
+        // discoverable in-app even if the notification fails to send).
+        await notifyChurchInvitation(existing.id, churchId)
+
         revalidateTag(`members-${churchId}`)
         revalidateTag(`dashboard-${churchId}`)
-        return NextResponse.json({ data: { id: existing.id, added: 'membership' } }, { status: 201 })
+        return NextResponse.json({ data: { id: existing.id, added: 'invited' } }, { status: 201 })
       }
     }
 

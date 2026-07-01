@@ -86,9 +86,15 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
       }
 
       analytics.member.created({ church_id: churchId, role, locale, method: 'manual' })
-      toast.success(t('toastCreated'), {
-        description: phone ? t('toastCreatedDescriptionPhone') : t('toastCreatedDescriptionNoPhone'),
-      })
+      if (json?.data?.added === 'invited') {
+        // Cross-church: the person already belongs to another church — they were sent
+        // an invitation and only join once they accept (they are NOT added yet).
+        toast.success(t('toastInvited'), { description: t('toastInvitedDescription') })
+      } else {
+        toast.success(t('toastCreated'), {
+          description: phone ? t('toastCreatedDescriptionPhone') : t('toastCreatedDescriptionNoPhone'),
+        })
+      }
       setForm(EMPTY)
       setOpen(false)
       router.refresh()

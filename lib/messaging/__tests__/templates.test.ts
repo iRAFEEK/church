@@ -43,8 +43,8 @@ describe('interpolate', () => {
 describe('TEMPLATES', () => {
   const templateKeys = Object.keys(TEMPLATES)
 
-  it('has exactly 15 entries', () => {
-    expect(templateKeys).toHaveLength(15)
+  it('has exactly 16 entries', () => {
+    expect(templateKeys).toHaveLength(16)
   })
 
   it('every template has all 7 required fields', () => {

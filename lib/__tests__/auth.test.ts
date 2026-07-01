@@ -385,6 +385,43 @@ describe('getCurrentUserWithRole', () => {
 
     expect(result.profile.role).toBe('group_leader')
   })
+
+  // Onboarding FIX 1 — membership status gate.
+  it('redirects to /login when membership status is not active (managed)', async () => {
+    const profile = makeProfile({ id: USER_ID, church_id: CHURCH_ID, role: 'member' })
+    const church = makeChurch()
+
+    mockSb.client.auth.getUser.mockResolvedValue({
+      data: { user: { id: USER_ID, email: 'test@test.com' } },
+      error: null,
+    })
+    configureSingleCalls(
+      { data: { ...profile, church }, error: null },
+      // user_churches — leader-added shadow, not yet claimed
+      { data: { role: 'member', status: 'managed' }, error: null },
+      { data: null, error: null },
+    )
+
+    await expect(getCurrentUserWithRole()).rejects.toThrow('REDIRECT:/login')
+  })
+
+  it('allows access when membership status is active', async () => {
+    const profile = makeProfile({ id: USER_ID, church_id: CHURCH_ID, role: 'member' })
+    const church = makeChurch()
+
+    mockSb.client.auth.getUser.mockResolvedValue({
+      data: { user: { id: USER_ID, email: 'test@test.com' } },
+      error: null,
+    })
+    configureSingleCalls(
+      { data: { ...profile, church }, error: null },
+      { data: { role: 'member', status: 'active' }, error: null },
+      { data: null, error: null },
+    )
+
+    const result = await getCurrentUserWithRole()
+    expect(result.id).toBe(USER_ID)
+  })
 })
 
 // ==========================================================================
@@ -451,6 +488,25 @@ describe('getCurrentUserSafe', () => {
     expect(result!.profile.role).toBe('member')
     expect(result!.church).toBeDefined()
     expect(result!.resolvedPermissions).toBeDefined()
+  })
+
+  // Onboarding FIX 1 — a non-active membership yields no user.
+  it('returns null when membership status is not active (invited)', async () => {
+    const profile = makeProfile({ id: USER_ID, church_id: CHURCH_ID, role: 'member' })
+    const church = makeChurch()
+
+    mockSb.client.auth.getUser.mockResolvedValue({
+      data: { user: { id: USER_ID, email: 'test@test.com' } },
+      error: null,
+    })
+    configureSingleCalls(
+      { data: { ...profile, church }, error: null },
+      { data: { role: 'member', status: 'invited' }, error: null },
+      { data: null, error: null },
+    )
+
+    const result = await getCurrentUserSafe()
+    expect(result).toBeNull()
   })
 })
 

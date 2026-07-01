@@ -305,6 +305,8 @@
     "errorAlreadyMember": "هذا الشخص عضو بالفعل في كنيستك.",
     "errorGeneric": "تعذّر إضافة العضو. حاول مرة أخرى.",
     "toastCreated": "تمت إضافة العضو",
+    "toastInvited": "تم إرسال الدعوة",
+    "toastInvitedDescription": "هذا الشخص عضو في كنيسة أخرى — سينضم بمجرد قبوله دعوتك.",
     "toastCreatedDescriptionPhone": "يمكنه الآن تسجيل الدخول برقم هاتفه عبر واتساب.",
     "toastCreatedDescriptionNoPhone": "تمت الإضافة كسجل مُدار (بدون هاتف)."
   },
@@ -2850,5 +2852,15 @@
     "rejectedToast": "تم رفض الكنيسة",
     "errorToast": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "unnamed": "كنيسة بدون اسم"
+  },
+  "invitations": {
+    "title": "دعوات الكنائس",
+    "invitedYou": "دعتك للانضمام",
+    "aChurch": "كنيسة",
+    "accept": "قبول",
+    "decline": "رفض",
+    "acceptedToast": "تم قبول الدعوة",
+    "declinedToast": "تم رفض الدعوة",
+    "errorToast": "حدث خطأ ما. برجاء المحاولة مرة أخرى."
   }
 }

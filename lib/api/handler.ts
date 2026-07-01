@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
+import { isActiveMembership } from '@/lib/membership'
 import { logger } from '@/lib/logger'
 import { checkRateLimitAsync } from '@/lib/api/rate-limit'
 import type { PermissionKey, UserRole, PermissionMap } from '@/types'
@@ -85,13 +86,22 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
           // Skip role/permission resolution, profile stays null
         } else {
         // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
-        // This prevents privilege escalation if profiles.role is stale after church switch
+        // This prevents privilege escalation if profiles.role is stale after church switch.
+        // Also reads status to gate access (onboarding FIX 1).
         const { data: membership } = await supabase
           .from('user_churches')
-          .select('role')
+          .select('role, status')
           .eq('user_id', u.id)
           .eq('church_id', p.church_id)
           .single()
+
+        // Membership status gate: only 'active' members may use the API for this church.
+        // 'managed'/'invited'/'inactive' get the same 403 shape as other auth failures.
+        // The claim flow flips 'managed' -> 'active' before first app use, and the
+        // claim route itself is profileOptional so it never reaches this branch.
+        if (membership && !isActiveMembership(membership.status)) {
+          return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
 
         // Use user_churches.role if available (defense in depth), fallback to profiles.role
         const effectiveRole = (membership?.role ?? p.role) as UserRole

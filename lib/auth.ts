@@ -4,6 +4,11 @@ import { redirect } from 'next/navigation'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Profile, Church, AuthUser, PermissionKey, PermissionMap } from '@/types'
 import { resolvePermissions, HARDCODED_ROLE_DEFAULTS } from '@/lib/permissions'
+import { isActiveMembership } from '@/lib/membership'
+
+// Re-exported for backwards-compatible imports (`from '@/lib/auth'`). Canonical source
+// is lib/membership.ts (a side-effect-free leaf module — see onboarding FIX 1).
+export { isActiveMembership }
 
 /**
  * Get the current authenticated user with their profile and church.
@@ -39,13 +44,21 @@ export const getCurrentUserWithRole = cache(async (): Promise<AuthUser> => {
   const rawProfile = profileData as Profile
 
   // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
-  // Prevents privilege escalation if profiles.role is stale after church switch
+  // Prevents privilege escalation if profiles.role is stale after church switch.
+  // Also reads status — a non-'active' membership (managed/invited/inactive) has no
+  // app access to this church (onboarding FIX 1).
   const { data: membership } = await supabase
     .from('user_churches')
-    .select('role')
+    .select('role, status')
     .eq('user_id', user.id)
     .eq('church_id', rawProfile.church_id)
     .single()
+
+  // Gate access on membership status. The claim flow (/api/members/claim) flips
+  // 'managed' -> 'active' BEFORE the first app load, so real claimers arrive active.
+  if (membership && !isActiveMembership(membership.status)) {
+    redirect('/login')
+  }
 
   const effectiveRole = (membership?.role ?? rawProfile.role) as Profile['role']
   const profile: Profile = { ...rawProfile, role: effectiveRole }
@@ -97,13 +110,20 @@ export async function getCurrentUserSafe(): Promise<AuthUser | null> {
 
     const rawProfile = profileData as Profile
 
-    // SECURITY: Cross-reference role from user_churches (authoritative per-church role)
+    // SECURITY: Cross-reference role from user_churches (authoritative per-church role).
+    // Also reads status — a non-'active' membership (managed/invited/inactive) has no
+    // app access to this church (onboarding FIX 1).
     const { data: membership } = await supabase
       .from('user_churches')
-      .select('role')
+      .select('role, status')
       .eq('user_id', user.id)
       .eq('church_id', rawProfile.church_id)
       .single()
+
+    // Gate access on membership status (return null rather than redirect here).
+    if (membership && !isActiveMembership(membership.status)) {
+      return null
+    }
 
     const effectiveRole = (membership?.role ?? rawProfile.role) as Profile['role']
     const profile: Profile = { ...rawProfile, role: effectiveRole }

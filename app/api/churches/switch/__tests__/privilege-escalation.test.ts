@@ -35,7 +35,8 @@ describe('P0-1: Multi-church privilege escalation prevention', () => {
 
     it('queries user_churches for per-church role', () => {
       expect(content).toContain("from('user_churches')")
-      expect(content).toContain("select('role')")
+      // Also selects status for the membership access gate (onboarding FIX 1).
+      expect(content).toContain("select('role, status')")
     })
 
     it('uses effectiveRole for permission resolution', () => {

@@ -690,6 +690,48 @@ export async function notifyMinistryMemberAdded(
 }
 
 /**
+ * Notify an existing person (in another church) that a church has invited them.
+ * Onboarding FIX 3 — cross-church add requires consent. Called from POST /api/members
+ * when the added phone already belongs to someone; the membership is created as
+ * 'invited' and this fires so they can accept/decline (PATCH /api/churches/invitations).
+ *
+ * `invitedUserId` is the invitee's profile id; `churchId` is the INVITING church (so the
+ * notification is filed under it). The recipient reads it via the own-notifications RLS
+ * regardless of their active church.
+ */
+export async function notifyChurchInvitation(invitedUserId: string, churchId: string) {
+  try {
+    const supabase = await createAdminClient()
+
+    const { data: church } = await supabase
+      .from('churches')
+      .select('name, name_ar')
+      .eq('id', churchId)
+      .single()
+
+    if (!church) return
+
+    const churchName = church.name_ar || church.name
+    const template = TEMPLATES.church_invitation
+
+    await sendNotification({
+      profileId: invitedUserId,
+      churchId,
+      type: 'church_invitation',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { churchName }),
+      bodyAr: interpolate(template.bodyAr, { churchName }),
+      referenceId: churchId,
+      referenceType: 'church_invitation',
+      data: { churchName },
+    })
+  } catch (error) {
+    logger.error('notifyChurchInvitation failed', { module: 'messaging', churchId, error })
+  }
+}
+
+/**
  * Send gathering reminder to all group members.
  * Called by a cron/scheduled function.
  */

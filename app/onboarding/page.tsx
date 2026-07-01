@@ -202,6 +202,10 @@ function ChurchSearchStep({ onJoined }: { onJoined: () => void }) {
 function ProfileStep() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  // Onboarding FIX 2: leader-added members already have a name (often Arabic) set at
+  // creation. Pre-load the existing profile so the form is seeded with it and a claimer
+  // never re-types (and never blanks) the leader's entry. Self-signup users load empty.
+  const [prefilling, setPrefilling] = useState(true)
   const t = useTranslations('onboarding')
 
   const onboardingSchema = z.object({
@@ -232,6 +236,47 @@ function ProfileStep() {
     },
   })
 
+  const { reset } = form
+
+  // Load the existing profile once and seed the form with any values already present.
+  useEffect(() => {
+    let cancelled = false
+    async function loadProfile() {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, first_name_ar, last_name_ar, phone')
+          .eq('id', user.id)
+          .single()
+
+        if (cancelled || !existing) return
+
+        reset({
+          first_name_ar: existing.first_name_ar ?? '',
+          last_name_ar: existing.last_name_ar ?? '',
+          first_name: existing.first_name ?? '',
+          last_name: existing.last_name ?? '',
+          phone: existing.phone ?? '',
+          date_of_birth: '',
+          occupation_ar: '',
+          notification_pref: 'whatsapp',
+        })
+      } catch (err) {
+        logger.error('Onboarding profile prefill failed', { module: 'onboarding', error: err })
+      } finally {
+        if (!cancelled) setPrefilling(false)
+      }
+    }
+    loadProfile()
+    return () => {
+      cancelled = true
+    }
+  }, [reset])
+
   async function onSubmit(values: OnboardingForm) {
     setIsLoading(true)
     const supabase = createClient()
@@ -242,21 +287,25 @@ function ProfileStep() {
       return
     }
 
+    // FIX 2: never clobber a stored value with an empty one. Required Arabic-name
+    // fields can't be blank (Zod min(1)); optional fields only update when filled.
+    const update: Record<string, string | boolean | null> = {
+      first_name_ar: values.first_name_ar,
+      last_name_ar: values.last_name_ar,
+      notification_pref: values.notification_pref,
+      onboarding_completed: true,
+      joined_church_at: new Date().toISOString().split('T')[0],
+    }
+    if (values.first_name) update.first_name = values.first_name
+    if (values.last_name) update.last_name = values.last_name
+    if (values.phone) update.phone = values.phone
+    if (values.date_of_birth) update.date_of_birth = values.date_of_birth
+    if (values.gender) update.gender = values.gender
+    if (values.occupation_ar) update.occupation_ar = values.occupation_ar
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        first_name_ar: values.first_name_ar,
-        last_name_ar: values.last_name_ar,
-        first_name: values.first_name || null,
-        last_name: values.last_name || null,
-        phone: values.phone || null,
-        date_of_birth: values.date_of_birth || null,
-        gender: values.gender || null,
-        occupation_ar: values.occupation_ar || null,
-        notification_pref: values.notification_pref,
-        onboarding_completed: true,
-        joined_church_at: new Date().toISOString().split('T')[0],
-      })
+      .update(update)
       .eq('id', user.id)
 
     if (error) {
@@ -438,7 +487,7 @@ function ProfileStep() {
           )}
         />
 
-        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading || prefilling}>
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

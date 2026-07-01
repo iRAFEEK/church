@@ -33,7 +33,11 @@ vi.mock('@/lib/supabase/server', () => ({
     from: vi.fn(() => adminChain),
   })),
 }))
-vi.mock('@/lib/auth', () => ({ resolveApiPermissions: vi.fn().mockResolvedValue({}) }))
+vi.mock('@/lib/auth', () => ({
+  resolveApiPermissions: vi.fn().mockResolvedValue({}),
+  isActiveMembership: (s: string | null | undefined) => s == null || s === 'active',
+}))
+vi.mock('@/lib/messaging/triggers', () => ({ notifyChurchInvitation: vi.fn().mockResolvedValue(undefined) }))
 vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }))
 vi.mock('@/lib/api/rate-limit', () => ({
   checkRateLimit: vi.fn().mockReturnValue(null),
@@ -58,6 +62,7 @@ const makeReq = (body?: object) =>
 
 import { POST as addMember } from '@/app/api/members/route'
 import { POST as claim } from '@/app/api/members/claim/route'
+import { notifyChurchInvitation } from '@/lib/messaging/triggers'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -112,18 +117,20 @@ describe('POST /api/members (leader-add)', () => {
     expect(mockCreateUser).toHaveBeenCalledTimes(1)
   })
 
-  it('adds a cross-church membership for an existing phone — no duplicate identity', async () => {
+  it('invites (not silently adds) an existing person from another church — consent required', async () => {
     mockAuth('ministry_leader')
     ;(adminChain.maybeSingle as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ data: { id: 'exist-1', church_id: 'other-church' }, error: null }) // dedupe found
       .mockResolvedValueOnce({ data: null, error: null }) // not yet a member here
-    adminThenQueue.push({ error: null }) // user_churches insert
+    adminThenQueue.push({ error: null }) // user_churches insert (status: 'invited')
 
     const res = await addMember(makeReq({ first_name: 'Mina', last_name: 'Adel', phone: '+201111111111' }))
     expect(res.status).toBe(201)
     const json = await res.json()
-    expect(json.data.added).toBe('membership')
+    expect(json.data.added).toBe('invited')
     expect(mockCreateUser).not.toHaveBeenCalled()
+    // The invited person is notified so they can accept/decline.
+    expect(notifyChurchInvitation).toHaveBeenCalledWith('exist-1', 'church-1')
   })
 
   it('returns 409 when the phone already belongs to a member of this church', async () => {
@@ -163,5 +170,20 @@ describe('POST /api/members/claim', () => {
     const res = await claim(makeReq())
     const json = await res.json()
     expect(json.data.claimed).toBe(0)
+  })
+
+  it('only ever activates managed rows — never invited (cross-church consent preserved)', async () => {
+    mockAuth('member')
+    adminThenQueue.push({ data: [], error: null }) // update()...select()
+    ;(adminChain.maybeSingle as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      data: { phone: null, phone_verified_at: null },
+      error: null,
+    })
+
+    await claim(makeReq())
+
+    // The claim update is scoped to status='managed', so 'invited' rows stay put.
+    expect(adminChain.eq).toHaveBeenCalledWith('status', 'managed')
+    expect(adminChain.eq).not.toHaveBeenCalledWith('status', 'invited')
   })
 })
