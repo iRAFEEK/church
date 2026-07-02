@@ -255,16 +255,21 @@ function ProfileStep() {
 
         if (cancelled || !existing) return
 
-        reset({
-          first_name_ar: existing.first_name_ar ?? '',
-          last_name_ar: existing.last_name_ar ?? '',
-          first_name: existing.first_name ?? '',
-          last_name: existing.last_name ?? '',
-          phone: existing.phone ?? '',
-          date_of_birth: '',
-          occupation_ar: '',
-          notification_pref: 'whatsapp',
-        })
+        // keepDirtyValues: the async prefill must NOT clobber anything the user has
+        // already started typing while it was in flight — it only fills untouched fields.
+        reset(
+          {
+            first_name_ar: existing.first_name_ar ?? '',
+            last_name_ar: existing.last_name_ar ?? '',
+            first_name: existing.first_name ?? '',
+            last_name: existing.last_name ?? '',
+            phone: existing.phone ?? '',
+            date_of_birth: '',
+            occupation_ar: '',
+            notification_pref: 'whatsapp',
+          },
+          { keepDirtyValues: true },
+        )
       } catch (err) {
         logger.error('Onboarding profile prefill failed', { module: 'onboarding', error: err })
       } finally {

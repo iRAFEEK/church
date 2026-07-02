@@ -27,7 +27,17 @@ test.describe('Critical path — public visitor intake (/join)', () => {
     const phone = page.locator('input[name="phone"]')
     if (await phone.count()) await phone.fill('+201000000000')
 
-    await page.locator('button[type="submit"]').click()
-    await expect(page).toHaveURL(/\/join\/success/, { timeout: 15_000 })
+    // Submit and wait for the API to record the visitor, THEN for the client-side
+    // redirect. router.push() → RSC navigation can lag a bare toHaveURL poll, so we
+    // gate on the actual POST response first and then wait for the success URL.
+    const [resp] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().includes('/api/visitors') && r.request().method() === 'POST',
+        { timeout: 20_000 },
+      ),
+      page.locator('button[type="submit"]').click(),
+    ])
+    expect(resp.status(), 'visitor POST should succeed').toBeLessThan(300)
+    await page.waitForURL(/\/join\/success/, { timeout: 20_000 })
   })
 })
