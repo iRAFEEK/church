@@ -1,10 +1,27 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Search, X, Music } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { findSlideForText } from '@/lib/utils/song-slides'
+
+// SECURITY: safely render a Postgres ts_headline() snippet. ts_headline wraps matches
+// in <mark>…</mark> but does NOT HTML-escape the surrounding source, so rendering it via
+// dangerouslySetInnerHTML was a stored-XSS sink (malicious song lyrics → script exec in
+// the presenter/admin session, cross-tenant via the global hymnal). Here the <mark>
+// highlights become real React elements and ALL other text is React-escaped → inert.
+function renderSnippet(snippet: string): ReactNode[] {
+  const nodes: ReactNode[] = []
+  let inMark = false
+  snippet.split(/(<mark>|<\/mark>)/g).forEach((part, i) => {
+    if (part === '<mark>') { inMark = true; return }
+    if (part === '</mark>') { inMark = false; return }
+    if (!part) return
+    nodes.push(inMark ? <mark key={i}>{part}</mark> : <span key={i}>{part}</span>)
+  })
+  return nodes
+}
 
 interface SearchResult {
   id: string
@@ -204,8 +221,9 @@ export function PresenterSearch({ onSelect, onClose }: PresenterSearchProps) {
                       <p
                         className="text-zinc-400 line-clamp-2 [&>mark]:bg-yellow-500/30 [&>mark]:text-yellow-200 [&>mark]:rounded-sm [&>mark]:px-0.5"
                         dir="auto"
-                        dangerouslySetInnerHTML={{ __html: song.snippet }}
-                      />
+                      >
+                        {renderSnippet(song.snippet)}
+                      </p>
                     </div>
                   )}
                 </div>

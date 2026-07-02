@@ -66,14 +66,21 @@ class ResendProvider implements MessageProvider {
       ? "'Noto Sans Arabic', 'Segoe UI', sans-serif"
       : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
 
+    // SECURITY: `body` (and `locale`) can contain user-authored content (prayer text,
+    // announcements, member names). HTML-escape before interpolating so nobody can
+    // inject markup/links into email we send from our own domain (phishing).
+    const esc = (s: string) =>
+      s.replace(/[&<>"']/g, (ch) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] as string))
+
     return `
       <!DOCTYPE html>
-      <html dir="${dir}" lang="${locale || 'en'}">
+      <html dir="${dir}" lang="${esc(loc)}">
       <head><meta charset="utf-8"></head>
       <body style="font-family: ${fontFamily}; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #f8f9fa; border-radius: 8px; padding: 24px;">
           <h2 style="color: #111; margin-top: 0;">Ekklesia</h2>
-          <div style="white-space: pre-line;">${body}</div>
+          <div style="white-space: pre-line;">${esc(body)}</div>
         </div>
         <p style="color: #999; font-size: 12px; margin-top: 16px; text-align: center;">
           Ekklesia Church Management

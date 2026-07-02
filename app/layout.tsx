@@ -23,7 +23,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // A11Y (WCAG 1.4.4): do NOT lock zoom — low-vision users must be able to pinch-zoom.
+  // iOS zoom-on-focus is prevented separately by the 16px input font-size in globals.css.
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
   themeColor: '#09090b',
 }

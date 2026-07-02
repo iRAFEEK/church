@@ -21,9 +21,18 @@ const withPWA = withPWAInit({
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'X-XSS-Protection', value: '1; mode=block' },
+  // Legacy header retired (can introduce bugs in old browsers); superseded by output
+  // escaping + the CSP below (modern guidance is '0').
+  { key: 'X-XSS-Protection', value: '0' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'geolocation=(), microphone=(), camera=()' },
+  // Force HTTPS for 2y (edge/Vercel also sets this; don't rely on it).
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  // Safe CSP directives that don't constrain the app's script/connect sources (Supabase,
+  // PostHog, Firebase, Next inline bootstrap) so they can't break rendering, while still
+  // blocking clickjacking, <base> injection, plugin/object XSS, and cross-origin form posts.
+  // A full nonce-based script-src is a follow-up (roll out report-only first).
+  { key: 'Content-Security-Policy', value: "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'" },
 ];
 
 const nextConfig: NextConfig = {
