@@ -28,6 +28,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    // Record a video of every test run (delivered as journey walkthroughs).
+    video: process.env.E2E_VIDEO === 'off' ? 'off' : 'on',
     locale: 'ar',
   },
   projects: [
