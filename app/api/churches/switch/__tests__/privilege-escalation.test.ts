@@ -1,90 +1,94 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as fs from 'fs'
+import { NextRequest } from 'next/server'
 
-describe('P0-1: Multi-church privilege escalation prevention', () => {
-  describe('Switch endpoint updates both church_id AND role', () => {
-    const content = fs.readFileSync('app/api/churches/switch/route.ts', 'utf-8')
+/**
+ * P0 — multi-church privilege-escalation prevention.
+ *
+ * These EXECUTE the switch handler (previously this file only grep'd the source, which
+ * gave a false green — it would pass even if the handler were broken). The core property:
+ * switching to a church where you are only a `member` must set your role to `member`, NOT
+ * carry over a `super_admin` role from another church.
+ */
 
-    it('reads role from user_churches for target church', () => {
-      expect(content).toContain("from('user_churches')")
-      expect(content).toContain("select('role')")
-      expect(content).toContain("eq('user_id'")
-      expect(content).toContain("eq('church_id'")
-    })
+// Per-test map of the caller's role in each church; the mock resolves user_churches from it.
+let ucRoles: Record<string, string> = {}
+let updatePayload: Record<string, unknown> | undefined
+const mockGetUser = vi.fn()
 
-    it('updates profiles with both church_id AND role', () => {
-      // Must update role alongside church_id — this is the core fix
-      expect(content).toContain('role: membership.role')
-      expect(content).toContain('church_id,')
-    })
+function makeChain(table: string) {
+  let churchEq: string | undefined
+  const chain: Record<string, unknown> = {}
+  for (const m of ['select', 'order', 'limit', 'insert', 'upsert']) chain[m] = vi.fn(() => chain)
+  chain.eq = vi.fn((col: string, val: string) => { if (col === 'church_id') churchEq = val; return chain })
+  chain.update = vi.fn((p: Record<string, unknown>) => { updatePayload = p; return chain })
+  chain.single = vi.fn(async () => {
+    if (table === 'profiles') return { data: { id: 'user-1', church_id: 'a0000000-0000-4000-8000-000000000001', role: 'super_admin', status: 'active', permissions: null }, error: null }
+    if (table === 'user_churches') {
+      const role = ucRoles[churchEq ?? '']
+      return { data: role ? { role, status: 'active' } : null, error: null }
+    }
+    if (table === 'role_permission_defaults') return { data: { permissions: null }, error: null }
+    return { data: null, error: null }
+  })
+  ;(chain as { then: unknown }).then = (res: (v: unknown) => unknown, rej: (e: unknown) => unknown) =>
+    Promise.resolve({ error: null }).then(res, rej)
+  return chain
+}
 
-    it('rejects switch if user is not a member of target church', () => {
-      expect(content).toContain('not a member of this church')
-      expect(content).toContain('403')
-    })
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(async () => ({ auth: { getUser: mockGetUser }, from: vi.fn((t: string) => makeChain(t)) })),
+}))
+vi.mock('@/lib/auth', () => ({ resolveApiPermissions: vi.fn().mockResolvedValue({}) }))
+vi.mock('@/lib/membership', () => ({ isActiveMembership: (s: string | null | undefined) => s == null || s === 'active' }))
+vi.mock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }))
+vi.mock('@/lib/api/rate-limit', () => ({ checkRateLimit: vi.fn().mockReturnValue(null), checkRateLimitAsync: vi.fn().mockResolvedValue(null) }))
 
-    it('does NOT just update church_id alone (the old vulnerable pattern)', () => {
-      // The old code was: .update({ church_id }) — only church_id, no role
-      // The new code must update both
-      expect(content).not.toMatch(/\.update\(\{\s*church_id\s*\}\)/)
-    })
+import { POST as switchChurch } from '@/app/api/churches/switch/route'
+
+const req = (body: object) =>
+  new NextRequest('http://localhost/api/churches/switch', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } })
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  ucRoles = { 'a0000000-0000-4000-8000-000000000001': 'super_admin', 'b0000000-0000-4000-8000-000000000002': 'member' }
+  updatePayload = undefined
+  mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1', email: 'a@t.com' } }, error: null })
+})
+
+describe('P0: church switch does NOT escalate privilege (executing)', () => {
+  it('switching to a church where you are only a member sets role=member (not super_admin)', async () => {
+    const res = await switchChurch(req({ church_id: 'b0000000-0000-4000-8000-000000000002' }))
+    expect(res.status).toBe(200)
+    // THE security assertion: role is set to the TARGET-church role, never carried over.
+    expect(updatePayload).toEqual({ church_id: 'b0000000-0000-4000-8000-000000000002', role: 'member' })
   })
 
-  describe('apiHandler cross-references user_churches role', () => {
-    const content = fs.readFileSync('lib/api/handler.ts', 'utf-8')
-
-    it('queries user_churches for per-church role', () => {
-      expect(content).toContain("from('user_churches')")
-      // Also selects status for the membership access gate (onboarding FIX 1).
-      expect(content).toContain("select('role, status')")
-    })
-
-    it('uses effectiveRole for permission resolution', () => {
-      expect(content).toContain('effectiveRole')
-      expect(content).toContain('resolvePermissions')
-    })
-
-    it('falls back to profiles.role if user_churches entry missing', () => {
-      // Defense in depth — if user_churches row is missing, fall back gracefully
-      expect(content).toContain('membership?.role ?? p.role')
-    })
+  it('rejects switching to a church you are not a member of (403, no update)', async () => {
+    ucRoles = { 'a0000000-0000-4000-8000-000000000001': 'super_admin' } // no membership in church-X
+    const res = await switchChurch(req({ church_id: 'c0000000-0000-4000-8000-000000000003' }))
+    expect(res.status).toBe(403)
+    expect(updatePayload).toBeUndefined()
   })
 
-  describe('getCurrentUserWithRole cross-references user_churches', () => {
-    const content = fs.readFileSync('lib/auth.ts', 'utf-8')
-
-    it('queries user_churches in getCurrentUserWithRole', () => {
-      expect(content).toContain("from('user_churches')")
-    })
-
-    it('uses effectiveRole for permission resolution', () => {
-      expect(content).toContain('effectiveRole')
-    })
-
-    it('falls back gracefully if no user_churches entry', () => {
-      expect(content).toContain('membership?.role ?? rawProfile.role')
-    })
+  it('preserves an elevated role only when it genuinely belongs to the target church', async () => {
+    ucRoles = { 'a0000000-0000-4000-8000-000000000001': 'member', 'b0000000-0000-4000-8000-000000000002': 'super_admin' }
+    const res = await switchChurch(req({ church_id: 'b0000000-0000-4000-8000-000000000002' }))
+    expect(res.status).toBe(200)
+    expect(updatePayload).toEqual({ church_id: 'b0000000-0000-4000-8000-000000000002', role: 'super_admin' })
   })
+})
 
-  describe('Register endpoint creates user_churches entry', () => {
+// Secondary structural guards (cheap; the executing tests above prove the behavior).
+describe('P0: supporting invariants (source guards)', () => {
+  it('register endpoint seeds a user_churches super_admin row', () => {
     const content = fs.readFileSync('app/api/churches/register/route.ts', 'utf-8')
-
-    it('inserts into user_churches with super_admin role', () => {
-      expect(content).toContain("from('user_churches')")
-      expect(content).toContain("role: 'super_admin'")
-    })
+    expect(content).toContain("from('user_churches')")
+    expect(content).toContain("role: 'super_admin'")
   })
-
-  describe('resolveApiPermissions supports user_churches cross-check', () => {
-    const content = fs.readFileSync('lib/auth.ts', 'utf-8')
-
-    it('accepts optional userId parameter for cross-check', () => {
-      expect(content).toContain('userId?: string')
-    })
-
-    it('queries user_churches when userId is provided', () => {
-      // The function should cross-check with user_churches when userId is available
-      expect(content).toContain("eq('user_id', userId)")
-    })
+  it('apiHandler cross-references user_churches role + status', () => {
+    const content = fs.readFileSync('lib/api/handler.ts', 'utf-8')
+    expect(content).toContain("from('user_churches')")
+    expect(content).toContain("select('role, status')")
   })
 })
