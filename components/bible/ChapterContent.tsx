@@ -84,30 +84,43 @@ export function ChapterContent({
     })
   }, [content, highlights, highlightMap])
 
-  // Handle verse click
+  // Handle verse selection (click + keyboard)
   useEffect(() => {
     if (!contentRef.current) return
     const container = contentRef.current
 
-    const handleClick = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('[data-verse-id]') as HTMLElement | null
+    // A11Y (WCAG 2.1.1 Keyboard): verses are rendered as raw HTML spans, so make each
+    // one focusable + operable imperatively (tabindex/role) and support Enter/Space.
+    container.querySelectorAll<HTMLElement>('[data-verse-id]').forEach((el) => {
+      el.setAttribute('tabindex', '0')
+      el.setAttribute('role', 'button')
+    })
+
+    const select = (from: EventTarget | null) => {
+      const target = (from as HTMLElement | null)?.closest('[data-verse-id]') as HTMLElement | null
       if (!target) {
         setSelectedVerse(null)
         return
       }
-
       const verseId = target.getAttribute('data-verse-id')
       if (!verseId) return
+      setSelectedVerse({ verseId, verseText: target.textContent || '', element: target })
+    }
 
-      setSelectedVerse({
-        verseId,
-        verseText: target.textContent || '',
-        element: target,
-      })
+    const handleClick = (e: MouseEvent) => select(e.target)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      if (!(e.target as HTMLElement).closest('[data-verse-id]')) return
+      e.preventDefault()
+      select(e.target)
     }
 
     container.addEventListener('click', handleClick)
-    return () => container.removeEventListener('click', handleClick)
+    container.addEventListener('keydown', handleKeyDown)
+    return () => {
+      container.removeEventListener('click', handleClick)
+      container.removeEventListener('keydown', handleKeyDown)
+    }
   }, [content])
 
   const handleHighlight = useCallback(async (color: HighlightColor) => {
