@@ -12,9 +12,11 @@ export async function GET(req: NextRequest) {
   const supabase = await createAdminClient()
   const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
-  // Delete all notifications older than 90 days
+  // Delete all notifications older than 90 days. The table is `notifications_log`
+  // (the previous `notifications` name doesn't exist → the cleanup silently 500'd and
+  // never ran, so the log grew unbounded).
   const { count, error } = await supabase
-    .from('notifications')
+    .from('notifications_log')
     .delete({ count: 'exact' })
     .lt('created_at', cutoff)
 
