@@ -225,6 +225,11 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+        <p className="mt-3 text-center text-sm">
+          <Link href="/forgot-password" className="font-medium text-muted-foreground underline underline-offset-4">
+            {t('forgotPasswordLink')}
+          </Link>
+        </p>
           </TabsContent>
 
           <TabsContent value="phone" className="mt-4">

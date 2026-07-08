@@ -6,6 +6,8 @@ import { isFeatureEnabled } from '@/lib/features'
 const PUBLIC_PATHS = [
   '/login',
   '/signup',      // Self-service account creation
+  '/forgot-password', // Request a password-reset email
+  '/reset-password',  // Set a new password (recovery token exchanged client-side, no session cookie yet)
   '/select-church', // Church picker (authenticated but not in app layout)
   '/welcome',     // Church landing page
   '/join',        // QR visitor form (Phase 2)
