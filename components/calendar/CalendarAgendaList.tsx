@@ -39,7 +39,7 @@ export function CalendarAgendaList({ date, items, activeFilters }: CalendarAgend
         {dayItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-8 text-center">
             <div className="h-14 w-14 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
-              <CalendarOff className="h-7 w-7 text-zinc-400" />
+              <CalendarOff className="h-7 w-7 text-zinc-500" />
             </div>
             <h3 className="text-sm font-semibold text-zinc-900 mb-1">
               {t('nothingScheduled')}
@@ -90,7 +90,7 @@ export function CalendarAgendaList({ date, items, activeFilters }: CalendarAgend
       {upcoming.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 px-8 text-center">
           <div className="h-14 w-14 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
-            <CalendarCheck className="h-7 w-7 text-zinc-400" />
+            <CalendarCheck className="h-7 w-7 text-zinc-500" />
           </div>
           <h3 className="text-sm font-semibold text-zinc-900 mb-1">
             {t('noUpcoming')}

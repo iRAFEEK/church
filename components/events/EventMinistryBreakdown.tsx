@@ -101,12 +101,12 @@ export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps)
   } as Record<string, { color: string; icon: React.ReactNode }>), [])
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-400 text-sm">{t('loading')}</div>
+    return <div className="text-center py-8 text-zinc-500 text-sm">{t('loading')}</div>
   }
 
   if (groups.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+      <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
         {t('noServiceNeeds')}
       </div>
     )
@@ -161,9 +161,9 @@ export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps)
                   />
                 </div>
                 {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-zinc-400" />
+                  <ChevronUp className="h-4 w-4 text-zinc-500" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-zinc-400" />
+                  <ChevronDown className="h-4 w-4 text-zinc-500" />
                 )}
               </div>
             </button>
@@ -172,7 +172,7 @@ export function EventMinistryBreakdown({ eventId }: EventMinistryBreakdownProps)
             {isExpanded && (
               <div className="border-t px-4 pb-4">
                 {group.assignments.length === 0 ? (
-                  <div className="text-center py-6 text-zinc-400 text-sm">
+                  <div className="text-center py-6 text-zinc-500 text-sm">
                     {t('noAssignmentsYet')}
                   </div>
                 ) : (

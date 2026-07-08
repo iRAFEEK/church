@@ -250,7 +250,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-[44px] w-[44px] shrink-0 text-zinc-400 hover:text-red-500"
+                        className="h-[44px] w-[44px] shrink-0 text-zinc-500 hover:text-red-500"
                         onClick={() => setActionItems(prev => prev.filter((_, i) => i !== idx))}
                         aria-label={t('removeItem')}
                       >
@@ -301,7 +301,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                   </div>
                 ))}
                 {actionItems.length === 0 && (
-                  <p className="text-xs text-zinc-400 text-center py-2">{t('noActionItems')}</p>
+                  <p className="text-xs text-zinc-500 text-center py-2">{t('noActionItems')}</p>
                 )}
               </div>
 
@@ -321,7 +321,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
       {meetings.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-200 p-6 text-center">
           <Calendar className="h-8 w-8 mx-auto text-zinc-300 mb-2" />
-          <p className="text-sm text-zinc-400">{t('noMeetings')}</p>
+          <p className="text-sm text-zinc-500">{t('noMeetings')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -384,7 +384,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                           aria-label={item.status === 'done' ? t('markOpen') : t('markDone')}
                         >
                           {togglingItem === item.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                            <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
                           ) : item.status === 'done' ? (
                             <CheckCircle2 className="h-5 w-5 text-green-500" />
                           ) : (
@@ -394,13 +394,13 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                         <div className="flex-1 min-w-0">
                           <span className={cn(
                             'text-sm block',
-                            item.status === 'done' && 'line-through text-zinc-400'
+                            item.status === 'done' && 'line-through text-zinc-500'
                           )}>
                             {item.title}
                           </span>
                           <div className="flex items-center gap-2 mt-0.5">
                             {item.assigned && (
-                              <span className="text-xs text-zinc-400 flex items-center gap-1">
+                              <span className="text-xs text-zinc-500 flex items-center gap-1">
                                 <Avatar className="h-4 w-4">
                                   <AvatarImage src={item.assigned.photo_url || undefined} />
                                   <AvatarFallback className="text-[8px]">
@@ -415,7 +415,7 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                                 'text-xs flex items-center gap-0.5',
                                 new Date(item.due_date) < new Date() && item.status !== 'done'
                                   ? 'text-red-500'
-                                  : 'text-zinc-400'
+                                  : 'text-zinc-500'
                               )}>
                                 <CalendarDays className="h-3 w-3" />
                                 {new Date(item.due_date).toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-EG', { month: 'short', day: 'numeric' })}

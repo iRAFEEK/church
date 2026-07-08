@@ -37,7 +37,7 @@ export function NotificationPreview({
       {!hasContent ? (
         <div className="flex flex-col items-center justify-center py-12 text-center px-4">
           <div className="h-12 w-12 rounded-full bg-zinc-100 flex items-center justify-center mb-3">
-            <Bell className="h-6 w-6 text-zinc-400" />
+            <Bell className="h-6 w-6 text-zinc-500" />
           </div>
           <p className="text-sm text-muted-foreground">{t('emptyHint')}</p>
         </div>

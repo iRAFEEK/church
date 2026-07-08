@@ -48,7 +48,7 @@ export function JoinRequestList({ initialRequests }: { initialRequests: JoinRequ
     return (
       <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
         <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-          <UserPlus className="h-8 w-8 text-zinc-400" />
+          <UserPlus className="h-8 w-8 text-zinc-500" />
         </div>
         <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
         <p className="text-sm text-zinc-500 max-w-[280px]">{t('emptyBody')}</p>
@@ -74,19 +74,19 @@ export function JoinRequestList({ initialRequests }: { initialRequests: JoinRequ
                 <div className="text-sm text-zinc-500 space-y-0.5 mt-0.5">
                   {r.requester_phone && (
                     <p className="flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                      <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                       <span dir="ltr">{r.requester_phone}</span>
                     </p>
                   )}
                   {r.requester_email && (
                     <p className="flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                      <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                       <span dir="ltr" className="truncate">{r.requester_email}</span>
                     </p>
                   )}
                 </div>
                 {r.message && <p className="text-sm text-zinc-600 mt-2 bg-zinc-50 rounded-lg p-2">{r.message}</p>}
-                <p className="text-xs text-zinc-400 mt-1">{formatDistanceToNow(r.created_at, locale)}</p>
+                <p className="text-xs text-zinc-500 mt-1">{formatDistanceToNow(r.created_at, locale)}</p>
               </div>
             </div>
 

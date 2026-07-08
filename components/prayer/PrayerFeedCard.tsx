@@ -98,7 +98,7 @@ export function PrayerFeedCard({ prayer }: PrayerFeedCardProps) {
         <div className="flex items-center gap-2.5 mb-3">
           {prayer.is_anonymous || !prayer.submitter ? (
             <div className="h-9 w-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-              <EyeOff className="h-4 w-4 text-zinc-400" />
+              <EyeOff className="h-4 w-4 text-zinc-500" />
             </div>
           ) : (
             <Avatar className="h-9 w-9 shrink-0">
@@ -137,7 +137,7 @@ export function PrayerFeedCard({ prayer }: PrayerFeedCardProps) {
           >
             <Heart
               className={`h-4 w-4 transition-colors ${
-                isPraying ? 'fill-rose-500 text-rose-500' : 'text-zinc-400'
+                isPraying ? 'fill-rose-500 text-rose-500' : 'text-zinc-500'
               }`}
             />
             <span>

@@ -56,7 +56,7 @@ export function QRGenerator({ joinUrl, churchName }: Props) {
         </div>
         <div className="text-center">
           <p className="font-semibold text-zinc-900">{churchName}</p>
-          <p className="text-xs text-zinc-400 mt-0.5">{t('scanToRegister')}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">{t('scanToRegister')}</p>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export function QRGenerator({ joinUrl, churchName }: Props) {
       </div>
 
       {/* Print hint */}
-      <div className="text-xs text-zinc-400 text-center">
+      <div className="text-xs text-zinc-500 text-center">
         {t('printHint')}
       </div>
     </div>

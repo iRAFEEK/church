@@ -264,7 +264,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
     })
   }, [members, debouncedSearch, getDisplayName])
 
-  if (loading) return <div className="text-sm text-zinc-400 py-4">{t('loading')}</div>
+  if (loading) return <div className="text-sm text-zinc-500 py-4">{t('loading')}</div>
   if (needs.length === 0) return null
 
   return (
@@ -321,7 +321,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                   />
                 </div>
               </div>
-              <div className="text-zinc-400">
+              <div className="text-zinc-500">
                 {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </button>
@@ -357,7 +357,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
 
                 {/* Notes */}
                 {(need.notes || need.notes_ar) && (
-                  <p className="text-xs text-zinc-400 italic">
+                  <p className="text-xs text-zinc-500 italic">
                     {isRTL ? (need.notes_ar || need.notes) : (need.notes || need.notes_ar)}
                   </p>
                 )}
@@ -384,7 +384,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                             {roleName ? (
                               <p className="text-xs text-zinc-500">{roleName}</p>
                             ) : assignment.profile.phone ? (
-                              <p className="text-xs text-zinc-400" dir="ltr">{assignment.profile.phone}</p>
+                              <p className="text-xs text-zinc-500" dir="ltr">{assignment.profile.phone}</p>
                             ) : null}
                           </div>
                           <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
@@ -393,14 +393,14 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                           </Badge>
                           <button
                             onClick={() => openEditRoleDialog(need.id, assignment)}
-                            className="p-1.5 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-zinc-200 text-zinc-500 hover:text-zinc-600 transition-colors"
                             title={t('editRole')}
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => removeAssignment(need.id, assignment.id)}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-zinc-500 hover:text-red-500 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -428,7 +428,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
           {!selectedMember ? (
             <div className="space-y-3">
               <div className="relative">
-                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                 <Input
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
@@ -439,7 +439,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
 
               <div className="max-h-[300px] overflow-y-auto space-y-1">
                 {loadingMembers ? (
-                  <div className="text-center py-6 text-zinc-400 text-sm">{t('loading')}</div>
+                  <div className="text-center py-6 text-zinc-500 text-sm">{t('loading')}</div>
                 ) : (
                   filteredMembers.map(member => {
                     const isAssigned = activeNeed?.assignments?.some(a => a.profile_id === member.id)
@@ -467,7 +467,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                         )}
                         <span className="text-sm text-zinc-700 flex-1">{name}</span>
                         {isAssigned && (
-                          <span className="text-xs text-zinc-400">{t('alreadyAssigned')}</span>
+                          <span className="text-xs text-zinc-500">{t('alreadyAssigned')}</span>
                         )}
                       </button>
                     )
@@ -518,7 +518,7 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
                       >
                         {isRTL ? (preset.role_ar || preset.role) : preset.role}
                         {remaining > 0 && (
-                          <span className="ms-1 text-zinc-400">({remaining})</span>
+                          <span className="ms-1 text-zinc-500">({remaining})</span>
                         )}
                       </button>
                     )

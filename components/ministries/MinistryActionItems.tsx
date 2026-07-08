@@ -171,11 +171,11 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
           aria-label={item.status === 'done' ? t('markOpen') : t('markDone')}
         >
           {togglingId === item.id ? (
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
           ) : item.status === 'done' ? (
             <CheckCircle2 className="h-5 w-5 text-green-500" />
           ) : (
-            <Circle className="h-5 w-5 text-zinc-300 hover:text-zinc-400" />
+            <Circle className="h-5 w-5 text-zinc-300 hover:text-zinc-500" />
           )}
         </button>
 
@@ -183,7 +183,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
         <div className="flex-1 min-w-0 py-2">
           <p className={cn(
             'text-sm font-medium',
-            item.status === 'done' && 'line-through text-zinc-400'
+            item.status === 'done' && 'line-through text-zinc-500'
           )}>
             {item.title}
           </p>
@@ -202,7 +202,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
             {item.due_date && (
               <span className={cn(
                 'text-xs flex items-center gap-0.5',
-                isOverdue ? 'text-red-500 font-medium' : 'text-zinc-400'
+                isOverdue ? 'text-red-500 font-medium' : 'text-zinc-500'
               )}>
                 <CalendarDays className="h-3 w-3" />
                 {new Date(item.due_date).toLocaleDateString(
@@ -212,7 +212,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
               </span>
             )}
             {item.meeting && (
-              <span className="text-xs text-zinc-400 bg-zinc-50 px-1.5 py-0.5 rounded">
+              <span className="text-xs text-zinc-500 bg-zinc-50 px-1.5 py-0.5 rounded">
                 {item.meeting.title}
               </span>
             )}
@@ -244,7 +244,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
           <ListTodo className="h-5 w-5" />
           {t('title')}
           {openItems.length > 0 && (
-            <span className="text-sm font-normal text-zinc-400">({openItems.length})</span>
+            <span className="text-sm font-normal text-zinc-500">({openItems.length})</span>
           )}
         </h2>
         <Button
@@ -327,7 +327,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
       {openItems.length === 0 && doneItems.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-200 p-6 text-center">
           <ListTodo className="h-8 w-8 mx-auto text-zinc-300 mb-2" />
-          <p className="text-sm text-zinc-400">{t('empty')}</p>
+          <p className="text-sm text-zinc-500">{t('empty')}</p>
           <p className="text-xs text-zinc-300 mt-1">{t('emptyHint')}</p>
         </div>
       ) : (
@@ -341,7 +341,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
         <div className="mt-4">
           <button
             onClick={() => setShowDone(!showDone)}
-            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-600 min-h-[44px] transition-colors"
+            className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-600 min-h-[44px] transition-colors"
           >
             {showDone ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             {t('completedCount', { count: doneItems.length })}

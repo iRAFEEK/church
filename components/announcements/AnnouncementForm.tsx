@@ -177,7 +177,7 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
               onCheckedChange={(v) => setForm({ ...form, is_pinned: v })}
             />
             <div className="flex items-center gap-2">
-              <Pin className="h-4 w-4 text-zinc-400" />
+              <Pin className="h-4 w-4 text-zinc-500" />
               <Label htmlFor="announcement-is-pinned">{t('isPinned')}</Label>
             </div>
           </div>
@@ -200,9 +200,9 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
 function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
-      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="text-zinc-500 mt-0.5">{icon}</div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-xs text-zinc-500 font-medium">{label}</p>
         <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
       </div>
     </div>

@@ -34,7 +34,7 @@ export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) 
 
   if (records.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-400 text-sm rounded-xl border border-zinc-200">
+      <div className="text-center py-8 text-zinc-500 text-sm rounded-xl border border-zinc-200">
         {t('historyEmpty')}
       </div>
     )
@@ -68,7 +68,7 @@ export function AttendanceHistory({ records }: { records: AttendanceRecord[] }) 
                 <p className="text-sm font-medium text-zinc-900">
                   {g?.topic || t('historyDefaultTopic')}
                 </p>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-zinc-500 mt-0.5">
                   {g ? formatGatheringDate(g.scheduled_at) : '—'}
                   {g?.group && ` · ${g.group.name_ar || g.group.name}`}
                 </p>

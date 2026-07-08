@@ -48,7 +48,7 @@ export function PendingChurchList({ initialChurches }: { initialChurches: Pendin
     return (
       <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
         <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-          <Building2 className="h-8 w-8 text-zinc-400" />
+          <Building2 className="h-8 w-8 text-zinc-500" />
         </div>
         <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
         <p className="text-sm text-zinc-500 max-w-[280px]">{t('emptyBody')}</p>
@@ -70,29 +70,29 @@ export function PendingChurchList({ initialChurches }: { initialChurches: Pendin
                 <p className="font-semibold text-zinc-900">{name}</p>
                 <div className="text-sm text-zinc-500 space-y-0.5 mt-1">
                   <p className="flex items-center gap-1.5">
-                    <Globe className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                    <Globe className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                     <span>{c.country}</span>
                   </p>
                   {c.pending_contact_name && (
                     <p className="flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                      <User className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                       <span className="truncate">{c.pending_contact_name}</span>
                     </p>
                   )}
                   {c.pending_contact_phone && (
                     <p className="flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                      <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                       <span dir="ltr">{c.pending_contact_phone}</span>
                     </p>
                   )}
                   {c.pending_contact_email && (
                     <p className="flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                      <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
                       <span dir="ltr" className="truncate">{c.pending_contact_email}</span>
                     </p>
                   )}
                 </div>
-                <p className="text-xs text-zinc-400 mt-1">{formatDistanceToNow(c.created_at, locale)}</p>
+                <p className="text-xs text-zinc-500 mt-1">{formatDistanceToNow(c.created_at, locale)}</p>
               </div>
             </div>
 

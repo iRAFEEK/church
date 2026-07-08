@@ -72,7 +72,7 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
     return (
       <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
         <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-          <UserCheck className="h-8 w-8 text-zinc-400" />
+          <UserCheck className="h-8 w-8 text-zinc-500" />
         </div>
         <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('leaderEmptyTitle')}</h3>
         <p className="text-sm text-zinc-500 max-w-[260px]">{t('leaderEmptySubtitle')}</p>
@@ -108,29 +108,29 @@ export function LeaderVisitorList({ visitors, slaHours }: { visitors: Visitor[];
               <div className="text-sm text-zinc-500 space-y-1">
                 {v.phone && (
                   <p className="flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                    <Phone className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
                     <span dir="ltr">{v.phone}</span>
                   </p>
                 )}
                 {v.email && (
                   <p className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                    <Mail className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
                     <span dir="ltr">{v.email}</span>
                   </p>
                 )}
                 {v.occupation && (
                   <p className="flex items-center gap-1.5">
-                    <Briefcase className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                    <Briefcase className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
                     {v.occupation}
                   </p>
                 )}
                 {v.age_range && (
                   <p className="flex items-center gap-1.5">
-                    <Cake className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                    <Cake className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
                     {t(AGE_RANGE_KEYS[v.age_range] || v.age_range)}
                   </p>
                 )}
-                <p className="text-xs text-zinc-400 mt-1">{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at, locale)}</p>
+                <p className="text-xs text-zinc-500 mt-1">{t('queueVisitedAgo')} {formatDistanceToNow(v.visited_at, locale)}</p>
               </div>
 
               {v.contact_notes && (

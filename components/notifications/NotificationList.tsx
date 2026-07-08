@@ -45,7 +45,7 @@ export function NotificationList({ notifications, onMarkRead, onNavigate }: Noti
     return (
       <div className="flex flex-col items-center justify-center py-12 px-8 text-center">
         <div className="h-12 w-12 rounded-2xl bg-zinc-100 flex items-center justify-center mb-3">
-          <Bell className="h-6 w-6 text-zinc-400" />
+          <Bell className="h-6 w-6 text-zinc-500" />
         </div>
         <h3 className="text-sm font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
         <p className="text-xs text-zinc-500 max-w-[220px]">{t('emptyBody')}</p>

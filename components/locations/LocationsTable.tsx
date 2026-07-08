@@ -63,7 +63,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
         <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-          <MapPin className="h-8 w-8 text-zinc-400" />
+          <MapPin className="h-8 w-8 text-zinc-500" />
         </div>
         <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
         <p className="text-sm text-zinc-500 max-w-[280px] mb-6">{t('emptyBody')}</p>
@@ -81,7 +81,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
     <div>
       {/* Search */}
       <div className="relative mb-4">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -110,7 +110,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
                   <td className="px-4 py-3">
                     <Link href={`/admin/locations/${loc.id}`} className="block">
                       <p className="font-medium text-zinc-900">{loc.name_ar || loc.name}</p>
-                      {loc.name_ar && <p className="text-xs text-zinc-400">{loc.name}</p>}
+                      {loc.name_ar && <p className="text-xs text-zinc-500">{loc.name}</p>}
                     </Link>
                   </td>
                   <td className="px-4 py-3">
@@ -128,7 +128,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
                   </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/locations/${loc.id}`} aria-label={t('editLocation')}>
-                      <ChevronRight className="h-4 w-4 text-zinc-400 rtl:rotate-180" />
+                      <ChevronRight className="h-4 w-4 text-zinc-500 rtl:rotate-180" />
                     </Link>
                   </td>
                 </tr>
@@ -149,7 +149,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
             <div className="flex items-start justify-between mb-2">
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-zinc-900">{loc.name_ar || loc.name}</p>
-                {loc.name_ar && <p className="text-xs text-zinc-400">{loc.name}</p>}
+                {loc.name_ar && <p className="text-xs text-zinc-500">{loc.name}</p>}
               </div>
               <span className={cn('text-xs px-2 py-0.5 rounded-full shrink-0 ms-2', TYPE_COLORS[loc.location_type] || TYPE_COLORS.other)}>
                 {t(TYPE_KEYS[loc.location_type] || 'typeOther')}
@@ -164,7 +164,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
                   {loc.is_active ? t('active') : t('inactive')}
                 </Badge>
               </div>
-              <ChevronRight className="h-4 w-4 text-zinc-400 rtl:rotate-180" />
+              <ChevronRight className="h-4 w-4 text-zinc-500 rtl:rotate-180" />
             </div>
           </Link>
         ))}
@@ -172,7 +172,7 @@ export function LocationsTable({ locations }: LocationsTableProps) {
 
       {/* No search results */}
       {filtered.length === 0 && search && (
-        <div className="text-center py-12 text-zinc-400 text-sm">
+        <div className="text-center py-12 text-zinc-500 text-sm">
           {t('noSearchResults')}
         </div>
       )}

@@ -131,7 +131,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
         </div>
         <div className="flex items-center gap-3">
           {totalDuration > 0 && (
-            <span className="text-xs text-zinc-400 flex items-center gap-1">
+            <span className="text-xs text-zinc-500 flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
               {t('totalDuration')}: {totalDuration} {t('min')}
             </span>
@@ -144,7 +144,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
       </div>
 
       {segments.length === 0 ? (
-        <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+        <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
           {t('noSegments')}
         </div>
       ) : (
@@ -195,7 +195,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                     )}
                   </p>
                   {(seg.notes || seg.notes_ar) && (
-                    <p className="text-xs text-zinc-400 mt-0.5 truncate">
+                    <p className="text-xs text-zinc-500 mt-0.5 truncate">
                       {isRTL ? (seg.notes_ar || seg.notes) : (seg.notes || seg.notes_ar)}
                     </p>
                   )}
@@ -205,7 +205,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                   <button
                     type="button"
                     onClick={() => openEditDialog(i)}
-                    className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
+                    className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-500 hover:text-zinc-600 transition-colors"
                     aria-label={t('editSegment')}
                   >
                     <Pencil className="h-4 w-4" />
@@ -214,7 +214,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                     <AlertDialogTrigger asChild>
                       <button
                         type="button"
-                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
+                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-500 hover:text-red-500 transition-colors"
                         aria-label={t('removeSegment')}
                       >
                         <Trash2 className="h-4 w-4" />

@@ -107,7 +107,7 @@ export default async function GatheringPage({ params }: Params) {
           {formatGatheringDate(gathering.scheduled_at)} · {formatGatheringTime(gathering.scheduled_at)}
         </p>
         {gathering.location && (
-          <p className="text-sm text-zinc-400 mt-0.5">📍 {gathering.location_ar || gathering.location}</p>
+          <p className="text-sm text-zinc-500 mt-0.5">📍 {gathering.location_ar || gathering.location}</p>
         )}
         {isCompleted && (
           <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">

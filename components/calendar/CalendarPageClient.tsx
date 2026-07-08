@@ -147,7 +147,7 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
                   transition-all border shrink-0 min-h-[44px]
                   ${active
                     ? `${colors.bg} ${colors.text} ${colors.border}`
-                    : 'bg-zinc-50 text-zinc-400 border-zinc-200'
+                    : 'bg-zinc-50 text-zinc-500 border-zinc-200'
                   }
                 `}
               >
@@ -231,7 +231,7 @@ export function CalendarPageClient({ initialItems, initialMonth }: CalendarPageC
                 transition-all border shrink-0 min-h-[44px]
                 ${active
                   ? `${colors.bg} ${colors.text} ${colors.border}`
-                  : 'bg-zinc-50 text-zinc-400 border-zinc-200'
+                  : 'bg-zinc-50 text-zinc-500 border-zinc-200'
                 }
               `}
             >

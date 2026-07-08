@@ -362,7 +362,7 @@ export function DesktopBookingView({
                         height: HOUR_HEIGHT,
                       }}
                     >
-                      <span className="text-[10px] text-zinc-400 ps-2 pt-0.5 select-none">
+                      <span className="text-[10px] text-zinc-500 ps-2 pt-0.5 select-none">
                         {label}
                       </span>
                       {weekDays.map((day) => {
@@ -452,7 +452,7 @@ export function DesktopBookingView({
               {bookings.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: 48 }}>
                   <div className="flex flex-col items-center text-center px-4 bg-white/80 rounded-xl p-6">
-                    <CalendarOff className="h-8 w-8 text-zinc-400 mb-2" />
+                    <CalendarOff className="h-8 w-8 text-zinc-500 mb-2" />
                     <p className="text-sm text-zinc-500">{t('noBookingsWeek')}</p>
                   </div>
                 </div>

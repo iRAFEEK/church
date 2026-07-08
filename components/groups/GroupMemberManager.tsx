@@ -120,7 +120,7 @@ export function GroupMemberManager({
       </div>
 
       {members.length === 0 ? (
-        <div className="text-center py-10 text-zinc-400 rounded-xl border border-zinc-200">
+        <div className="text-center py-10 text-zinc-500 rounded-xl border border-zinc-200">
           <p className="font-medium">{t('emptyTitle')}</p>
           <p className="text-sm mt-1">{t('emptySubtitle')}</p>
         </div>
@@ -197,7 +197,7 @@ export function GroupMemberManager({
           />
           <div className="mt-2 space-y-1 max-h-64 overflow-y-auto">
             {available.length === 0 ? (
-              <p className="text-center text-sm text-zinc-400 py-4">
+              <p className="text-center text-sm text-zinc-500 py-4">
                 {search ? t('dialogNoResults') : t('dialogAllAdded')}
               </p>
             ) : (

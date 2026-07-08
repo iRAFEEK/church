@@ -100,7 +100,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
       </div>
 
       {fields.length === 0 ? (
-        <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+        <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
           {t('customFields')}
         </div>
       ) : (
@@ -117,10 +117,10 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                 </p>
               </div>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => openEdit(i)} className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors">
+                <button type="button" onClick={() => openEdit(i)} className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-500 hover:text-zinc-600 transition-colors">
                   <Pencil className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => handleRemove(i)} className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors">
+                <button type="button" onClick={() => handleRemove(i)} className="p-2 rounded-lg hover:bg-red-50 text-zinc-500 hover:text-red-500 transition-colors">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>

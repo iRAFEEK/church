@@ -110,7 +110,7 @@ export function PrayerSubmitForm({ onSubmitted }: PrayerSubmitFormProps) {
                       : 'border-zinc-200 hover:bg-zinc-50 active:bg-zinc-100'
                   }`}
                 >
-                  <div className={`mt-0.5 shrink-0 ${visibility === value ? 'text-primary' : 'text-zinc-400'}`}>
+                  <div className={`mt-0.5 shrink-0 ${visibility === value ? 'text-primary' : 'text-zinc-500'}`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">

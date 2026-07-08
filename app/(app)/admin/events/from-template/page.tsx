@@ -184,7 +184,7 @@ export default function CreateFromTemplatePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-zinc-400">
+      <div className="flex items-center justify-center py-12 text-zinc-500">
         <Loader2 className="h-5 w-5 animate-spin" />
       </div>
     )
@@ -206,7 +206,7 @@ export default function CreateFromTemplatePage() {
         <div className="space-y-3">
           <p className="text-sm text-zinc-500">{t('pickTemplate')}</p>
           {templates.length === 0 ? (
-            <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+            <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
               {t('noTemplates')}
             </div>
           ) : (
@@ -315,7 +315,7 @@ export default function CreateFromTemplatePage() {
             </div>
           )}
 
-          <div className="text-xs text-zinc-400 space-y-1">
+          <div className="text-xs text-zinc-500 space-y-1">
             {selectedTemplate.location && <p>📍 {selectedTemplate.location}</p>}
             {selectedTemplate.needs_count > 0 && (
               <p>👥 {selectedTemplate.needs_count} {t('teams')} {t('willBeCopied')}</p>

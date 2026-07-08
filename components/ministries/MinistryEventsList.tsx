@@ -51,7 +51,7 @@ export function MinistryEventsList({ ministryId }: MinistryEventsListProps) {
     return () => controller.abort()
   }, [ministryId])
 
-  if (loading) return <div className="text-sm text-zinc-400 py-4">{te('loading')}</div>
+  if (loading) return <div className="text-sm text-zinc-500 py-4">{te('loading')}</div>
 
   const hasEvents = upcoming.length > 0 || recent.length > 0
 
@@ -68,7 +68,7 @@ export function MinistryEventsList({ ministryId }: MinistryEventsListProps) {
       </div>
 
       {!hasEvents ? (
-        <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+        <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
           {t('noEvents')}
         </div>
       ) : (

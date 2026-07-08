@@ -90,7 +90,7 @@ export function MyServiceAssignments({ fullPage = false }: MyServiceAssignmentsP
   if (assignments.length === 0) {
     if (fullPage) {
       return (
-        <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+        <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
           {t('noAssignmentsYet')}
         </div>
       )
@@ -130,7 +130,7 @@ export function MyServiceAssignments({ fullPage = false }: MyServiceAssignmentsP
                   {teamName}
                   {roleName && <span className="text-zinc-600 font-medium"> — {roleName}</span>}
                 </p>
-                <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1">
+                <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {date.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   {fullPage && assignment.event.location && (

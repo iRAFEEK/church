@@ -35,7 +35,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
     return () => controller.abort()
   }, [eventId])
 
-  if (loading) return <div className="text-sm text-zinc-400 py-4">{t('loading')}</div>
+  if (loading) return <div className="text-sm text-zinc-500 py-4">{t('loading')}</div>
   if (needs.length === 0) return null
 
   return (
@@ -93,7 +93,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                   />
                 </div>
               </div>
-              <div className="text-zinc-400">
+              <div className="text-zinc-500">
                 {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </button>
@@ -118,7 +118,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
 
                 {/* Notes */}
                 {(need.notes || need.notes_ar) && (
-                  <p className="text-xs text-zinc-400 italic">
+                  <p className="text-xs text-zinc-500 italic">
                     {isRTL ? (need.notes_ar || need.notes) : (need.notes || need.notes_ar)}
                   </p>
                 )}
@@ -149,7 +149,7 @@ export function EventServiceFulfillment({ eventId }: EventServiceFulfillmentProp
                           <span className="text-sm text-zinc-700 flex-1 truncate">
                             {pName.trim()}
                             {assignment.role && (
-                              <span className="text-zinc-400 ms-1.5">
+                              <span className="text-zinc-500 ms-1.5">
                                 ({isRTL ? (assignment.role_ar || assignment.role) : assignment.role})
                               </span>
                             )}

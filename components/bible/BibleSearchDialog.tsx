@@ -140,7 +140,7 @@ export function BibleSearch({ bibleId, onNavigate, variant = 'default' }: BibleS
                   }`}
                 >
                   <p className={`text-xs font-semibold ${variant === 'presenter' ? 'text-blue-400' : 'text-primary'}`}>{result.reference}</p>
-                  <p className={`text-xs line-clamp-1 mt-0.5 ${variant === 'presenter' ? 'text-zinc-400' : 'text-muted-foreground'}`}>{result.content}</p>
+                  <p className={`text-xs line-clamp-1 mt-0.5 ${variant === 'presenter' ? 'text-zinc-500' : 'text-muted-foreground'}`}>{result.content}</p>
                 </button>
               ))}
             </div>

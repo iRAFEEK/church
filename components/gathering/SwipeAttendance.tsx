@@ -203,7 +203,7 @@ export function SwipeAttendance({
   if (members.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-zinc-200 p-8 text-center">
-        <p className="text-sm text-zinc-400">{t('emptyMembers')}</p>
+        <p className="text-sm text-zinc-500">{t('emptyMembers')}</p>
       </div>
     )
   }
@@ -243,7 +243,7 @@ export function SwipeAttendance({
           'start-2',
           swipeDirection === 'left' ? 'opacity-100' : 'opacity-30'
         )}>
-          <span className="text-zinc-400">{isRTL ? t('statusPresent') : t('statusAbsent')}</span>
+          <span className="text-zinc-500">{isRTL ? t('statusPresent') : t('statusAbsent')}</span>
         </div>
         <div className={cn(
           'absolute top-1/2 -translate-y-1/2 text-xs font-semibold transition-opacity',

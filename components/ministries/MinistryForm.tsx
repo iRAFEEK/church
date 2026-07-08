@@ -256,10 +256,10 @@ export function MinistryForm({ ministry }: Props) {
               onClick={() => fileInputRef.current?.click()}
               className="w-full h-48 border-2 border-dashed border-zinc-200 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
             >
-              <Upload className="h-8 w-8 text-zinc-400" />
+              <Upload className="h-8 w-8 text-zinc-500" />
               <div className="text-center">
                 <p className="text-sm font-medium text-zinc-600">{t('photoUpload')}</p>
-                <p className="text-xs text-zinc-400 mt-1">{t('photoDragHint')}</p>
+                <p className="text-xs text-zinc-500 mt-1">{t('photoDragHint')}</p>
               </div>
             </button>
           )}
@@ -306,7 +306,7 @@ export function MinistryForm({ ministry }: Props) {
           {form.description && <ReviewItem icon={<Type className="h-4 w-4" />} label={t('description')} value={form.description} />}
           {photoPreview && (
             <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-100">
-              <p className="text-xs text-zinc-400 font-medium mb-2">{t('photo')}</p>
+              <p className="text-xs text-zinc-500 font-medium mb-2">{t('photo')}</p>
               <Image src={photoPreview} alt="" width={96} height={96} className="h-24 rounded-lg object-cover" unoptimized />
             </div>
           )}
@@ -324,9 +324,9 @@ export function MinistryForm({ ministry }: Props) {
 function ReviewItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
-      <div className="text-zinc-400 mt-0.5">{icon}</div>
+      <div className="text-zinc-500 mt-0.5">{icon}</div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-zinc-400 font-medium">{label}</p>
+        <p className="text-xs text-zinc-500 font-medium">{label}</p>
         <p className="text-sm text-zinc-800 mt-0.5">{value}</p>
       </div>
     </div>

@@ -30,7 +30,7 @@ export function HighlightPalette({ activeColor, onSelect, onRemove }: HighlightP
         <button
           type="button"
           onClick={onRemove}
-          className="h-6 w-6 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-400 text-xs hover:border-zinc-500 hover:text-zinc-600 transition-colors"
+          className="h-6 w-6 rounded-full border-2 border-dashed border-zinc-300 flex items-center justify-center text-zinc-500 text-xs hover:border-zinc-500 hover:text-zinc-600 transition-colors"
           title={t('highlightRemoved')}
         >
           ✕

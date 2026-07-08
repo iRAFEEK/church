@@ -58,13 +58,13 @@ export function AgendaBookingCard({
 
       {/* Location */}
       <div className="flex items-center gap-1.5 mt-1.5">
-        <MapPin className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+        <MapPin className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
         <span className="text-xs text-zinc-500 truncate">{locationName}</span>
       </div>
 
       {/* Time */}
       <div className="flex items-center gap-1.5 mt-1">
-        <Clock className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+        <Clock className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
         <span className="text-xs text-zinc-500" dir="ltr">
           {startTime} - {endTime}
         </span>
@@ -72,7 +72,7 @@ export function AgendaBookingCard({
 
       {/* Booker name - only show for other people's bookings */}
       {!isOwn && bookerName && (
-        <p className="text-xs text-zinc-400 mt-1.5 truncate">{bookerName}</p>
+        <p className="text-xs text-zinc-500 mt-1.5 truncate">{bookerName}</p>
       )}
 
       {/* "Your booking" indicator */}

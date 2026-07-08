@@ -112,14 +112,14 @@ export function PrayerList({
       </div>
 
       {prayers.length === 0 ? (
-        <p className="text-center py-8 text-sm text-zinc-400">{t('empty')}</p>
+        <p className="text-center py-8 text-sm text-zinc-500">{t('empty')}</p>
       ) : (
         <div className="divide-y divide-zinc-50">
           {active.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => setResolveTarget(p)} t={t} />)}
           {answered.length > 0 && (
             <>
               <div className="px-4 py-2 bg-zinc-50">
-                <p className="text-xs font-medium text-zinc-400">{t('answeredSection')}</p>
+                <p className="text-xs font-medium text-zinc-500">{t('answeredSection')}</p>
               </div>
               {answered.map(p => <PrayerCard key={p.id} prayer={p} isLeader={isLeader} currentUserId={currentUserId} onResolve={() => {}} t={t} />)}
             </>
@@ -221,7 +221,7 @@ function PrayerCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-medium text-zinc-700">{name}</span>
-            {prayer.is_private && <span className="text-xs text-zinc-400">🔒</span>}
+            {prayer.is_private && <span className="text-xs text-zinc-500">🔒</span>}
             {isAnswered && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">{t('cardAnswered')}</span>}
           </div>
           <p className="text-sm text-zinc-700 leading-relaxed">{prayer.content}</p>

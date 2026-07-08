@@ -148,7 +148,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
       </div>
 
       {serviceNeeds.length === 0 ? (
-        <div className="text-center py-8 text-zinc-400 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
+        <div className="text-center py-8 text-zinc-500 text-sm border-2 border-dashed border-zinc-200 rounded-xl">
           {t('noServiceNeeds')}
         </div>
       ) : (
@@ -173,7 +173,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                     )}
                   </p>
                   {(need.notes || need.notes_ar) && (
-                    <p className="text-xs text-zinc-400 mt-0.5 truncate">
+                    <p className="text-xs text-zinc-500 mt-0.5 truncate">
                       {isRTL ? (need.notes_ar || need.notes) : (need.notes || need.notes_ar)}
                     </p>
                   )}
@@ -182,7 +182,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                   <button
                     type="button"
                     onClick={() => openEditDialog(i)}
-                    className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
+                    className="p-2 rounded-lg hover:bg-zinc-200 text-zinc-500 hover:text-zinc-600 transition-colors"
                     aria-label={t('editServiceNeed')}
                   >
                     <Pencil className="h-4 w-4" />
@@ -191,7 +191,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                     <AlertDialogTrigger asChild>
                       <button
                         type="button"
-                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors"
+                        className="p-2 rounded-lg hover:bg-red-50 text-zinc-500 hover:text-red-500 transition-colors"
                         aria-label={t('removeServiceNeed')}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -331,14 +331,14 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                       <button
                         type="button"
                         onClick={() => setRolePresets(rolePresets.filter((_, j) => j !== rpIdx))}
-                        className="p-1 text-zinc-400 hover:text-red-500"
+                        className="p-1 text-zinc-500 hover:text-red-500"
                         aria-label={t('removeServiceNeed')}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-500">
                     {t('rolePresetCount') || 'Total'}: {rolePresets.reduce((s, rp) => s + rp.count, 0)}
                   </p>
                 </div>
@@ -359,7 +359,7 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
                 className="min-h-[44px]"
               />
               {rolePresets.length > 0 && (
-                <p className="text-xs text-zinc-400 mt-1">{t('volunteersNeeded')}: auto-calculated from roles</p>
+                <p className="text-xs text-zinc-500 mt-1">{t('volunteersNeeded')}: auto-calculated from roles</p>
               )}
             </div>
 

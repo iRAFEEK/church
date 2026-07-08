@@ -130,7 +130,7 @@ export default async function MinistryDetailPage({ params }: Params) {
           )}
           <div>
             <h1 className="text-2xl font-bold text-zinc-900">{ministry.name_ar || ministry.name}</h1>
-            {ministry.name_ar && <p className="text-sm text-zinc-400">{ministry.name}</p>}
+            {ministry.name_ar && <p className="text-sm text-zinc-500">{ministry.name}</p>}
             <div className="flex gap-2 mt-2 flex-wrap">
               {!ministry.is_active && (
                 <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">{t('detailInactive')}</span>
@@ -152,7 +152,7 @@ export default async function MinistryDetailPage({ params }: Params) {
           <p className="text-xs font-medium text-zinc-500 mb-2">{t('detailDescription')}</p>
           <p className="text-sm text-zinc-700">{ministry.description_ar || ministry.description}</p>
           {ministry.description_ar && ministry.description && (
-            <p className="text-xs text-zinc-400 mt-1" dir="ltr">{ministry.description}</p>
+            <p className="text-xs text-zinc-500 mt-1" dir="ltr">{ministry.description}</p>
           )}
         </div>
       )}
@@ -182,7 +182,7 @@ export default async function MinistryDetailPage({ params }: Params) {
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
           <p className="text-xs font-medium text-zinc-500 mb-3">{t('detailGroups')}</p>
           {groups.length === 0 ? (
-            <p className="text-sm text-zinc-400">{t('detailNoGroups')}</p>
+            <p className="text-sm text-zinc-500">{t('detailNoGroups')}</p>
           ) : (
             <div className="space-y-2">
               {groups.map(g => (

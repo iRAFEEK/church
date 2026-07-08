@@ -128,7 +128,7 @@ export function AttendanceRoster({
           </p>
         </div>
         {canManage && !isCompleted && (
-          <div className="text-xs text-zinc-400">{t('clickHint')}</div>
+          <div className="text-xs text-zinc-500">{t('clickHint')}</div>
         )}
         {isCompleted && (
           <span className="text-xs text-green-600 font-medium">{t('completedLabel')}</span>
@@ -146,7 +146,7 @@ export function AttendanceRoster({
       {/* Roster */}
       <div className="divide-y divide-zinc-50">
         {members.length === 0 ? (
-          <p className="text-center py-8 text-sm text-zinc-400">{t('emptyMembers')}</p>
+          <p className="text-center py-8 text-sm text-zinc-500">{t('emptyMembers')}</p>
         ) : (
           members.map(m => {
             const status = m.attendance_status as AttendanceStatus
@@ -176,7 +176,7 @@ export function AttendanceRoster({
                         className={`text-xs px-2 py-1 rounded-md font-medium transition-colors active:scale-95 ${
                           status === s
                             ? `${STATUS_STYLE[s].bg} ${STATUS_STYLE[s].color}`
-                            : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 active:bg-zinc-200'
+                            : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 active:bg-zinc-200'
                         }`}
                       >
                         {t(STATUS_KEYS[s])}

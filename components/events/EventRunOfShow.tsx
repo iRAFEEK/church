@@ -44,7 +44,7 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
     return () => controller.abort()
   }, [eventId])
 
-  if (loading) return <div className="text-sm text-zinc-400 py-4">{t('loading')}</div>
+  if (loading) return <div className="text-sm text-zinc-500 py-4">{t('loading')}</div>
   if (segments.length === 0) return null
 
   const totalDuration = segments.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)
@@ -110,7 +110,7 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
                   </div>
                 </div>
                 {hasNotes && (
-                  <div className="text-zinc-400">
+                  <div className="text-zinc-500">
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
                 )}

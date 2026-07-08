@@ -24,7 +24,7 @@ export default async function JoinSuccessPage() {
           <p className="text-sm text-zinc-500">{'\u2713'} {t('bulletChurch')}</p>
         </div>
 
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-zinc-500">
           {t('questions')}
         </p>
       </div>

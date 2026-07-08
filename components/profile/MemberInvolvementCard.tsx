@@ -234,7 +234,7 @@ function StatCard({ icon, label, value, color, sub }: { icon: React.ReactNode; l
       </div>
       <p className="text-2xl font-bold text-zinc-900">{value}</p>
       <p className="text-xs text-zinc-500 mt-0.5">{label}</p>
-      {sub && <p className="text-xs text-zinc-400 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-zinc-500 mt-1">{sub}</p>}
     </div>
   )
 }

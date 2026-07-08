@@ -77,7 +77,7 @@ export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
           <div className="h-16 w-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-            <Users className="h-8 w-8 text-zinc-400" />
+            <Users className="h-8 w-8 text-zinc-500" />
           </div>
           <h3 className="text-base font-semibold text-zinc-900 mb-1">{t('emptyTitle')}</h3>
           <p className="text-sm text-zinc-500 max-w-[260px]">{t('emptySubtitle')}</p>
@@ -99,7 +99,7 @@ export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
                       className="w-10 h-10 rounded-lg object-cover border border-zinc-200 shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-400 text-lg shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-500 text-lg shrink-0">
                       {(m.name_ar || m.name)[0]}
                     </div>
                   )}
@@ -110,14 +110,14 @@ export function MinistriesTable({ ministries }: { ministries: Ministry[] }) {
                         <span className="text-xs bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full">{t('inactive')}</span>
                       )}
                     </div>
-                    {m.name_ar && <p className="text-xs text-zinc-400">{m.name}</p>}
+                    {m.name_ar && <p className="text-xs text-zinc-500">{m.name}</p>}
                     <div className="flex items-center gap-3 mt-1">
                       {leader && (
                         <p className="text-xs text-zinc-500">
                           {t('leaderLabel')} {leader.first_name_ar || leader.first_name} {leader.last_name_ar || leader.last_name}
                         </p>
                       )}
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-zinc-500">
                         {memberCount} {t('detailMembers')}
                       </span>
                     </div>

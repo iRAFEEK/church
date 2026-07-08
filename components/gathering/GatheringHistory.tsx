@@ -37,7 +37,7 @@ export function GatheringHistory({
 
   if (gatherings.length === 0) {
     return (
-      <div className="text-center py-8 text-zinc-400 text-sm rounded-xl border border-zinc-200">
+      <div className="text-center py-8 text-zinc-500 text-sm rounded-xl border border-zinc-200">
         {t('historyEmpty')}
       </div>
     )
@@ -57,13 +57,13 @@ export function GatheringHistory({
               <p className="text-sm font-medium text-zinc-900">
                 {g.topic || t('defaultTopic')}
               </p>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-500 mt-0.5">
                 {formatGatheringDate(g.scheduled_at)}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {g.status === 'completed' && (
-                <span className="text-xs text-zinc-400">{count} {t('historyAttended')}</span>
+                <span className="text-xs text-zinc-500">{count} {t('historyAttended')}</span>
               )}
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[g.status] || ''}`}>
                 {t(STATUS_KEYS[g.status] || g.status)}

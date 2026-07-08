@@ -102,7 +102,7 @@ export default async function GroupDetailPage({ params }: Params) {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">{group.name_ar || group.name}</h1>
-          {group.name_ar && <p className="text-sm text-zinc-400">{group.name}</p>}
+          {group.name_ar && <p className="text-sm text-zinc-500">{group.name}</p>}
           <div className="flex gap-2 mt-2 flex-wrap">
             <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-full">
               {GROUP_TYPE_KEY[group.type] ? t(GROUP_TYPE_KEY[group.type] as Parameters<typeof t>[0]) : group.type}
@@ -143,7 +143,7 @@ export default async function GroupDetailPage({ params }: Params) {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">{t('detailLeaderUnset')}</p>
+            <p className="text-sm text-zinc-500">{t('detailLeaderUnset')}</p>
           )}
         </div>
 

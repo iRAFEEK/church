@@ -78,7 +78,7 @@ export function Stepper({
                     ? 'bg-green-500 text-white'
                     : i === currentStep
                       ? 'bg-primary text-primary-foreground ring-2 ring-primary/20 ring-offset-2'
-                      : 'bg-zinc-100 text-zinc-400'
+                      : 'bg-zinc-100 text-zinc-500'
                 )}
               >
                 {i < currentStep ? <Check className="h-4 w-4" /> : i + 1}
