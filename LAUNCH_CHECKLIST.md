@@ -11,11 +11,40 @@ Owner column is yours to fill in. Check items off as they land.
 
 > 🆕 **Onboarding rebuild workstream (Track A):** the way churches + members come on board is being rebuilt (phone/WhatsApp OTP identity, leader-add + claim, request→approve membership lifecycle, per-church directory privacy). Full spec: [ONBOARDING_PLAN.md](ONBOARDING_PLAN.md). This runs alongside the P0/P1 hardening below.
 
+---
+
+## ▶️ FIRST-PILOT GO-LIVE — Exact Remaining Steps (updated 2026-07-07)
+
+> The **code** is pilot-ready. What's left is almost entirely operator actions in the Vercel / Supabase / Meta / Upstash / Sentry dashboards. Do these in order. Anything marked ✅ is already done in code.
+>
+> **1. Production database.** Rebuild prod from `supabase/migrations/` (now **001→085**, seed migrations EXCLUDED) → run `npm run verify:schema` until green. **Migrations 084 & 085 are written but NOT applied — apply them.** See [supabase/REBUILD_AND_VERIFY.md](supabase/REBUILD_AND_VERIFY.md).
+>
+> **2. Rotate every key** that has touched a laptop and set them in Vercel env (Production scope):
+> - **Required (app won't work without these):** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL` (the real prod domain — used for email links), Firebase (`FIREBASE_*`, `NEXT_PUBLIC_FIREBASE_*`).
+> - **Set now:** `CRON_SECRET` (a fresh random string — I've only used a local test value), `PLATFORM_ADMIN_EMAILS=ranytenma@gmail.com` (the operator who approves incoming churches).
+>
+> **3. Password reset (NEW — shipped this session, needs Supabase config to actually deliver mail):**
+> - Supabase → **Auth → URL Configuration → Redirect URLs**: add `https://<prod-domain>/reset-password` (and `/select-church`, `/` if not already allowlisted). Without this the reset link is rejected.
+> - Supabase → **Auth → SMTP**: configure a real SMTP sender (or confirm Supabase's built-in email is enabled) so recovery emails actually send. Test: request a reset for a real inbox and confirm the mail arrives and the link lands on `/reset-password`.
+>
+> **4. WhatsApp OTP login (you chose to run this live).** Code path ✅ built. External setup required: register a Meta WhatsApp Business number, get the **authentication-category OTP template approved**, then in Supabase enable the **Phone provider + Send-SMS auth hook** pointed at `/api/auth/sms-hook`, and set `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_OTP_TEMPLATE`, `SEND_SMS_HOOK_SECRET`. Full guide: [docs/WHATSAPP_OTP_SETUP.md](docs/WHATSAPP_OTP_SETUP.md). Email/password (+ reset above) is the working fallback until this is approved.
+>
+> **5. Turnkey services (✅ code already boots cleanly without them — just paste keys in Vercel to activate):**
+> - **Upstash** (distributed rate limiting): `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`. Until set, rate limiting is in-memory (weak on serverless).
+> - **Sentry** (errors): `NEXT_PUBLIC_SENTRY_DSN` (+ `SENTRY_ORG`, `SENTRY_PROJECT` for source maps). Then fire a test error and confirm it lands.
+> - **PostHog** (analytics): `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `POSTHOG_PROJECT_API_KEY`. Then confirm `login` + one event land.
+>
+> **6. Data safety:** enable Supabase **PITR / daily backups** and do one test restore before real data.
+>
+> **7. Deploy `main` + smoke test:** confirm the deployed build serves the prod DB, log in as `ranytenma@gmail.com`, walk dashboard → one core flow. One real Android + Arabic/RTL pass.
+>
+> **Done this session (code):** ✅ password reset/recovery flow · ✅ `notification-cleanup` cron bug fixed **and** scheduled (weekly) · ✅ 1 critical + 12 high dependency CVEs patched (`npm audit`) · ✅ authz+CRUD e2e coverage · ✅ P0 privilege-escalation test made real (executing) · ✅ verified Sentry/PostHog/Upstash are gracefully optional.
+
 ## P0 — Launch Blockers (do before ANY real church touches the app)
 
 These are correctness/safety gates. A real church onboarded before these is a real risk.
 
-- [ ] **Apply all migrations 001→072 to the production Supabase project and verify.** Diff prod schema vs `supabase/migrations/`. Confirm RLS is enabled on every table. — `L` — _the docs/CLAUDE.md only track through 055; prod is the unknown._
+- [ ] **Apply all migrations 001→085 to the production Supabase project and verify.** Diff prod schema vs `supabase/migrations/`. Confirm RLS is enabled on every table. Run `npm run verify:schema`. **084 & 085 are written but not yet applied.** — `L`
 - [ ] **Independent security / RLS review before onboarding.** 9 of 74 migrations are "fix" migrations, several closing RLS gaps (push tokens, notifications were briefly too open). Gaps are closed, but the reactive pattern warrants one defensive pass. Focus: cross-church isolation, the newer tables (meetings, action items, bookings, liturgy, shared songs, outreach assignments). — `L`
 - [ ] **Rotate ALL keys for production** (Supabase service role, Firebase admin private key, Resend, WhatsApp, PostHog, CRON_SECRET). Treat any key that has lived in a working folder / laptop as compromised-by-default. — `S`
 - [ ] **Verify multi-church isolation with real concurrent data.** Two churches, overlapping users, confirm zero cross-tenant leakage in: members, finance, prayers, notifications, community needs, songs (incl. the new scoped/global song sharing). — `M`
