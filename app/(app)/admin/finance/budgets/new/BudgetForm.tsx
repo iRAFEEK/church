@@ -79,25 +79,25 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('nameEn')} *</Label>
-                <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
+                <Label htmlFor="budget-name">{t('nameEn')} *</Label>
+                <Input id="budget-name" aria-required="true" required value={form.name} onChange={e => set('name', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
               </div>
               <div className="space-y-1">
-                <Label>{t('nameAr')}</Label>
-                <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
+                <Label htmlFor="budget-name-ar">{t('nameAr')}</Label>
+                <Input id="budget-name-ar" value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder={t('budgetName')} dir="auto" className="text-base" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>{t('totalAmount')} *</Label>
-              <Input type="number" min="0" step="1" required value={form.total_income}
+              <Label htmlFor="budget-total-income">{t('totalAmount')} *</Label>
+              <Input id="budget-total-income" aria-required="true" type="number" min="0" step="1" required value={form.total_income}
                 onChange={e => set('total_income', e.target.value)} placeholder="0" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('periodType')}</Label>
-                <select value={form.period_type} onChange={e => set('period_type', e.target.value)}
+                <Label htmlFor="budget-period-type">{t('periodType')}</Label>
+                <select id="budget-period-type" value={form.period_type} onChange={e => set('period_type', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background">
                   <option value="annual">{t('annual')}</option>
                   <option value="quarterly">{t('quarterly')}</option>
@@ -106,8 +106,8 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
                 </select>
               </div>
               <div className="space-y-1">
-                <Label>{t('fiscalYear')}</Label>
-                <select value={form.fiscal_year_id} onChange={e => set('fiscal_year_id', e.target.value)}
+                <Label htmlFor="budget-fiscal-year">{t('fiscalYear')}</Label>
+                <select id="budget-fiscal-year" value={form.fiscal_year_id} onChange={e => set('fiscal_year_id', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background">
                   <option value="">{t('none')}</option>
                   {fiscalYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
@@ -116,8 +116,8 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('fund')}</Label>
-              <select value={form.fund_id} onChange={e => set('fund_id', e.target.value)}
+              <Label htmlFor="budget-fund">{t('fund')}</Label>
+              <select id="budget-fund" value={form.fund_id} onChange={e => set('fund_id', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background">
                 <option value="">{t('noFund')}</option>
                 {funds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
@@ -126,12 +126,12 @@ export function BudgetForm({ funds, fiscalYears }: BudgetFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('startDate')} *</Label>
-                <Input type="date" required value={form.start_date} onChange={e => set('start_date', e.target.value)} />
+                <Label htmlFor="budget-start-date">{t('startDate')} *</Label>
+                <Input id="budget-start-date" aria-required="true" type="date" required value={form.start_date} onChange={e => set('start_date', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label>{t('endDate')}</Label>
-                <Input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
+                <Label htmlFor="budget-end-date">{t('endDate')}</Label>
+                <Input id="budget-end-date" type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
               </div>
             </div>
 

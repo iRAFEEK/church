@@ -104,8 +104,9 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {!form.is_anonymous && (
               <div className="space-y-1">
-                <Label>{t('donor')}</Label>
+                <Label htmlFor="donation-donor">{t('donor')}</Label>
                 <select
+                  id="donation-donor"
                   value={form.donor_id}
                   onChange={e => set('donor_id', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -122,9 +123,11 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {/* Amount */}
             <div className="space-y-1">
-              <Label>{t('amount')} *</Label>
+              <Label htmlFor="donation-amount">{t('amount')} *</Label>
               <div className="flex gap-2">
                 <Input
+                  id="donation-amount"
+                  aria-required="true"
                   type="number"
                   min="0"
                   step="0.01"
@@ -145,8 +148,10 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {/* Date */}
             <div className="space-y-1">
-              <Label>{t('date')} *</Label>
+              <Label htmlFor="donation-date">{t('date')} *</Label>
               <Input
+                id="donation-date"
+                aria-required="true"
                 type="date"
                 required
                 value={form.donation_date}
@@ -156,8 +161,10 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {/* Fund */}
             <div className="space-y-1">
-              <Label>{t('fund')} *</Label>
+              <Label htmlFor="donation-fund">{t('fund')} *</Label>
               <select
+                id="donation-fund"
+                aria-required="true"
                 required
                 value={form.fund_id}
                 onChange={e => set('fund_id', e.target.value)}
@@ -173,8 +180,9 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
             {/* Campaign */}
             {campaigns.length > 0 && (
               <div className="space-y-1">
-                <Label>{t('campaign')}</Label>
+                <Label htmlFor="donation-campaign">{t('campaign')}</Label>
                 <select
+                  id="donation-campaign"
                   value={form.campaign_id}
                   onChange={e => set('campaign_id', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -189,8 +197,9 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {/* Payment method */}
             <div className="space-y-1">
-              <Label>{t('paymentMethod')}</Label>
+              <Label htmlFor="donation-payment-method">{t('paymentMethod')}</Label>
               <select
+                id="donation-payment-method"
                 value={form.payment_method}
                 onChange={e => set('payment_method', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -203,8 +212,8 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {form.payment_method === 'check' && (
               <div className="space-y-1">
-                <Label>{t('checkNumber')}</Label>
-                <Input value={form.check_number} onChange={e => set('check_number', e.target.value)} />
+                <Label htmlFor="donation-check-number">{t('checkNumber')}</Label>
+                <Input id="donation-check-number" value={form.check_number} onChange={e => set('check_number', e.target.value)} />
               </div>
             )}
 
@@ -222,8 +231,9 @@ export default function DonationForm({ funds, campaigns, members }: DonationForm
 
             {/* Notes */}
             <div className="space-y-1">
-              <Label>{t('notes')}</Label>
+              <Label htmlFor="donation-notes">{t('notes')}</Label>
               <textarea
+                id="donation-notes"
                 value={form.notes}
                 onChange={e => set('notes', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[80px] resize-none"

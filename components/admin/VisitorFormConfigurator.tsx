@@ -74,12 +74,13 @@ export function VisitorFormConfigurator({ initialConfig }: Props) {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Switch
+                  id={`field-${field.key}`}
                   checked={field.enabled}
                   onCheckedChange={() => toggleEnabled(field.key)}
                   disabled={isLocked}
                 />
                 <div>
-                  <Label className="text-sm font-medium">{t(`field_${field.key}`)}</Label>
+                  <Label htmlFor={`field-${field.key}`} className="text-sm font-medium">{t(`field_${field.key}`)}</Label>
                   {isLocked && (
                     <Badge variant="secondary" className="ms-2 text-[10px]">{t('alwaysRequired')}</Badge>
                   )}

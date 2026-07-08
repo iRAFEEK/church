@@ -292,8 +292,9 @@ export default function CreateFromTemplatePage() {
           </div>
 
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{te('endsAt')}</Label>
+            <Label htmlFor="from-template-ends-at" className="text-sm text-zinc-500 mb-1 block">{te('endsAt')}</Label>
             <Input
+              id="from-template-ends-at"
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}

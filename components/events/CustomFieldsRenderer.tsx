@@ -28,14 +28,21 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
         const label = isRTL ? (field.label_ar || field.label) : field.label
         const value = values[field.id]
 
+        const controlId = `custom-field-${field.id}`
+
         return (
           <div key={field.id}>
-            <Label className="text-sm text-zinc-500 mb-1 block">
+            <Label
+              htmlFor={field.type === 'boolean' ? undefined : controlId}
+              className="text-sm text-zinc-500 mb-1 block"
+            >
               {label}{field.required ? ' *' : ''}
             </Label>
 
             {field.type === 'text' && (
               <Input
+                id={controlId}
+                aria-required={field.required || undefined}
                 value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
                 className="min-h-[44px]"
@@ -44,6 +51,8 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
 
             {field.type === 'number' && (
               <Input
+                id={controlId}
+                aria-required={field.required || undefined}
                 type="number"
                 value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
@@ -54,6 +63,8 @@ export function CustomFieldsRenderer({ fields, values, onChange }: CustomFieldsR
 
             {field.type === 'select' && (
               <select
+                id={controlId}
+                aria-required={field.required || undefined}
                 value={String(value ?? '')}
                 onChange={e => handleChange(field.id, e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white text-sm"

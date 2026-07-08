@@ -122,8 +122,10 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="mb-1 block text-sm text-muted-foreground">{t('firstName')}</Label>
+              <Label htmlFor="member-first-name" className="mb-1 block text-sm text-muted-foreground">{t('firstName')}</Label>
               <Input
+                id="member-first-name"
+                aria-required="true"
                 dir="auto"
                 className="h-11 text-base"
                 value={form.first_name}
@@ -131,8 +133,10 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-sm text-muted-foreground">{t('lastName')}</Label>
+              <Label htmlFor="member-last-name" className="mb-1 block text-sm text-muted-foreground">{t('lastName')}</Label>
               <Input
+                id="member-last-name"
+                aria-required="true"
                 dir="auto"
                 className="h-11 text-base"
                 value={form.last_name}
@@ -143,8 +147,9 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="mb-1 block text-sm text-muted-foreground">{t('firstNameAr')}</Label>
+              <Label htmlFor="member-first-name-ar" className="mb-1 block text-sm text-muted-foreground">{t('firstNameAr')}</Label>
               <Input
+                id="member-first-name-ar"
                 dir="auto"
                 className="h-11 text-base"
                 value={form.first_name_ar}
@@ -152,8 +157,9 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
               />
             </div>
             <div>
-              <Label className="mb-1 block text-sm text-muted-foreground">{t('lastNameAr')}</Label>
+              <Label htmlFor="member-last-name-ar" className="mb-1 block text-sm text-muted-foreground">{t('lastNameAr')}</Label>
               <Input
+                id="member-last-name-ar"
                 dir="auto"
                 className="h-11 text-base"
                 value={form.last_name_ar}
@@ -163,8 +169,9 @@ export function AddMemberDialog({ churchId, role, locale }: Props) {
           </div>
 
           <div>
-            <Label className="mb-1 block text-sm text-muted-foreground">{t('phoneOptional')}</Label>
+            <Label htmlFor="member-phone" className="mb-1 block text-sm text-muted-foreground">{t('phoneOptional')}</Label>
             <Input
+              id="member-phone"
               type="tel"
               inputMode="tel"
               dir="ltr"

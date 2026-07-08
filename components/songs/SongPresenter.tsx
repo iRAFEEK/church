@@ -425,9 +425,10 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
 
           {/* Background Color */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('bgColor')}</Label>
+            <Label htmlFor="song-bg-color" className="text-zinc-300">{t('bgColor')}</Label>
             <div className="flex items-center gap-3">
               <input
+                id="song-bg-color"
                 type="color"
                 value={settings.bg_color}
                 onChange={(e) => updateSetting('bg_color', e.target.value)}
@@ -474,9 +475,10 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
 
           {/* Text Color */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('textColor')}</Label>
+            <Label htmlFor="song-text-color" className="text-zinc-300">{t('textColor')}</Label>
             <div className="flex items-center gap-3">
               <input
+                id="song-text-color"
                 type="color"
                 value={settings.text_color}
                 onChange={(e) => updateSetting('text_color', e.target.value)}
@@ -488,8 +490,9 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
 
           {/* Font Family */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('fontFamily')}</Label>
+            <Label htmlFor="song-font-family" className="text-zinc-300">{t('fontFamily')}</Label>
             <select
+              id="song-font-family"
               value={settings.font_family}
               onChange={(e) => updateSetting('font_family', e.target.value as SongDisplaySettings['font_family'])}
               className="flex h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-white"
@@ -503,10 +506,11 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
 
           {/* Font Size */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">
+            <Label htmlFor="song-font-size" className="text-zinc-300">
               {t('fontSize')}: {settings.font_size}px
             </Label>
             <input
+              id="song-font-size"
               type="range"
               min={24}
               max={120}

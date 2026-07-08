@@ -207,8 +207,9 @@ export function MinistryForm({ ministry }: Props) {
             <FieldError error={errors.name} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('description')}</Label>
+            <Label htmlFor="ministry-description" className="text-sm text-zinc-500 mb-1 block">{t('description')}</Label>
             <Textarea
+              id="ministry-description"
               value={form.description}
               onChange={e => set('description', e.target.value)}
               dir="auto"
@@ -292,8 +293,8 @@ export function MinistryForm({ ministry }: Props) {
             <span className="text-sm font-medium">{t('settings')}</span>
           </div>
           <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-50 border border-zinc-100">
-            <Switch checked={form.is_active} onCheckedChange={v => set('is_active', v)} />
-            <Label className="text-sm">{t('isActive')}</Label>
+            <Switch id="ministry-is-active" checked={form.is_active} onCheckedChange={v => set('is_active', v)} />
+            <Label htmlFor="ministry-is-active" className="text-sm">{t('isActive')}</Label>
           </div>
         </div>
       )}

@@ -527,8 +527,9 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
               )}
 
               <div>
-                <Label className="text-sm text-zinc-500 mb-1 block">{t('roleLabel')}</Label>
+                <Label htmlFor="assign-role" className="text-sm text-zinc-500 mb-1 block">{t('roleLabel')}</Label>
                 <Input
+                  id="assign-role"
                   value={assignRole}
                   onChange={(e) => setAssignRole(e.target.value)}
                   placeholder={t('rolePlaceholder')}
@@ -543,8 +544,9 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
               </div>
 
               <div>
-                <Label className="text-sm text-zinc-500 mb-1 block">{t('roleAr')}</Label>
+                <Label htmlFor="assign-role-ar" className="text-sm text-zinc-500 mb-1 block">{t('roleAr')}</Label>
                 <Input
+                  id="assign-role-ar"
                   value={assignRoleAr}
                   onChange={(e) => setAssignRoleAr(e.target.value)}
                   dir="rtl"
@@ -569,8 +571,9 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('roleLabel')}</Label>
+              <Label htmlFor="edit-role" className="text-sm text-zinc-500 mb-1 block">{t('roleLabel')}</Label>
               <Input
+                id="edit-role"
                 value={editRole}
                 onChange={(e) => setEditRole(e.target.value)}
                 placeholder={t('rolePlaceholder')}
@@ -584,8 +587,9 @@ export function InlineStaffingManager({ eventId }: InlineStaffingManagerProps) {
               </datalist>
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('roleAr')}</Label>
+              <Label htmlFor="edit-role-ar" className="text-sm text-zinc-500 mb-1 block">{t('roleAr')}</Label>
               <Input
+                id="edit-role-ar"
                 value={editRoleAr}
                 onChange={(e) => setEditRoleAr(e.target.value)}
                 dir="rtl"

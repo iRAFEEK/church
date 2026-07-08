@@ -172,8 +172,10 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
             <FieldError error={errors.serving_area_id} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{tc('title')}<RequiredMark /></Label>
+            <Label htmlFor="slot-title" className="text-sm text-zinc-500 mb-1 block">{tc('title')}<RequiredMark /></Label>
             <Input
+              id="slot-title"
+              aria-required="true"
               value={form[titleField]}
               onChange={(e) => { setForm({ ...form, [titleField]: e.target.value }); if (errors[titleField]) setErrors(prev => { const next = { ...prev }; delete next[titleField]; return next }) }}
               dir={isAr ? 'rtl' : 'ltr'}
@@ -203,8 +205,9 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('slotStartTime')}</Label>
+              <Label htmlFor="slot-start-time" className="text-sm text-zinc-500 mb-1 block">{t('slotStartTime')}</Label>
               <Input
+                id="slot-start-time"
                 type="time"
                 value={form.start_time}
                 onChange={(e) => setForm({ ...form, start_time: e.target.value })}
@@ -213,8 +216,9 @@ export function ServingSlotForm({ slot, defaultAreaId }: ServingSlotFormProps) {
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('slotEndTime')}</Label>
+              <Label htmlFor="slot-end-time" className="text-sm text-zinc-500 mb-1 block">{t('slotEndTime')}</Label>
               <Input
+                id="slot-end-time"
                 type="time"
                 value={form.end_time}
                 onChange={(e) => setForm({ ...form, end_time: e.target.value })}

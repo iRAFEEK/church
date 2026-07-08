@@ -277,8 +277,9 @@ export function PendingServiceRequests() {
 
           <div className="space-y-4">
             <div>
-              <Label>{t('searchMember')}</Label>
+              <Label htmlFor="reassign-search-member">{t('searchMember')}</Label>
               <Input
+                id="reassign-search-member"
                 dir="auto"
                 className="text-base mt-1"
                 placeholder={t('searchMemberPlaceholder')}
@@ -320,8 +321,9 @@ export function PendingServiceRequests() {
             </div>
 
             <div>
-              <Label>{t('responseNote')}</Label>
+              <Label htmlFor="reassign-response-note">{t('responseNote')}</Label>
               <Textarea
+                id="reassign-response-note"
                 dir="auto"
                 className="text-base mt-1"
                 placeholder={t('responseNotePlaceholder')}

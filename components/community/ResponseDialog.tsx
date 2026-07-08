@@ -73,8 +73,9 @@ export function ResponseDialog({ needId }: ResponseDialogProps) {
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label>{t('yourMessage')}</Label>
+            <Label htmlFor="response-message">{t('yourMessage')}</Label>
             <Textarea
+              id="response-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={4}

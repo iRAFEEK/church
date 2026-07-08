@@ -174,8 +174,8 @@ export function ServingAreaForm({ area }: ServingAreaFormProps) {
             </Select>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
-            <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-            <Label>{tc('active')}</Label>
+            <Switch id="area-is-active" checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+            <Label htmlFor="area-is-active">{tc('active')}</Label>
           </div>
           <div className="space-y-3 pt-2">
             <ReviewItem icon={<Heart className="h-4 w-4" />} label={tc('name')} value={form.name} />

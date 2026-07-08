@@ -387,8 +387,9 @@ export function NotificationComposer({
 
       {/* Title */}
       <div className="space-y-1.5">
-        <Label className="text-xs">{tc('notifTitle')}</Label>
+        <Label htmlFor="notif-title" className="text-xs">{tc('notifTitle')}</Label>
         <Input
+          id="notif-title"
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder={tc('titlePlaceholder')}
@@ -399,8 +400,9 @@ export function NotificationComposer({
 
       {/* Body */}
       <div className="space-y-1.5">
-        <Label className="text-xs">{tc('notifBody')}</Label>
+        <Label htmlFor="notif-body" className="text-xs">{tc('notifBody')}</Label>
         <Textarea
+          id="notif-body"
           value={body}
           onChange={e => setBody(e.target.value)}
           placeholder={tc('bodyPlaceholder')}
@@ -414,7 +416,7 @@ export function NotificationComposer({
       {isDesktop || showMedia ? (
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1.5">
+            <Label htmlFor="notif-image-upload" className="text-xs flex items-center gap-1.5">
               <Upload className="h-3 w-3" /> {tc('attachImage')}
             </Label>
             {imageUrl ? (
@@ -453,6 +455,7 @@ export function NotificationComposer({
               </button>
             )}
             <input
+              id="notif-image-upload"
               ref={fileInputRef}
               type="file"
               accept="image/*"
@@ -463,10 +466,11 @@ export function NotificationComposer({
 
           {/* Link URL */}
           <div className="space-y-1.5">
-            <Label className="text-xs flex items-center gap-1.5">
+            <Label htmlFor="notif-link-url" className="text-xs flex items-center gap-1.5">
               <LinkIcon className="h-3 w-3" /> {tc('linkUrl')}
             </Label>
             <Input
+              id="notif-link-url"
               value={linkUrl}
               onChange={e => setLinkUrl(e.target.value)}
               placeholder={tc('linkUrlPlaceholder')}

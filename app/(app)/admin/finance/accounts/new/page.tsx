@@ -90,8 +90,10 @@ export default function NewAccountPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('code')} *</Label>
+                <Label htmlFor="account-code">{t('code')} *</Label>
                 <Input
+                  id="account-code"
+                  aria-required="true"
                   required
                   value={form.code}
                   onChange={e => set('code', e.target.value)}
@@ -101,8 +103,10 @@ export default function NewAccountPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label>{t('type')} *</Label>
+                <Label htmlFor="account-type">{t('type')} *</Label>
                 <select
+                  id="account-type"
+                  aria-required="true"
                   value={form.account_type}
                   onChange={e => set('account_type', e.target.value)}
                   className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -118,8 +122,10 @@ export default function NewAccountPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('nameEn')} *</Label>
+                <Label htmlFor="account-name">{t('nameEn')} *</Label>
                 <Input
+                  id="account-name"
+                  aria-required="true"
                   required
                   value={form.name}
                   onChange={e => set('name', e.target.value)}
@@ -129,8 +135,9 @@ export default function NewAccountPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label>{t('nameAr')}</Label>
+                <Label htmlFor="account-name-ar">{t('nameAr')}</Label>
                 <Input
+                  id="account-name-ar"
                   value={form.name_ar}
                   onChange={e => set('name_ar', e.target.value)}
                   placeholder={t('accountNamePlaceholder')}
@@ -142,8 +149,9 @@ export default function NewAccountPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('currency')}</Label>
+                <Label htmlFor="account-currency">{t('currency')}</Label>
                 <Input
+                  id="account-currency"
                   value={form.currency}
                   onChange={e => set('currency', e.target.value)}
                   placeholder="EGP"
@@ -152,8 +160,9 @@ export default function NewAccountPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label>{t('displayOrder')}</Label>
+                <Label htmlFor="account-display-order">{t('displayOrder')}</Label>
                 <Input
+                  id="account-display-order"
                   type="number"
                   min="0"
                   value={form.display_order}

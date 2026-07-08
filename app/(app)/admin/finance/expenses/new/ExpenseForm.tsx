@@ -87,14 +87,17 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <Label>{t('description')} *</Label>
+              <Label htmlFor="expense-description">{t('description')} *</Label>
               <Input
+                id="expense-description"
+                aria-required="true"
                 required
                 value={form.description}
                 onChange={e => set('description', e.target.value)}
                 placeholder={t('descriptionEn')}
               />
               <Input
+                id="expense-description-ar"
                 value={form.description_ar}
                 onChange={e => set('description_ar', e.target.value)}
                 placeholder={t('descriptionAr')}
@@ -103,9 +106,11 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('amount')} *</Label>
+              <Label htmlFor="expense-amount">{t('amount')} *</Label>
               <div className="flex gap-2">
                 <Input
+                  id="expense-amount"
+                  aria-required="true"
                   type="number" min="0" step="0.01" required
                   value={form.amount}
                   onChange={e => set('amount', e.target.value)}
@@ -122,8 +127,9 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('vendor')}</Label>
+              <Label htmlFor="expense-vendor">{t('vendor')}</Label>
               <Input
+                id="expense-vendor"
                 value={form.vendor_name}
                 onChange={e => set('vendor_name', e.target.value)}
                 placeholder={t('vendorNamePlaceholder')}
@@ -131,8 +137,9 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('ministry')}</Label>
+              <Label htmlFor="expense-ministry">{t('ministry')}</Label>
               <select
+                id="expense-ministry"
                 value={form.ministry_id}
                 onChange={e => set('ministry_id', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -145,8 +152,9 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('fund')}</Label>
+              <Label htmlFor="expense-fund">{t('fund')}</Label>
               <select
+                id="expense-fund"
                 value={form.fund_id}
                 onChange={e => set('fund_id', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -159,8 +167,9 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('preferredPayment')}</Label>
+              <Label htmlFor="expense-payment-method">{t('preferredPayment')}</Label>
               <select
+                id="expense-payment-method"
                 value={form.payment_method}
                 onChange={e => set('payment_method', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background"
@@ -181,8 +190,9 @@ export function ExpenseForm({ ministries, funds }: ExpenseFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('notes')}</Label>
+              <Label htmlFor="expense-notes">{t('notes')}</Label>
               <textarea
+                id="expense-notes"
                 value={form.notes}
                 onChange={e => set('notes', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[80px] resize-none"

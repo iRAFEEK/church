@@ -350,8 +350,9 @@ export function EventForm({ event, defaultDate }: EventFormProps) {
             <FieldError error={errors.starts_at} />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('endsAt')}</Label>
+            <Label htmlFor="event-ends-at" className="text-sm text-zinc-500 mb-1 block">{t('endsAt')}</Label>
             <Input
+              id="event-ends-at"
               type="datetime-local"
               value={form.ends_at}
               onChange={(e) => { setForm({ ...form, ends_at: e.target.value }); if (errors.ends_at) setErrors(prev => { const next = { ...prev }; delete next.ends_at; return next }) }}
@@ -379,8 +380,9 @@ export function EventForm({ event, defaultDate }: EventFormProps) {
             />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('capacity')}</Label>
+            <Label htmlFor="event-capacity" className="text-sm text-zinc-500 mb-1 block">{t('capacity')}</Label>
             <Input
+              id="event-capacity"
               type="number"
               placeholder={t('capacityPlaceholder')}
               value={form.capacity}

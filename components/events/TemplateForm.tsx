@@ -410,8 +410,9 @@ export function TemplateForm({ template }: TemplateFormProps) {
           )}
 
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('defaultStartTime')}</Label>
+            <Label htmlFor="template-default-start-time" className="text-sm text-zinc-500 mb-1 block">{t('defaultStartTime')}</Label>
             <Input
+              id="template-default-start-time"
               type="time"
               value={form.default_start_time}
               onChange={e => setForm({ ...form, default_start_time: e.target.value })}
@@ -421,8 +422,9 @@ export function TemplateForm({ template }: TemplateFormProps) {
           </div>
 
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('defaultEndTime')}</Label>
+            <Label htmlFor="template-default-end-time" className="text-sm text-zinc-500 mb-1 block">{t('defaultEndTime')}</Label>
             <Input
+              id="template-default-end-time"
               type="time"
               value={form.default_end_time}
               onChange={e => setForm({ ...form, default_end_time: e.target.value })}
@@ -449,8 +451,9 @@ export function TemplateForm({ template }: TemplateFormProps) {
             />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{te('location')}</Label>
+            <Label htmlFor="template-location" className="text-sm text-zinc-500 mb-1 block">{te('location')}</Label>
             <Input
+              id="template-location"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
               dir="auto"
@@ -458,8 +461,9 @@ export function TemplateForm({ template }: TemplateFormProps) {
             />
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{te('capacity')}</Label>
+            <Label htmlFor="template-capacity" className="text-sm text-zinc-500 mb-1 block">{te('capacity')}</Label>
             <Input
+              id="template-capacity"
               type="number"
               value={form.capacity}
               onChange={(e) => setForm({ ...form, capacity: e.target.value })}

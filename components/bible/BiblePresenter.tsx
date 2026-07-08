@@ -686,9 +686,10 @@ export function BiblePresenter({
 
           {/* Background Color */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('bgColor')}</Label>
+            <Label htmlFor="bible-bg-color" className="text-zinc-300">{t('bgColor')}</Label>
             <div className="flex items-center gap-3">
               <input
+                id="bible-bg-color"
                 type="color"
                 value={settings.bg_color}
                 onChange={(e) => setSettings(s => ({ ...s, bg_color: e.target.value }))}
@@ -700,9 +701,10 @@ export function BiblePresenter({
 
           {/* Text Color */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('textColor')}</Label>
+            <Label htmlFor="bible-text-color" className="text-zinc-300">{t('textColor')}</Label>
             <div className="flex items-center gap-3">
               <input
+                id="bible-text-color"
                 type="color"
                 value={settings.text_color}
                 onChange={(e) => setSettings(s => ({ ...s, text_color: e.target.value }))}
@@ -714,8 +716,9 @@ export function BiblePresenter({
 
           {/* Font Family */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">{t('fontFamily')}</Label>
+            <Label htmlFor="bible-font-family" className="text-zinc-300">{t('fontFamily')}</Label>
             <select
+              id="bible-font-family"
               value={settings.font_family}
               onChange={(e) => setSettings(s => ({ ...s, font_family: e.target.value }))}
               className="flex h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-white"
@@ -728,7 +731,7 @@ export function BiblePresenter({
 
           {/* Font Size */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">
+            <Label htmlFor="bible-font-size" className="text-zinc-300">
               {t('fontSize')}: {settings.font_size}px
             </Label>
             <div className="flex items-center gap-3">
@@ -741,6 +744,7 @@ export function BiblePresenter({
                 <Minus className="h-5 w-5" />
               </Button>
               <input
+                id="bible-font-size"
                 type="range"
                 min={24}
                 max={120}

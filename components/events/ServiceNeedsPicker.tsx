@@ -347,8 +347,9 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
 
             {/* Volunteers needed */}
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('volunteersNeeded')}</Label>
+              <Label htmlFor="service-need-volunteers" className="text-sm text-zinc-500 mb-1 block">{t('volunteersNeeded')}</Label>
               <Input
+                id="service-need-volunteers"
                 type="number"
                 min={1}
                 value={rolePresets.length > 0 ? rolePresets.reduce((s, rp) => s + rp.count, 0) : volunteersNeeded}
@@ -364,8 +365,9 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
 
             {/* Notes */}
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('serviceNotes')}</Label>
+              <Label htmlFor="service-need-notes" className="text-sm text-zinc-500 mb-1 block">{t('serviceNotes')}</Label>
               <Textarea
+                id="service-need-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
@@ -375,8 +377,9 @@ export function ServiceNeedsPicker({ serviceNeeds, onChange }: ServiceNeedsPicke
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('serviceNotesAr')}</Label>
+              <Label htmlFor="service-need-notes-ar" className="text-sm text-zinc-500 mb-1 block">{t('serviceNotesAr')}</Label>
               <Textarea
+                id="service-need-notes-ar"
                 value={notesAr}
                 onChange={(e) => setNotesAr(e.target.value)}
                 rows={2}

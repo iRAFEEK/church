@@ -194,9 +194,9 @@ export function NewBookingSheet({
         <div className="space-y-4 py-4">
           {/* Location */}
           <div className="space-y-2">
-            <Label>{t('location')}</Label>
+            <Label htmlFor="booking-location">{t('location')}</Label>
             <Select value={locationId} onValueChange={setLocationId}>
-              <SelectTrigger className="h-11 w-full text-base">
+              <SelectTrigger id="booking-location" className="h-11 w-full text-base">
                 <SelectValue placeholder={t('selectLocation')} />
               </SelectTrigger>
               <SelectContent>
@@ -211,8 +211,10 @@ export function NewBookingSheet({
 
           {/* Title */}
           <div className="space-y-2">
-            <Label>{t('title')}</Label>
+            <Label htmlFor="booking-title">{t('title')}</Label>
             <Input
+              id="booking-title"
+              aria-required="true"
               dir="auto"
               className="h-11 text-base"
               value={title}
@@ -223,8 +225,10 @@ export function NewBookingSheet({
 
           {/* Date */}
           <div className="space-y-2">
-            <Label>{t('date')}</Label>
+            <Label htmlFor="booking-date">{t('date')}</Label>
             <Input
+              id="booking-date"
+              aria-required="true"
               type="date"
               dir="ltr"
               className="h-11 text-base"
@@ -237,8 +241,10 @@ export function NewBookingSheet({
           {/* Start / End time */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>{t('startTime')}</Label>
+              <Label htmlFor="booking-start-time">{t('startTime')}</Label>
               <Input
+                id="booking-start-time"
+                aria-required="true"
                 type="time"
                 dir="ltr"
                 className="h-11 text-base"
@@ -248,8 +254,10 @@ export function NewBookingSheet({
               />
             </div>
             <div className="space-y-2">
-              <Label>{t('endTime')}</Label>
+              <Label htmlFor="booking-end-time">{t('endTime')}</Label>
               <Input
+                id="booking-end-time"
+                aria-required="true"
                 type="time"
                 dir="ltr"
                 className="h-11 text-base"
@@ -288,8 +296,9 @@ export function NewBookingSheet({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>{t('notes')}</Label>
+            <Label htmlFor="booking-notes">{t('notes')}</Label>
             <Textarea
+              id="booking-notes"
               dir="auto"
               className="text-base"
               value={notes}

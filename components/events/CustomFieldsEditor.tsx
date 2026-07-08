@@ -136,12 +136,12 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('fieldLabel')} *</Label>
-              <Input value={label} onChange={e => setLabel(e.target.value)} dir="ltr" />
+              <Label htmlFor="custom-field-label" className="text-sm text-zinc-500 mb-1 block">{t('fieldLabel')} *</Label>
+              <Input id="custom-field-label" aria-required="true" value={label} onChange={e => setLabel(e.target.value)} dir="ltr" />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('fieldLabelAr')}</Label>
-              <Input value={labelAr} onChange={e => setLabelAr(e.target.value)} dir="rtl" />
+              <Label htmlFor="custom-field-label-ar" className="text-sm text-zinc-500 mb-1 block">{t('fieldLabelAr')}</Label>
+              <Input id="custom-field-label-ar" value={labelAr} onChange={e => setLabelAr(e.target.value)} dir="rtl" />
             </div>
             <div>
               <Label className="text-sm text-zinc-500 mb-2 block">{t('fieldType')}</Label>
@@ -165,8 +165,8 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
             </div>
             {fieldType === 'select' && (
               <div>
-                <Label className="text-sm text-zinc-500 mb-1 block">{t('fieldOptions')}</Label>
-                <Input value={options} onChange={e => setOptions(e.target.value)} placeholder={t('customFieldOptionsPlaceholder')} dir="ltr" />
+                <Label htmlFor="custom-field-options" className="text-sm text-zinc-500 mb-1 block">{t('fieldOptions')}</Label>
+                <Input id="custom-field-options" value={options} onChange={e => setOptions(e.target.value)} placeholder={t('customFieldOptionsPlaceholder')} dir="ltr" />
               </div>
             )}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">

@@ -250,8 +250,10 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
 
           <div className="space-y-4 py-2">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('segmentTitle')} *</Label>
+              <Label htmlFor="segment-title" className="text-sm text-zinc-500 mb-1 block">{t('segmentTitle')} *</Label>
               <Input
+                id="segment-title"
+                aria-required="true"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('segmentTitlePlaceholder')}
@@ -260,8 +262,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('segmentTitleAr')}</Label>
+              <Label htmlFor="segment-title-ar" className="text-sm text-zinc-500 mb-1 block">{t('segmentTitleAr')}</Label>
               <Input
+                id="segment-title-ar"
                 value={titleAr}
                 onChange={(e) => setTitleAr(e.target.value)}
                 dir="rtl"
@@ -269,8 +272,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('durationMinutes')}</Label>
+              <Label htmlFor="segment-duration" className="text-sm text-zinc-500 mb-1 block">{t('durationMinutes')}</Label>
               <Input
+                id="segment-duration"
                 type="number"
                 min={1}
                 value={duration}
@@ -280,8 +284,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('ministry')}</Label>
+              <Label htmlFor="segment-ministry" className="text-sm text-zinc-500 mb-1 block">{t('ministry')}</Label>
               <select
+                id="segment-ministry"
                 value={ministryId}
                 onChange={(e) => setMinistryId(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white text-sm"
@@ -295,8 +300,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               </select>
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('segmentNotes')}</Label>
+              <Label htmlFor="segment-notes" className="text-sm text-zinc-500 mb-1 block">{t('segmentNotes')}</Label>
               <Textarea
+                id="segment-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
@@ -306,8 +312,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('segmentNotesAr')}</Label>
+              <Label htmlFor="segment-notes-ar" className="text-sm text-zinc-500 mb-1 block">{t('segmentNotesAr')}</Label>
               <Textarea
+                id="segment-notes-ar"
                 value={notesAr}
                 onChange={(e) => setNotesAr(e.target.value)}
                 rows={2}

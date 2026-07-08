@@ -99,8 +99,10 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('email')}</Label>
+            <Label htmlFor="leader-email" className="text-sm text-zinc-500 mb-1 block">{t('email')}</Label>
             <Input
+              id="leader-email"
+              aria-required="true"
               type="email"
               dir="ltr"
               placeholder={t('emailPlaceholder')}
@@ -112,8 +114,10 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('firstName')}</Label>
+              <Label htmlFor="leader-first-name" className="text-sm text-zinc-500 mb-1 block">{t('firstName')}</Label>
               <Input
+                id="leader-first-name"
+                aria-required="true"
                 dir="ltr"
                 value={form.first_name}
                 onChange={e => update('first_name', e.target.value)}
@@ -121,8 +125,10 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('lastName')}</Label>
+              <Label htmlFor="leader-last-name" className="text-sm text-zinc-500 mb-1 block">{t('lastName')}</Label>
               <Input
+                id="leader-last-name"
+                aria-required="true"
                 dir="ltr"
                 value={form.last_name}
                 onChange={e => update('last_name', e.target.value)}
@@ -133,8 +139,9 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('firstNameAr')}</Label>
+              <Label htmlFor="leader-first-name-ar" className="text-sm text-zinc-500 mb-1 block">{t('firstNameAr')}</Label>
               <Input
+                id="leader-first-name-ar"
                 dir="rtl"
                 value={form.first_name_ar}
                 onChange={e => update('first_name_ar', e.target.value)}
@@ -142,8 +149,9 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('lastNameAr')}</Label>
+              <Label htmlFor="leader-last-name-ar" className="text-sm text-zinc-500 mb-1 block">{t('lastNameAr')}</Label>
               <Input
+                id="leader-last-name-ar"
                 dir="rtl"
                 value={form.last_name_ar}
                 onChange={e => update('last_name_ar', e.target.value)}
@@ -153,8 +161,9 @@ export function RegisterLeaderDialog({ open, onOpenChange, onLeaderCreated }: Pr
           </div>
 
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('phone')}</Label>
+            <Label htmlFor="leader-phone" className="text-sm text-zinc-500 mb-1 block">{t('phone')}</Label>
             <Input
+              id="leader-phone"
               type="tel"
               dir="ltr"
               placeholder={t('phonePlaceholder')}

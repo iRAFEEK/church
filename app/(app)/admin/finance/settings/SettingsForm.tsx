@@ -78,8 +78,8 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
-              <Label>{t('defaultCurrency')}</Label>
-              <select value={form.default_currency} onChange={e => set('default_currency', e.target.value)}
+              <Label htmlFor="settings-default-currency">{t('defaultCurrency')}</Label>
+              <select id="settings-default-currency" value={form.default_currency} onChange={e => set('default_currency', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background max-w-xs">
                 {CURRENCIES.map(c => <option key={c}>{c}</option>)}
               </select>
@@ -110,8 +110,8 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
-              <Label>{t('fiscalYearStartMonth')}</Label>
-              <select value={form.fiscal_year_start_month}
+              <Label htmlFor="settings-fiscal-year-start-month">{t('fiscalYearStartMonth')}</Label>
+              <select id="settings-fiscal-year-start-month" value={form.fiscal_year_start_month}
                 onChange={e => set('fiscal_year_start_month', parseInt(e.target.value))}
                 className="w-full text-sm border rounded px-3 py-2 bg-background max-w-xs">
                 {MONTH_NAMES.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}

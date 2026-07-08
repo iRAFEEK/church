@@ -81,25 +81,25 @@ export function CampaignForm({ funds }: CampaignFormProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('nameEn')} *</Label>
-                <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder="Campaign name" />
+                <Label htmlFor="campaign-name">{t('nameEn')} *</Label>
+                <Input id="campaign-name" aria-required="true" required value={form.name} onChange={e => set('name', e.target.value)} placeholder="Campaign name" />
               </div>
               <div className="space-y-1">
-                <Label>{t('nameAr')}</Label>
-                <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="اسم الحملة" dir="rtl" />
+                <Label htmlFor="campaign-name-ar">{t('nameAr')}</Label>
+                <Input id="campaign-name-ar" value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="اسم الحملة" dir="rtl" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>{t('description')}</Label>
-              <textarea value={form.description} onChange={e => set('description', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none" placeholder="Campaign description..." />
-              <textarea value={form.description_ar} onChange={e => set('description_ar', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none mt-1" placeholder="الوصف بالعربية..." dir="rtl" />
+              <Label htmlFor="campaign-description">{t('description')}</Label>
+              <textarea id="campaign-description" value={form.description} onChange={e => set('description', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none" placeholder="Campaign description..." />
+              <textarea id="campaign-description-ar" value={form.description_ar} onChange={e => set('description_ar', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none mt-1" placeholder="الوصف بالعربية..." dir="rtl" />
             </div>
 
             <div className="space-y-1">
-              <Label>{t('goalAmount')} *</Label>
+              <Label htmlFor="campaign-goal-amount">{t('goalAmount')} *</Label>
               <div className="flex gap-2">
-                <Input type="number" min="0" step="1" required value={form.goal_amount} onChange={e => set('goal_amount', e.target.value)} placeholder="0" />
+                <Input id="campaign-goal-amount" aria-required="true" type="number" min="0" step="1" required value={form.goal_amount} onChange={e => set('goal_amount', e.target.value)} placeholder="0" />
                 <select value={form.currency} onChange={e => set('currency', e.target.value)} className="text-sm border rounded px-2 bg-background w-24">
                   {['USD', 'LBP', 'EGP', 'JOD', 'EUR'].map(c => <option key={c}>{c}</option>)}
                 </select>
@@ -107,8 +107,8 @@ export function CampaignForm({ funds }: CampaignFormProps) {
             </div>
 
             <div className="space-y-1">
-              <Label>{t('fund')}</Label>
-              <select value={form.fund_id} onChange={e => set('fund_id', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background">
+              <Label htmlFor="campaign-fund">{t('fund')}</Label>
+              <select id="campaign-fund" value={form.fund_id} onChange={e => set('fund_id', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background">
                 <option value="">{t('noFundSelected')}</option>
                 {funds.map(f => <option key={f.id} value={f.id}>{f.name} {f.name_ar ? `/ ${f.name_ar}` : ''}</option>)}
               </select>
@@ -116,18 +116,18 @@ export function CampaignForm({ funds }: CampaignFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('startDate')} *</Label>
-                <Input type="date" required value={form.start_date} onChange={e => set('start_date', e.target.value)} />
+                <Label htmlFor="campaign-start-date">{t('startDate')} *</Label>
+                <Input id="campaign-start-date" aria-required="true" type="date" required value={form.start_date} onChange={e => set('start_date', e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label>{t('endDate')}</Label>
-                <Input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
+                <Label htmlFor="campaign-end-date">{t('endDate')}</Label>
+                <Input id="campaign-end-date" type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>{t('status')}</Label>
-              <select value={form.status} onChange={e => set('status', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background">
+              <Label htmlFor="campaign-status">{t('status')}</Label>
+              <select id="campaign-status" value={form.status} onChange={e => set('status', e.target.value)} className="w-full text-sm border rounded px-3 py-2 bg-background">
                 <option value="planning">{t('planning')}</option>
                 <option value="active">{t('active')}</option>
               </select>

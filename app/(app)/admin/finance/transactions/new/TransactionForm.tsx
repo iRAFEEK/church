@@ -104,33 +104,33 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
         <Card>
           <CardContent className="pt-6 grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>{t('date')} *</Label>
-              <Input type="date" required value={form.transaction_date}
+              <Label htmlFor="transaction-date">{t('date')} *</Label>
+              <Input id="transaction-date" aria-required="true" type="date" required value={form.transaction_date}
                 onChange={e => setForm(p => ({ ...p, transaction_date: e.target.value }))} />
             </div>
             <div className="space-y-1">
-              <Label>{t('currency')}</Label>
-              <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))}
+              <Label htmlFor="transaction-currency">{t('currency')}</Label>
+              <select id="transaction-currency" value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))}
                 className="w-full text-sm border rounded px-2 py-2 bg-background">
                 {['USD', 'LBP', 'EGP', 'JOD', 'EUR'].map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div className="col-span-2 space-y-1">
-              <Label>{t('description')}</Label>
-              <Input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+              <Label htmlFor="transaction-description">{t('description')}</Label>
+              <Input id="transaction-description" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
                 placeholder={t('journalDescriptionPlaceholder')} dir="auto" />
             </div>
             <div className="space-y-1">
-              <Label>{t('fund')}</Label>
-              <select value={form.fund_id} onChange={e => setForm(p => ({ ...p, fund_id: e.target.value }))}
+              <Label htmlFor="transaction-fund">{t('fund')}</Label>
+              <select id="transaction-fund" value={form.fund_id} onChange={e => setForm(p => ({ ...p, fund_id: e.target.value }))}
                 className="w-full text-sm border rounded px-2 py-2 bg-background">
                 <option value="">{t('noFund')}</option>
                 {funds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <Label>{t('memo')}</Label>
-              <Input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
+              <Label htmlFor="transaction-memo">{t('memo')}</Label>
+              <Input id="transaction-memo" value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
                 placeholder={t('internalMemoPlaceholder')} dir="auto" />
             </div>
           </CardContent>

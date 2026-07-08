@@ -136,8 +136,10 @@ export function NeedForm({ initial }: NeedFormProps) {
         <CardContent className="space-y-4">
           {/* Title */}
           <div>
-            <Label>{t('needTitle')}</Label>
+            <Label htmlFor="need-title">{t('needTitle')}</Label>
             <Input
+              id="need-title"
+              aria-required="true"
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
               dir="auto"
@@ -147,8 +149,9 @@ export function NeedForm({ initial }: NeedFormProps) {
 
           {/* Description */}
           <div>
-            <Label>{t('needDescription')}</Label>
+            <Label htmlFor="need-description">{t('needDescription')}</Label>
             <Textarea
+              id="need-description"
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               rows={3}
@@ -160,8 +163,9 @@ export function NeedForm({ initial }: NeedFormProps) {
           {/* Category + Urgency */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>{t('category')}</Label>
+              <Label htmlFor="need-category">{t('category')}</Label>
               <select
+                id="need-category"
                 className={selectClass}
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
@@ -172,8 +176,9 @@ export function NeedForm({ initial }: NeedFormProps) {
               </select>
             </div>
             <div>
-              <Label>{t('urgency')}</Label>
+              <Label htmlFor="need-urgency">{t('urgency')}</Label>
               <select
+                id="need-urgency"
                 className={selectClass}
                 value={form.urgency}
                 onChange={(e) => set('urgency', e.target.value)}
@@ -187,8 +192,9 @@ export function NeedForm({ initial }: NeedFormProps) {
 
           {/* Quantity */}
           <div>
-            <Label>{t('quantity')}</Label>
+            <Label htmlFor="need-quantity">{t('quantity')}</Label>
             <Input
+              id="need-quantity"
               type="number"
               min={1}
               value={form.quantity}
@@ -199,7 +205,7 @@ export function NeedForm({ initial }: NeedFormProps) {
 
           {/* Image */}
           <div>
-            <Label>{t('imageUpload')}</Label>
+            <Label htmlFor="need-image">{t('imageUpload')}</Label>
             {form.image_url ? (
               <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted mt-1">
                 <Image src={form.image_url} alt="" fill className="object-cover" sizes="(max-width: 640px) 100vw, 500px" />
@@ -226,6 +232,7 @@ export function NeedForm({ initial }: NeedFormProps) {
                   )}
                 </div>
                 <input
+                  id="need-image"
                   type="file"
                   accept="image/*"
                   className="hidden"
@@ -241,8 +248,9 @@ export function NeedForm({ initial }: NeedFormProps) {
           {/* Contact Info */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <Label>{t('contactName')}</Label>
+              <Label htmlFor="need-contact-name">{t('contactName')}</Label>
               <Input
+                id="need-contact-name"
                 value={form.contact_name}
                 onChange={(e) => set('contact_name', e.target.value)}
                 dir="auto"
@@ -250,8 +258,9 @@ export function NeedForm({ initial }: NeedFormProps) {
               />
             </div>
             <div>
-              <Label>{t('contactPhone')}</Label>
+              <Label htmlFor="need-contact-phone">{t('contactPhone')}</Label>
               <Input
+                id="need-contact-phone"
                 value={form.contact_phone}
                 onChange={(e) => set('contact_phone', e.target.value)}
                 type="tel"
@@ -259,8 +268,9 @@ export function NeedForm({ initial }: NeedFormProps) {
               />
             </div>
             <div>
-              <Label>{t('contactEmail')}</Label>
+              <Label htmlFor="need-contact-email">{t('contactEmail')}</Label>
               <Input
+                id="need-contact-email"
                 value={form.contact_email}
                 onChange={(e) => set('contact_email', e.target.value)}
                 type="email"
@@ -271,8 +281,9 @@ export function NeedForm({ initial }: NeedFormProps) {
 
           {/* Expiration */}
           <div>
-            <Label>{t('expiresAt')}</Label>
+            <Label htmlFor="need-expires-at">{t('expiresAt')}</Label>
             <Input
+              id="need-expires-at"
               type="date"
               value={form.expires_at}
               onChange={(e) => set('expires_at', e.target.value)}

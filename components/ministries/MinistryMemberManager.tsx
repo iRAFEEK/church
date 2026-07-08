@@ -306,16 +306,18 @@ export function MinistryMemberManager({
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('notifyTitleAr')}</Label>
+              <Label htmlFor="notify-title-ar" className="text-sm text-zinc-500 mb-1 block">{t('notifyTitleAr')}</Label>
               <Input
+                id="notify-title-ar"
                 value={notifyForm.titleAr}
                 onChange={e => setNotifyForm(prev => ({ ...prev, titleAr: e.target.value }))}
                 placeholder={t('notifyTitleAr')}
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('notifyBodyAr')}</Label>
+              <Label htmlFor="notify-body-ar" className="text-sm text-zinc-500 mb-1 block">{t('notifyBodyAr')}</Label>
               <Textarea
+                id="notify-body-ar"
                 value={notifyForm.bodyAr}
                 onChange={e => setNotifyForm(prev => ({ ...prev, bodyAr: e.target.value }))}
                 rows={3}
@@ -323,8 +325,9 @@ export function MinistryMemberManager({
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('notifyTitleEn')}</Label>
+              <Label htmlFor="notify-title-en" className="text-sm text-zinc-500 mb-1 block">{t('notifyTitleEn')}</Label>
               <Input
+                id="notify-title-en"
                 value={notifyForm.titleEn}
                 onChange={e => setNotifyForm(prev => ({ ...prev, titleEn: e.target.value }))}
                 dir="ltr"
@@ -332,8 +335,9 @@ export function MinistryMemberManager({
               />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('notifyBodyEn')}</Label>
+              <Label htmlFor="notify-body-en" className="text-sm text-zinc-500 mb-1 block">{t('notifyBodyEn')}</Label>
               <Textarea
+                id="notify-body-en"
                 value={notifyForm.bodyEn}
                 onChange={e => setNotifyForm(prev => ({ ...prev, bodyEn: e.target.value }))}
                 dir="ltr"

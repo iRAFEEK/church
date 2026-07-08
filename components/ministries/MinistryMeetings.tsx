@@ -176,8 +176,10 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
             </DialogHeader>
             <div className="space-y-4 mt-2">
               <div>
-                <Label>{t('meetingTitle')}</Label>
+                <Label htmlFor="meeting-title">{t('meetingTitle')}</Label>
                 <Input
+                  id="meeting-title"
+                  aria-required="true"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   dir="auto"
@@ -186,8 +188,10 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                 />
               </div>
               <div>
-                <Label>{t('dateTime')}</Label>
+                <Label htmlFor="meeting-datetime">{t('dateTime')}</Label>
                 <Input
+                  id="meeting-datetime"
+                  aria-required="true"
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
@@ -196,8 +200,9 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                 />
               </div>
               <div>
-                <Label>{t('location')}</Label>
+                <Label htmlFor="meeting-location">{t('location')}</Label>
                 <Input
+                  id="meeting-location"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   dir="auto"
@@ -206,8 +211,9 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                 />
               </div>
               <div>
-                <Label>{t('notes')}</Label>
+                <Label htmlFor="meeting-notes">{t('notes')}</Label>
                 <Textarea
+                  id="meeting-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   dir="auto"
@@ -253,10 +259,11 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                     </div>
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
+                        <label htmlFor={`action-item-assign-${idx}`} className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
                           <User className="h-3 w-3" /> {t('assignTo')}
                         </label>
                         <select
+                          id={`action-item-assign-${idx}`}
                           value={item.assigned_to || ''}
                           onChange={(e) => {
                             const next = [...actionItems]
@@ -274,10 +281,11 @@ export function MinistryMeetings({ ministryId, members }: MinistryMeetingsProps)
                         </select>
                       </div>
                       <div className="w-[140px] shrink-0">
-                        <label className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
+                        <label htmlFor={`action-item-due-${idx}`} className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
                           <CalendarDays className="h-3 w-3" /> {t('dueDate')}
                         </label>
                         <Input
+                          id={`action-item-due-${idx}`}
                           type="date"
                           value={item.due_date || ''}
                           onChange={(e) => {

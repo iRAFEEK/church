@@ -251,8 +251,9 @@ export function EventServiceRequests({ eventId }: EventServiceRequestsProps) {
 
           <div className="space-y-4">
             <div>
-              <Label>{t('requestedRole')}</Label>
+              <Label htmlFor="service-request-role">{t('requestedRole')}</Label>
               <Input
+                id="service-request-role"
                 dir="auto"
                 className="text-base mt-1"
                 placeholder={t('requestedRolePlaceholder')}
@@ -262,8 +263,9 @@ export function EventServiceRequests({ eventId }: EventServiceRequestsProps) {
             </div>
 
             <div>
-              <Label>{t('assignTo')}</Label>
+              <Label htmlFor="service-request-member-search">{t('assignTo')}</Label>
               <Input
+                id="service-request-member-search"
                 dir="auto"
                 className="text-base mt-1"
                 placeholder={t('searchMemberPlaceholder')}
@@ -302,8 +304,9 @@ export function EventServiceRequests({ eventId }: EventServiceRequestsProps) {
             </div>
 
             <div>
-              <Label>{t('notes')}</Label>
+              <Label htmlFor="service-request-notes">{t('notes')}</Label>
               <Textarea
+                id="service-request-notes"
                 dir="auto"
                 className="text-base mt-1"
                 placeholder={t('notesPlaceholder')}

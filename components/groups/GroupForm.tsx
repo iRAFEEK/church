@@ -265,9 +265,9 @@ export function GroupForm({ leaders, group }: Props) {
             </button>
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('coLeader')}</Label>
+            <Label htmlFor="group-co-leader" className="text-sm text-zinc-500 mb-1 block">{t('coLeader')}</Label>
             <Select value={form.co_leader_id} onValueChange={v => set('co_leader_id', v)}>
-              <SelectTrigger className="min-h-[48px]"><SelectValue placeholder={t('coLeaderPlaceholder')} /></SelectTrigger>
+              <SelectTrigger id="group-co-leader" className="min-h-[48px]"><SelectValue placeholder={t('coLeaderPlaceholder')} /></SelectTrigger>
               <SelectContent>
                 {localLeaders.map(l => (
                   <SelectItem key={l.id} value={l.id}>
@@ -303,8 +303,10 @@ export function GroupForm({ leaders, group }: Props) {
               <FieldError error={errors.meeting_day} />
             </div>
             <div>
-              <Label className="text-sm text-zinc-500 mb-2 block">{t('meetingTime')}<RequiredMark /></Label>
+              <Label htmlFor="group-meeting-time" className="text-sm text-zinc-500 mb-2 block">{t('meetingTime')}<RequiredMark /></Label>
               <Input
+                id="group-meeting-time"
+                aria-required="true"
                 type="time"
                 value={form.meeting_time}
                 onChange={e => set('meeting_time', e.target.value)}
@@ -315,17 +317,18 @@ export function GroupForm({ leaders, group }: Props) {
             </div>
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('frequency')}<RequiredMark /></Label>
+            <Label htmlFor="group-frequency" className="text-sm text-zinc-500 mb-1 block">{t('frequency')}<RequiredMark /></Label>
             <Select value={form.meeting_frequency} onValueChange={v => set('meeting_frequency', v)}>
-              <SelectTrigger className="min-h-[48px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="group-frequency" aria-required="true" className="min-h-[48px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {FREQUENCY_KEYS.map(f => <SelectItem key={f.value} value={f.value}>{tGroups(f.key)}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('meetingLocation')}</Label>
+            <Label htmlFor="group-meeting-location" className="text-sm text-zinc-500 mb-1 block">{t('meetingLocation')}</Label>
             <Input
+              id="group-meeting-location"
               value={form.meeting_location}
               onChange={e => set('meeting_location', e.target.value)}
               placeholder={t('meetingLocationPlaceholder')}
@@ -335,8 +338,9 @@ export function GroupForm({ leaders, group }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm text-zinc-500 mb-1 block">{t('maxMembers')}</Label>
+              <Label htmlFor="group-max-members" className="text-sm text-zinc-500 mb-1 block">{t('maxMembers')}</Label>
               <Input
+                id="group-max-members"
                 type="number"
                 value={form.max_members}
                 onChange={e => set('max_members', e.target.value)}
@@ -346,8 +350,8 @@ export function GroupForm({ leaders, group }: Props) {
               />
             </div>
             <div className="flex items-center gap-3 pt-6 p-3 rounded-lg bg-zinc-50">
-              <Switch checked={form.is_open} onCheckedChange={v => set('is_open', v)} />
-              <Label className="text-sm">{t('openForJoining')}</Label>
+              <Switch id="group-is-open" checked={form.is_open} onCheckedChange={v => set('is_open', v)} />
+              <Label htmlFor="group-is-open" className="text-sm">{t('openForJoining')}</Label>
             </div>
           </div>
         </div>

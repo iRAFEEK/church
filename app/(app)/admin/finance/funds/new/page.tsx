@@ -71,28 +71,28 @@ export default function NewFundPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>{t('nameEn')} *</Label>
-                <Input required value={form.name} onChange={e => set('name', e.target.value)} placeholder="General Fund" />
+                <Label htmlFor="fund-name">{t('nameEn')} *</Label>
+                <Input id="fund-name" aria-required="true" required value={form.name} onChange={e => set('name', e.target.value)} placeholder="General Fund" />
               </div>
               <div className="space-y-1">
-                <Label>{t('nameAr')}</Label>
-                <Input value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="الصندوق العام" dir="rtl" />
+                <Label htmlFor="fund-name-ar">{t('nameAr')}</Label>
+                <Input id="fund-name-ar" value={form.name_ar} onChange={e => set('name_ar', e.target.value)} placeholder="الصندوق العام" dir="rtl" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>{t('description')}</Label>
-              <textarea value={form.description} onChange={e => set('description', e.target.value)}
+              <Label htmlFor="fund-description">{t('description')}</Label>
+              <textarea id="fund-description" value={form.description} onChange={e => set('description', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none"
                 placeholder={t('fundDescriptionPlaceholder')} />
-              <textarea value={form.description_ar} onChange={e => set('description_ar', e.target.value)}
+              <textarea id="fund-description-ar" value={form.description_ar} onChange={e => set('description_ar', e.target.value)}
                 className="w-full text-sm border rounded px-3 py-2 bg-background min-h-[60px] resize-none mt-1"
                 placeholder="الوصف بالعربية..." dir="rtl" />
             </div>
 
             <div className="space-y-1">
-              <Label>{t('targetAmount')}</Label>
-              <Input type="number" min="0" step="1" value={form.target_amount}
+              <Label htmlFor="fund-target-amount">{t('targetAmount')}</Label>
+              <Input id="fund-target-amount" type="number" min="0" step="1" value={form.target_amount}
                 onChange={e => set('target_amount', e.target.value)} placeholder="0" />
             </div>
 

@@ -160,8 +160,9 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
             </Select>
           </div>
           <div>
-            <Label className="text-sm text-zinc-500 mb-1 block">{t('expiresAt')}</Label>
+            <Label htmlFor="announcement-expires-at" className="text-sm text-zinc-500 mb-1 block">{t('expiresAt')}</Label>
             <Input
+              id="announcement-expires-at"
               type="date"
               value={form.expires_at}
               onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
@@ -171,12 +172,13 @@ export function AnnouncementForm({ announcement }: AnnouncementFormProps) {
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-50">
             <Switch
+              id="announcement-is-pinned"
               checked={form.is_pinned}
               onCheckedChange={(v) => setForm({ ...form, is_pinned: v })}
             />
             <div className="flex items-center gap-2">
               <Pin className="h-4 w-4 text-zinc-400" />
-              <Label>{t('isPinned')}</Label>
+              <Label htmlFor="announcement-is-pinned">{t('isPinned')}</Label>
             </div>
           </div>
           <div className="space-y-3 pt-2">
