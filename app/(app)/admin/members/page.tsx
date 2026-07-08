@@ -209,14 +209,14 @@ export default async function MembersPage({
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
-                  <th className="ps-6 py-3 text-sm font-medium text-muted-foreground">{t('tableMember')}</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableRole')}</th>
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableStatus')}</th>
+                  <th scope="col" className="ps-6 py-3 text-sm font-medium text-muted-foreground">{t('tableMember')}</th>
+                  <th scope="col" className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableRole')}</th>
+                  <th scope="col" className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableStatus')}</th>
                   {canSeePhone && (
-                    <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tablePhone')}</th>
+                    <th scope="col" className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tablePhone')}</th>
                   )}
-                  <th className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableJoinedAt')}</th>
-                  <th className="pe-6 py-3"></th>
+                  <th scope="col" className="px-4 py-3 text-sm font-medium text-muted-foreground">{t('tableJoinedAt')}</th>
+                  <th scope="col" className="pe-6 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y">

@@ -247,9 +247,9 @@ export default async function FinancialReportsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-start py-2 font-medium">{t('fund')}</th>
-                    <th className="text-end py-2 font-medium">{t('balance')}</th>
-                    <th className="text-end py-2 font-medium">{t('target')}</th>
+                    <th scope="col" className="text-start py-2 font-medium">{t('fund')}</th>
+                    <th scope="col" className="text-end py-2 font-medium">{t('balance')}</th>
+                    <th scope="col" className="text-end py-2 font-medium">{t('target')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -294,10 +294,10 @@ export default async function FinancialReportsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-start py-2 font-medium">#</th>
-                    <th className="text-start py-2 font-medium">{t('donor')}</th>
-                    <th className="text-end py-2 font-medium">{t('totalAmount')}</th>
-                    <th className="text-end py-2 font-medium">{t('count')}</th>
+                    <th scope="col" className="text-start py-2 font-medium">#</th>
+                    <th scope="col" className="text-start py-2 font-medium">{t('donor')}</th>
+                    <th scope="col" className="text-end py-2 font-medium">{t('totalAmount')}</th>
+                    <th scope="col" className="text-end py-2 font-medium">{t('count')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -351,9 +351,9 @@ export default async function FinancialReportsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-start py-2 font-medium">{t('account')}</th>
-                        <th className="text-start py-2 font-medium">{t('type')}</th>
-                        <th className="text-end py-2 font-medium">{t('budgetAmount')}</th>
+                        <th scope="col" className="text-start py-2 font-medium">{t('account')}</th>
+                        <th scope="col" className="text-start py-2 font-medium">{t('type')}</th>
+                        <th scope="col" className="text-end py-2 font-medium">{t('budgetAmount')}</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -123,11 +123,11 @@ export default async function BudgetDetailPage({ params }: { params: Promise<{ i
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-start px-4 py-2 font-medium">Account</th>
-                <th className="text-end px-4 py-2 font-medium">Budgeted</th>
-                <th className="text-end px-4 py-2 font-medium">Actual</th>
-                <th className="text-end px-4 py-2 font-medium">Variance</th>
-                <th className="px-4 py-2 w-20"></th>
+                <th scope="col" className="text-start px-4 py-2 font-medium">Account</th>
+                <th scope="col" className="text-end px-4 py-2 font-medium">Budgeted</th>
+                <th scope="col" className="text-end px-4 py-2 font-medium">Actual</th>
+                <th scope="col" className="text-end px-4 py-2 font-medium">Variance</th>
+                <th scope="col" className="px-4 py-2 w-20"></th>
               </tr>
             </thead>
             <tbody className="divide-y">

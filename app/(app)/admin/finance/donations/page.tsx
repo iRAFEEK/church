@@ -190,12 +190,12 @@ export default async function DonationsPage({ searchParams }: { searchParams: Pr
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-start px-4 py-3 font-medium">{t('donor')}</th>
-                  <th className="text-start px-4 py-3 font-medium">{t('amount')}</th>
-                  <th className="text-start px-4 py-3 font-medium">{t('fund')}</th>
-                  <th className="text-start px-4 py-3 font-medium">{t('paymentMethod')}</th>
-                  <th className="text-start px-4 py-3 font-medium">{t('date')}</th>
-                  <th className="text-start px-4 py-3 font-medium">{t('receipt')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('donor')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('amount')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('fund')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('paymentMethod')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('date')}</th>
+                  <th scope="col" className="text-start px-4 py-3 font-medium">{t('receipt')}</th>
                 </tr>
               </thead>
               <tbody>

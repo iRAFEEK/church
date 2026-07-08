@@ -1,5 +1,6 @@
 {
   "common": {
+    "skipToContent": "تخطَّ إلى المحتوى",
     "save": "حفظ",
     "cancel": "إلغاء",
     "edit": "تعديل",
@@ -45,7 +46,8 @@
   "topbar": {
     "myProfile": "ملفي الشخصي",
     "editProfile": "تعديل الملف",
-    "langToggle": "EN"
+    "langToggle": "EN",
+    "userMenu": "قائمة المستخدم"
   },
   "nav": {
     "sections": {
@@ -1042,7 +1044,9 @@
       "visitor": "زائر",
       "outreach_assignment": "تكليف تواصل"
     },
-    "viewRelated": "عرض التفاصيل"
+    "viewRelated": "عرض التفاصيل",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية"
   },
   "events": {
     "adminPageTitle": "الفعاليات",
@@ -2022,7 +2026,9 @@
       "update": "فشل تحديث الصلاة",
       "delete": "فشل حذف الصلاة",
       "pray": "فشل تحديث حالة الصلاة"
-    }
+    },
+    "archiveAction": "أرشفة",
+    "deleteAction": "حذف"
   },
   "outreach": {
     "pageTitle": "التواصل",

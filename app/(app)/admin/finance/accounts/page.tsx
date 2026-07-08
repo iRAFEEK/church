@@ -153,11 +153,11 @@ export default async function AccountsPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-start px-4 py-2 font-medium">{t('code')}</th>
-              <th className="text-start px-4 py-2 font-medium">{t('name')}</th>
-              <th className="text-start px-4 py-2 font-medium">{t('type')}</th>
-              <th className="text-end px-4 py-2 font-medium">{t('balance')}</th>
-              <th className="text-center px-4 py-2 font-medium">{t('active')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('code')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('name')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('type')}</th>
+              <th scope="col" className="text-end px-4 py-2 font-medium">{t('balance')}</th>
+              <th scope="col" className="text-center px-4 py-2 font-medium">{t('active')}</th>
             </tr>
           </thead>
           <tbody className="divide-y">

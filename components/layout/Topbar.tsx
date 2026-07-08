@@ -62,7 +62,7 @@ export function Topbar({ profile, churchName, churchNameAr, onLangChange }: Topb
         <div className="hidden md:block">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label={t('userMenu')}>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={getAvatarUrl(profile.photo_url, 32)} alt={displayName} />
                   <AvatarFallback className="text-xs">

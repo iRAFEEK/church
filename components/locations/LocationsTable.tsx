@@ -97,11 +97,11 @@ export function LocationsTable({ locations }: LocationsTableProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-zinc-50 text-xs text-zinc-500">
-                <th className="text-start px-4 py-3 font-medium">{t('name')}</th>
-                <th className="text-start px-4 py-3 font-medium">{t('type')}</th>
-                <th className="text-start px-4 py-3 font-medium">{t('capacity')}</th>
-                <th className="text-start px-4 py-3 font-medium">{t('status')}</th>
-                <th className="px-4 py-3 w-10" />
+                <th scope="col" className="text-start px-4 py-3 font-medium">{t('name')}</th>
+                <th scope="col" className="text-start px-4 py-3 font-medium">{t('type')}</th>
+                <th scope="col" className="text-start px-4 py-3 font-medium">{t('capacity')}</th>
+                <th scope="col" className="text-start px-4 py-3 font-medium">{t('status')}</th>
+                <th scope="col" className="px-4 py-3 w-10" />
               </tr>
             </thead>
             <tbody className="divide-y">

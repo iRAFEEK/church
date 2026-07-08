@@ -131,6 +131,7 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
                 size="sm"
                 className="h-9 px-2"
                 onClick={() => onArchive(prayer.id)}
+                aria-label={t('archiveAction')}
               >
                 <Archive className="h-3.5 w-3.5" />
               </Button>
@@ -141,6 +142,7 @@ export function ChurchPrayerCard({ prayer, onMarkAnswered, onArchive, onDelete, 
                 size="sm"
                 className="h-9 px-2 text-destructive hover:text-destructive"
                 onClick={() => onDelete(prayer.id)}
+                aria-label={t('deleteAction')}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

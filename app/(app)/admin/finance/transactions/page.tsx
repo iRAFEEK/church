@@ -113,11 +113,11 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
         <table className="w-full text-sm hidden md:table">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-start px-4 py-2 font-medium">{t('refNumber')}</th>
-              <th className="text-start px-4 py-2 font-medium">{t('date')}</th>
-              <th className="text-start px-4 py-2 font-medium">{t('description')}</th>
-              <th className="text-start px-4 py-2 font-medium">{t('status')}</th>
-              <th className="text-end px-4 py-2 font-medium">{t('amount')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('refNumber')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('date')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('description')}</th>
+              <th scope="col" className="text-start px-4 py-2 font-medium">{t('status')}</th>
+              <th scope="col" className="text-end px-4 py-2 font-medium">{t('amount')}</th>
             </tr>
           </thead>
           <tbody className="divide-y">

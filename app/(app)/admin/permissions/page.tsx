@@ -213,10 +213,10 @@ export default async function PermissionsSummaryPage({
             <table className="w-full">
               <thead>
                 <tr className="border-b text-start">
-                  <th className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'العضو' : 'Member'}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'الدور' : 'Role'}</th>
-                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'التخصيصات' : 'Overrides'}</th>
-                  <th className="pe-6 py-2.5"></th>
+                  <th scope="col" className="ps-6 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'العضو' : 'Member'}</th>
+                  <th scope="col" className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'الدور' : 'Role'}</th>
+                  <th scope="col" className="px-4 py-2.5 text-xs font-medium text-muted-foreground">{isRTL ? 'التخصيصات' : 'Overrides'}</th>
+                  <th scope="col" className="pe-6 py-2.5"></th>
                 </tr>
               </thead>
               <tbody className="divide-y">

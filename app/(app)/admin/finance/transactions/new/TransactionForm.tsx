@@ -152,11 +152,11 @@ export function TransactionForm({ accounts, funds }: TransactionFormProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-start text-muted-foreground border-b">
-                    <th className="pb-2 font-medium w-48">{t('accounts')}</th>
-                    <th className="pb-2 font-medium">{t('description')}</th>
-                    <th className="pb-2 font-medium w-28 text-end">{t('debit')}</th>
-                    <th className="pb-2 font-medium w-28 text-end">{t('credit')}</th>
-                    <th className="pb-2 w-8"></th>
+                    <th scope="col" className="pb-2 font-medium w-48">{t('accounts')}</th>
+                    <th scope="col" className="pb-2 font-medium">{t('description')}</th>
+                    <th scope="col" className="pb-2 font-medium w-28 text-end">{t('debit')}</th>
+                    <th scope="col" className="pb-2 font-medium w-28 text-end">{t('credit')}</th>
+                    <th scope="col" className="pb-2 w-8"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">

@@ -1,5 +1,6 @@
 {
   "common": {
+    "skipToContent": "Skip to content",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
@@ -45,7 +46,8 @@
   "topbar": {
     "myProfile": "My Profile",
     "editProfile": "Edit Profile",
-    "langToggle": "عر"
+    "langToggle": "عر",
+    "userMenu": "User menu"
   },
   "nav": {
     "sections": {
@@ -1042,7 +1044,9 @@
       "visitor": "Visitor",
       "outreach_assignment": "Outreach Assignment"
     },
-    "viewRelated": "View Details"
+    "viewRelated": "View Details",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "events": {
     "adminPageTitle": "Events",
@@ -2022,7 +2026,9 @@
       "update": "Failed to update prayer",
       "delete": "Failed to delete prayer",
       "pray": "Failed to update prayer status"
-    }
+    },
+    "archiveAction": "Archive",
+    "deleteAction": "Delete"
   },
   "outreach": {
     "pageTitle": "Outreach",

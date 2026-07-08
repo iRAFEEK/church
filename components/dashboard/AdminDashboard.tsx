@@ -160,12 +160,12 @@ export function AdminDashboard({ data }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-start py-2 font-medium text-muted-foreground">{t('groupHealthName')}</th>
-                    <th className="text-start py-2 font-medium text-muted-foreground">{t('groupHealthLeader')}</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthMembers')}</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthAttendance')}</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthAtRisk')}</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthTrend')}</th>
+                    <th scope="col" className="text-start py-2 font-medium text-muted-foreground">{t('groupHealthName')}</th>
+                    <th scope="col" className="text-start py-2 font-medium text-muted-foreground">{t('groupHealthLeader')}</th>
+                    <th scope="col" className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthMembers')}</th>
+                    <th scope="col" className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthAttendance')}</th>
+                    <th scope="col" className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthAtRisk')}</th>
+                    <th scope="col" className="text-center py-2 font-medium text-muted-foreground">{t('groupHealthTrend')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
