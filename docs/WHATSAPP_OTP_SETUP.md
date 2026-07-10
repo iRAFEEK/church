@@ -49,8 +49,12 @@ Relevant code:
    - WhatsApp Manager → **Message Templates** → **Create template**.
    - Category: **Authentication**.
    - Name: `otp_login` (must match `WHATSAPP_OTP_TEMPLATE`).
-   - Languages: create **Arabic (`ar`)** and **English (`en`)** versions (the
-     sender picks the language from the user's app locale).
+   - Language: **Arabic (`ar`) is MANDATORY.** ⚠️ The Send-SMS hook does not
+     receive the user's app locale, so the sender (`lib/whatsapp/otp.ts`,
+     `templateLanguage()`) currently **always requests the `ar` template**. If the
+     `ar` version is not approved, **every OTP send fails** with a template-not-found
+     error — even for English users. Create the language as exactly `ar` (not
+     `ar_EG`); an English (`en`) version is optional/future-proofing only.
    - Use the standard auth-template body ("{{1}} is your verification code…")
      and enable the **Copy code** button. Meta fills both the body and the
      button from the single OTP parameter — our payload sends the code to both.
@@ -112,7 +116,7 @@ those credentials are set.
 
 - [ ] Phone provider enabled in Supabase.
 - [ ] Send-SMS hook URL points at `/api/auth/sms-hook`, secret copied to env.
-- [ ] `otp_login` auth template approved in both `ar` and `en`.
+- [ ] `otp_login` auth template approved in **`ar`** (mandatory — the sender always requests `ar`; `en` optional).
 - [ ] Permanent access token + phone-number ID set in Vercel env.
 - [ ] Staging: test number + leave Cloud API creds unset → confirm OTP appears
       in logs and `verifyOtp` mints a session.
