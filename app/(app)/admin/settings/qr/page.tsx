@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/auth'
 import { QRGenerator } from '@/components/admin/QRGenerator'
 import { VisitorFormConfigurator } from '@/components/admin/VisitorFormConfigurator'
 import { getTranslations } from 'next-intl/server'
+import { getAppOrigin } from '@/lib/request-origin'
 import type { VisitorFormField } from '@/lib/schemas/visitor-form-config'
 
 const DEFAULT_FIELDS: VisitorFormField[] = [
@@ -27,7 +28,9 @@ export default async function QRPage() {
     .eq('id', user.profile.church_id)
     .single()
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  // Origin comes from the actual request (correct on any domain, zero config);
+  // NEXT_PUBLIC_APP_URL only overrides when set to a real (non-localhost) URL.
+  const appUrl = await getAppOrigin()
   const joinUrl = `${appUrl}/join?church=${church?.id}`
   const isLocalhost = appUrl.includes('localhost')
 
