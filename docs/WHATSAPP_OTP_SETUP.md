@@ -2,6 +2,36 @@
 
 How to enable phone / WhatsApp OTP sign-in for Ekklesia (Track A1).
 
+---
+
+## ▶️ Setup progress (updated 2026-07-10, from a live pass through the Meta console)
+
+**Your Meta account (already exists):**
+| Thing | Value |
+|---|---|
+| Business portfolio | **Ekklesia** (`business_id` `848833464973823`) |
+| App | **ekklesia** (`app_id` `1015496931343627`, mode: In development) |
+| Test number | `+1 555 666-1042` — **Phone Number ID** `1280051118519551`, **WABA** `28434036916196356` |
+
+**✅ Decided/verified this pass**
+- **Template delivery = "Copy code".** For a PWA (no native Android app) this is the only workable option: *one-tap autofill* requires an Android package name + signature hash we don't have, and *zero-tap* requires accepting WhatsApp's Business ToS + app config. Copy-code needs neither. The exact template was built in the UI: **name `otp_login`, category Authentication → One-time Passcode, language `ar` (plain Arabic, NOT `ar_EG`), security recommendation ON, 10-min validity, Copy-code button.**
+- **No code change needed.** For *authentication* templates, the Cloud API button component is `sub_type:"url", index:"0"` with the OTP as its text param **even for copy-code** — which is exactly what `lib/whatsapp/otp.ts` already sends. Template (copy-code) and code (url button) are compatible.
+- **Webhooks are NOT required.** Production-setup Step 2 offers a "Configure Webhooks" (Callback URL + Verify token) — that's for *receiving* messages. OTP only *sends* (Supabase → our hook → Meta). Skip it.
+
+**⛔ The blocker (needs YOU — can't be automated)**
+- **The test WABA cannot create custom templates** (Meta returns *"does not have permission to create message template"* — test accounts only allow the sample templates like `hello_world`). So the real `ar otp_login` template can only be created on a **production WABA**, which requires **registering your real church WhatsApp number** (your number + an SMS/voice verification code sent to it). That number must NOT already be on the consumer WhatsApp app.
+
+**What's left, in order (all your actions — phone / secrets / legal):**
+1. **Register the production number** — App → WhatsApp → *Step 2. Production setup* → add a real number → enter the verification code. This creates your production WABA.
+2. **Create the `ar otp_login` copy-code template** on that production WABA (WhatsApp Manager → Message Templates; use the exact config above). Submit for review.
+3. **Generate a permanent token** — Business Settings → System Users → new system user → assign the ekklesia app with WhatsApp permissions → Generate token (no expiry) = `WHATSAPP_ACCESS_TOKEN` (a secret).
+4. **Business Verification** (Step 3) — upload your documents; raises the sending limit above the unverified cap.
+5. **Supabase + Vercel** — enable the Phone provider + Send-SMS hook (section b), set the 4 env vars (section c). `WHATSAPP_PHONE_NUMBER_ID` = the **production** number's ID (not the test `1280051118519551`).
+
+> 💡 **See the app-side flow working today without any of this:** use Supabase **test phone numbers with fixed OTPs** and leave the Cloud API env vars unset — `sendWhatsAppOtp()` logs the code in dev mode, so enter-phone → verify → session → claim works end-to-end. Meta production just swaps in real delivery later.
+
+---
+
 ## Architecture (why this is the cheapest path)
 
 Supabase Auth owns the whole OTP lifecycle — it **generates** the 6-digit code,
