@@ -88,7 +88,7 @@ export function EventDetailClient({ event, eventId, isRegistered: initialRegiste
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">{title}</h1>
         <div className="flex items-center gap-2 mt-2">
-          <Badge variant="secondary">{t(`type_${event.event_type}`)}</Badge>
+          <Badge variant="secondary">{t.has(`type_${event.event_type}`) ? t(`type_${event.event_type}`) : event.event_type}</Badge>
           {isFull && (
             <Badge variant="destructive">{t('eventFull')}</Badge>
           )}

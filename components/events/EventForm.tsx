@@ -249,7 +249,8 @@ export function EventForm({ event, defaultDate }: EventFormProps) {
       }
 
       toast.success(event ? t('eventUpdated') : t('eventCreated'))
-      router.push(eventId ? `/admin/events/${eventId}` : '/admin/events')
+      // Fall back to /events — there is no /admin/events index route.
+      router.push(eventId ? `/admin/events/${eventId}` : '/events')
       router.refresh()
     } catch {
       toast.error(t('errorGeneral'))

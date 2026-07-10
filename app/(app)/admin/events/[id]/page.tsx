@@ -73,7 +73,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
             <Badge variant="outline" className={statusColors[event.status] || ''}>
               {t(`status_${event.status}`)}
             </Badge>
-            <Badge variant="secondary">{t(`type_${event.event_type}`)}</Badge>
+            <Badge variant="secondary">{t.has(`type_${event.event_type}`) ? t(`type_${event.event_type}`) : event.event_type}</Badge>
             {isFull && (
               <Badge variant="destructive">{t('eventFull')}</Badge>
             )}

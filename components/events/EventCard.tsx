@@ -95,7 +95,7 @@ export function EventCard({ event, href }: EventCardProps) {
 
         <div className="mt-2">
           <Badge variant="secondary" className="text-xs">
-            {t(`type_${event.event_type}`)}
+            {t.has(`type_${event.event_type}`) ? t(`type_${event.event_type}`) : event.event_type}
           </Badge>
         </div>
       </div>

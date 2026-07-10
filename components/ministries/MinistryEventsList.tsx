@@ -126,7 +126,7 @@ function EventCard({ event, isRTL, te }: { event: MinistryEvent; isRTL: boolean;
         </p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <Badge variant="secondary" className="text-xs">{te(`type_${event.event_type}`)}</Badge>
+        <Badge variant="secondary" className="text-xs">{te.has(`type_${event.event_type}`) ? te(`type_${event.event_type}`) : event.event_type}</Badge>
         <Badge variant="outline" className={`text-xs ${statusColors[event.status] || ''}`}>
           {te(`status_${event.status}`)}
         </Badge>

@@ -111,6 +111,10 @@ export default function NotificationsPage() {
   const locale = useLocale()
   const router = useRouter()
 
+  // Notification types are free text in the DB — fall back to the generic label
+  // instead of rendering a raw i18n key for types without a translation.
+  const typeLabel = (type: string) => (t.has(`types.${type}`) ? t(`types.${type}`) : t('types.general'))
+
   // User role & scopes
   const [userRole, setUserRole] = useState<string | null>(null)
   const [canSend, setCanSend] = useState(false)
@@ -349,7 +353,7 @@ export default function NotificationsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline" className="text-xs px-1.5 py-0">{t(`types.${n.type}`)}</Badge>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0">{typeLabel(n.type)}</Badge>
                       <span className="text-xs text-muted-foreground">{formatDate(n.created_at, locale)}</span>
                     </div>
                   </div>
@@ -394,7 +398,7 @@ export default function NotificationsPage() {
                       <DialogTitle className="text-base">{sn.title}</DialogTitle>
                       <DialogDescription asChild>
                         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs px-1.5 py-0">{t(`types.${sn.type}`)}</Badge>
+                          <Badge variant="outline" className="text-xs px-1.5 py-0">{typeLabel(sn.type)}</Badge>
                           <span>{formatDate(sn.created_at, locale)}</span>
                         </div>
                       </DialogDescription>

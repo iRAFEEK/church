@@ -35,7 +35,8 @@ export function EventDeleteButton({ eventId, eventTitle }: EventDeleteButtonProp
       const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete')
       toast.success(t('eventDeleted'))
-      router.push('/admin/events')
+      // The events list lives at /events (there is no /admin/events index route).
+      router.push('/events')
       router.refresh()
     } catch {
       toast.error(t('errorGeneral'))

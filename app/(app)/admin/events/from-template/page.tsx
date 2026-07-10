@@ -231,7 +231,7 @@ export default function CreateFromTemplatePage() {
                       <p className="text-sm font-medium text-zinc-800">{name}</p>
                       <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
                         <Badge variant="secondary" className="text-xs">
-                          {te(`type_${tmpl.event_type}`)}
+                          {te.has(`type_${tmpl.event_type}`) ? te(`type_${tmpl.event_type}`) : tmpl.event_type}
                         </Badge>
                         {tmpl.needs_count > 0 && (
                           <span className="flex items-center gap-1">
