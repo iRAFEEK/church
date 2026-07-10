@@ -748,7 +748,7 @@
   },
   "gathering": {
     "newPageTitle": "اجتماع جديد",
-    "formDateTime": "التاريخ والوقت *",
+    "formDateTime": "التاريخ والوقت",
     "formLocation": "المكان",
     "formTopic": "الموضوع / الدرس",
     "formTopicPlaceholder": "موضوع الاجتماع",

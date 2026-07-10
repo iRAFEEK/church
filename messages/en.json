@@ -748,7 +748,7 @@
   },
   "gathering": {
     "newPageTitle": "New Gathering",
-    "formDateTime": "Date and Time *",
+    "formDateTime": "Date and Time",
     "formLocation": "Location",
     "formTopic": "Topic / Lesson",
     "formTopicPlaceholder": "Meeting topic",
