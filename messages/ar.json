@@ -2886,5 +2886,17 @@
     "acceptedToast": "تم قبول الدعوة",
     "declinedToast": "تم رفض الدعوة",
     "errorToast": "حدث خطأ ما. برجاء المحاولة مرة أخرى."
+  },
+  "helpGuide": {
+    "title": "دليل الاستخدام",
+    "subtitle": "دروس قصيرة بالصور والفيديو والصوت — اتعلم أي جزء في التطبيق.",
+    "lessonCount": "{count} دروس",
+    "listen": "استمع",
+    "video": "فيديو",
+    "hasVideo": "يحتوي على فيديو",
+    "backToLibrary": "كل الدروس",
+    "nextLesson": "الدرس التالي",
+    "watchThisPage": "شاهد شرح هذه الصفحة",
+    "allLessons": "دليل الاستخدام"
   }
 }

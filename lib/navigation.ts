@@ -210,6 +210,15 @@ export const NAV_ITEMS: NavItem[] = [
     section: 'Resources',
     section_ar: 'الموارد',
   },
+  {
+    label: 'How to Use',
+    label_ar: 'دليل الاستخدام',
+    href: '/help',
+    iconName: 'GraduationCap',
+    roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+    section: 'Resources',
+    section_ar: 'الموارد',
+  },
 
   // ─── Community ─────────────────────────────────────────
   {

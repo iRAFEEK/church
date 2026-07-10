@@ -2,7 +2,7 @@
 import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { SECTIONS } from './manifest.mjs'
-const MEDIA = 'docs/visual-guide/media'
+const MEDIA = 'public/help-guide'
 mkdirSync(MEDIA,{recursive:true})
 let n = 0
 for (const sec of SECTIONS){

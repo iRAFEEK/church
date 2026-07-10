@@ -2886,5 +2886,17 @@
     "acceptedToast": "Invitation accepted",
     "declinedToast": "Invitation declined",
     "errorToast": "Something went wrong. Please try again."
+  },
+  "helpGuide": {
+    "title": "How to Use",
+    "subtitle": "Short lessons with pictures, video, and voice — learn any part of the app.",
+    "lessonCount": "{count} lessons",
+    "listen": "Listen",
+    "video": "Video",
+    "hasVideo": "Has video",
+    "backToLibrary": "All lessons",
+    "nextLesson": "Next lesson",
+    "watchThisPage": "Watch how this page works",
+    "allLessons": "How to Use"
   }
 }

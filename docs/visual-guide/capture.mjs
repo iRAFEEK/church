@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process'
 import { SECTIONS } from './manifest.mjs'
 
 const BASE = 'http://localhost:4100'
-const MEDIA = 'docs/visual-guide/media'
+const MEDIA = 'public/help-guide'
 const AR = JSON.parse(readFileSync('messages/ar.json','utf8'))
 const CREDS = {
   admin:  ['marian.nakhla.4825@sim.ekklesia.test','password123'],
@@ -149,9 +149,9 @@ for (const sec of SECTIONS) {
       for (let i=0;i<sec.steps.length;i++){
         const [a,b] = stamps[i]
         if (b-a < 1.2) continue  // static step, screenshot only
-        const out = `${MEDIA}/v-${label}-${i}.webm`
+        const out = `${MEDIA}/v-${label}-${i}.mp4`
         try {
-          execSync(`ffmpeg -y -loglevel error -i "${vpath}" -ss ${Math.max(0,a-0.2)} -to ${b+0.4} -c:v libvpx -b:v 550k -an "${out}"`)
+          execSync(`ffmpeg -y -loglevel error -i "${vpath}" -ss ${Math.max(0,a-0.2)} -to ${b+0.4} -c:v libx264 -preset veryfast -crf 26 -pix_fmt yuv420p -movflags +faststart -an "${out}"`)
         } catch(e){ report.push(`WARN video ${label}-${i}`) }
       }
     }

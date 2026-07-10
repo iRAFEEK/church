@@ -1,20 +1,13 @@
-# الدليل المصوّر — Ekklesia Visual Guide
+# Visual Guide Pipeline — "دليل الاستخدام"
 
-An RTL, Arabic, low-literacy-friendly visual walkthrough of the entire app.
-Every step has: an icon, ONE short spoken-Arabic sentence, real Arabic voiceover
-audio (macOS "Majed" voice), an annotated screenshot captured from the running
-app (amber ring + arrow baked in), and — for interactive steps — a short real
-screen-recording clip.
+Generates the media + data for the in-app visual guide at **/help**
+(pages: app/(app)/help, data: lib/help/guide-data.ts, media: public/help-guide).
 
-## Viewing
-Open `index.html` directly in a browser, or serve the folder:
-    python3 -m http.server 4200   # then open http://localhost:4200
+## Regenerating (all real, from the live app)
+1. `npm run build && npx next start -p 4100`   # uses the seeded DB
+2. `node docs/visual-guide/capture.mjs`         # screenshots + per-step MP4 clips → public/help-guide
+3. `node docs/visual-guide/audio.mjs`           # Arabic voiceover (macOS `say`, voice: Majed)
+4. `node docs/visual-guide/gen-app-data.mjs`    # regenerates lib/help/guide-data.ts
 
-## Regenerating media (all real, from the live app)
-1. `npm run build && npx next start -p 4100`  (uses the seeded sim DB)
-2. `node docs/visual-guide/capture.mjs`        # screenshots + per-step video clips
-3. `node docs/visual-guide/audio.mjs`          # Arabic voiceover (needs macOS `say` + Majed voice)
-4. `node docs/visual-guide/build.mjs`          # rebuilds index.html
-
-`capture.mjs [n]` recaptures a single section. The step definitions (Arabic
-narration, selectors, actions) live in `manifest.mjs` — the single source of truth.
+`capture.mjs [n]` recaptures one section. `manifest.mjs` is the single source of
+truth: Arabic narration, icons, selectors, actions, and role gating derive from it.

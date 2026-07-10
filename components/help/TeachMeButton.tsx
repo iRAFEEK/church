@@ -6,7 +6,10 @@ import { useLocale } from 'next-intl'
 import { Plus, X, HelpCircle, type LucideIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { getHelpItems, type HelpItem, type DriverStep } from '@/lib/help/registry'
+import { lessonIdForPath } from '@/lib/help/guide-data'
 import dynamic from 'next/dynamic'
 import { HelpCard } from './HelpCard'
 
@@ -30,6 +33,8 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const items = getHelpItems(pathname, role)
+  const t = useTranslations('helpGuide')
+  const lessonId = lessonIdForPath(pathname, role)
 
   // Close on outside click
   useEffect(() => {
@@ -66,8 +71,8 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
     setTimeout(() => setWalkthroughSteps(steps), 100)
   }, [])
 
-  // Don't render if no help items for this page
-  if (items.length === 0) return null
+  // Don't render if there is neither contextual help nor a video lesson
+  if (items.length === 0 && !lessonId) return null
 
   function getIcon(iconName: string): LucideIcon {
     return (Icons as unknown as Record<string, LucideIcon>)[iconName] ?? HelpCircle
@@ -128,6 +133,26 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
               </button>
             )
           })}
+
+          {/* Video lesson link — jumps into the visual guide */}
+          <Link
+            href={lessonId ? `/help/${lessonId}` : '/help'}
+            onClick={() => setOpen(false)}
+            className={cn(
+              'flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 shadow-lg border border-amber-200',
+              'hover:bg-amber-100 active:scale-95 transition-all duration-150',
+              'min-w-[200px]',
+              'text-start'
+            )}
+            style={{ transitionDelay: open ? `${items.length * 50}ms` : '0ms' }}
+          >
+            <div className="w-9 h-9 rounded-full bg-amber-500/15 flex items-center justify-center shrink-0">
+              <Icons.GraduationCap className="h-4 w-4 text-amber-600" />
+            </div>
+            <span className="text-sm font-medium text-zinc-800">
+              {lessonId ? t('watchThisPage') : t('allLessons')}
+            </span>
+          </Link>
         </div>
 
         {/* Floating + button */}
