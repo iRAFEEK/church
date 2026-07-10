@@ -852,9 +852,9 @@
   "join": {
     "pageTitle": "Welcome",
     "pageSubtitle": "We're glad you're here. Register your details and one of our team members will contact you soon.",
-    "firstNameLabel": "First Name *",
+    "firstNameLabel": "First Name",
     "firstNamePH": "George",
-    "lastNameLabel": "Last Name *",
+    "lastNameLabel": "Last Name",
     "lastNamePH": "Hanna",
     "phoneLabel": "Phone Number",
     "phonePH": "+961 71 000 000",

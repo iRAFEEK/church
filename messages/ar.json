@@ -852,9 +852,9 @@
   "join": {
     "pageTitle": "أهلاً وسهلاً",
     "pageSubtitle": "يسعدنا وجودك معنا. سجّل بياناتك وسيتواصل معك أحد أعضاء فريقنا قريباً.",
-    "firstNameLabel": "الاسم الأول *",
+    "firstNameLabel": "الاسم الأول",
     "firstNamePH": "جورج",
-    "lastNameLabel": "اسم العائلة *",
+    "lastNameLabel": "اسم العائلة",
     "lastNamePH": "حنا",
     "phoneLabel": "رقم الهاتف",
     "phonePH": "+961 71 000 000",
