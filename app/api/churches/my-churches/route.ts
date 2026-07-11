@@ -2,11 +2,13 @@ import { apiHandler } from '@/lib/api/handler'
 
 // GET /api/churches/my-churches — list all churches the user belongs to
 export const GET = apiHandler(async ({ supabase, user, profile }) => {
-  // Fetch all memberships with church details
+  // Fetch all ACTIVE memberships with church details. Non-active rows (pending
+  // self-signup, managed/invited shadow memberships) are not switchable churches.
   const { data, error } = await supabase
     .from('user_churches')
     .select('id, user_id, church_id, role, joined_at, church:church_id(id, name, name_ar, logo_url, country)')
     .eq('user_id', user.id)
+    .eq('status', 'active')
     .order('joined_at', { ascending: true })
 
   if (error) throw error

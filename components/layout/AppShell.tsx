@@ -3,6 +3,7 @@
 import { useTransition } from 'react'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { Clock } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { BottomNav } from './BottomNav'
@@ -19,9 +20,13 @@ interface AppShellProps {
   resolvedPermissions: Record<PermissionKey, boolean>
   children: React.ReactNode
   initialLang?: string
+  /** Church is awaiting platform approval — trims nav + shows an "under review" banner. */
+  isPendingChurch?: boolean
+  /** Caller is a platform operator — surfaces the Ekklesia Admin nav entry. */
+  isPlatformAdmin?: boolean
 }
 
-export function AppShell({ profile, church, resolvedPermissions, children }: AppShellProps) {
+export function AppShell({ profile, church, resolvedPermissions, children, isPendingChurch, isPlatformAdmin }: AppShellProps) {
   const pathname = usePathname()
   const [, startTransition] = useTransition()
   const t = useTranslations('common')
@@ -50,6 +55,8 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
             churchName={church.name}
             churchNameAr={church.name_ar ?? church.name}
             resolvedPermissions={resolvedPermissions}
+            isPendingChurch={isPendingChurch}
+            isPlatformAdmin={isPlatformAdmin}
           />
         </div>
 
@@ -66,6 +73,12 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
           <main id="main-content" className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
             style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 5rem)' }}
           >
+            {isPendingChurch && (
+              <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+                <Clock className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{t('pendingChurchBanner')}</span>
+              </div>
+            )}
             {children}
           </main>
         </div>
@@ -87,6 +100,8 @@ export function AppShell({ profile, church, resolvedPermissions, children }: App
         churchNameAr={church.name_ar ?? church.name}
         onLangChange={handleLangChange}
         resolvedPermissions={resolvedPermissions}
+        isPendingChurch={isPendingChurch}
+        isPlatformAdmin={isPlatformAdmin}
       />
     </>
   )

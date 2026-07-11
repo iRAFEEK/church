@@ -38,6 +38,9 @@ function makeChain(table: string) {
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({ auth: { getUser: mockGetUser }, from: vi.fn((t: string) => makeChain(t)) })),
+  // The switch route performs the profiles update via the service-role client
+  // (migration 050's trigger blocks self church_id/role changes on the user client).
+  createAdminClient: vi.fn(async () => ({ from: vi.fn((t: string) => makeChain(t)) })),
 }))
 vi.mock('@/lib/auth', () => ({ resolveApiPermissions: vi.fn().mockResolvedValue({}) }))
 vi.mock('@/lib/membership', () => ({ isActiveMembership: (s: string | null | undefined) => s == null || s === 'active' }))

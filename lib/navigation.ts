@@ -339,6 +339,34 @@ export const NAV_ITEMS: NavItem[] = [
 /** Paths that appear in the mobile bottom tab bar */
 export const PRIMARY_MOBILE_PATHS = ['/dashboard', '/admin/groups', '/my-group', '/admin/ministries', '/notifications']
 
+/**
+ * Nav hrefs a PENDING church (awaiting platform approval) may reach. Its founder can set
+ * up their profile, edit church info (settings), and watch the tutorial lessons — but
+ * nothing operational until approved. Enforced server-side in the (app) layout too.
+ */
+export const PENDING_CHURCH_ALLOWED_HREFS = ['/dashboard', '/profile', '/help', '/admin/settings']
+
+/**
+ * Ekklesia platform-operator entry. Not role-based — appended only when the caller is a
+ * platform admin (email allowlist, see lib/platform.ts), so it never leaks to church roles.
+ */
+export const PLATFORM_NAV_ITEM: NavItem = {
+  label: 'Ekklesia Admin',
+  label_ar: 'إدارة إكليسيا',
+  href: '/platform',
+  iconName: 'ShieldCheck',
+  roles: ['member', 'group_leader', 'ministry_leader', 'super_admin'],
+  section: 'Ekklesia',
+  section_ar: 'إكليسيا',
+}
+
+export interface NavFilterOptions {
+  /** Church is awaiting platform approval — restrict to PENDING_CHURCH_ALLOWED_HREFS. */
+  isPendingChurch?: boolean
+  /** Caller is a platform operator — append the Ekklesia Admin entry. */
+  isPlatformAdmin?: boolean
+}
+
 /** @deprecated Use getNavForUser() instead for permission-aware filtering */
 export function getNavForRole(role: UserRole): NavItem[] {
   return NAV_ITEMS.filter(item => item.roles.includes(role))
@@ -347,14 +375,27 @@ export function getNavForRole(role: UserRole): NavItem[] {
 /** Permission-aware navigation filter */
 export function getNavForUser(
   role: UserRole,
-  resolvedPermissions: Record<PermissionKey, boolean>
+  resolvedPermissions: Record<PermissionKey, boolean>,
+  opts: NavFilterOptions = {}
 ): NavItem[] {
-  return NAV_ITEMS.filter(item => {
+  let items = NAV_ITEMS.filter(item => {
     if (!item.roles.includes(role)) return false
     if (item.permission && !resolvedPermissions[item.permission]) return false
     if (item.feature && !isFeatureEnabled(item.feature)) return false
     return true
   })
+
+  // Pending church: only church info + tutorials + own profile, nothing operational.
+  if (opts.isPendingChurch) {
+    items = items.filter(item => PENDING_CHURCH_ALLOWED_HREFS.includes(item.href))
+  }
+
+  // Platform operators get the Ekklesia Admin entry (independent of church role).
+  if (opts.isPlatformAdmin) {
+    items = [...items, PLATFORM_NAV_ITEM]
+  }
+
+  return items
 }
 
 /** Items NOT shown in the bottom tab bar — displayed in the "More" sheet */

@@ -123,16 +123,8 @@ export function PhoneLoginForm() {
         if (profile && !profile.onboarding_completed) {
           router.push('/onboarding')
         } else {
-          const { data: memberships } = await supabase
-            .from('user_churches')
-            .select('church_id')
-            .eq('user_id', data.user.id)
-
-          if (memberships && memberships.length > 1) {
-            router.push('/select-church')
-          } else {
-            router.push('/')
-          }
+          // Land straight in the last-active church; switch from the top-bar switcher.
+          router.push('/')
         }
         router.refresh()
       }

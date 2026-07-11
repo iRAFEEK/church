@@ -7,6 +7,12 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "ekklesia-staging",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:staging"],
+      "port": 3100
     }
   ]
 }

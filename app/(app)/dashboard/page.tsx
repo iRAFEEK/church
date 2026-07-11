@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Clock, GraduationCap, Settings } from 'lucide-react'
 import { getCurrentUserWithRole, isLeader } from '@/lib/auth'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
@@ -57,6 +59,39 @@ export default async function DashboardPage() {
 
   const churchId = profile.church_id
   const slaHours = church.visitor_sla_hours ?? 48
+
+  // Pending church: the founder is waiting for platform approval. Show an "under review"
+  // home linking to the only two things they can do — watch tutorials + edit church info.
+  if (church.status && church.status !== 'active') {
+    const tp = await getTranslations('pendingHome')
+    return (
+      <div className="space-y-6">
+        {header}
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center">
+          <div className="h-14 w-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <Clock className="h-7 w-7 text-amber-700" />
+          </div>
+          <h2 className="text-lg font-bold text-amber-900">{tp('title')}</h2>
+          <p className="text-sm text-amber-800 mt-2 max-w-md mx-auto leading-relaxed">{tp('body')}</p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link href="/help" className="rounded-xl border border-zinc-200 bg-white p-4 hover:bg-muted/50 transition-colors">
+            <GraduationCap className="h-6 w-6 text-primary mb-2" />
+            <p className="font-semibold text-zinc-900">{tp('tutorialsTitle')}</p>
+            <p className="text-sm text-zinc-500 mt-0.5">{tp('tutorialsBody')}</p>
+          </Link>
+          {profile.role === 'super_admin' && (
+            <Link href="/admin/settings" className="rounded-xl border border-zinc-200 bg-white p-4 hover:bg-muted/50 transition-colors">
+              <Settings className="h-6 w-6 text-primary mb-2" />
+              <p className="font-semibold text-zinc-900">{tp('churchInfoTitle')}</p>
+              <p className="text-sm text-zinc-500 mt-0.5">{tp('churchInfoBody')}</p>
+            </Link>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (profile.role === 'super_admin') {
     const data = await getCachedAdminDashboard(churchId, id, slaHours)

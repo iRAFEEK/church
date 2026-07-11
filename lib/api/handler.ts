@@ -38,6 +38,12 @@ type HandlerOptions = {
   cache?: string
   /** Rate limit tier. Defaults to 'normal' for mutations (POST/PATCH/PUT/DELETE), 'relaxed' for GET. Use 'none' to disable. */
   rateLimit?: RateLimitTier
+  /**
+   * When true, the caller's church must be 'active' (not pending platform approval).
+   * Blocks a pending church's founder from outward/operational mutations (inviting
+   * members, sending notifications) before the church is approved. See Track 1.
+   */
+  requireActiveChurch?: boolean
 }
 
 // ARCH: Return type uses `any` for the second parameter to satisfy Next.js 15's strict
@@ -150,6 +156,19 @@ export function apiHandler(handler: ApiHandler, options: HandlerOptions = {}) {
         const hasAll = requirePermissions.every(p => resolvedPermissions[p])
         if (!hasAll) {
           return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
+      }
+
+      // Active-church check: a church awaiting platform approval can't do outward/
+      // operational mutations (invite members, send notifications) until approved.
+      if (options.requireActiveChurch && profile) {
+        const { data: ch } = await supabase
+          .from('churches')
+          .select('status')
+          .eq('id', profile.church_id)
+          .single()
+        if (ch?.status && ch.status !== 'active') {
+          return NextResponse.json({ error: 'Church not active' }, { status: 403 })
         }
       }
 

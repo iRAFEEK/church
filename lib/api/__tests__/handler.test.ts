@@ -176,6 +176,28 @@ describe('apiHandler', () => {
     })
   })
 
+  // Track 1 — outward mutations are blocked while the church awaits platform approval.
+  describe('requireActiveChurch', () => {
+    it('returns 403 when the church is not active (pending)', async () => {
+      mockAuthenticated('super_admin')
+      // 4th .single() → churches.status lookup
+      mockSingle.mockResolvedValueOnce({ data: { status: 'pending' }, error: null })
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }), { requireActiveChurch: true })
+      const res = await handler(makeReq('POST'))
+      expect(res.status).toBe(403)
+    })
+
+    it('allows the handler when the church is active', async () => {
+      mockAuthenticated('super_admin')
+      mockSingle.mockResolvedValueOnce({ data: { status: 'active' }, error: null })
+
+      const handler = apiHandler(async () => NextResponse.json({ ok: true }), { requireActiveChurch: true })
+      const res = await handler(makeReq('POST'))
+      expect(res.status).toBe(200)
+    })
+  })
+
   describe('permission enforcement', () => {
     it('returns 403 when user lacks required permissions', async () => {
       mockAuthenticated('member') // member has almost no permissions

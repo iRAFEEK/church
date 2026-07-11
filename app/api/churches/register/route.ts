@@ -184,10 +184,14 @@ export async function POST(request: NextRequest) {
     // which previously left the creator stuck as a member (user_churches.role is
     // the AUTHORITATIVE per-church role the apiHandler uses for privilege checks).
     // Upsert so the role is corrected whether or not the trigger row exists.
+    // status:'active' is REQUIRED here: migration 088's handle_new_user trigger makes
+    // every new membership 'pending' (self-signup approval gate). The church founder is a
+    // pre-approved door, so re-activate their own membership or they'd be stuck behind
+    // their own church's approval queue.
     const { error: ucError } = await supabase
       .from('user_churches')
       .upsert(
-        { user_id: userId, church_id: church.id, role: 'super_admin' },
+        { user_id: userId, church_id: church.id, role: 'super_admin', status: 'active' },
         { onConflict: 'user_id,church_id' }
       )
 
@@ -196,7 +200,7 @@ export async function POST(request: NextRequest) {
       // Fallback: explicit update in case the upsert conflict target differs.
       await supabase
         .from('user_churches')
-        .update({ role: 'super_admin' })
+        .update({ role: 'super_admin', status: 'active' })
         .eq('user_id', userId)
         .eq('church_id', church.id)
     }

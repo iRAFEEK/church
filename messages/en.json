@@ -34,7 +34,8 @@
     "notes": "Notes",
     "artist": "Artist",
     "lyrics": "Lyrics",
-    "lyricsHint": "Separate slides with a blank line"
+    "lyricsHint": "Separate slides with a blank line",
+    "pendingChurchBanner": "Your church is under review. Some features are locked until it's approved."
   },
   "sidebar": {
     "signOut": "Sign out",
@@ -2898,5 +2899,56 @@
     "nextLesson": "Next lesson",
     "watchThisPage": "Watch how this page works",
     "allLessons": "How to Use"
+  },
+  "pendingHome": {
+    "title": "Your church is under review",
+    "body": "While we review your church, you can set up your church info and learn how to use Ekklesia. You'll be able to invite members and start once it's approved.",
+    "tutorialsTitle": "Watch the tutorials",
+    "tutorialsBody": "Short lessons on how everything works.",
+    "churchInfoTitle": "Church info",
+    "churchInfoBody": "Review and update your church settings."
+  },
+  "membershipPending": {
+    "title": "Awaiting approval",
+    "body": "Your request to join has been sent. A church admin will approve you shortly, and then you'll have access.",
+    "churchLabel": "Church",
+    "contactNote": "This usually takes a short while. You can sign out and come back later.",
+    "switchChurch": "Go to my other church",
+    "signOut": "Sign out"
+  },
+  "churchSwitcher": {
+    "yourChurches": "Your churches",
+    "awaitingApproval": "Awaiting approval",
+    "joinAnother": "Join another church",
+    "switchError": "Could not switch church"
+  },
+  "joinAnother": {
+    "title": "Join another church",
+    "subtitle": "Search for a church and send a join request. Their admin will approve it.",
+    "searchPlaceholder": "Search for a church…",
+    "request": "Request",
+    "requested": "Requested",
+    "requestSent": "Request sent to {church}",
+    "alreadyRequested": "You already requested to join this church",
+    "errorToast": "Something went wrong",
+    "noResults": "No churches found for \"{query}\"",
+    "hint": "Start typing to search for a church."
+  },
+  "platformHome": {
+    "title": "Ekklesia Admin",
+    "subtitle": "Review new churches and manage who can approve them.",
+    "pendingChurchesTitle": "Churches awaiting review",
+    "pendingChurchesSubtitle": "{count} awaiting review"
+  },
+  "platformAdmins": {
+    "title": "Approvers",
+    "subtitle": "People who can approve new churches. Add or remove by email.",
+    "emailPlaceholder": "email@example.com",
+    "addButton": "Add",
+    "addedToast": "Approver added",
+    "removedToast": "Approver removed",
+    "errorToast": "Something went wrong",
+    "ownerBadge": "Owner",
+    "removeLabel": "Remove approver"
   }
 }

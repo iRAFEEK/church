@@ -74,4 +74,4 @@ export const POST = apiHandler(async ({ req, supabase, profile, user }) => {
   }
 
   return NextResponse.json({ sent, targets: totalTargets })
-})
+}, { requireActiveChurch: true })

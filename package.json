@@ -5,6 +5,7 @@
   "scripts": {
     "generate:sw": "tsx scripts/generate-firebase-sw.ts",
     "dev": "npm run generate:sw && NODE_OPTIONS='--no-experimental-webstorage' next dev --turbopack",
+    "dev:staging": "bash scripts/dev-staging.sh",
     "build": "npm run generate:sw && NODE_OPTIONS='--no-experimental-webstorage' next build",
     "start": "NODE_OPTIONS='--no-experimental-webstorage' next start",
     "lint": "next lint",
@@ -12,7 +13,12 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
-    "verify:schema": "node scripts/verify-prod-schema.mjs"
+    "verify:schema": "node scripts/verify-prod-schema.mjs",
+    "db:reset": "supabase db reset",
+    "db:diff": "supabase db diff -f",
+    "db:push:staging": "supabase db push --db-url \"$STAGING_DB_URL\"",
+    "db:push:prod": "supabase db push --db-url \"$PROD_DB_URL\"",
+    "verify:schema:staging": "DATABASE_URL=\"$STAGING_DB_URL\" node scripts/verify-prod-schema.mjs"
   },
   "engines": {
     "node": "22.x"

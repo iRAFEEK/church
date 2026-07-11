@@ -35,9 +35,11 @@ interface SidebarProps {
   churchName: string
   churchNameAr: string
   resolvedPermissions: Record<PermissionKey, boolean>
+  isPendingChurch?: boolean
+  isPlatformAdmin?: boolean
 }
 
-export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions }: SidebarProps) {
+export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions, isPendingChurch, isPlatformAdmin }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
@@ -45,7 +47,7 @@ export function Sidebar({ profile, churchName, churchNameAr, resolvedPermissions
   const t = useTranslations('sidebar')
   const isRTL = locale.startsWith('ar')
 
-  const navItems = getNavForUser(profile.role, resolvedPermissions)
+  const navItems = getNavForUser(profile.role, resolvedPermissions, { isPendingChurch, isPlatformAdmin })
   const sections = getNavSections(navItems, locale as 'ar' | 'en')
 
   const displayName = isRTL

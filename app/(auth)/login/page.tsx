@@ -112,17 +112,9 @@ export default function LoginPage() {
       if (profile && !profile.onboarding_completed) {
         router.push('/onboarding')
       } else {
-        // Check if user belongs to multiple churches
-        const { data: memberships } = await supabase
-          .from('user_churches')
-          .select('church_id')
-          .eq('user_id', data.user.id)
-
-        if (memberships && memberships.length > 1) {
-          router.push('/select-church')
-        } else {
-          router.push('/')
-        }
+        // Land straight in the last-active church (profiles.church_id). Multi-church
+        // members switch from the top-bar switcher instead of an every-login picker.
+        router.push('/')
       }
       router.refresh()
     }

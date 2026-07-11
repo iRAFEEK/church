@@ -386,8 +386,8 @@ describe('getCurrentUserWithRole', () => {
     expect(result.profile.role).toBe('group_leader')
   })
 
-  // Onboarding FIX 1 — membership status gate.
-  it('redirects to /login when membership status is not active (managed)', async () => {
+  // Onboarding FIX 1 + migration 088 — membership status gate → "awaiting approval" screen.
+  it('redirects to /membership-pending when membership status is not active (managed)', async () => {
     const profile = makeProfile({ id: USER_ID, church_id: CHURCH_ID, role: 'member' })
     const church = makeChurch()
 
@@ -402,7 +402,7 @@ describe('getCurrentUserWithRole', () => {
       { data: null, error: null },
     )
 
-    await expect(getCurrentUserWithRole()).rejects.toThrow('REDIRECT:/login')
+    await expect(getCurrentUserWithRole()).rejects.toThrow('REDIRECT:/membership-pending')
   })
 
   it('allows access when membership status is active', async () => {

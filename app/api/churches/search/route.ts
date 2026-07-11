@@ -1,8 +1,11 @@
 import { apiHandler } from '@/lib/api/handler'
 import { sanitizeLikePattern } from '@/lib/utils/sanitize'
 
-// GET /api/churches/search — search churches by name (used during onboarding + church switching)
-// Requires auth but profile is optional (user may not have joined a church yet)
+// GET /api/churches/search — search churches by name (used during signup, onboarding + church
+// switching). PUBLIC: /signup runs logged-out, so no auth is required (middleware allows the
+// path and migration 089 grants anon SELECT on ACTIVE churches — name/logo/country only, no
+// member data). Staging walkthrough 2026-07-11 caught the regression: middleware redirected
+// unauthenticated search to /login, so logged-out signup could never find a church.
 export const GET = apiHandler(async ({ req, supabase }) => {
   const q = new URL(req.url).searchParams.get('q')?.trim() ?? ''
 
@@ -22,4 +25,4 @@ export const GET = apiHandler(async ({ req, supabase }) => {
   if (error) throw error
 
   return Response.json(data ?? [])
-}, { profileOptional: true, rateLimit: 'relaxed' })
+}, { requireAuth: false, rateLimit: 'relaxed' })

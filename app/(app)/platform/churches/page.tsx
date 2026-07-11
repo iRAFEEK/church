@@ -13,7 +13,7 @@ import { PendingChurchList, type PendingChurch } from '@/components/platform/Pen
 // can't be gated by email. Platform admins reach this screen by direct URL for now.
 export default async function PlatformChurchesPage() {
   const { email } = await getCurrentUserWithRole()
-  if (!isPlatformAdmin(email)) {
+  if (!(await isPlatformAdmin(email))) {
     redirect('/dashboard')
   }
 

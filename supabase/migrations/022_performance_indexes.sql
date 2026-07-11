@@ -34,12 +34,17 @@ CREATE INDEX IF NOT EXISTS idx_events_church_starts_at ON events (church_id, sta
 -- Event service needs/assignments: filtered by event_id
 CREATE INDEX IF NOT EXISTS idx_event_service_needs_event ON event_service_needs (event_id);
 CREATE INDEX IF NOT EXISTS idx_event_service_assignments_church ON event_service_assignments (church_id);
-CREATE INDEX IF NOT EXISTS idx_event_service_assignments_need ON event_service_assignments (need_id);
+-- Fixed 2026-07-11 (staging rebuild): column is service_need_id, not need_id; 017 already
+-- creates this exact index, so this is a no-op kept for historical completeness.
+CREATE INDEX IF NOT EXISTS idx_event_service_assignments_need ON event_service_assignments (service_need_id);
 CREATE INDEX IF NOT EXISTS idx_event_service_assignments_profile ON event_service_assignments (profile_id);
 
 -- Notifications: filtered by recipient + read status
-CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications (recipient_id, read);
-CREATE INDEX IF NOT EXISTS idx_notifications_church ON notifications (church_id);
+-- Fixed 2026-07-11 (staging rebuild): there is no "notifications" table in the migration
+-- history — 006 creates notifications_log (indexed there + in 045/054). These two
+-- statements referenced a table/columns that never existed; kept commented for history.
+-- CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications (recipient_id, read);
+-- CREATE INDEX IF NOT EXISTS idx_notifications_church ON notifications (church_id);
 
 -- Serving: filtered by church_id + date
 CREATE INDEX IF NOT EXISTS idx_serving_slots_church_date ON serving_slots (church_id, date);

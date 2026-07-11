@@ -149,9 +149,10 @@ export const POST = apiHandler(
     }
 
     // Managed membership — the person claims it on first OTP sign-in.
-    // NOTE: handle_new_user (migration 048) already inserted a user_churches row as
-    // 'active' when the auth user was created, so we UPSERT to force status='managed'
-    // (a plain insert would hit the unique conflict and leave it wrongly 'active').
+    // NOTE: handle_new_user already inserted a user_churches row when the auth user was
+    // created (as 'pending' after migration 088; 'active' before it), so we UPSERT to
+    // force status='managed' regardless — a plain insert would hit the unique conflict
+    // and leave the trigger's default status in place.
     const { error: ucErr } = await admin
       .from('user_churches')
       .upsert(
@@ -168,5 +169,5 @@ export const POST = apiHandler(
     revalidateTag(`dashboard-${churchId}`)
     return NextResponse.json({ data: { id: userId, added: 'created', claimable: Boolean(phone) } }, { status: 201 })
   },
-  { requireRoles: ['super_admin', 'ministry_leader'], rateLimit: 'strict' }
+  { requireRoles: ['super_admin', 'ministry_leader'], rateLimit: 'strict', requireActiveChurch: true }
 )

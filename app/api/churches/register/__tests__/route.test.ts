@@ -264,6 +264,9 @@ describe('POST /api/churches/register', () => {
         user_id: USER_ID,
         church_id: CHURCH_ID,
         role: 'super_admin',
+        // The church founder is a pre-approved door — status must be forced active so
+        // they aren't stuck behind their own church's member-approval gate (migration 088).
+        status: 'active',
       },
       { onConflict: 'user_id,church_id' }
     )

@@ -56,8 +56,10 @@ export const getCurrentUserWithRole = cache(async (): Promise<AuthUser> => {
 
   // Gate access on membership status. The claim flow (/api/members/claim) flips
   // 'managed' -> 'active' BEFORE the first app load, so real claimers arrive active.
+  // A self-signup member is 'pending' until a church admin approves them (migration 088);
+  // send them to the "awaiting approval" holding screen rather than a confusing /login bounce.
   if (membership && !isActiveMembership(membership.status)) {
-    redirect('/login')
+    redirect('/membership-pending')
   }
 
   const effectiveRole = (membership?.role ?? rawProfile.role) as Profile['role']

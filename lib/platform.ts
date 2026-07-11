@@ -2,20 +2,48 @@
  * Platform-level (super-super) admin gating.
  *
  * Ekklesia's normal roles are per-church. A *platform* admin (the people running the
- * SaaS) is identified purely by email, configured out-of-band via the
- * PLATFORM_ADMIN_EMAILS env var (comma-separated). This deliberately sits outside the
- * church RBAC system — a platform admin approves brand-new churches they aren't a
- * member of.
+ * SaaS) approves brand-new churches they aren't a member of. They are identified purely
+ * by email, from two sources:
+ *   1. PLATFORM_ADMIN_EMAILS env var (comma-separated) — the BOOTSTRAP owner. Configured
+ *      out-of-band, un-removable via UI, so the founder can never be locked out.
+ *   2. the `platform_admins` table (migration 087) — approvers added at runtime from the
+ *      Ekklesia admin UI. Read via the service-role client (RLS denies normal clients).
+ *
+ * This deliberately sits outside the church RBAC system.
  */
-export function isPlatformAdmin(email?: string | null): boolean {
-  if (!email) return false
+import { createAdminClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
-  const allowList = (process.env.PLATFORM_ADMIN_EMAILS ?? '')
+function envAllowList(): string[] {
+  return (process.env.PLATFORM_ADMIN_EMAILS ?? '')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean)
+}
 
-  if (allowList.length === 0) return false
+/** Env bootstrap owners only — used to protect them from removal in the manage-approvers UI. */
+export function isEnvPlatformAdmin(email?: string | null): boolean {
+  if (!email) return false
+  return envAllowList().includes(email.trim().toLowerCase())
+}
 
-  return allowList.includes(email.trim().toLowerCase())
+/** True if the email is a platform operator via the env bootstrap OR the platform_admins table. */
+export async function isPlatformAdmin(email?: string | null): Promise<boolean> {
+  if (!email) return false
+  const normalized = email.trim().toLowerCase()
+
+  if (envAllowList().includes(normalized)) return true
+
+  try {
+    const admin = await createAdminClient()
+    const { data } = await admin
+      .from('platform_admins')
+      .select('email')
+      .eq('email', normalized)
+      .maybeSingle()
+    return !!data
+  } catch (err) {
+    logger.error('isPlatformAdmin table lookup failed', { module: 'platform', error: err })
+    return false
+  }
 }

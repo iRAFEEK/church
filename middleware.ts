@@ -16,6 +16,7 @@ const PUBLIC_PATHS = [
   '/api/visitors', // Public visitor submission (Phase 2)
   '/api/cron',     // Cron jobs (secured by CRON_SECRET)
   '/api/churches/register', // Public church registration
+  '/api/churches/search',   // Public church directory search — /signup (logged-out) picks a church with it
   '/api/health',   // Health check for uptime monitoring (no auth)
 ]
 
@@ -25,6 +26,11 @@ function isPublicPath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // Expose the current path to Server Components (the (app) layout uses it to enforce the
+  // pending-church allowlist). Mutating request.headers propagates through the
+  // NextResponse.next({ request }) calls below.
+  request.headers.set('x-pathname', request.nextUrl.pathname)
+
   let supabaseResponse = NextResponse.next({
     request,
   })

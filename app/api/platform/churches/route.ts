@@ -15,7 +15,7 @@ const reviewSchema = z.object({
 // Gated by email allow-list (isPlatformAdmin), NOT church role. apiHandler still runs
 // so the caller is a verified authenticated user before we check the platform list.
 export const PATCH = apiHandler(async ({ req, user }) => {
-  if (!isPlatformAdmin(user.email)) {
+  if (!(await isPlatformAdmin(user.email))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

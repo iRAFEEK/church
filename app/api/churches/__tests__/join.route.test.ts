@@ -144,7 +144,7 @@ describe('POST /api/churches/join — subsequent (already onboarded) join', () =
 })
 
 describe('POST /api/churches/join — first join (during onboarding)', () => {
-  it('grants an active membership immediately (not a request)', async () => {
+  it('creates a PENDING membership (every join needs church-admin approval)', async () => {
     mockAuth('member')
     mockChain.single
       .mockResolvedValueOnce({ data: { id: TARGET_CHURCH }, error: null })            // church active
@@ -156,13 +156,14 @@ describe('POST /api/churches/join — first join (during onboarding)', () => {
     const res = await POST(makeReq({ church_id: TARGET_CHURCH }))
     expect(res.status).toBe(200)
     const json = await res.json()
-    expect(json.status).toBe('active')
+    expect(json.status).toBe('pending')
 
-    // The real membership was inserted into user_churches for this user.
+    // A pending membership was inserted into user_churches for this user (migration 088).
     expect(mockChain.insert).toHaveBeenCalledTimes(1)
     const insertArg = mockChain.insert.mock.calls[0][0] as Record<string, unknown>
     expect(insertArg.user_id).toBe('user-1')
     expect(insertArg.church_id).toBe(TARGET_CHURCH)
     expect(insertArg.role).toBe('member')
+    expect(insertArg.status).toBe('pending')
   })
 })

@@ -158,6 +158,41 @@ describe('getNavForUser', () => {
       expect(items.some(i => i.href === fi.href)).toBe(false)
     }
   })
+
+  // Track 1 — pending church allowlist
+  it('restricts a pending church to only info + tutorials + profile', () => {
+    const perms = makePermissions(true)
+    const items = getNavForUser('super_admin', perms, { isPendingChurch: true })
+    const hrefs = items.map(i => i.href)
+    // Only allowlisted hrefs survive.
+    for (const href of hrefs) {
+      expect(['/dashboard', '/profile', '/help', '/admin/settings']).toContain(href)
+    }
+    // Operational items are gone.
+    expect(hrefs).not.toContain('/admin/members')
+    expect(hrefs).not.toContain('/admin/groups')
+    expect(hrefs).not.toContain('/events')
+    // Tutorials + settings remain.
+    expect(hrefs).toContain('/help')
+    expect(hrefs).toContain('/admin/settings')
+  })
+
+  // Track 2 — platform admin entry
+  it('appends the Ekklesia Admin entry only for platform admins', () => {
+    const perms = makePermissions(true)
+    const without = getNavForUser('member', perms)
+    expect(without.some(i => i.href === '/platform')).toBe(false)
+
+    const withFlag = getNavForUser('member', perms, { isPlatformAdmin: true })
+    expect(withFlag.some(i => i.href === '/platform')).toBe(true)
+  })
+
+  it('does not leak the platform entry into a pending church nav', () => {
+    const perms = makePermissions(true)
+    // A pending church founder who is NOT a platform admin never sees /platform.
+    const items = getNavForUser('super_admin', perms, { isPendingChurch: true })
+    expect(items.some(i => i.href === '/platform')).toBe(false)
+  })
 })
 
 // ---------------------------------------------------------------------------

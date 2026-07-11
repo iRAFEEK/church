@@ -16,6 +16,8 @@ interface BottomNavProps {
   churchNameAr: string
   onLangChange: (lang: 'ar' | 'en') => void
   resolvedPermissions: Record<PermissionKey, boolean>
+  isPendingChurch?: boolean
+  isPlatformAdmin?: boolean
 }
 
 const TABS = [
@@ -26,7 +28,11 @@ const TABS = [
   { key: 'more', href: '#', icon: Menu, roles: null },
 ] as const
 
-export function BottomNav({ profile, churchName, churchNameAr, onLangChange, resolvedPermissions }: BottomNavProps) {
+// A pending church has no operational surface — only Home + the More sheet (which itself
+// is trimmed to church info + tutorials + profile).
+const PENDING_TAB_KEYS = ['home', 'more']
+
+export function BottomNav({ profile, churchName, churchNameAr, onLangChange, resolvedPermissions, isPendingChurch, isPlatformAdmin }: BottomNavProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
@@ -42,9 +48,10 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
     ? '/admin/groups'
     : '/my-group'
 
-  // Filter tabs by role
+  // Filter tabs by role (and, for a pending church, down to the allowed set)
   const visibleTabs = TABS.filter(tab =>
-    tab.roles === null || tab.roles.includes(profile.role)
+    (tab.roles === null || tab.roles.includes(profile.role)) &&
+    (!isPendingChurch || PENDING_TAB_KEYS.includes(tab.key))
   )
 
   const nav = (
@@ -103,6 +110,8 @@ export function BottomNav({ profile, churchName, churchNameAr, onLangChange, res
         churchNameAr={churchNameAr}
         onLangChange={onLangChange}
         resolvedPermissions={resolvedPermissions}
+        isPendingChurch={isPendingChurch}
+        isPlatformAdmin={isPlatformAdmin}
       />
     </>
   )

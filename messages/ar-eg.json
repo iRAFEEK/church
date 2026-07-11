@@ -34,7 +34,8 @@
     "notes": "ملاحظات",
     "artist": "الفنان",
     "lyrics": "كلمات الترنيمة",
-    "lyricsHint": "افصل بين الشرائح بسطر فارغ"
+    "lyricsHint": "افصل بين الشرائح بسطر فارغ",
+    "pendingChurchBanner": "كنيستك لسه بتتراجع. بعض الميزات مقفولة لحد ما تتوافق عليها."
   },
   "sidebar": {
     "signOut": "تسجيل الخروج",
@@ -2898,5 +2899,56 @@
     "nextLesson": "الدرس اللي بعده",
     "watchThisPage": "اتفرج على شرح الصفحة دي",
     "allLessons": "دليل الاستخدام"
+  },
+  "pendingHome": {
+    "title": "كنيستك لسه بتتراجع",
+    "body": "لحد ما نراجع كنيستك، تقدر تجهّز بيانات كنيستك وتتعلّم إزاي تستخدم إكليسيا. هتقدر تدعو الأعضاء وتبدأ أول ما تتوافق.",
+    "tutorialsTitle": "اتفرّج على الشرح",
+    "tutorialsBody": "دروس قصيرة عن إزاي كل حاجة بتشتغل.",
+    "churchInfoTitle": "بيانات الكنيسة",
+    "churchInfoBody": "راجع وحدّث إعدادات كنيستك."
+  },
+  "membershipPending": {
+    "title": "مستني الموافقة",
+    "body": "طلب انضمامك اتبعت. مسؤول الكنيسة هيوافق عليه قريّب، وبعدها هتقدر تدخل.",
+    "churchLabel": "الكنيسة",
+    "contactNote": "عادةً بياخد وقت قصير. تقدر تسجّل خروج وترجع بعدين.",
+    "switchChurch": "روح لكنيستي التانية",
+    "signOut": "تسجيل الخروج"
+  },
+  "churchSwitcher": {
+    "yourChurches": "كنايسك",
+    "awaitingApproval": "مستني الموافقة",
+    "joinAnother": "انضم لكنيسة تانية",
+    "switchError": "مقدرناش نبدّل الكنيسة"
+  },
+  "joinAnother": {
+    "title": "انضم لكنيسة تانية",
+    "subtitle": "دوّر على كنيسة وابعت طلب انضمام. المسؤول بتاعها هيوافق عليه.",
+    "searchPlaceholder": "دوّر على كنيسة…",
+    "request": "اطلب",
+    "requested": "اتطلب",
+    "requestSent": "الطلب اتبعت لـ {church}",
+    "alreadyRequested": "إنت طلبت تنضم للكنيسة دي قبل كده",
+    "errorToast": "حصل خطأ",
+    "noResults": "مفيش كنايس لـ \"{query}\"",
+    "hint": "ابدأ اكتب علشان تدوّر على كنيسة."
+  },
+  "platformHome": {
+    "title": "إدارة إكليسيا",
+    "subtitle": "راجع الكنايس الجديدة وأدِر مين يقدر يوافق عليها.",
+    "pendingChurchesTitle": "كنايس مستنية المراجعة",
+    "pendingChurchesSubtitle": "{count} مستنية المراجعة"
+  },
+  "platformAdmins": {
+    "title": "الموافقين",
+    "subtitle": "الناس اللي تقدر توافق على الكنايس الجديدة. زوّد أو شيل بالإيميل.",
+    "emailPlaceholder": "email@example.com",
+    "addButton": "زوّد",
+    "addedToast": "الموافق اتزوّد",
+    "removedToast": "الموافق اتشال",
+    "errorToast": "حصل خطأ",
+    "ownerBadge": "المالك",
+    "removeLabel": "شيل الموافق"
   }
 }

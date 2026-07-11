@@ -119,13 +119,14 @@ describe('Smoke — public routes do NOT return 401', () => {
     expect([200, 201, 400, 409, 422, 500]).toContain(res.status)
   })
 
-  it('GET /api/churches/search returns 401 (auth-gated route)', async () => {
-    // Note: despite being in a "search" path, this route requires authentication.
-    // This test confirms the auth gate is active for unauthenticated requests.
+  it('GET /api/churches/search does NOT return 401 (public directory search)', async () => {
+    // Public since 2026-07-11: /signup runs logged-out and picks a church with this
+    // route (requireAuth: false + middleware public path + migration 089 anon RLS).
     const { GET } = await import('@/app/api/churches/search/route')
     const res = await GET(makeReq('/api/churches/search?q=test'))
 
-    expect(res.status).toBe(401)
+    expect(res.status).not.toBe(401)
+    expect([200, 500]).toContain(res.status)
   })
 
   it('POST /api/visitors with valid body returns 201 or validation error', async () => {

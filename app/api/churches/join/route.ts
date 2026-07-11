@@ -30,8 +30,10 @@ export const POST = apiHandler(async ({ req, supabase, user }) => {
   }
 
   if (!profile.onboarding_completed) {
-    // During onboarding: clear any auto-assigned seed church from user_churches
-    // then insert the real church
+    // During onboarding (first join): clear any auto-assigned seed church, then create
+    // a PENDING membership. Every self-signup join requires the church admin's approval
+    // before it becomes active (migration 088) — the member sees /membership-pending
+    // until an admin approves them in /admin/join-requests.
     await supabase
       .from('user_churches')
       .delete()
@@ -39,18 +41,19 @@ export const POST = apiHandler(async ({ req, supabase, user }) => {
 
     const { error: insertError } = await supabase
       .from('user_churches')
-      .insert({ user_id: user.id, church_id, role: 'member' })
+      .insert({ user_id: user.id, church_id, role: 'member', status: 'pending' })
 
     if (insertError) throw insertError
 
-    // Set as active church on profile
+    // Set as active church on profile so the pending screen + eventual approval resolve
+    // to this church.
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ church_id })
       .eq('id', user.id)
 
     if (profileError) throw profileError
-    return { success: true, status: 'active' }
+    return { success: true, status: 'pending' }
   }
 
   // Subsequent join (already onboarded): this is a REQUEST that a church admin

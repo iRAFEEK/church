@@ -42,6 +42,8 @@ interface MoreSheetProps {
   churchNameAr: string
   onLangChange: (lang: 'ar' | 'en') => void
   resolvedPermissions: Record<PermissionKey, boolean>
+  isPendingChurch?: boolean
+  isPlatformAdmin?: boolean
 }
 
 export function MoreSheet({
@@ -52,6 +54,8 @@ export function MoreSheet({
   churchNameAr,
   onLangChange,
   resolvedPermissions,
+  isPendingChurch,
+  isPlatformAdmin,
 }: MoreSheetProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -66,7 +70,7 @@ export function MoreSheet({
 
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
-  const allItems = getNavForUser(profile.role, resolvedPermissions)
+  const allItems = getNavForUser(profile.role, resolvedPermissions, { isPendingChurch, isPlatformAdmin })
   const secondaryItems = getSecondaryNavItems(allItems)
   const sections = getNavSections(secondaryItems, locale as 'ar' | 'en')
 

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
-import { useLocale } from 'next-intl'
-import { Building2, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { Building2, Check, ChevronsUpDown, Clock, Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { logger } from '@/lib/logger'
 import type { UserChurchWithDetails } from '@/types'
 
 interface ChurchSwitcherProps {
@@ -22,23 +24,37 @@ interface ChurchSwitcherProps {
   churchNameAr: string
 }
 
+type PendingRequest = {
+  id: string
+  church_id: string
+  church: { id: string; name: string; name_ar: string | null; country: string } | null
+}
+
 export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('churchSwitcher')
   const isRTL = locale.startsWith('ar')
 
   const [churches, setChurches] = useState<UserChurchWithDetails[]>([])
+  const [requests, setRequests] = useState<PendingRequest[]>([])
   const [loaded, setLoaded] = useState(false)
   const [switchingId, setSwitchingId] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
-    fetch('/api/churches/my-churches', { signal: controller.signal })
-      .then((res) => res.json())
-      .then((data) => { if (!controller.signal.aborted) setChurches(Array.isArray(data) ? data : []) })
+    Promise.all([
+      fetch('/api/churches/my-churches', { signal: controller.signal }).then((r) => r.json()),
+      fetch('/api/churches/my-requests', { signal: controller.signal }).then((r) => r.json()),
+    ])
+      .then(([mine, reqs]) => {
+        if (controller.signal.aborted) return
+        setChurches(Array.isArray(mine) ? mine : [])
+        setRequests(Array.isArray(reqs) ? reqs : [])
+      })
       .catch((e) => {
         if (e instanceof Error && e.name !== 'AbortError') {
-          console.error('[ChurchSwitcher] Failed to fetch:', e)
+          logger.error('[ChurchSwitcher] Failed to fetch', { module: 'layout', error: e })
         }
       })
       .finally(() => { if (!controller.signal.aborted) setLoaded(true) })
@@ -57,7 +73,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error('Could not switch church', { description: data.error })
+        toast.error(t('switchError'), { description: data.error })
         return
       }
 
@@ -69,16 +85,6 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
 
   const displayName = isRTL ? churchNameAr || churchName : churchName
 
-  // Single church — just show the name, no dropdown
-  if (loaded && churches.length <= 1) {
-    return (
-      <h2 className="font-semibold text-xs md:text-sm text-foreground truncate">
-        {displayName}
-      </h2>
-    )
-  }
-
-  // Multiple churches — show dropdown switcher
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -96,10 +102,10 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align={isRTL ? 'end' : 'start'} className="w-60">
+      <DropdownMenuContent align={isRTL ? 'end' : 'start'} className="w-64">
         <div className="px-2 py-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Your churches
+            {t('yourChurches')}
           </p>
         </div>
         <DropdownMenuSeparator />
@@ -115,16 +121,9 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
               disabled={switchingId !== null}
               onSelect={() => !membership.is_active && handleSwitch(membership.church_id)}
             >
-              {/* Logo / icon */}
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
                 {church.logo_url ? (
-                  <Image
-                    src={church.logo_url}
-                    alt={church.name}
-                    width={20}
-                    height={20}
-                    className="h-5 w-5 rounded object-cover"
-                  />
+                  <Image src={church.logo_url} alt={church.name} width={20} height={20} className="h-5 w-5 rounded object-cover" />
                 ) : (
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                 )}
@@ -136,12 +135,36 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
               </div>
 
               {membership.is_active && <Check className="h-4 w-4 shrink-0 text-primary" />}
-              {switchingId === membership.church_id && (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-              )}
+              {switchingId === membership.church_id && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
             </DropdownMenuItem>
           )
         })}
+
+        {/* Pending "join another church" requests — informational, not switchable */}
+        {requests.map((req) => {
+          const name = isRTL ? req.church?.name_ar || req.church?.name : req.church?.name
+          return (
+            <div key={req.id} className="flex items-center gap-2 px-2 py-1.5 opacity-70">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{name}</p>
+                <p className="text-xs text-muted-foreground truncate">{t('awaitingApproval')}</p>
+              </div>
+            </div>
+          )
+        })}
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+          <Link href="/churches/join">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm font-medium">{t('joinAnother')}</span>
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -174,6 +174,37 @@ describe('PATCH /api/churches/join-requests', () => {
     expect(json.data.status).toBe('rejected')
   })
 
+  // Migration 088 — approving a same-church first-join self-signup flips its pending
+  // user_churches row to active (identified by user_id, not request_id).
+  it('approves a pending first-join member by flipping their membership to active', async () => {
+    mockAuth('super_admin', 'church-pm')
+    // 4th .single() = the user_churches UPDATE result
+    mockChain.single.mockResolvedValueOnce({ data: { user_id: VALID_UUID, status: 'active' }, error: null })
+
+    const updateArgs: Array<Record<string, unknown>> = []
+    mockChain.update.mockImplementation((arg: Record<string, unknown>) => { updateArgs.push(arg); return mockChain })
+
+    const res = await PATCH(makeReq('PATCH', { user_id: VALID_UUID, action: 'approved' }))
+    expect(res.status).toBe(200)
+
+    // Flipped status to active; the cross-church request/upsert path was NOT used.
+    expect(updateArgs).toContainEqual({ status: 'active' })
+    expect(mockChain.upsert).not.toHaveBeenCalled()
+  })
+
+  it('rejecting a pending first-join member sets their membership inactive', async () => {
+    mockAuth('super_admin', 'church-pm')
+    mockChain.single.mockResolvedValueOnce({ data: { user_id: VALID_UUID, status: 'inactive' }, error: null })
+
+    const updateArgs: Array<Record<string, unknown>> = []
+    mockChain.update.mockImplementation((arg: Record<string, unknown>) => { updateArgs.push(arg); return mockChain })
+
+    const res = await PATCH(makeReq('PATCH', { user_id: VALID_UUID, action: 'rejected' }))
+    expect(res.status).toBe(200)
+    expect(updateArgs).toContainEqual({ status: 'inactive' })
+    expect(mockChain.upsert).not.toHaveBeenCalled()
+  })
+
   it('scopes the request UPDATE to the caller church_id (cross-church approval blocked)', async () => {
     mockAuth('super_admin', 'church-mine')
     const eqCalls: Array<[string, unknown]> = []
