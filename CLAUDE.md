@@ -711,7 +711,8 @@ Last measured: 2026-03-11
 - [x] SECURITY: fixed songs cross-church write IDOR (migration 073)
 
 ### Pending / Not Started
-- [ ] Apply migrations to production Supabase project (now 001–089) — see OPERATIONS_RUNBOOK §1. **Migrations 084–089 NOT applied to prod** (all verified on staging). 087 (`platform_admins`) + 088 (`member_join_pending`, alters the `handle_new_user` auth trigger) gate the onboarding-approval features; 089 fixes the dead logged-out signup search. Apply via the Supabase SQL editor, deploy the code, set `PLATFORM_ADMIN_EMAILS` in Vercel — then the pending-church / member-approval / Ekklesia-admin flows go live.
+- [ ] Apply migrations **087 + 088** to production Supabase — the ONLY outstanding schema gap (checked live 2026-07-11: 084/085/086 are already applied on prod, and 089 is redundant there — prod already had an `"Anon can read active churches"` policy). 087 (`platform_admins`) + 088 (`member_join_pending`, alters the `handle_new_user` auth trigger) gate approver-management-from-UI and the member-approval queue. ⚠️ The prod project `hronbmjlklylupkbvgve` is NOT in the `Rany29-coder` Supabase account (which holds staging) — it lives under a different login. Code IS deployed (2026-07-11) and `PLATFORM_ADMIN_EMAILS=ranytenma@gmail.com` IS set in Vercel (Production+Preview), so /platform church approval already works via the env allowlist; without 088 self-signups still get instant access (old behavior).
+- [ ] **Prod data hygiene:** 30 of 39 active churches on prod are `[SIM] …` fake churches from the load simulation and appear in the PUBLIC logged-out signup search. Deactivate/delete them (`UPDATE churches SET is_active=false, status='inactive' WHERE name LIKE '[SIM]%'` + cascade review) before pilot.
 - [ ] Rotate production keys; enable Upstash env vars — RUNBOOK §2–3
 - [ ] Lighthouse baseline on production URL
 - [ ] Sentry error monitoring + PostHog prod verification + DB backups/restore test
