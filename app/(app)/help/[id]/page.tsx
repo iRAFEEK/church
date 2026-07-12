@@ -1,6 +1,6 @@
 import { getCurrentUserWithRole } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { findLesson, canSee } from '@/lib/help/guide-data'
@@ -16,7 +16,8 @@ export default async function HelpLessonPage({ params }: Params) {
   const hit = findLesson(id)
   if (!hit || !canSee(user.profile.role, hit.lesson.minRole)) redirect('/help')
 
-  const t = await getTranslations('helpGuide')
+  const [t, locale] = await Promise.all([getTranslations('helpGuide'), getLocale()])
+  const isAr = locale.startsWith('ar')
   const { lesson, category } = hit
 
   // Next lesson within the same category (role-filtered) for a gentle "keep going".
@@ -41,7 +42,9 @@ export default async function HelpLessonPage({ params }: Params) {
           <span className="text-2xl" aria-hidden>{next.icon}</span>
           <span className="flex-1">
             <span className="block text-xs text-amber-700 font-medium">{t('nextLesson')}</span>
-            <span className="block text-sm font-semibold text-zinc-900" dir="rtl">{next.title}</span>
+            <span className="block text-sm font-semibold text-zinc-900" dir={isAr ? 'rtl' : 'auto'}>
+              {!isAr && next.titleEn ? next.titleEn : next.title}
+            </span>
           </span>
           <ChevronRight className="h-5 w-5 text-amber-500 rtl:rotate-180" />
         </Link>

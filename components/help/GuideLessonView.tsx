@@ -37,14 +37,17 @@ export function GuideLessonView({ lesson }: GuideLessonViewProps) {
     player.onended = () => setPlaying(null)
   }, [playing])
 
-  const fmt = (n: number) => n.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')
+  const isAr = locale.startsWith('ar')
+  const fmt = (n: number) => n.toLocaleString(isAr ? 'ar-EG' : 'en-US')
 
   return (
     <div className="space-y-4">
       {/* Lesson header */}
       <div className="flex items-center gap-3">
         <span className="text-4xl" aria-hidden>{lesson.icon}</span>
-        <h1 className="flex-1 text-xl font-bold text-zinc-900" dir="rtl">{lesson.title}</h1>
+        <h1 className="flex-1 text-xl font-bold text-zinc-900" dir={isAr ? 'rtl' : 'auto'}>
+          {!isAr && lesson.titleEn ? lesson.titleEn : lesson.title}
+        </h1>
         {lesson.titleAud && (
           <AudioButton active={playing === lesson.titleAud} onClick={() => toggleAudio(lesson.titleAud!)} label={t('listen')} />
         )}
@@ -59,7 +62,9 @@ export function GuideLessonView({ lesson }: GuideLessonViewProps) {
                 {fmt(i + 1)}
               </span>
               <span className="text-2xl shrink-0" aria-hidden>{step.icon}</span>
-              <p className="flex-1 font-semibold text-zinc-800 leading-relaxed" dir="rtl">{step.ar}</p>
+              <p className="flex-1 font-semibold text-zinc-800 leading-relaxed" dir={isAr ? 'rtl' : 'auto'}>
+                {!isAr && step.en ? step.en : step.ar}
+              </p>
               {step.aud && (
                 <AudioButton active={playing === step.aud} onClick={() => toggleAudio(step.aud!)} label={t('listen')} />
               )}
