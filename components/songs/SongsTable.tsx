@@ -17,6 +17,8 @@ interface SongListItem {
   artist_ar: string | null
   tags: string[]
   is_active: boolean
+  /** Plain-text lyric context around the match (search results only) */
+  snippet?: string | null
 }
 
 const PAGE_SIZE = 50
@@ -89,7 +91,10 @@ export function SongsTable() {
         page: String(pageNum),
         pageSize: String(PAGE_SIZE),
       })
-      if (q.trim()) params.set('q', q.trim())
+      if (q.trim()) {
+        params.set('q', q.trim())
+        params.set('locale', locale) // lyric snippet language for the search RPC
+      }
 
       const res = await fetch(`/api/songs?${params}`, { signal: controller.signal })
       if (!res.ok) throw new Error('Failed to load songs')
@@ -114,7 +119,7 @@ export function SongsTable() {
       setSearching(false)
       setLoadingMore(false)
     }
-  }, [t])
+  }, [t, locale])
 
   // Initial load
   useEffect(() => {
@@ -211,6 +216,10 @@ export function SongsTable() {
                   <p className="text-sm font-medium truncate">{title}</p>
                   {artist && (
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{artist}</p>
+                  )}
+                  {/* Matched lyric context (only present on search results) */}
+                  {song.snippet && query.trim() && (
+                    <p className="text-xs text-muted-foreground/80 truncate mt-0.5" dir="auto">{song.snippet}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
