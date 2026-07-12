@@ -1347,7 +1347,34 @@
     "templateNamePlaceholder": "مثلاً: خدمة صباح الأحد",
     "templateNameArPlaceholder": "مثلاً: خدمة الأحد",
     "templateNotesPlaceholder": "مثلاً: فكّر القس بالتناول، حضّر كراسي زيادة",
-    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣"
+    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣",
+    "chooseKind": "عايز تضيف إيه؟",
+    "kindGeneric": "بند",
+    "kindGenericDesc": "بند بعنوان ومدة وملاحظات",
+    "kindSong": "ترنيمة",
+    "kindSongDesc": "اختار ترنيمة من مكتبة الترانيم",
+    "kindBible": "مقطع من الكتاب المقدس",
+    "kindBibleDesc": "مقطع من الكتاب المقدس للعرض",
+    "kindFile": "ملف",
+    "kindFileDesc": "ملف PDF أو عرض تقديمي أو صورة",
+    "searchSong": "الترنيمة",
+    "searchSongPlaceholder": "دوّر بالعنوان أو الكلمات…",
+    "noSongsFound": "مفيش ترانيم",
+    "changeSong": "تغيير",
+    "bibleVersion": "نسخة الكتاب المقدس",
+    "book": "السفر",
+    "chapter": "الإصحاح",
+    "verseOptional": "الآية (اختياري)",
+    "selectBookPlaceholder": "اختار سفر",
+    "selectChapterPlaceholder": "الإصحاح",
+    "chooseFile": "اختار ملف",
+    "uploading": "بيترفع…",
+    "uploadFailed": "الرفع فشل. حاول تاني.",
+    "removeFile": "شيل",
+    "fileAcceptHint": "PDF أو بوربوينت أو صورة (لحد 25 ميجابايت)",
+    "present": "عرض",
+    "open": "افتح",
+    "back": "رجوع"
   },
   "songs": {
     "pageTitle": "الترانيم",
@@ -3031,5 +3058,15 @@
     "errorToast": "حصل خطأ",
     "ownerBadge": "المالك",
     "removeLabel": "شيل الموافق"
+  },
+  "addToService": {
+    "title": "ضيف للقداس",
+    "description": "اختار فعالية جاية عشان تضيفه ليها.",
+    "button": "ضيف للقداس",
+    "empty": "مفيش فعاليات جاية — اعمل واحدة الأول.",
+    "createEvent": "اعمل فعالية",
+    "success": "اتضاف لـ {event}",
+    "error": "مقدرناش نضيف للقداس. جرّب تاني.",
+    "errorLoad": "مقدرناش نحمّل الفعاليات. جرّب تاني."
   }
 }

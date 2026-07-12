@@ -1347,7 +1347,34 @@
     "templateNamePlaceholder": "مثال: خدمة صباح الأحد",
     "templateNameArPlaceholder": "مثال: خدمة الأحد",
     "templateNotesPlaceholder": "مثال: تذكير القس بالتناول، تحضير كراسي إضافية",
-    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣"
+    "customFieldOptionsPlaceholder": "خيار ١، خيار ٢، خيار ٣",
+    "chooseKind": "ماذا تريد أن تضيف؟",
+    "kindGeneric": "بند",
+    "kindGenericDesc": "بند بعنوان ومدة وملاحظات",
+    "kindSong": "ترنيمة",
+    "kindSongDesc": "اختر ترنيمة من مكتبة الترانيم",
+    "kindBible": "مقطع كتابي",
+    "kindBibleDesc": "مقطع من الكتاب المقدس للعرض",
+    "kindFile": "ملف",
+    "kindFileDesc": "ملف PDF أو عرض تقديمي أو صورة",
+    "searchSong": "الترنيمة",
+    "searchSongPlaceholder": "ابحث بالعنوان أو الكلمات…",
+    "noSongsFound": "لم يتم العثور على ترانيم",
+    "changeSong": "تغيير",
+    "bibleVersion": "نسخة الكتاب المقدس",
+    "book": "السفر",
+    "chapter": "الإصحاح",
+    "verseOptional": "الآية (اختياري)",
+    "selectBookPlaceholder": "اختر سفرًا",
+    "selectChapterPlaceholder": "الإصحاح",
+    "chooseFile": "اختر ملفًا",
+    "uploading": "جارٍ الرفع…",
+    "uploadFailed": "فشل الرفع. حاول مرة أخرى.",
+    "removeFile": "إزالة",
+    "fileAcceptHint": "PDF أو بوربوينت أو صورة (بحد أقصى 25 ميجابايت)",
+    "present": "عرض",
+    "open": "فتح",
+    "back": "رجوع"
   },
   "songs": {
     "pageTitle": "الترانيم",
@@ -3031,5 +3058,15 @@
     "errorToast": "حدث خطأ ما",
     "ownerBadge": "المالك",
     "removeLabel": "إزالة المعتمِد"
+  },
+  "addToService": {
+    "title": "إضافة إلى القداس",
+    "description": "اختر فعالية قادمة لإضافة هذا إليها.",
+    "button": "إضافة إلى القداس",
+    "empty": "لا توجد فعاليات قادمة — أنشئ واحدة أولاً.",
+    "createEvent": "إنشاء فعالية",
+    "success": "تمت الإضافة إلى {event}",
+    "error": "تعذّرت الإضافة إلى القداس. حاول مرة أخرى.",
+    "errorLoad": "تعذّر تحميل الفعاليات. حاول مرة أخرى."
   }
 }

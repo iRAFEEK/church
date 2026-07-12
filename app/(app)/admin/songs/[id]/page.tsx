@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Pencil, Presentation, Trash2 } from 'lucide-react'
 import { SongDeleteButton } from './SongDeleteButton'
+import { SongDetailActions } from '@/components/songs/SongDetailActions'
 
 export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -38,6 +39,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
 
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
   const isLeader = ['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)
+  const canManageEvents = user.resolvedPermissions.can_manage_events
 
   return (
     <div className="space-y-6">
@@ -54,6 +56,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 {t('present')}
               </Button>
             </a>
+          )}
+          {canManageEvents && (
+            <SongDetailActions songId={song.id} title={title || ''} titleAr={song.title_ar} />
           )}
           {isLeader && (
             <Link href={`/admin/songs/${song.id}/edit`}>

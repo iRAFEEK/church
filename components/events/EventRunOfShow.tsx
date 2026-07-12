@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { Clock, ListOrdered, User, Users, StickyNote, ChevronDown, ChevronUp } from 'lucide-react'
+import { Clock, User, Users, StickyNote, ChevronDown, ChevronUp } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { SegmentPresentAction, SegmentKindIcon, type SegmentKind, type BibleRefDraft, type AttachmentType } from '@/components/events/SegmentEditor'
 
 interface Segment {
   id: string
+  kind: SegmentKind | null
   title: string
   title_ar: string | null
   duration_minutes: number | null
@@ -15,6 +17,11 @@ interface Segment {
   profile: { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null } | null
   notes: string | null
   notes_ar: string | null
+  song_id: string | null
+  bible_ref: BibleRefDraft | null
+  attachment_url: string | null
+  attachment_name: string | null
+  attachment_type: AttachmentType | null
   sort_order: number
 }
 
@@ -73,6 +80,7 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
           const hasNotes = seg.notes || seg.notes_ar
           const noteText = isRTL ? (seg.notes_ar || seg.notes) : (seg.notes || seg.notes_ar)
           const isExpanded = expandedNotes === seg.id
+          const kind: SegmentKind = seg.kind ?? 'generic'
 
           return (
             <div key={seg.id} className="bg-white">
@@ -83,8 +91,8 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
                 )}
                 onClick={() => hasNotes && setExpandedNotes(isExpanded ? null : seg.id)}
               >
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                  {i + 1}
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <SegmentKindIcon kind={kind} className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-zinc-800">{segTitle}</p>
@@ -101,6 +109,9 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
                         {ministryName}
                       </Badge>
                     )}
+                    {kind === 'file' && seg.attachment_type && (
+                      <Badge variant="outline" className="text-xs uppercase">{seg.attachment_type}</Badge>
+                    )}
                     {personName && (
                       <span className="text-xs text-zinc-500 flex items-center gap-1">
                         <User className="h-3 w-3" />
@@ -109,6 +120,12 @@ export function EventRunOfShow({ eventId }: EventRunOfShowProps) {
                     )}
                   </div>
                 </div>
+                <SegmentPresentAction
+                  kind={kind}
+                  songId={seg.song_id}
+                  bibleRef={seg.bible_ref}
+                  attachmentUrl={seg.attachment_url}
+                />
                 {hasNotes && (
                   <div className="text-zinc-500">
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

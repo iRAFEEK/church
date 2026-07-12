@@ -9,10 +9,11 @@ import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { SegmentEditor, type SegmentDraft } from '@/components/events/SegmentEditor'
+import { SegmentEditor, type SegmentDraft, type SegmentKind, type BibleRefDraft, type AttachmentType } from '@/components/events/SegmentEditor'
 
 interface LoadedSegment {
   id: string
+  kind: SegmentKind | null
   title: string
   title_ar: string | null
   duration_minutes: number | null
@@ -20,8 +21,14 @@ interface LoadedSegment {
   assigned_to: string | null
   notes: string | null
   notes_ar: string | null
+  song_id: string | null
+  bible_ref: BibleRefDraft | null
+  attachment_url: string | null
+  attachment_name: string | null
+  attachment_type: AttachmentType | null
   sort_order: number
   ministry: { id: string; name: string; name_ar: string | null } | null
+  song: { id: string; title: string; title_ar: string | null } | null
 }
 
 type EventSegmentsManagerProps = {
@@ -57,6 +64,7 @@ export function EventSegmentsManager({ eventId }: EventSegmentsManagerProps) {
       .then((d: { data?: LoadedSegment[] }) => {
         if (controller.signal.aborted) return
         const drafts: SegmentDraft[] = (d.data ?? []).map(s => ({
+          kind: s.kind ?? 'generic',
           title: s.title,
           title_ar: s.title_ar ?? '',
           duration_minutes: s.duration_minutes,
@@ -64,8 +72,15 @@ export function EventSegmentsManager({ eventId }: EventSegmentsManagerProps) {
           assigned_to: s.assigned_to,
           notes: s.notes ?? '',
           notes_ar: s.notes_ar ?? '',
+          song_id: s.song_id,
+          bible_ref: s.bible_ref,
+          attachment_url: s.attachment_url,
+          attachment_name: s.attachment_name,
+          attachment_type: s.attachment_type,
           _ministry_name: s.ministry?.name,
           _ministry_name_ar: s.ministry?.name_ar ?? undefined,
+          _song_title: s.song?.title,
+          _song_title_ar: s.song?.title_ar ?? undefined,
         }))
         setSegments(drafts)
         setLoadFailed(false)
@@ -95,6 +110,7 @@ export function EventSegmentsManager({ eventId }: EventSegmentsManagerProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           segments: segments.map(s => ({
+            kind: s.kind,
             title: s.title,
             title_ar: s.title_ar || null,
             duration_minutes: s.duration_minutes || null,
@@ -102,6 +118,11 @@ export function EventSegmentsManager({ eventId }: EventSegmentsManagerProps) {
             assigned_to: s.assigned_to || null,
             notes: s.notes || null,
             notes_ar: s.notes_ar || null,
+            song_id: s.song_id || null,
+            bible_ref: s.bible_ref || null,
+            attachment_url: s.attachment_url || null,
+            attachment_name: s.attachment_name || null,
+            attachment_type: s.attachment_type || null,
           })),
         }),
       })

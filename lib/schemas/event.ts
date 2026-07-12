@@ -51,18 +51,39 @@ export const UpdateEventSchema = CreateEventBaseSchema.partial().refine(
   { message: 'End date must be after start date', path: ['ends_at'] }
 )
 
-// Segments — PUT /api/events/[id]/segments
-export const ReplaceSegmentsSchema = z.object({
-  segments: z.array(z.object({
-    title: z.string().min(1).max(200),
-    title_ar: z.string().max(200).optional().nullable(),
-    duration_minutes: z.number().int().positive().optional().nullable(),
-    ministry_id: z.string().uuid().optional().nullable(),
-    assigned_to: z.string().uuid().optional().nullable(),
-    notes: z.string().max(2000).optional().nullable(),
-    notes_ar: z.string().max(2000).optional().nullable(),
-  })),
+// A Bible passage reference stored on a bible-kind segment (enough to deep-link the presenter).
+export const BibleRefSchema = z.object({
+  bibleId: z.string().min(1).max(100),
+  chapterId: z.string().min(1).max(100),
+  reference: z.string().min(1).max(200),
+  verse: z.number().int().positive().optional().nullable(),
 })
+
+// One run-of-show segment. `kind` decides which extra fields are meaningful:
+//   generic → title/notes; song → song_id; bible → bible_ref; file → attachment_*
+export const SegmentInputSchema = z.object({
+  kind: z.enum(['generic', 'song', 'bible', 'file']).default('generic'),
+  title: z.string().min(1).max(200),
+  title_ar: z.string().max(200).optional().nullable(),
+  duration_minutes: z.number().int().positive().optional().nullable(),
+  ministry_id: z.string().uuid().optional().nullable(),
+  assigned_to: z.string().uuid().optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  notes_ar: z.string().max(2000).optional().nullable(),
+  song_id: z.string().uuid().optional().nullable(),
+  bible_ref: BibleRefSchema.optional().nullable(),
+  attachment_url: z.string().url().max(1000).optional().nullable(),
+  attachment_name: z.string().max(300).optional().nullable(),
+  attachment_type: z.enum(['pdf', 'pptx', 'ppt', 'image']).optional().nullable(),
+})
+
+// Segments — PUT /api/events/[id]/segments (replace all)
+export const ReplaceSegmentsSchema = z.object({
+  segments: z.array(SegmentInputSchema),
+})
+
+// Append one segment — POST /api/events/[id]/segments (used by "Add to service")
+export const AppendSegmentSchema = SegmentInputSchema
 
 // Registrations — PATCH /api/events/[id]/registrations
 export const UpdateRegistrationSchema = z.object({

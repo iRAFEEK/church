@@ -5,9 +5,10 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Music, Search, Loader2, Presentation } from 'lucide-react'
+import { Music, Search, Loader2, Presentation, CalendarPlus } from 'lucide-react'
 import { ListShimmer } from '@/components/ui/list-shimmer'
 import { toast } from 'sonner'
+import { AddToServiceDialog, type AddToServicePayload } from '@/components/events/AddToServiceDialog'
 
 interface SongListItem {
   id: string
@@ -44,11 +45,19 @@ function setCache(key: string, data: SongListItem[], hasMore: boolean) {
   queryCache.set(key, { data, hasMore, ts: Date.now() })
 }
 
-export function SongsTable() {
+type SongsTableProps = {
+  canManageEvents?: boolean
+}
+
+export function SongsTable({ canManageEvents = false }: SongsTableProps) {
   const t = useTranslations('songs')
+  const tService = useTranslations('addToService')
   const locale = useLocale()
   const isAr = locale === 'ar'
   const router = useRouter()
+
+  const [servicePayload, setServicePayload] = useState<AddToServicePayload | null>(null)
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
 
   const [songs, setSongs] = useState<SongListItem[]>([])
   const [query, setQuery] = useState('')
@@ -226,6 +235,26 @@ export function SongsTable() {
                   {song.tags?.slice(0, 2).map(tag => (
                     <Badge key={tag} variant="outline" className="hidden sm:inline-flex text-xs">{tag}</Badge>
                   ))}
+                  {canManageEvents && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setServicePayload({
+                          kind: 'song',
+                          title: (song.title || song.title_ar) ?? '',
+                          title_ar: song.title_ar,
+                          song_id: song.id,
+                        })
+                        setServiceDialogOpen(true)
+                      }}
+                      className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                      title={tService('button')}
+                      aria-label={tService('button')}
+                    >
+                      <CalendarPlus className="h-4 w-4 text-primary" />
+                    </button>
+                  )}
                   <a
                     href={`/presenter/songs/${song.id}`}
                     target="_blank"
@@ -249,6 +278,14 @@ export function SongsTable() {
             </div>
           )}
         </div>
+      )}
+
+      {canManageEvents && (
+        <AddToServiceDialog
+          open={serviceDialogOpen}
+          onOpenChange={setServiceDialogOpen}
+          payload={servicePayload}
+        />
       )}
     </div>
   )

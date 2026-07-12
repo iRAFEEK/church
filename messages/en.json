@@ -1347,7 +1347,34 @@
     "templateNamePlaceholder": "e.g., Sunday Morning Service",
     "templateNameArPlaceholder": "e.g., Sunday Service",
     "templateNotesPlaceholder": "e.g., Remind pastor about communion, prepare extra chairs",
-    "customFieldOptionsPlaceholder": "Option 1, Option 2, Option 3"
+    "customFieldOptionsPlaceholder": "Option 1, Option 2, Option 3",
+    "chooseKind": "What are you adding?",
+    "kindGeneric": "Item",
+    "kindGenericDesc": "A titled item with duration and notes",
+    "kindSong": "Song",
+    "kindSongDesc": "Pick a song from the hymnal",
+    "kindBible": "Bible passage",
+    "kindBibleDesc": "A Bible passage to present",
+    "kindFile": "File",
+    "kindFileDesc": "A PDF, slideshow or image",
+    "searchSong": "Song",
+    "searchSongPlaceholder": "Search by title or lyrics…",
+    "noSongsFound": "No songs found",
+    "changeSong": "Change",
+    "bibleVersion": "Bible version",
+    "book": "Book",
+    "chapter": "Chapter",
+    "verseOptional": "Verse (optional)",
+    "selectBookPlaceholder": "Select a book",
+    "selectChapterPlaceholder": "Chapter",
+    "chooseFile": "Choose file",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed. Please try again.",
+    "removeFile": "Remove",
+    "fileAcceptHint": "PDF, PowerPoint or image (max 25MB)",
+    "present": "Present",
+    "open": "Open",
+    "back": "Back"
   },
   "songs": {
     "pageTitle": "Songs",
@@ -3031,5 +3058,15 @@
     "errorToast": "Something went wrong",
     "ownerBadge": "Owner",
     "removeLabel": "Remove approver"
+  },
+  "addToService": {
+    "title": "Add to service",
+    "description": "Choose an upcoming event to add this to.",
+    "button": "Add to service",
+    "empty": "No upcoming events — create one first.",
+    "createEvent": "Create event",
+    "success": "Added to {event}",
+    "error": "Couldn't add to service. Please try again.",
+    "errorLoad": "Couldn't load events. Please try again."
   }
 }
