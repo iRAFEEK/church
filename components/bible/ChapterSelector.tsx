@@ -29,7 +29,7 @@ export function ChapterSelector({ bookId, bookName, chapters, onSelect, onBack }
           onClick={onBack}
           className="text-sm text-primary hover:underline"
         >
-          ← {t('back')}
+          <span className="inline-block rtl:rotate-180">←</span> {t('back')}
         </button>
         <h2 className="text-lg font-semibold">{displayName}</h2>
       </div>

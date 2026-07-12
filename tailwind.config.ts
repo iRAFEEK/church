@@ -65,6 +65,9 @@ const config: Config = {
         'safe-top': 'var(--safe-area-top)',
         'safe-bottom': 'var(--safe-area-bottom)',
         'bottom-nav': 'var(--bottom-nav-height)',
+        // 52px — the wizard's intended large touch target (h-13 was used app-wide but
+        // is not a default Tailwind class, so it silently produced no height).
+        '13': '3.25rem',
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -123,7 +123,7 @@ export function NeedForm({ initial }: NeedFormProps) {
     }
   }
 
-  const selectClass = 'h-9 w-full rounded-md border bg-background px-3 text-sm'
+  const selectClass = 'h-11 md:h-9 w-full rounded-md border bg-background px-3 text-base md:text-sm'
 
   return (
     <div className="space-y-6 max-w-2xl">

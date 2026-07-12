@@ -422,7 +422,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               onClick={() => navigateChapter('prev')}
               aria-label={t('back')}
             >
-              <ChevronLeft className="h-4 w-4 me-1" />
+              <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
               {t('back')}
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -434,8 +434,8 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               disabled={!hasNext}
               onClick={() => navigateChapter('next')}
             >
-              {t('chapter')} →
-              <ChevronRight className="h-4 w-4 ms-1" />
+              {t('chapter')}
+              <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
             </Button>
           </div>
         </div>

@@ -28,7 +28,7 @@ export function NeedFilters({ countries }: NeedFiltersProps) {
     router.push(`?${params.toString()}`)
   }, [router, searchParams])
 
-  const selectClass = 'h-9 rounded-md border bg-background px-3 text-sm'
+  const selectClass = 'h-11 md:h-9 rounded-md border bg-background px-3 text-base md:text-sm'
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -42,7 +42,7 @@ export function NeedFilters({ countries }: NeedFiltersProps) {
             const value = e.target.value
             searchTimeout.current = setTimeout(() => setFilter('search', value), 300)
           }}
-          className="ps-9 h-9"
+          className="ps-9 h-11 md:h-9"
         />
       </div>
 

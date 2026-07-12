@@ -286,7 +286,7 @@ export default async function MemberDetailPage({
                 {/* Link to full outreach page */}
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/admin/outreach/${memberProfile.id}`}>
-                    {t('tabOutreach')} →
+                    {t('tabOutreach')} <span className="inline-block rtl:rotate-180">→</span>
                   </Link>
                 </Button>
               </CardContent>

@@ -126,7 +126,7 @@ export default async function MembersPage({
             <select
               name="role"
               defaultValue={roleFilter ?? ''}
-              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllRoles')}</option>
               <option value="member">{t('roleMember')}</option>
@@ -138,7 +138,7 @@ export default async function MembersPage({
             <select
               name="status"
               defaultValue={statusFilter ?? ''}
-              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full sm:w-auto h-11 rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">{t('filterAllStatuses')}</option>
               <option value="active">{t('statusActive')}</option>

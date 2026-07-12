@@ -124,7 +124,7 @@ export function CompletionStep({ churchName, email, country }: CompletionStepPro
         >
           <Link href="/dashboard">
             {t('cta')}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
         </Button>
       </m.div>

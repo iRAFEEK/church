@@ -136,7 +136,7 @@ export function GroupsTable({
         />
         <div className="flex gap-2 overflow-x-auto pb-1 flex-wrap">
           <select
-            className="text-sm border border-zinc-200 rounded-lg px-2 py-1.5 bg-white"
+            className="h-11 md:h-9 text-base md:text-sm border border-zinc-200 rounded-lg px-2 bg-white"
             value={filter}
             onChange={e => setFilter(e.target.value)}
           >
@@ -148,7 +148,7 @@ export function GroupsTable({
 
           {ministries.filter(m => m.name !== 'Groups').length > 0 && (
             <select
-              className="text-sm border border-zinc-200 rounded-lg px-2 py-1.5 bg-white"
+              className="h-11 md:h-9 text-base md:text-sm border border-zinc-200 rounded-lg px-2 bg-white"
               value={ministryFilter}
               onChange={e => setMinistryFilter(e.target.value)}
             >

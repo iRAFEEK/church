@@ -92,7 +92,9 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
         ref={containerRef}
         className={cn(
           'fixed z-50',
-          'end-4',
+          // Opposite corner from the quick-actions FAB (which is end-4) so the two
+          // never overlap. start-4 = bottom-start (left in LTR, right in RTL — logical).
+          'start-4',
         )}
         style={{
           bottom: 'calc(var(--bottom-nav-height, 0px) + 1rem)',
