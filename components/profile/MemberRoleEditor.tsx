@@ -57,9 +57,9 @@ export function MemberRoleEditor({ memberId, currentRole, currentUserRole }: Mem
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-full sm:w-auto sm:min-w-48">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

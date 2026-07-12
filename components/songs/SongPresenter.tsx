@@ -331,6 +331,9 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
         onClick={(e) => {
           // Ignore clicks on side nav or controls
           if ((e.target as HTMLElement).closest('button')) return
+          // First tap reveals the (auto-hidden) controls instead of advancing —
+          // touch screens have no mousemove to reveal them otherwise.
+          if (!controlsVisible) { showControls(); return }
           const rect = (e.currentTarget).getBoundingClientRect()
           const clickX = e.clientX - rect.left
           if (clickX < rect.width / 2) {
@@ -338,6 +341,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
           } else {
             isAr ? goPrev() : goNext()
           }
+          showControls()
         }}
       >
         <p
@@ -363,8 +367,9 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
           <span className="text-white/90 text-sm font-medium tabular-nums">
             {currentSlide + 1} / {slides.length}
           </span>
-          {/* Progress dots */}
-          <div className="flex items-center gap-1">
+          {/* Progress dots — hidden on phones (the N/M counter conveys position;
+              individual dots would each expand to the 44px touch minimum and overflow). */}
+          <div className="hidden sm:flex items-center gap-1">
             {slides.map((_, i) => (
               <button
                 key={i}

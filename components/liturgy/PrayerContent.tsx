@@ -134,11 +134,15 @@ function ContentBlock({ block, locale }: ContentBlockProps) {
                 {locale === 'en' ? block.title : block.title_ar}
               </h4>
               {block.audio_url && (
+                // TODO: wire up audio playback for block.audio_url (no player attached yet).
                 <Button
                   variant="ghost"
                   size="icon"
                   className="size-11 shrink-0"
                   aria-label={t('play')}
+                  onClick={() => {
+                    if (block.audio_url) new Audio(block.audio_url).play().catch(() => {})
+                  }}
                 >
                   <Volume2 className="size-4" />
                 </Button>

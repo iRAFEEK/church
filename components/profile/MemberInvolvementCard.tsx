@@ -55,12 +55,12 @@ export function MemberInvolvementCard({ profileId }: MemberInvolvementCardProps)
 
   return (
     <Tabs defaultValue="overview" dir={isRTL ? 'rtl' : 'ltr'}>
-      <TabsList className="grid w-full grid-cols-5 text-xs">
-        <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
-        <TabsTrigger value="events">{t('events')}</TabsTrigger>
-        <TabsTrigger value="serving">{t('serving')}</TabsTrigger>
-        <TabsTrigger value="groups">{t('groupsAndMinistries')}</TabsTrigger>
-        <TabsTrigger value="registrations">{t('registrations')}</TabsTrigger>
+      <TabsList className="flex w-full overflow-x-auto text-xs md:grid md:grid-cols-5">
+        <TabsTrigger value="overview" className="shrink-0">{t('overview')}</TabsTrigger>
+        <TabsTrigger value="events" className="shrink-0">{t('events')}</TabsTrigger>
+        <TabsTrigger value="serving" className="shrink-0">{t('serving')}</TabsTrigger>
+        <TabsTrigger value="groups" className="shrink-0">{t('groupsAndMinistries')}</TabsTrigger>
+        <TabsTrigger value="registrations" className="shrink-0">{t('registrations')}</TabsTrigger>
       </TabsList>
 
       {/* Overview */}

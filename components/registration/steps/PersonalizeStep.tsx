@@ -38,11 +38,16 @@ export function PersonalizeStep({
 
       {/* Textarea */}
       <div className="space-y-1.5">
+        <label htmlFor="welcome-message" className="block text-sm font-medium">
+          {t('messageLabel')}
+        </label>
         <textarea
+          id="welcome-message"
           placeholder={t('messagePlaceholder')}
           value={welcomeMessage}
           onChange={(e) => onUpdate({ welcomeMessage: e.target.value })}
           rows={4}
+          dir="auto"
           className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 placeholder:text-muted-foreground"
         />
       </div>

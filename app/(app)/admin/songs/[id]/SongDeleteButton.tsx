@@ -4,6 +4,17 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -13,8 +24,6 @@ export function SongDeleteButton({ songId, songTitle }: { songId: string; songTi
   const [loading, setLoading] = useState(false)
 
   const handleDelete = async () => {
-    if (!confirm(t('confirmDelete', { title: songTitle }))) return
-
     setLoading(true)
     try {
       const res = await fetch(`/api/songs/${songId}`, { method: 'DELETE' })
@@ -30,8 +39,29 @@ export function SongDeleteButton({ songId, songTitle }: { songId: string; songTi
   }
 
   return (
-    <Button variant="destructive" size="icon" onClick={handleDelete} disabled={loading}>
-      <Trash2 className="h-4 w-4" />
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="icon" disabled={loading} aria-label={t('delete')}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('confirmDeleteTitle')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('confirmDelete', { title: songTitle })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {t('confirmDeleteAction')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

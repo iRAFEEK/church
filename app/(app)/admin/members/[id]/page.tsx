@@ -137,12 +137,12 @@ export default async function MemberDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="info">
-        <TabsList className={`grid w-full ${admin && canManageOutreach ? 'grid-cols-5' : admin || canManageOutreach ? 'grid-cols-4' : 'grid-cols-3'}`}>
-          <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
-          <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
-          <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
-          {canManageOutreach && <TabsTrigger value="outreach">{t('tabOutreach')}</TabsTrigger>}
-          {admin && <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>}
+        <TabsList className={`flex w-full overflow-x-auto md:grid ${admin && canManageOutreach ? 'md:grid-cols-5' : admin || canManageOutreach ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+          <TabsTrigger value="info" className="shrink-0">{t('tabInfo')}</TabsTrigger>
+          <TabsTrigger value="involvement" className="shrink-0">{t('tabInvolvement')}</TabsTrigger>
+          <TabsTrigger value="milestones" className="shrink-0">{t('tabMilestones')}</TabsTrigger>
+          {canManageOutreach && <TabsTrigger value="outreach" className="shrink-0">{t('tabOutreach')}</TabsTrigger>}
+          {admin && <TabsTrigger value="admin" className="shrink-0">{t('tabAdmin')}</TabsTrigger>}
         </TabsList>
 
         {/* Info Tab */}

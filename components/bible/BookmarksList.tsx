@@ -3,6 +3,17 @@
 import { useTranslations, useLocale } from 'next-intl'
 import { Bookmark, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
 import type { BibleBookmark } from '@/types'
 
@@ -44,22 +55,41 @@ export function BookmarksList({ bookmarks, onNavigate, onDelete }: BookmarksList
                 {new Date(bm.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US')}
               </p>
             </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-              onClick={async () => {
-                try {
-                  await fetch(`/api/bible/bookmarks/${bm.id}`, { method: 'DELETE' })
-                  onDelete(bm.id)
-                  toast.success(t('bookmarkRemoved'))
-                } catch {
-                  toast.error(t('errorLoading'))
-                }
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
+                  aria-label={t('deleteBookmarkConfirm')}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('deleteBookmarkTitle')}</AlertDialogTitle>
+                  <AlertDialogDescription>{t('deleteBookmarkBody')}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('deleteBookmarkCancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      try {
+                        await fetch(`/api/bible/bookmarks/${bm.id}`, { method: 'DELETE' })
+                        onDelete(bm.id)
+                        toast.success(t('bookmarkRemoved'))
+                      } catch {
+                        toast.error(t('errorLoading'))
+                      }
+                    }}
+                  >
+                    {t('deleteBookmarkConfirm')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )
       })}

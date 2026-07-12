@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
   ChevronLeft, ChevronRight, Settings, X, Maximize, Minimize,
@@ -52,6 +53,25 @@ export function BiblePresenter({
   initialVerseNum,
 }: BiblePresenterProps) {
   const t = useTranslations('bible')
+  const router = useRouter()
+
+  // Touch: the control bar auto-hides but reveals on tap (no hover on phones).
+  const [showChrome, setShowChrome] = useState(true)
+  const chromeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const revealChrome = useCallback(() => {
+    setShowChrome(true)
+    if (chromeTimerRef.current) clearTimeout(chromeTimerRef.current)
+    chromeTimerRef.current = setTimeout(() => setShowChrome(false), 4000)
+  }, [])
+  useEffect(() => {
+    revealChrome()
+    return () => { if (chromeTimerRef.current) clearTimeout(chromeTimerRef.current) }
+  }, [revealChrome])
+
+  const exitPresenter = useCallback(() => {
+    if (typeof window !== 'undefined' && window.history.length > 1) router.back()
+    else router.push('/bible')
+  }, [router])
 
   // Current display state
   const [verses, setVerses] = useState(initialVerses)
@@ -340,20 +360,23 @@ export function BiblePresenter({
       ref={containerRef}
       className="relative h-screen w-screen overflow-hidden select-none"
       style={{ backgroundColor: settings.bg_color }}
+      onMouseMove={revealChrome}
     >
       {/* Slide content */}
       <div
         className="absolute inset-0 flex flex-col items-center justify-center p-8 cursor-pointer"
         onClick={(e) => {
-          if (showGoTo || showSettings) return
-          const rect = (e.target as HTMLElement).getBoundingClientRect()
+          if (showGoTo || showSettings || showSearch) return
+          // First tap reveals the (auto-hidden) controls instead of advancing —
+          // otherwise the control bar is unreachable on a touch screen (no hover).
+          if (!showChrome) { revealChrome(); return }
+          // Measure against the full slide (currentTarget), not the tapped text node.
+          const rect = e.currentTarget.getBoundingClientRect()
           const clickX = e.clientX - rect.left
-          // RTL: click right = prev, click left = next
-          if (clickX < rect.width / 2) {
-            goNext()
-          } else {
-            goPrev()
-          }
+          // RTL content: tap left half = next, right half = prev.
+          if (clickX < rect.width / 2) goNext()
+          else goPrev()
+          revealChrome()
         }}
       >
         {/* Verse reference */}
@@ -383,16 +406,17 @@ export function BiblePresenter({
         </p>
       </div>
 
-      {/* Bottom controls bar */}
-      <div className="absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-t from-black/60 to-transparent">
+      {/* Bottom controls bar — revealed on tap (touch has no hover), auto-hides after 4s */}
+      <div className={`absolute bottom-0 inset-x-0 flex items-center justify-between p-4 z-20 transition-opacity bg-gradient-to-t from-black/60 to-transparent ${showChrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="text-white hover:bg-white/20"
-            onClick={() => window.close()}
+            onClick={exitPresenter}
+            aria-label={t('back')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
           </Button>
           <span className="text-white text-sm">
             {currentVerse + 1} / {verses.length}
@@ -406,8 +430,9 @@ export function BiblePresenter({
             className="text-white hover:bg-white/20"
             onClick={goPrev}
             disabled={currentVerse === 0}
+            aria-label={t('previous')}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
           </Button>
           <Button
             variant="ghost"
@@ -415,8 +440,9 @@ export function BiblePresenter({
             className="text-white hover:bg-white/20"
             onClick={goNext}
             disabled={currentVerse === verses.length - 1}
+            aria-label={t('next')}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-5 w-5 rtl:rotate-180" />
           </Button>
         </div>
 

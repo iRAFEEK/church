@@ -13,8 +13,23 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
+  // Append to (not replace) next-pwa's default runtimeCaching so the built
+  // service worker also caches the app's .m4a/.aac voiceovers (the default
+  // audio route only matches mp3/wav/ogg). public/sw.js is patched to match.
+  extendDefaultRuntimeCaching: true,
   workboxOptions: {
     disableDevLogs: true,
+    runtimeCaching: [
+      {
+        urlPattern: /\.(?:m4a|aac)$/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'static-audio-assets-ext',
+          expiration: { maxEntries: 64, maxAgeSeconds: 24 * 60 * 60 },
+          rangeRequests: true,
+        },
+      },
+    ],
   },
 });
 

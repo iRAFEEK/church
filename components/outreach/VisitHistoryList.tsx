@@ -96,6 +96,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                       variant="ghost"
                       size="sm"
                       className="h-9 px-2 text-destructive hover:text-destructive"
+                      aria-label={t('deleteVisitTitle')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

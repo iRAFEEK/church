@@ -181,7 +181,7 @@ export function AddMilestone({ profileId, churchId }: AddMilestoneProps) {
                 <FormItem>
                   <FormLabel>{t('notesLabel')}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder={t('notesPlaceholder')} rows={3} {...field} />
+                    <Textarea placeholder={t('notesPlaceholder')} rows={3} dir="auto" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
