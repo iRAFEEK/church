@@ -288,7 +288,7 @@ export function MinistryActionItems({ ministryId, members }: MinistryActionItems
                 ))}
               </select>
             </div>
-            <div className="w-[160px] shrink-0">
+            <div className="flex-1 min-w-[140px] sm:flex-none sm:w-[160px]">
               <label className="text-xs text-zinc-500 flex items-center gap-1 mb-1">
                 <CalendarDays className="h-3 w-3" /> {t('dueDate')}
               </label>

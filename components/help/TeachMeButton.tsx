@@ -34,6 +34,7 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
 
   const items = getHelpItems(pathname, role)
   const t = useTranslations('helpGuide')
+  const tCommon = useTranslations('common')
   const lessonId = lessonIdForPath(pathname, role)
 
   // Close on outside click
@@ -165,7 +166,7 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
             'flex items-center justify-center',
             'hover:bg-blue-700 active:scale-90 transition-all duration-200',
           )}
-          aria-label={open ? 'Close help' : 'Teach me'}
+          aria-label={open ? tCommon('close') : t('title')}
         >
           {open ? (
             <X className="h-5 w-5 transition-transform duration-200" />

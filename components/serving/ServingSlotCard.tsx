@@ -57,7 +57,8 @@ export function ServingSlotCard({ slot, admin }: ServingSlotCardProps) {
             {slot.start_time && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
-                {slot.start_time.slice(0, 5)}{slot.end_time ? ` – ${slot.end_time.slice(0, 5)}` : ''}
+                {/* Numeric time range must not reorder under RTL */}
+                <span dir="ltr">{slot.start_time.slice(0, 5)}{slot.end_time ? ` – ${slot.end_time.slice(0, 5)}` : ''}</span>
               </span>
             )}
           </div>

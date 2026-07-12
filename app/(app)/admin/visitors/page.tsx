@@ -15,18 +15,29 @@ export default async function AdminVisitorsPage() {
   // Get church SLA
   const slaHours = user.church.visitor_sla_hours || 48
 
-  // Parallelize: active visitors, pipeline counts (all statuses), and leaders
-  const [visitorsResult, pipelineResult, leadersResult] = await Promise.all([
+  // Count helper: HEAD request, returns only the integer (no rows over the wire).
+  const countByStatus = (status: string) =>
+    supabase
+      .from('visitors')
+      .select('id', { count: 'exact', head: true })
+      .eq('church_id', user.profile.church_id)
+      .eq('status', status)
+
+  // Parallelize: active visitors (bounded), pipeline counts, and leaders.
+  const [visitorsResult, newCount, assignedCount, contactedCount, convertedCount, leadersResult] = await Promise.all([
     supabase
       .from('visitors')
       .select('id, church_id, first_name, last_name, first_name_ar, last_name_ar, phone, email, age_range, how_heard, occupation, visited_at, status, assigned_to, contacted_at, contact_notes, escalated_at, converted_to, created_at, updated_at, assigned_profile:assigned_to(id,first_name,last_name,first_name_ar,last_name_ar)')
       .eq('church_id', user.profile.church_id)
       .neq('status', 'converted')
-      .order('visited_at', { ascending: false }),
-    supabase
-      .from('visitors')
-      .select('status')
-      .eq('church_id', user.profile.church_id),
+      .order('visited_at', { ascending: false })
+      // Bound the payload (PERF-2): the queue shows the newest actionable visitors;
+      // anything older than the latest 200 is stale intake, not queue work.
+      .limit(200),
+    countByStatus('new'),
+    countByStatus('assigned'),
+    countByStatus('contacted'),
+    countByStatus('converted'),
     supabase
       .from('profiles')
       .select('id,first_name,last_name,first_name_ar,last_name_ar')
@@ -42,13 +53,13 @@ export default async function AdminVisitorsPage() {
   const now = Date.now()
   const slaMs = slaHours * 60 * 60 * 1000
 
-  // Pipeline counts from ALL visitors (including converted)
-  const allVisitors = pipelineResult.data ?? []
+  // Pipeline counts via HEAD count queries (PERF-3) — previously fetched one row
+  // per visitor ever recorded just to count them client-side.
   const pipeline = {
-    new: allVisitors.filter(v => v.status === 'new').length,
-    assigned: allVisitors.filter(v => v.status === 'assigned').length,
-    contacted: allVisitors.filter(v => v.status === 'contacted').length,
-    converted: allVisitors.filter(v => v.status === 'converted').length,
+    new: newCount.count ?? 0,
+    assigned: assignedCount.count ?? 0,
+    contacted: contactedCount.count ?? 0,
+    converted: convertedCount.count ?? 0,
   }
   const pipelineTotal = pipeline.new + pipeline.assigned + pipeline.contacted + pipeline.converted
 
@@ -65,16 +76,16 @@ export default async function AdminVisitorsPage() {
 
   return (
     <div className="space-y-6 pb-24">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      {/* Header — wraps at 360px so the title and form link never collide */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-zinc-900">{t('adminPageTitle')}</h1>
           <p className="text-sm text-zinc-500 mt-1">{t('adminPageSubtitle')}</p>
         </div>
         <Link
           href="/join"
           target="_blank"
-          className="text-sm text-zinc-600 border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-colors"
+          className="shrink-0 text-sm text-zinc-600 border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-colors"
         >
           {t('adminViewFormLink')}
         </Link>

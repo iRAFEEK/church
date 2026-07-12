@@ -295,10 +295,10 @@ export function VisitorQueue({
                       )}
                     </div>
 
-                    {/* Mobile chevron */}
+                    {/* Mobile chevron — decorative only; the info button beside it is the tap target */}
                     <ChevronRight
-                      className="h-4 w-4 text-zinc-300 shrink-0 sm:hidden rtl:rotate-180"
-                      onClick={() => setDetailVisitor(v)}
+                      aria-hidden
+                      className="h-4 w-4 text-zinc-300 shrink-0 sm:hidden rtl:rotate-180 pointer-events-none"
                     />
                   </div>
 

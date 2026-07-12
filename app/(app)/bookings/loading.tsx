@@ -83,14 +83,14 @@ export default function Loading() {
 
           {/* Grid skeleton */}
           <div className="p-4 space-y-1">
-            <div className="grid grid-cols-8 gap-1">
+            <div className="hidden md:grid grid-cols-8 gap-1">
               <div className="w-14" />
               {Array.from({ length: 7 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 rounded" />
               ))}
             </div>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-8 gap-1" style={{ height: 48 }}>
+              <div key={i} className="grid grid-cols-2 md:grid-cols-8 gap-1" style={{ height: 48 }}>
                 <Skeleton className="w-14 h-4 mt-1" />
                 {Array.from({ length: 7 }).map((_, j) => (
                   <Skeleton key={j} className="h-full rounded opacity-20" />

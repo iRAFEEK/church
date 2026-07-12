@@ -121,7 +121,7 @@ export function MarketingNav() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
+            <SheetContent side={locale.startsWith('ar') ? 'left' : 'right'} className="w-72">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="flex flex-col gap-4 mt-8">
                 <Button variant="outline" asChild>
