@@ -74,6 +74,16 @@ describe('features', () => {
     it('returns true for song_presenter by default', () => {
       expect(isFeatureEnabled('song_presenter')).toBe(true)
     })
+
+    it('returns false for finance by default (module gated off)', () => {
+      delete process.env.NEXT_PUBLIC_FEATURE_FINANCE
+      expect(isFeatureEnabled('finance')).toBe(false)
+    })
+
+    it('returns false for templates by default (module gated off)', () => {
+      delete process.env.NEXT_PUBLIC_FEATURE_TEMPLATES
+      expect(isFeatureEnabled('templates')).toBe(false)
+    })
   })
 
   // -----------------------------------------------------------------------
@@ -89,6 +99,11 @@ describe('features', () => {
     it('returns false when env var is set to "false" overriding a default-true flag', () => {
       process.env.NEXT_PUBLIC_FEATURE_OUTREACH_MODULE = 'false'
       expect(isFeatureEnabled('outreach_module')).toBe(false)
+    })
+
+    it('returns true for templates when NEXT_PUBLIC_FEATURE_TEMPLATES=true (staging/local)', () => {
+      process.env.NEXT_PUBLIC_FEATURE_TEMPLATES = 'true'
+      expect(isFeatureEnabled('templates')).toBe(true)
     })
   })
 

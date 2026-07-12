@@ -17,6 +17,8 @@ export DATABASE_URL="$STAGING_DB_URL"
 export NEXT_PUBLIC_APP_URL="http://localhost:3100"
 export PLATFORM_ADMIN_EMAILS="platform@staging.test"
 export APP_ENV="staging"
+# Feature flags — default off in prod; enabled on staging for testing
+export NEXT_PUBLIC_FEATURE_TEMPLATES="true"
 
 echo "▶ dev server → STAGING ($STAGING_PROJECT_REF) on :3100"
 npm run generate:sw

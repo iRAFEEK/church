@@ -11,6 +11,7 @@ import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield, MapPin, Home } fr
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
 import { ConnectionSummary } from '@/components/profile/ConnectionSummary'
 import { MemberPermissionEditor } from '@/components/permissions/MemberPermissionEditor'
+import { OutreachAssignmentPanel } from '@/components/outreach/OutreachAssignmentPanel'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import type { Profile, ProfileMilestone } from '@/types'
@@ -291,6 +292,15 @@ export default async function MemberDetailPage({
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Assignable outreach visits (gated by can_manage_outreach above) */}
+            <div className="mt-4">
+              <OutreachAssignmentPanel
+                memberId={memberProfile.id}
+                currentUserId={currentUser.id}
+                canManage={canManageOutreach}
+              />
+            </div>
           </TabsContent>
         )}
 

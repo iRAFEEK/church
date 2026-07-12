@@ -11,6 +11,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/messaging/triggers', () => ({
   notifyWelcomeVisitor: vi.fn().mockResolvedValue(undefined),
+  notifyVisitorRegistered: vi.fn().mockResolvedValue(undefined),
 }))
 vi.mock('@/lib/api/rate-limit', () => ({
   rateLimitPublic: vi.fn().mockReturnValue(null),
@@ -24,7 +25,7 @@ vi.mock('next/cache', () => ({ revalidateTag: vi.fn() }))
 
 import { POST, GET } from '../route'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
+import { notifyWelcomeVisitor, notifyVisitorRegistered } from '@/lib/messaging/triggers'
 import { makeAuthContext, makeSupabaseChain } from '@/lib/api/__tests__/fixtures/factories'
 
 // ---------------------------------------------------------------------------
@@ -200,6 +201,34 @@ describe('POST /api/visitors', () => {
     await POST(req)
 
     expect(notifyWelcomeVisitor).toHaveBeenCalledWith(VISITOR_ID, CHURCH_ID)
+  })
+
+  it('calls notifyVisitorRegistered fire-and-forget (admin deep link)', async () => {
+    const adminSupa = buildAdminSupabase()
+    vi.mocked(createAdminClient).mockResolvedValue(adminSupa as any)
+
+    const req = makeRequest('/api/visitors', {
+      method: 'POST',
+      body: JSON.stringify({ first_name: 'John', last_name: 'Doe', church_id: CHURCH_ID }),
+    })
+
+    await POST(req)
+
+    expect(notifyVisitorRegistered).toHaveBeenCalledWith(VISITOR_ID, CHURCH_ID)
+  })
+
+  it('still returns 201 when notifyVisitorRegistered rejects (non-blocking)', async () => {
+    const adminSupa = buildAdminSupabase()
+    vi.mocked(createAdminClient).mockResolvedValue(adminSupa as any)
+    vi.mocked(notifyVisitorRegistered).mockRejectedValueOnce(new Error('boom'))
+
+    const req = makeRequest('/api/visitors', {
+      method: 'POST',
+      body: JSON.stringify({ first_name: 'John', last_name: 'Doe', church_id: CHURCH_ID }),
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(201)
   })
 
   it('returns 201 on success', async () => {

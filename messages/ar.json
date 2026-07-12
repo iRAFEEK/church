@@ -452,7 +452,12 @@
     "howHeardWebsite": "الموقع الإلكتروني",
     "howHeardEvent": "حدث",
     "howHeardWalkIn": "زيارة مباشرة",
-    "howHeardOther": "أخرى"
+    "howHeardOther": "أخرى",
+    "statusNewNeedsLeader": "جديد — يحتاج قائدًا",
+    "statusHasLeader": "لديه قائد",
+    "waitingTooLong": "ينتظر منذ فترة طويلة",
+    "waitingTooLongExplain": "لم يتواصل معه أحد منذ أكثر من {hours} ساعة",
+    "waitingAlert": "{count} من الزوار ينتظرون منذ فترة طويلة — لم يتواصل معهم أحد منذ أكثر من {hours} ساعة"
   },
   "groups": {
     "backToGroups": "المجموعات",
@@ -984,7 +989,24 @@
     "mlUpcomingEvents": "فعاليات الخدمة",
     "mlNoEvents": "لا توجد فعاليات قادمة لخدمتك",
     "mlMyAssignments": "تعييناتي في الخدمة",
-    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة"
+    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة",
+    "pipelineWaitingLeader": "في انتظار خادم",
+    "pipelineHasLeader": "لديه خادم يتابعه",
+    "pipelineContacted": "تم التواصل معه",
+    "pipelineBecameMember": "أصبح عضوًا",
+    "chartVisitorFunnelTitle": "متابعة الزوار",
+    "chartVisitorFunnelDesc": "أين وصل كل زائر في طريقه إلى العضوية",
+    "attentionVisitorWaiting": "في الانتظار منذ {days, plural, zero {اليوم} one {يوم واحد} two {يومين} few {# أيام} many {# يومًا} other {# يوم}}",
+    "attentionVisitorWaitingNoLeader": "في الانتظار منذ {days, plural, zero {اليوم} one {يوم واحد} two {يومين} few {# أيام} many {# يومًا} other {# يوم}} — لم يُكلَّف له خادم بعد",
+    "attentionAtRiskSublabel": "غائب عن الاجتماعات — رتِّب زيارة له",
+    "attentionSlotFill": "سجَّل {filled} من أصل {needed} خدام",
+    "attentionPrayerLabel": "{count, plural, one {طلب صلاة واحد في الانتظار} two {طلبا صلاة في الانتظار} few {# طلبات صلاة في الانتظار} many {# طلب صلاة في الانتظار} other {# طلب صلاة في الانتظار}}",
+    "attentionPrayerSublabel": "صلوات الكنيسة — راجعها وكلِّف من يتابعها",
+    "attentionOutreachLabel": "زيارات افتقاد مستحقة",
+    "attentionOutreachSublabel": "{count, plural, one {زيارة واحدة تحتاج إلى متابعة} two {زيارتان تحتاجان إلى متابعة} few {# زيارات تحتاج إلى متابعة} many {# زيارةً تحتاج إلى متابعة} other {# زيارة تحتاج إلى متابعة}}",
+    "quickNewEvent": "حدث جديد",
+    "quickAnnouncement": "إعلان",
+    "quickVisitors": "الزوار"
   },
   "authLayout": {
     "subtitle": "إكليسيا"
@@ -1066,7 +1088,9 @@
       "meeting_action_assigned": "مهمة مُسندة",
       "ministry_member_added": "تمت الإضافة إلى خدمة",
       "visitor": "زائر",
-      "outreach_assignment": "تكليف تواصل"
+      "outreach_assignment": "تكليف تواصل",
+      "visitor_registered": "زائر جديد",
+      "outreach_visit_assigned": "زيارة مُسنَدة"
     },
     "viewRelated": "عرض التفاصيل",
     "previousPage": "الصفحة السابقة",
@@ -1228,7 +1252,15 @@
     "rolePresets": "إعدادات الأدوار المسبقة",
     "addRolePreset": "إضافة دور",
     "type_training": "تدريب",
-    "type_meeting": "اجتماع"
+    "type_meeting": "اجتماع",
+    "rolePresetName": "اسم الدور",
+    "rolePresetNameAr": "اسم الدور بالعربية",
+    "rolePresetCount": "الإجمالي",
+    "runOfShowHint": "أضف أي شيء يحدث في الخدمة — ترانيم، قراءات، عرض شرائح، إعلانات…",
+    "saveRunOfShow": "حفظ برنامج الخدمة",
+    "savingRunOfShow": "جارٍ الحفظ...",
+    "runOfShowSaved": "تم حفظ برنامج الخدمة",
+    "runOfShowSaveError": "تعذّر حفظ برنامج الخدمة. حاول مرة أخرى."
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1543,7 +1575,8 @@
     "keepSignup": "إبقاء التسجيل",
     "noAreasBody": "أنشئ مجالات خدمة لتنظيم فرق المتطوعين.",
     "noSlotsBody": "أنشئ فترات خدمة ليتمكن الفريق من التسجيل.",
-    "noOpenSlotsBody": "تحقق لاحقاً لمعرفة فرص الخدمة الجديدة."
+    "noOpenSlotsBody": "تحقق لاحقاً لمعرفة فرص الخدمة الجديدة.",
+    "signups": "المسجّلون"
   },
   "timeAgo": {
     "now": "الآن",
@@ -1630,7 +1663,8 @@
     "searchBook": "ابحث عن سفر...",
     "decreaseFontSize": "تصغير حجم الخط",
     "increaseFontSize": "تكبير حجم الخط",
-    "errorGeneral": "حدث خطأ. يرجى المحاولة مرة أخرى."
+    "errorGeneral": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+    "present": "عرض"
   },
   "notificationComposer": {
     "pageTitle": "إرسال إشعارات",
@@ -1719,7 +1753,18 @@
     "removeImage": "إزالة الصورة",
     "invalidImage": "يرجى اختيار ملف صورة",
     "imageTooLarge": "يجب أن تكون الصورة أقل من 5 ميجابايت",
-    "uploadFailed": "فشل رفع الصورة"
+    "uploadFailed": "فشل رفع الصورة",
+    "audienceMode_everyone_label": "الكنيسة بالكامل",
+    "audienceMode_everyone_help": "الإرسال إلى جميع الأعضاء",
+    "audienceMode_specific_label": "مجموعات أو خدمات محددة",
+    "audienceMode_specific_help": "اختر المجموعات أو الخدمات التي ستستقبل الرسالة",
+    "audienceMode_advanced_label": "استهداف متقدم",
+    "audienceMode_advanced_help": "التصفية حسب الدور أو الحالة أو الزوار أو الجنس",
+    "reachCount": "ستصل الرسالة إلى {total} شخص",
+    "next": "التالي",
+    "back": "رجوع",
+    "audienceRequired": "اختر أولًا من سيستقبل هذه الرسالة",
+    "editAudience": "تعديل الجمهور"
   },
   "bottomNav": {
     "home": "الرئيسية",
@@ -2070,7 +2115,9 @@
       "pray": "فشل تحديث حالة الصلاة"
     },
     "archiveAction": "أرشفة",
-    "deleteAction": "حذف"
+    "deleteAction": "حذف",
+    "newRequest": "عندي طلب صلاة",
+    "closeForm": "إغلاق"
   },
   "outreach": {
     "pageTitle": "التواصل",
@@ -2134,7 +2181,13 @@
     "deleteVisitBody": "هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteVisitCancel": "إلغاء",
     "deleteVisitConfirm": "حذف",
-    "loadMore": "تحميل المزيد"
+    "loadMore": "تحميل المزيد",
+    "myVisitsTitle": "زياراتي",
+    "myVisitsSubtitle": "الأشخاص المكلَّف بزيارتهم",
+    "myVisitsEmpty": "لا توجد زيارات مكلَّف بها حاليًا",
+    "logThisVisit": "تسجيل هذه الزيارة",
+    "completedVisits": "الزيارات المكتملة",
+    "assignerNotes": "ملاحظات من المسؤول"
   },
   "calendar": {
     "pageTitle": "تقويم الكنيسة",
@@ -2880,7 +2933,9 @@
     "approvedToast": "تمت الموافقة على العضو",
     "rejectedToast": "تم رفض الطلب",
     "errorToast": "حدث خطأ ما. حاول مرة أخرى.",
-    "unnamed": "بدون اسم"
+    "unnamed": "بدون اسم",
+    "visitorsBannerText": "تبحث عن أشخاص ملأوا نموذج الترحيب (QR)؟ ستجدهم في قائمة الزوار.",
+    "visitorsBannerLink": "الذهاب إلى الزوار"
   },
   "pendingChurch": {
     "title": "كنيستك قيد المراجعة",

@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   Send, Users, Shield, Building2, Heart, X, Info, Loader2,
-  UserPlus, AlertTriangle, ChevronDown, ChevronUp,
+  UserPlus, AlertTriangle, ChevronDown, ChevronUp, Check,
+  ArrowLeft, ArrowRight, SlidersHorizontal,
   Upload, Link as LinkIcon, Trash2,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -14,7 +15,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -52,6 +52,18 @@ const STATUSES = ['active', 'at_risk', 'inactive'] as const
 const VISITOR_STATUSES = ['new', 'assigned', 'contacted'] as const
 const GENDERS = ['male', 'female'] as const
 
+// Progressive-disclosure audience choice
+type AudienceMode = 'everyone' | 'specific' | 'advanced'
+type MobileStep = 'audience' | 'message'
+
+const ADVANCED_TARGET_TYPES = ['roles', 'statuses', 'visitors', 'gender'] as const
+
+const MODE_ICONS: Record<AudienceMode, typeof Users> = {
+  everyone: Users,
+  specific: Building2,
+  advanced: SlidersHorizontal,
+}
+
 type NotificationComposerProps = {
   allowedTargetTypes: string[]
   isUnscoped: boolean
@@ -71,14 +83,28 @@ export function NotificationComposer({
   const tc = useTranslations('notificationComposer')
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
+  // Which audience modes this sender can use
+  const canEveryone = allowedTargetTypes.includes('all_church')
+  const canSpecific = allowedTargetTypes.includes('groups') || allowedTargetTypes.includes('ministries')
+  const canAdvanced = ADVANCED_TARGET_TYPES.some(t => allowedTargetTypes.includes(t))
+  const availableModes: AudienceMode[] = [
+    ...(canEveryone ? (['everyone'] as const) : []),
+    ...(canSpecific ? (['specific'] as const) : []),
+    ...(canAdvanced ? (['advanced'] as const) : []),
+  ]
+  const defaultMode: AudienceMode = canEveryone ? 'everyone' : canSpecific ? 'specific' : 'advanced'
+
   // Audience state
-  const [allChurch, setAllChurch] = useState(false)
+  const [audienceMode, setAudienceMode] = useState<AudienceMode>(defaultMode)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [selectedGroups, setSelectedGroups] = useState<string[]>([])
   const [selectedMinistries, setSelectedMinistries] = useState<string[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const [selectedVisitorStatuses, setSelectedVisitorStatuses] = useState<string[]>([])
   const [selectedGender, setSelectedGender] = useState<string>('')
+
+  // Mobile two-step flow: audience first, then message
+  const [mobileStep, setMobileStep] = useState<MobileStep>('audience')
 
   // Message state — single title/body (sent as both AR and EN)
   const [title, setTitle] = useState('')
@@ -97,6 +123,11 @@ export function NotificationComposer({
   const [loadingCount, setLoadingCount] = useState(false)
   const [sending, setSending] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+
+  // Restart at the audience step each time the composer opens
+  useEffect(() => {
+    if (open) setMobileStep('audience')
+  }, [open])
 
   // For super_admin: load all groups/ministries
   useEffect(() => {
@@ -127,6 +158,8 @@ export function NotificationComposer({
     return () => controller.abort()
   }, [isUnscoped])
 
+  const allChurch = audienceMode === 'everyone'
+
   const buildTargets = useCallback((): AudienceTarget[] => {
     const targets: AudienceTarget[] = []
     if (allChurch) { targets.push({ type: 'all_church' }); return targets }
@@ -138,6 +171,20 @@ export function NotificationComposer({
     if (selectedGender) targets.push({ type: 'gender', gender: selectedGender })
     return targets
   }, [allChurch, selectedRoles, selectedGroups, selectedMinistries, selectedStatuses, selectedVisitorStatuses, selectedGender])
+
+  // Switching modes clears selections that no longer apply, so
+  // buildTargets never carries hidden leftovers into the payload.
+  const handleModeChange = (mode: AudienceMode) => {
+    if (mode === audienceMode) return
+    setAudienceMode(mode)
+    if (mode !== 'advanced') {
+      setSelectedRoles([]); setSelectedStatuses([])
+      setSelectedVisitorStatuses([]); setSelectedGender('')
+    }
+    if (mode === 'everyone') {
+      setSelectedGroups([]); setSelectedMinistries([])
+    }
+  }
 
   // Audience count preview (debounced)
   useEffect(() => {
@@ -205,7 +252,128 @@ export function NotificationComposer({
   const statusOptions = STATUSES.map(s => ({ value: s, label: tc(`status_${s}`) }))
   const visitorStatusOptions = VISITOR_STATUSES.map(vs => ({ value: vs, label: tc(`visitor_${vs}`) }))
 
-  // ── Shared content ────────────────────────────────────
+  // ── Audience pieces ───────────────────────────────────
+
+  const groupsMinistriesSelects = (
+    <>
+      {allowedTargetTypes.includes('groups') && groupOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <Users className="h-3 w-3" /> {tc('byGroup')}
+          </label>
+          <MultiSelect
+            options={groupOptions}
+            selected={selectedGroups}
+            onChange={setSelectedGroups}
+            placeholder={tc('selectGroups')}
+          />
+        </div>
+      )}
+
+      {allowedTargetTypes.includes('ministries') && ministryOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <Building2 className="h-3 w-3" /> {tc('byMinistry')}
+          </label>
+          <MultiSelect
+            options={ministryOptions}
+            selected={selectedMinistries}
+            onChange={setSelectedMinistries}
+            placeholder={tc('selectMinistries')}
+          />
+        </div>
+      )}
+    </>
+  )
+
+  const advancedSelects = (
+    <>
+      {allowedTargetTypes.includes('roles') && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <Shield className="h-3 w-3" /> {tc('byRole')}
+          </label>
+          <MultiSelect
+            options={roleOptions}
+            selected={selectedRoles}
+            onChange={setSelectedRoles}
+            placeholder={tc('selectRoles')}
+          />
+        </div>
+      )}
+
+      {allowedTargetTypes.includes('statuses') && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <AlertTriangle className="h-3 w-3" /> {tc('byStatus')}
+          </label>
+          <MultiSelect
+            options={statusOptions}
+            selected={selectedStatuses}
+            onChange={setSelectedStatuses}
+            placeholder={tc('selectStatuses')}
+          />
+        </div>
+      )}
+
+      {allowedTargetTypes.includes('visitors') && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <UserPlus className="h-3 w-3" /> {tc('byVisitors')}
+          </label>
+          <MultiSelect
+            options={visitorStatusOptions}
+            selected={selectedVisitorStatuses}
+            onChange={setSelectedVisitorStatuses}
+            placeholder={tc('selectVisitors')}
+          />
+        </div>
+      )}
+
+      {allowedTargetTypes.includes('gender') && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+            <Heart className="h-3 w-3" /> {tc('byGender')}
+          </label>
+          <Select value={selectedGender || '__none__'} onValueChange={(v) => setSelectedGender(v === '__none__' ? '' : v)}>
+            <SelectTrigger className="w-full min-h-[44px] text-base">
+              <SelectValue placeholder={tc('genderPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">{tc('genderAll')}</SelectItem>
+              {GENDERS.map(g => (
+                <SelectItem key={g} value={g}>{tc(`gender_${g}`)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+    </>
+  )
+
+  const countBar = (
+    <div className={`rounded-lg p-3 flex items-center gap-2.5 ${
+      hasTargets ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-500'
+    }`}>
+      {loadingCount
+        ? <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+        : <Users className="h-4 w-4 shrink-0" />}
+      <div className="min-w-0">
+        {audienceCount ? (
+          <>
+            <p className="text-sm font-semibold">{tc('reachCount', { total: audienceCount.total })}</p>
+            <p className="text-xs opacity-80">
+              {tc('audiencePreview', { members: audienceCount.profileCount, visitors: audienceCount.visitorCount, total: audienceCount.total })}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm font-medium">
+            {hasTargets ? tc('calculating') : tc('selectAudience')}
+          </p>
+        )}
+      </div>
+    </div>
+  )
 
   const audienceSection = (
     <div className="space-y-4">
@@ -221,135 +389,71 @@ export function NotificationComposer({
         </div>
       )}
 
-      {/* Entire Church toggle */}
-      {allowedTargetTypes.includes('all_church') && (
-        <div className="flex items-center justify-between rounded-lg border p-3 min-h-[44px]">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="text-sm font-medium">{tc('allChurch')}</span>
-          </div>
-          <Switch
-            checked={allChurch}
-            onCheckedChange={(checked) => {
-              setAllChurch(checked)
-              if (checked) {
-                setSelectedRoles([]); setSelectedGroups([]); setSelectedMinistries([])
-                setSelectedStatuses([]); setSelectedVisitorStatuses([]); setSelectedGender('')
-              }
-            }}
-          />
-        </div>
-      )}
+      {/* One clear choice: three radio-cards, options revealed per choice */}
+      <fieldset className="space-y-2.5" role="radiogroup" aria-label={tc('audienceTitle')}>
+        {availableModes.map((mode) => {
+          const ModeIcon = MODE_ICONS[mode]
+          const selected = audienceMode === mode
+          return (
+            <button
+              key={mode}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => handleModeChange(mode)}
+              className={`flex w-full items-start gap-3 rounded-lg border p-3 text-start transition-colors min-h-11 ${
+                selected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+              }`}
+            >
+              <ModeIcon className={`h-4 w-4 mt-0.5 shrink-0 ${selected ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{tc(`audienceMode_${mode}_label`)}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{tc(`audienceMode_${mode}_help`)}</p>
+              </div>
+              {selected && <Check className="h-4 w-4 mt-0.5 shrink-0 text-primary" aria-hidden />}
+            </button>
+          )
+        })}
+      </fieldset>
 
-      {!allChurch && (
+      {audienceMode === 'specific' && (
         <div className="space-y-3">
-          {allowedTargetTypes.includes('roles') && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <Shield className="h-3 w-3" /> {tc('byRole')}
-              </label>
-              <MultiSelect
-                options={roleOptions}
-                selected={selectedRoles}
-                onChange={setSelectedRoles}
-                placeholder={tc('selectRoles')}
-              />
-            </div>
-          )}
-
-          {allowedTargetTypes.includes('groups') && groupOptions.length > 0 && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <Users className="h-3 w-3" /> {tc('byGroup')}
-              </label>
-              <MultiSelect
-                options={groupOptions}
-                selected={selectedGroups}
-                onChange={setSelectedGroups}
-                placeholder={tc('selectGroups')}
-              />
-            </div>
-          )}
-
-          {allowedTargetTypes.includes('ministries') && ministryOptions.length > 0 && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <Building2 className="h-3 w-3" /> {tc('byMinistry')}
-              </label>
-              <MultiSelect
-                options={ministryOptions}
-                selected={selectedMinistries}
-                onChange={setSelectedMinistries}
-                placeholder={tc('selectMinistries')}
-              />
-            </div>
-          )}
-
-          {allowedTargetTypes.includes('statuses') && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <AlertTriangle className="h-3 w-3" /> {tc('byStatus')}
-              </label>
-              <MultiSelect
-                options={statusOptions}
-                selected={selectedStatuses}
-                onChange={setSelectedStatuses}
-                placeholder={tc('selectStatuses')}
-              />
-            </div>
-          )}
-
-          {allowedTargetTypes.includes('visitors') && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <UserPlus className="h-3 w-3" /> {tc('byVisitors')}
-              </label>
-              <MultiSelect
-                options={visitorStatusOptions}
-                selected={selectedVisitorStatuses}
-                onChange={setSelectedVisitorStatuses}
-                placeholder={tc('selectVisitors')}
-              />
-            </div>
-          )}
-
-          {allowedTargetTypes.includes('gender') && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
-                <Heart className="h-3 w-3" /> {tc('byGender')}
-              </label>
-              <Select value={selectedGender || '__none__'} onValueChange={(v) => setSelectedGender(v === '__none__' ? '' : v)}>
-                <SelectTrigger className="w-full min-h-[44px] text-base">
-                  <SelectValue placeholder={tc('genderPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{tc('genderAll')}</SelectItem>
-                  {GENDERS.map(g => (
-                    <SelectItem key={g} value={g}>{tc(`gender_${g}`)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {groupsMinistriesSelects}
         </div>
       )}
 
-      {/* Audience count bar */}
-      <div className={`rounded-lg p-2.5 flex items-center gap-2 ${
-        hasTargets ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-500'
-      }`}>
-        {loadingCount
-          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          : <Users className="h-3.5 w-3.5" />}
-        <span className="text-xs font-medium">
-          {audienceCount
-            ? tc('audiencePreview', { members: audienceCount.profileCount, visitors: audienceCount.visitorCount, total: audienceCount.total })
-            : hasTargets
-              ? tc('calculating')
-              : tc('selectAudience')}
-        </span>
-      </div>
+      {audienceMode === 'advanced' && (
+        <div className="space-y-3">
+          {groupsMinistriesSelects}
+          {advancedSelects}
+        </div>
+      )}
+
+      {countBar}
     </div>
+  )
+
+  // Compact audience summary chip for the mobile message step
+  const audienceChip = (
+    <button
+      type="button"
+      onClick={() => setMobileStep('audience')}
+      className={`flex items-center gap-2 rounded-full px-3 min-h-[36px] text-xs font-medium transition-colors ${
+        hasTargets ? 'bg-emerald-50 text-emerald-700 active:bg-emerald-100' : 'bg-zinc-100 text-zinc-500'
+      }`}
+      aria-label={tc('editAudience')}
+    >
+      {loadingCount
+        ? <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+        : <Users className="h-3.5 w-3.5 shrink-0" />}
+      <span className="truncate">
+        {audienceCount
+          ? tc('reachCount', { total: audienceCount.total })
+          : allChurch
+            ? tc('audienceMode_everyone_label')
+            : tc('calculating')}
+      </span>
+    </button>
   )
 
   // Image upload handler — uses server-side API to bypass storage RLS
@@ -559,40 +663,82 @@ export function NotificationComposer({
     )
   }
 
-  // ── Mobile: Sheet ─────────────────────────────────────
+  // ── Mobile: Sheet (two steps: audience → message) ─────
 
   return (
     <>
       <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>
         <SheetContent side="bottom" className="h-[90vh] flex flex-col p-0 rounded-t-2xl">
           <SheetHeader className="px-4 pt-4 pb-2 border-b shrink-0">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="text-base flex items-center gap-2">
-                <Send className="h-4 w-4" />
-                {tc('sheetTitle')}
-              </SheetTitle>
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9" aria-label={tc('cancel')}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1 min-w-0">
+                {mobileStep === 'message' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMobileStep('audience')}
+                    className="h-9 w-9 shrink-0"
+                    aria-label={tc('back')}
+                  >
+                    <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                  </Button>
+                )}
+                <SheetTitle className="text-base flex items-center gap-2 truncate">
+                  <Send className="h-4 w-4 shrink-0" />
+                  {tc('sheetTitle')}
+                </SheetTitle>
+              </div>
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 shrink-0" aria-label={tc('cancel')}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
+            {/* Audience summary pinned on the message step */}
+            {mobileStep === 'message' && (
+              <div className="flex pt-1">
+                {audienceChip}
+              </div>
+            )}
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-            {audienceSection}
-            {messageSection}
-            {previewSection}
+            {mobileStep === 'audience' ? (
+              audienceSection
+            ) : (
+              <>
+                {messageSection}
+                {previewSection}
+              </>
+            )}
           </div>
 
-          {/* Sticky Send Button */}
-          <div className="border-t px-4 py-3 shrink-0">
-            <Button
-              className="w-full min-h-[48px] gap-2"
-              disabled={!canSubmit}
-              onClick={() => setShowConfirm(true)}
-            >
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {sending ? tc('sending') : tc('sendButton')}
-            </Button>
+          {/* Sticky footer: Next on audience step, Send on message step */}
+          <div className="border-t px-4 py-3 shrink-0 space-y-2">
+            {mobileStep === 'audience' ? (
+              <>
+                {!hasTargets && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {tc('audienceRequired')}
+                  </p>
+                )}
+                <Button
+                  className="w-full min-h-[48px] gap-2"
+                  disabled={!hasTargets}
+                  onClick={() => setMobileStep('message')}
+                >
+                  {tc('next')}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                className="w-full min-h-[48px] gap-2"
+                disabled={!canSubmit}
+                onClick={() => setShowConfirm(true)}
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sending ? tc('sending') : tc('sendButton')}
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>

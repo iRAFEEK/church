@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateVisitorSchema } from '@/lib/schemas/visitor'
-import { notifyWelcomeVisitor } from '@/lib/messaging/triggers'
+import { notifyWelcomeVisitor, notifyVisitorRegistered } from '@/lib/messaging/triggers'
 import { rateLimitPublic } from '@/lib/api/rate-limit'
 import { logger } from '@/lib/logger'
 import { sanitizeLikePattern } from '@/lib/utils/sanitize'
@@ -59,6 +59,12 @@ export async function POST(req: NextRequest) {
     // Fire-and-forget: send welcome WhatsApp to visitor
     notifyWelcomeVisitor(data.id, resolvedChurchId).catch((err) =>
       logger.error('notifyWelcomeVisitor fire-and-forget failed', { module: 'visitors', churchId: resolvedChurchId, error: err })
+    )
+
+    // Fire-and-forget: notify church admins/leaders that a visitor registered
+    // via the QR form (deep link to /admin/visitors?visitor=<id>).
+    notifyVisitorRegistered(data.id, resolvedChurchId).catch((err) =>
+      logger.error('notifyVisitorRegistered fire-and-forget failed', { module: 'visitors', churchId: resolvedChurchId, error: err })
     )
 
     revalidateTag(`dashboard-${resolvedChurchId}`)

@@ -452,7 +452,12 @@
     "howHeardWebsite": "Website",
     "howHeardEvent": "Event",
     "howHeardWalkIn": "Walk-in",
-    "howHeardOther": "Other"
+    "howHeardOther": "Other",
+    "statusNewNeedsLeader": "New — needs a leader",
+    "statusHasLeader": "Has a leader",
+    "waitingTooLong": "Waiting too long",
+    "waitingTooLongExplain": "No one has reached out for over {hours} hours",
+    "waitingAlert": "{count} visitors are waiting too long — no one has reached out for over {hours} hours"
   },
   "groups": {
     "backToGroups": "Groups",
@@ -984,7 +989,24 @@
     "mlUpcomingEvents": "Ministry Events",
     "mlNoEvents": "No upcoming events for your ministry",
     "mlMyAssignments": "My Service Assignments",
-    "mlNoAssignments": "No active service assignments"
+    "mlNoAssignments": "No active service assignments",
+    "pipelineWaitingLeader": "Waiting for a leader",
+    "pipelineHasLeader": "Has a leader",
+    "pipelineContacted": "Contacted",
+    "pipelineBecameMember": "Became a member",
+    "chartVisitorFunnelTitle": "Visitor Follow-up",
+    "chartVisitorFunnelDesc": "Where each visitor is on the path to membership",
+    "attentionVisitorWaiting": "Waiting {days, plural, one {# day} other {# days}}",
+    "attentionVisitorWaitingNoLeader": "Waiting {days, plural, one {# day} other {# days}}, no leader yet",
+    "attentionAtRiskSublabel": "Missing from gatherings — plan a visit",
+    "attentionSlotFill": "{filled} of {needed} volunteers signed up",
+    "attentionPrayerLabel": "{count, plural, one {# prayer request waiting} other {# prayer requests waiting}}",
+    "attentionPrayerSublabel": "Church prayers — review and assign someone to follow up",
+    "attentionOutreachLabel": "Follow-up visits due",
+    "attentionOutreachSublabel": "{count, plural, one {# visit needs a follow-up} other {# visits need a follow-up}}",
+    "quickNewEvent": "New Event",
+    "quickAnnouncement": "Announcement",
+    "quickVisitors": "Visitors"
   },
   "authLayout": {
     "subtitle": "Ekklesia"
@@ -1066,7 +1088,9 @@
       "meeting_action_assigned": "Task Assigned",
       "ministry_member_added": "Added to Ministry",
       "visitor": "Visitor",
-      "outreach_assignment": "Outreach Assignment"
+      "outreach_assignment": "Outreach Assignment",
+      "visitor_registered": "New visitor",
+      "outreach_visit_assigned": "Visit assigned"
     },
     "viewRelated": "View Details",
     "previousPage": "Previous page",
@@ -1228,7 +1252,15 @@
     "rolePresets": "Role Presets",
     "addRolePreset": "Add Role",
     "type_training": "Training",
-    "type_meeting": "Meeting"
+    "type_meeting": "Meeting",
+    "rolePresetName": "Role name",
+    "rolePresetNameAr": "Role name (Arabic)",
+    "rolePresetCount": "Total",
+    "runOfShowHint": "Add anything that happens in the service — songs, readings, a slideshow, announcements…",
+    "saveRunOfShow": "Save Run of Show",
+    "savingRunOfShow": "Saving...",
+    "runOfShowSaved": "Run of show saved",
+    "runOfShowSaveError": "Failed to save the run of show. Please try again."
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -1543,7 +1575,8 @@
     "keepSignup": "Keep Sign-up",
     "noAreasBody": "Create serving areas to organize your volunteer teams.",
     "noSlotsBody": "Create serving slots for your team to sign up.",
-    "noOpenSlotsBody": "Check back later for new serving opportunities."
+    "noOpenSlotsBody": "Check back later for new serving opportunities.",
+    "signups": "Signups"
   },
   "timeAgo": {
     "now": "Just now",
@@ -1630,7 +1663,8 @@
     "searchBook": "Search books...",
     "decreaseFontSize": "Decrease font size",
     "increaseFontSize": "Increase font size",
-    "errorGeneral": "Something went wrong. Please try again."
+    "errorGeneral": "Something went wrong. Please try again.",
+    "present": "Present"
   },
   "notificationComposer": {
     "pageTitle": "Send Notifications",
@@ -1719,7 +1753,18 @@
     "removeImage": "Remove image",
     "invalidImage": "Please select an image file",
     "imageTooLarge": "Image must be under 5MB",
-    "uploadFailed": "Failed to upload image"
+    "uploadFailed": "Failed to upload image",
+    "audienceMode_everyone_label": "Everyone in the church",
+    "audienceMode_everyone_help": "Send to every member",
+    "audienceMode_specific_label": "Specific groups or ministries",
+    "audienceMode_specific_help": "Choose which groups or ministries will receive it",
+    "audienceMode_advanced_label": "Advanced targeting",
+    "audienceMode_advanced_help": "Filter by role, status, visitors, or gender",
+    "reachCount": "This will reach {total} people",
+    "next": "Next",
+    "back": "Back",
+    "audienceRequired": "Choose who will receive this message first",
+    "editAudience": "Edit audience"
   },
   "bottomNav": {
     "home": "Home",
@@ -2070,7 +2115,9 @@
       "pray": "Failed to update prayer status"
     },
     "archiveAction": "Archive",
-    "deleteAction": "Delete"
+    "deleteAction": "Delete",
+    "newRequest": "I have a prayer request",
+    "closeForm": "Close"
   },
   "outreach": {
     "pageTitle": "Outreach",
@@ -2134,7 +2181,13 @@
     "deleteVisitBody": "Are you sure you want to delete this visit record? This action cannot be undone.",
     "deleteVisitCancel": "Cancel",
     "deleteVisitConfirm": "Delete",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "myVisitsTitle": "My Visits",
+    "myVisitsSubtitle": "People assigned to you for a visit",
+    "myVisitsEmpty": "No visits assigned to you right now",
+    "logThisVisit": "Log this visit",
+    "completedVisits": "Completed",
+    "assignerNotes": "Notes from the assigner"
   },
   "calendar": {
     "pageTitle": "Church Calendar",
@@ -2880,7 +2933,9 @@
     "approvedToast": "Member approved",
     "rejectedToast": "Request declined",
     "errorToast": "Something went wrong. Please try again.",
-    "unnamed": "Unnamed"
+    "unnamed": "Unnamed",
+    "visitorsBannerText": "Looking for people who filled the welcome (QR) form? They appear in the Visitors list.",
+    "visitorsBannerLink": "Go to Visitors"
   },
   "pendingChurch": {
     "title": "Your church is under review",

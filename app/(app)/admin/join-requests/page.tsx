@@ -1,7 +1,8 @@
+import Link from 'next/link'
 import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, QrCode } from 'lucide-react'
 import { JoinRequestList, type JoinRequest, type PendingMember } from '@/components/churches/JoinRequestList'
 
 type PendingMemberRow = {
@@ -78,6 +79,17 @@ export default async function JoinRequestsPage() {
         </div>
         <p className="text-sm text-zinc-500 mt-1">{t('subtitle')}</p>
       </header>
+
+      {/* Cross-link: people who fill the welcome (QR) form land in Visitors, not here */}
+      <div className="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3">
+        <QrCode className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" />
+        <p className="text-sm text-sky-800">
+          {t('visitorsBannerText')}{' '}
+          <Link href="/admin/visitors" className="font-medium underline underline-offset-2 hover:text-sky-900">
+            {t('visitorsBannerLink')}
+          </Link>
+        </p>
+      </div>
 
       <JoinRequestList initialRequests={requests} initialPendingMembers={pendingMembers} />
     </div>

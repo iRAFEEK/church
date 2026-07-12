@@ -178,6 +178,26 @@ export const TEMPLATES: Record<string, NotificationTemplate> = {
     emailSubjectEn: '{churchName} invited you to join',
     emailSubjectAr: 'دعتك {churchName} للانضمام',
   },
+
+  visitor_registered: {
+    whatsappTemplate: 'visitor_registered',
+    titleEn: 'New visitor registered',
+    titleAr: 'زائر جديد سجّل بياناته',
+    bodyEn: '{visitorName} just filled the welcome form. Open the visitors list to follow up.',
+    bodyAr: 'سجّل {visitorName} بياناته في نموذج الترحيب. افتح قائمة الزوار للمتابعة.',
+    emailSubjectEn: 'New visitor: {visitorName}',
+    emailSubjectAr: 'زائر جديد: {visitorName}',
+  },
+
+  outreach_visit_assigned: {
+    whatsappTemplate: 'outreach_visit_assigned',
+    titleEn: 'Visit assigned to you',
+    titleAr: 'زيارة مُسنَدة إليك',
+    bodyEn: 'You were asked to visit {memberName}. Open My Visits to see the details and log the visit.',
+    bodyAr: 'طُلب منك زيارة {memberName}. افتح «زياراتي» لمعرفة التفاصيل وتسجيل الزيارة.',
+    emailSubjectEn: 'Visit assigned: {memberName}',
+    emailSubjectAr: 'زيارة مُسنَدة إليك: {memberName}',
+  },
 }
 
 /**

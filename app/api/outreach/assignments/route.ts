@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { apiHandler } from '@/lib/api/handler'
 import { validate } from '@/lib/api/validate'
 import { CreateOutreachAssignmentSchema } from '@/lib/schemas/outreach-assignment'
+import { notifyOutreachVisitAssigned } from '@/lib/messaging/triggers'
 import { logger } from '@/lib/logger'
 
 const PAGE_SIZE = 25
@@ -96,32 +97,15 @@ export const POST = apiHandler(async ({ req, supabase, profile }) => {
 
   if (error) throw error
 
-  // Create in-app notification for the assignee
-  const memberName = memberResult.data.first_name_ar
-    ? `${memberResult.data.first_name_ar} ${memberResult.data.last_name_ar || ''}`.trim()
-    : `${memberResult.data.first_name} ${memberResult.data.last_name || ''}`.trim()
-
-  const notificationInsert = await supabase
-    .from('notifications_log')
-    .insert({
-      church_id: churchId,
-      profile_id: body.assigned_to,
-      type: 'outreach_assignment',
-      channel: 'in_app',
-      title: 'Outreach Assignment',
-      body: `You have been assigned to reach out to ${memberName}`,
-      status: 'sent',
-      reference_id: data.id,
-      reference_type: 'outreach_assignment',
-      sent_at: new Date().toISOString(),
-    })
-
-  if (notificationInsert.error) {
-    logger.error('Failed to create outreach assignment notification', {
+  // Notify the assignee (fire-and-forget — localized in-app + push via the dispatcher).
+  // Replaces the old manual notifications_log insert: sendNotification writes the
+  // in-app row itself, so calling both would double-notify.
+  notifyOutreachVisitAssigned(data.id, body.member_id, body.assigned_to, churchId).catch((err) =>
+    logger.error('Failed to send outreach assignment notification', {
       module: 'outreach',
-      error: notificationInsert.error.message,
+      error: err instanceof Error ? err.message : 'Unknown error',
     })
-  }
+  )
 
   revalidateTag(`outreach-${churchId}`)
   revalidateTag(`dashboard-${churchId}`)

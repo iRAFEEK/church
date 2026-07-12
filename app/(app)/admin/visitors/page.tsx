@@ -6,8 +6,13 @@ import { getTranslations } from 'next-intl/server'
 import type { Visitor } from '@/types'
 import { Users, UserPlus, UserCheck, AlertTriangle } from 'lucide-react'
 
-export default async function AdminVisitorsPage() {
+export default async function AdminVisitorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ visitor?: string }>
+}) {
   const user = await requirePermission('can_view_visitors')
+  const { visitor: focusVisitorId } = await searchParams
 
   const t = await getTranslations('visitors')
   const supabase = await createClient()
@@ -135,7 +140,7 @@ export default async function AdminVisitorsPage() {
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-3">
           <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
           <p className="text-sm text-red-700">
-            {t('overdueAlert', { count: stats.overdue, hours: slaHours })}
+            {t('waitingAlert', { count: stats.overdue, hours: slaHours })}
           </p>
         </div>
       )}
@@ -145,7 +150,7 @@ export default async function AdminVisitorsPage() {
         <StatCard icon={Users} label={t('adminStatsTotal')} value={stats.total} />
         <StatCard icon={UserPlus} label={t('adminStatsNew')} value={stats.new} color="sky" />
         <StatCard icon={UserCheck} label={t('adminStatsAssigned')} value={stats.assigned} color="amber" />
-        <StatCard icon={AlertTriangle} label={t('adminStatsOverdue')} value={stats.overdue} color="red" />
+        <StatCard icon={AlertTriangle} label={t('waitingTooLong')} value={stats.overdue} color="red" />
       </div>
 
       {/* Visitor Queue */}
@@ -153,6 +158,7 @@ export default async function AdminVisitorsPage() {
         visitors={visitors || []}
         leaders={leaders || []}
         slaHours={slaHours}
+        focusVisitorId={focusVisitorId}
       />
     </div>
   )

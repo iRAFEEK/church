@@ -115,6 +115,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(target)
   }
 
+  // Event templates are gated behind a feature flag while the module is in
+  // development (same treatment as finance). Block the pages that author or
+  // consume templates and the templates API so nothing is reachable until the
+  // flag is enabled (NEXT_PUBLIC_FEATURE_TEMPLATES=true on staging/local).
+  if (
+    !isFeatureEnabled('templates') &&
+    (pathname.startsWith('/admin/templates') ||
+      pathname.startsWith('/admin/events/from-template') ||
+      pathname.startsWith('/api/templates') ||
+      pathname.startsWith('/api/events/from-template'))
+  ) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    const target = request.nextUrl.clone()
+    target.pathname = session ? '/dashboard' : '/login'
+    return NextResponse.redirect(target)
+  }
+
   // Allow public paths without auth
   if (isPublicPath(pathname)) {
     return supabaseResponse

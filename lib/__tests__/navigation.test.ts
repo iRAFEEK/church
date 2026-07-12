@@ -29,8 +29,8 @@ const ALL_ROLES: UserRole[] = ['member', 'group_leader', 'ministry_leader', 'sup
 // ---------------------------------------------------------------------------
 
 describe('NAV_ITEMS', () => {
-  it('has exactly 32 items', () => {
-    expect(NAV_ITEMS).toHaveLength(32)
+  it('has exactly 33 items', () => {
+    expect(NAV_ITEMS).toHaveLength(33)
   })
 
   it('every item has required properties', () => {
@@ -156,6 +156,16 @@ describe('getNavForUser', () => {
     expect(financeItems.length).toBeGreaterThan(0)
     for (const fi of financeItems) {
       expect(items.some(i => i.href === fi.href)).toBe(false)
+    }
+  })
+
+  it('hides the Templates item when the templates feature is disabled (off by default)', () => {
+    const perms = makePermissions(true)
+    const items = getNavForUser('super_admin', perms)
+    const templateItems = NAV_ITEMS.filter(i => i.feature === 'templates')
+    expect(templateItems.length).toBeGreaterThan(0)
+    for (const ti of templateItems) {
+      expect(items.some(i => i.href === ti.href)).toBe(false)
     }
   })
 

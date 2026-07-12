@@ -10,12 +10,45 @@ export interface VisitorPipelineItem {
   count: number
 }
 
+export type AttentionItemType =
+  | 'visitor_sla'
+  | 'at_risk_member'
+  | 'unfilled_slot'
+  | 'active_prayer'
+  | 'outreach_followup'
+
+/** Interpolation params for the per-type i18n strings rendered by AttentionList. */
+export interface AttentionItemParams {
+  /** visitor_sla: whole days since the visitor first visited */
+  days?: number
+  /** visitor_sla: true when assigned_to is null (nobody following up yet) */
+  noLeader?: boolean
+  /** unfilled_slot: active signups so far */
+  filled?: number
+  /** unfilled_slot: volunteers needed */
+  needed?: number
+  /** active_prayer / outreach_followup: aggregate count */
+  count?: number
+}
+
 export interface AttentionItem {
-  type: 'visitor_sla' | 'at_risk_member' | 'unfilled_slot' | 'active_prayer' | 'outreach_followup'
+  type: AttentionItemType
   id: string
+  /**
+   * Legacy pre-translated display strings. Still emitted by
+   * lib/dashboard/queries.ts — rendered as-is only when `params` is absent.
+   */
   label: string
   sublabel: string
   href: string
+  /** Raw data name (visitor/member/slot) — never UI copy. */
+  name?: string | null
+  nameAr?: string | null
+  /**
+   * Structured payload. When present, AttentionList translates the
+   * label/sublabel at render time via t() with these params.
+   */
+  params?: AttentionItemParams
 }
 
 export interface UpcomingItem {

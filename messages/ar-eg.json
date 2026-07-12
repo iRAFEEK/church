@@ -452,7 +452,12 @@
     "howHeardWebsite": "الموقع",
     "howHeardEvent": "حدث",
     "howHeardWalkIn": "زيارة مباشرة",
-    "howHeardOther": "تاني"
+    "howHeardOther": "تاني",
+    "statusNewNeedsLeader": "جديد — محتاج قائد",
+    "statusHasLeader": "معاه قائد",
+    "waitingTooLong": "مستني بقاله كتير",
+    "waitingTooLongExplain": "محدش تواصل معاه من أكتر من {hours} ساعة",
+    "waitingAlert": "{count} زوار مستنيين بقالهم كتير — محدش تواصل معاهم من أكتر من {hours} ساعة"
   },
   "groups": {
     "backToGroups": "المجموعات",
@@ -984,7 +989,24 @@
     "mlUpcomingEvents": "فعاليات الخدمة",
     "mlNoEvents": "لا توجد فعاليات قادمة لخدمتك",
     "mlMyAssignments": "تعييناتي في الخدمة",
-    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة"
+    "mlNoAssignments": "لا توجد تعيينات خدمة نشطة",
+    "pipelineWaitingLeader": "مستني خادم",
+    "pipelineHasLeader": "معاه خادم بيتابعه",
+    "pipelineContacted": "اتكلمنا معاه",
+    "pipelineBecameMember": "بقى عضو",
+    "chartVisitorFunnelTitle": "متابعة الزوار",
+    "chartVisitorFunnelDesc": "كل زائر وصل لفين في طريقه للعضوية",
+    "attentionVisitorWaiting": "مستني من {days, plural, zero {النهارده} one {يوم واحد} two {يومين} few {# أيام} many {# يوم} other {# يوم}}",
+    "attentionVisitorWaitingNoLeader": "مستني من {days, plural, zero {النهارده} one {يوم واحد} two {يومين} few {# أيام} many {# يوم} other {# يوم}} — ولسه مفيش خادم متكلف بيه",
+    "attentionAtRiskSublabel": "غايب عن الاجتماعات — رتّب زيارة ليه",
+    "attentionSlotFill": "سجّل {filled} من {needed} خدام",
+    "attentionPrayerLabel": "{count, plural, one {طلب صلاة واحد مستني} two {طلبين صلاة مستنيين} few {# طلبات صلاة مستنيين} many {# طلب صلاة مستنيين} other {# طلب صلاة مستني}}",
+    "attentionPrayerSublabel": "صلوات الكنيسة — راجعها وكلّف حد يتابعها",
+    "attentionOutreachLabel": "زيارات افتقاد لازم تتعمل",
+    "attentionOutreachSublabel": "{count, plural, one {زيارة واحدة محتاجة متابعة} two {زيارتين محتاجين متابعة} few {# زيارات محتاجين متابعة} many {# زيارة محتاجين متابعة} other {# زيارة محتاجة متابعة}}",
+    "quickNewEvent": "حدث جديد",
+    "quickAnnouncement": "إعلان",
+    "quickVisitors": "الزوار"
   },
   "authLayout": {
     "subtitle": "إكليسيا"
@@ -1066,7 +1088,9 @@
       "meeting_action_assigned": "مهمة مسندة ليك",
       "ministry_member_added": "اتضافت لخدمة",
       "visitor": "زائر",
-      "outreach_assignment": "تكليف تواصل"
+      "outreach_assignment": "تكليف تواصل",
+      "visitor_registered": "زائر جديد",
+      "outreach_visit_assigned": "زيارة متكلّف بيها"
     },
     "viewRelated": "عرض التفاصيل",
     "previousPage": "الصفحة اللي فاتت",
@@ -1228,7 +1252,15 @@
     "rolePresets": "إعدادات الأدوار",
     "addRolePreset": "إضافة دور",
     "type_training": "تدريب",
-    "type_meeting": "اجتماع"
+    "type_meeting": "اجتماع",
+    "rolePresetName": "اسم الدور",
+    "rolePresetNameAr": "اسم الدور بالعربي",
+    "rolePresetCount": "الإجمالي",
+    "runOfShowHint": "ضيف أي حاجة بتحصل في الخدمة — ترانيم، قراءات، عرض شرائح، إعلانات…",
+    "saveRunOfShow": "احفظ برنامج الخدمة",
+    "savingRunOfShow": "بيحفظ...",
+    "runOfShowSaved": "اتحفظ برنامج الخدمة",
+    "runOfShowSaveError": "معرفناش نحفظ برنامج الخدمة. جرّب تاني."
   },
   "templates": {
     "pageTitle": "قوالب الفعاليات",
@@ -1543,7 +1575,8 @@
     "keepSignup": "إبقاء التسجيل",
     "noAreasBody": "أنشئ مجالات خدمة لتنظيم فرق المتطوعين.",
     "noSlotsBody": "أنشئ فترات خدمة ليتمكن الفريق من التسجيل.",
-    "noOpenSlotsBody": "ارجع بعدين عشان تشوف فرص خدمة جديدة."
+    "noOpenSlotsBody": "ارجع بعدين عشان تشوف فرص خدمة جديدة.",
+    "signups": "المسجّلين"
   },
   "timeAgo": {
     "now": "الآن",
@@ -1630,7 +1663,8 @@
     "searchBook": "ابحث عن سفر...",
     "decreaseFontSize": "تصغير حجم الخط",
     "increaseFontSize": "تكبير حجم الخط",
-    "errorGeneral": "حصل مشكلة. جرّب تاني."
+    "errorGeneral": "حصل مشكلة. جرّب تاني.",
+    "present": "عرض"
   },
   "notificationComposer": {
     "pageTitle": "إرسال إشعارات",
@@ -1719,7 +1753,18 @@
     "removeImage": "شيل الصورة",
     "invalidImage": "اختار ملف صورة",
     "imageTooLarge": "الصورة لازم تكون أقل من 5 ميجا",
-    "uploadFailed": "الرفع فشل"
+    "uploadFailed": "الرفع فشل",
+    "audienceMode_everyone_label": "الكنيسة كلها",
+    "audienceMode_everyone_help": "ابعت لكل الأعضاء",
+    "audienceMode_specific_label": "مجموعات أو خدمات معينة",
+    "audienceMode_specific_help": "اختار المجموعات أو الخدمات اللي هتوصلها الرسالة",
+    "audienceMode_advanced_label": "استهداف متقدم",
+    "audienceMode_advanced_help": "فلتر حسب الدور أو الحالة أو الزوار أو الجنس",
+    "reachCount": "الرسالة هتوصل لـ {total} شخص",
+    "next": "التالي",
+    "back": "ارجع",
+    "audienceRequired": "اختار الأول مين هيستقبل الرسالة دي",
+    "editAudience": "عدّل الجمهور"
   },
   "bottomNav": {
     "home": "الرئيسية",
@@ -2070,7 +2115,9 @@
       "pray": "مقدرش تتحدّث حالة الصلاة"
     },
     "archiveAction": "أرشفة",
-    "deleteAction": "حذف"
+    "deleteAction": "حذف",
+    "newRequest": "عندي طلب صلاة",
+    "closeForm": "قفل"
   },
   "outreach": {
     "pageTitle": "التواصل",
@@ -2134,7 +2181,13 @@
     "deleteVisitBody": "متأكد إنك عايز تحذف السجل ده؟ مينفعش ترجع فيه.",
     "deleteVisitCancel": "إلغاء",
     "deleteVisitConfirm": "حذف",
-    "loadMore": "تحميل المزيد"
+    "loadMore": "تحميل المزيد",
+    "myVisitsTitle": "زياراتي",
+    "myVisitsSubtitle": "الناس اللي مطلوب منك تزورهم",
+    "myVisitsEmpty": "مفيش زيارات مطلوبة منك دلوقتي",
+    "logThisVisit": "سجّل الزيارة دي",
+    "completedVisits": "الزيارات اللي خلصت",
+    "assignerNotes": "ملاحظات من المسؤول"
   },
   "calendar": {
     "pageTitle": "تقويم الكنيسة",
@@ -2880,7 +2933,9 @@
     "approvedToast": "تمت الموافقة على العضو",
     "rejectedToast": "اترفض الطلب",
     "errorToast": "حصل خطأ. حاول تاني.",
-    "unnamed": "بدون اسم"
+    "unnamed": "بدون اسم",
+    "visitorsBannerText": "بتدوّر على ناس ملوا نموذج الترحيب (QR)؟ هتلاقيهم في قايمة الزوار.",
+    "visitorsBannerLink": "روح للزوار"
   },
   "pendingChurch": {
     "title": "كنيستك بيتم مراجعتها",

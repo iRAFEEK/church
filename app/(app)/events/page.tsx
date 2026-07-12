@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { getTranslations } from 'next-intl/server'
 import { Plus, Copy } from 'lucide-react'
 import { EventsPageClient } from '@/components/events/EventsPageClient'
+import { isFeatureEnabled } from '@/lib/features'
 import type { Ministry, Group } from '@/types'
 
 const PAGE_SIZE = 20
@@ -18,6 +19,8 @@ export default async function EventsPage() {
   const supabase = await createClient()
   const admin = isAdmin(user.profile)
   const canManageEvents = user.resolvedPermissions.can_manage_events
+  // Templates are feature-flagged off in production (see lib/features.ts).
+  const templatesEnabled = isFeatureEnabled('templates')
 
   // Fetch initial events (include visibility for filtering), ministries, and groups in parallel
   let eventsQuery = supabase
@@ -121,12 +124,14 @@ export default async function EventsPage() {
         </div>
         {canManageEvents && (
           <div className="flex flex-col sm:flex-row gap-2">
-            <Link href="/admin/events/from-template">
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Copy className="h-4 w-4 me-1" />
-                {t('fromTemplate')}
-              </Button>
-            </Link>
+            {templatesEnabled && (
+              <Link href="/admin/events/from-template">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Copy className="h-4 w-4 me-1" />
+                  {t('fromTemplate')}
+                </Button>
+              </Link>
+            )}
             <Link href="/admin/events/new">
               <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 me-1" />
