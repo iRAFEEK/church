@@ -80,29 +80,6 @@ const typeColors: Record<string, string> = {
   general: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400',
 }
 
-function formatDate(dateStr: string, locale: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (locale.startsWith('ar')) {
-    if (diffMins < 1) return 'الآن'
-    if (diffMins < 60) return `منذ ${diffMins} دقيقة`
-    if (diffHours < 24) return `منذ ${diffHours} ساعة`
-    if (diffDays < 7) return `منذ ${diffDays} يوم`
-    return date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' })
-  }
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 // ── Page Component ───────────────────────────────────
 
 export interface NotificationsInitialData {
@@ -128,6 +105,22 @@ export function NotificationsClient({ initialData, initialRole }: NotificationsC
   // Notification types are free text in the DB — fall back to the generic label
   // instead of rendering a raw i18n key for types without a translation.
   const typeLabel = (type: string) => (t.has(`types.${type}`) ? t(`types.${type}`) : t('types.general'))
+
+  // Locale-aware relative time — translated units for recent dates,
+  // locale-matched calendar format for anything older than a week.
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr)
+    const diffMs = Date.now() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return t('timeAgo.justNow')
+    if (diffMins < 60) return t('timeAgo.m', { count: diffMins })
+    if (diffHours < 24) return t('timeAgo.h', { count: diffHours })
+    if (diffDays < 7) return t('timeAgo.d', { count: diffDays })
+    return date.toLocaleDateString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
 
   // User role & scopes
   const [userRole, setUserRole] = useState<string | null>(initialRole)
@@ -378,7 +371,7 @@ export function NotificationsClient({ initialData, initialRole }: NotificationsC
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="outline" className="text-xs px-1.5 py-0">{typeLabel(n.type)}</Badge>
-                      <span className="text-xs text-muted-foreground">{formatDate(n.created_at, locale)}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(n.created_at)}</span>
                     </div>
                   </div>
                 </button>
@@ -423,7 +416,7 @@ export function NotificationsClient({ initialData, initialRole }: NotificationsC
                       <DialogDescription asChild>
                         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                           <Badge variant="outline" className="text-xs px-1.5 py-0">{typeLabel(sn.type)}</Badge>
-                          <span>{formatDate(sn.created_at, locale)}</span>
+                          <span>{formatDate(sn.created_at)}</span>
                         </div>
                       </DialogDescription>
                     </div>

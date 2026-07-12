@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { getLocale, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
-import { findLesson, canSee } from '@/lib/help/guide-data'
+import { findLesson, canSee, pickGuideText } from '@/lib/help/guide-data'
 import { GuideLessonView } from '@/components/help/GuideLessonView'
 
 type Params = { params: Promise<{ id: string }> }
@@ -43,7 +43,7 @@ export default async function HelpLessonPage({ params }: Params) {
           <span className="flex-1">
             <span className="block text-xs text-amber-700 font-medium">{t('nextLesson')}</span>
             <span className="block text-sm font-semibold text-zinc-900" dir={isAr ? 'rtl' : 'auto'}>
-              {!isAr && next.titleEn ? next.titleEn : next.title}
+              {pickGuideText(next.titles, locale)}
             </span>
           </span>
           <ChevronRight className="h-5 w-5 text-amber-500 rtl:rotate-180" />

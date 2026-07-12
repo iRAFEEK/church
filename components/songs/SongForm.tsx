@@ -158,7 +158,7 @@ export function SongForm({ song }: SongFormProps) {
               rows={12}
               dir="auto"
               placeholder={t('lyricsPlaceholder')}
-              className="font-mono text-sm"
+              className="font-mono text-base md:text-sm"
             />
           </div>
         </div>

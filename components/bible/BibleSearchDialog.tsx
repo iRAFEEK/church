@@ -109,7 +109,7 @@ export function BibleSearch({ bibleId, onNavigate, variant = 'default' }: BibleS
               placeholder={t('searchPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="ps-10 h-9"
+              className="ps-10 h-11 md:h-9"
             />
             {loading && (
               <Loader2 className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -133,7 +133,7 @@ export function BibleSearch({ bibleId, onNavigate, variant = 'default' }: BibleS
                     onNavigate(result.chapterId, result.verseNum)
                     setOpen(false)
                   }}
-                  className={`w-full text-start px-3 py-2 transition-colors ${
+                  className={`w-full text-start px-3 py-2 min-h-11 transition-colors ${
                     variant === 'presenter'
                       ? 'hover:bg-zinc-700/50 text-zinc-200'
                       : 'hover:bg-muted/50'

@@ -516,7 +516,7 @@ export function BiblePresenter({
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-zinc-800 text-white text-sm rounded-md ps-10 pe-10 py-2 border border-zinc-600 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                  className="w-full bg-zinc-800 text-white text-base md:text-sm rounded-md ps-10 pe-10 py-2 border border-zinc-600 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                   dir="rtl"
                 />
                 {searchLoading && (
@@ -590,7 +590,7 @@ export function BiblePresenter({
                     placeholder={t('searchBook')}
                     value={bookFilter}
                     onChange={(e) => setBookFilter(e.target.value)}
-                    className="w-full bg-zinc-800 text-white text-sm rounded-md px-3 py-1.5 border border-zinc-600 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
+                    className="w-full bg-zinc-800 text-white text-base md:text-sm rounded-md px-3 py-1.5 border border-zinc-600 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400"
                     dir="rtl"
                   />
                 </div>
@@ -747,7 +747,7 @@ export function BiblePresenter({
               id="bible-font-family"
               value={settings.font_family}
               onChange={(e) => setSettings(s => ({ ...s, font_family: e.target.value }))}
-              className="flex h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-white"
+              className="flex h-11 md:h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-base md:text-sm text-white"
             >
               <option value="arabic">Arabic (Naskh)</option>
               <option value="sans">Sans-serif</option>

@@ -967,6 +967,12 @@
     "leaderPrayersEmpty": "No active prayer requests",
     "leaderPrayersPrivate": "Private",
     "leaderQuickActions": "Quick Actions",
+    "quickEvents": "Events",
+    "quickServing": "Serving",
+    "quickBible": "Bible",
+    "quickNews": "News",
+    "quickAlerts": "Alerts",
+    "quickProfile": "Profile",
     "leaderStartGathering": "Start Gathering",
     "leaderViewVisitors": "View My Visitors",
     "leaderRecentGatherings": "Recent Gatherings",
@@ -1064,7 +1070,13 @@
     },
     "viewRelated": "View Details",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "timeAgo": {
+      "justNow": "just now",
+      "m": "{count}m ago",
+      "h": "{count}h ago",
+      "d": "{count}d ago"
+    }
   },
   "events": {
     "adminPageTitle": "Events",
@@ -2909,7 +2921,10 @@
     "backToLibrary": "All lessons",
     "nextLesson": "Next lesson",
     "watchThisPage": "Watch how this page works",
-    "allLessons": "How to Use"
+    "allLessons": "How to Use",
+    "walkMeThrough": "Walk me through it",
+    "gotIt": "Got it",
+    "close": "Close"
   },
   "pendingHome": {
     "title": "Your church is under review",

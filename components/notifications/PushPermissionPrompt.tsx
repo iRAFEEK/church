@@ -88,7 +88,7 @@ export function PushPermissionPrompt() {
 
         <button
           onClick={() => setDismissedThisSession(true)}
-          className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          className="flex-shrink-0 h-11 w-11 -mt-3 -me-3 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           aria-label={t('dismiss')}
         >
           <X className="h-4 w-4" />

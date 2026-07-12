@@ -967,6 +967,12 @@
     "leaderPrayersEmpty": "لا طلبات صلاة نشطة",
     "leaderPrayersPrivate": "خاصة",
     "leaderQuickActions": "إجراءات سريعة",
+    "quickEvents": "الأحداث",
+    "quickServing": "الخدمة",
+    "quickBible": "الكتاب",
+    "quickNews": "إعلانات",
+    "quickAlerts": "تنبيهات",
+    "quickProfile": "ملفي",
     "leaderStartGathering": "بدء اجتماع",
     "leaderViewVisitors": "عرض زواري",
     "leaderRecentGatherings": "الاجتماعات الأخيرة",
@@ -1064,7 +1070,13 @@
     },
     "viewRelated": "عرض التفاصيل",
     "previousPage": "الصفحة السابقة",
-    "nextPage": "الصفحة التالية"
+    "nextPage": "الصفحة التالية",
+    "timeAgo": {
+      "justNow": "الآن",
+      "m": "منذ {count} دقيقة",
+      "h": "منذ {count} ساعة",
+      "d": "منذ {count} يوم"
+    }
   },
   "events": {
     "adminPageTitle": "الفعاليات",
@@ -2909,7 +2921,10 @@
     "backToLibrary": "كل الدروس",
     "nextLesson": "الدرس التالي",
     "watchThisPage": "شاهد شرح هذه الصفحة",
-    "allLessons": "دليل الاستخدام"
+    "allLessons": "دليل الاستخدام",
+    "walkMeThrough": "أرني الخطوات",
+    "gotIt": "فهمت",
+    "close": "إغلاق"
   },
   "pendingHome": {
     "title": "كنيستك قيد المراجعة",

@@ -500,7 +500,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
               id="song-font-family"
               value={settings.font_family}
               onChange={(e) => updateSetting('font_family', e.target.value as SongDisplaySettings['font_family'])}
-              className="flex h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-white"
+              className="flex h-11 md:h-10 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-base md:text-sm text-white"
             >
               <option value="sans">Sans-serif</option>
               <option value="serif">Serif</option>
@@ -563,7 +563,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => handleSearchInput(e.target.value)}
-                  className="ps-10 h-10 bg-zinc-800 border-zinc-600 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
+                  className="ps-10 h-11 md:h-10 bg-zinc-800 border-zinc-600 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
                   autoComplete="off"
                 />
                 {searchLoading && (

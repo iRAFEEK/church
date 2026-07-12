@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Volume2, Pause } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { GuideLesson } from '@/lib/help/guide-data'
+import { pickGuideText, type GuideLesson } from '@/lib/help/guide-data'
 
 interface GuideLessonViewProps {
   lesson: GuideLesson
@@ -46,7 +46,7 @@ export function GuideLessonView({ lesson }: GuideLessonViewProps) {
       <div className="flex items-center gap-3">
         <span className="text-4xl" aria-hidden>{lesson.icon}</span>
         <h1 className="flex-1 text-xl font-bold text-zinc-900" dir={isAr ? 'rtl' : 'auto'}>
-          {!isAr && lesson.titleEn ? lesson.titleEn : lesson.title}
+          {pickGuideText(lesson.titles, locale)}
         </h1>
         {lesson.titleAud && (
           <AudioButton active={playing === lesson.titleAud} onClick={() => toggleAudio(lesson.titleAud!)} label={t('listen')} />
@@ -63,7 +63,7 @@ export function GuideLessonView({ lesson }: GuideLessonViewProps) {
               </span>
               <span className="text-2xl shrink-0" aria-hidden>{step.icon}</span>
               <p className="flex-1 font-semibold text-zinc-800 leading-relaxed" dir={isAr ? 'rtl' : 'auto'}>
-                {!isAr && step.en ? step.en : step.ar}
+                {pickGuideText(step.text, locale)}
               </p>
               {step.aud && (
                 <AudioButton active={playing === step.aud} onClick={() => toggleAudio(step.aud!)} label={t('listen')} />
