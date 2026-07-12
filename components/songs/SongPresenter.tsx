@@ -32,12 +32,16 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
   const isAr = locale === 'ar'
   const router = useRouter()
 
-  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
+  // Symmetric fallback: the shared hymnal is Arabic-only, so an English UI must
+  // still present lyrics_ar rather than an empty deck.
+  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
   const slides = lyrics
     ? lyrics.split(/\n\s*\n/).filter(s => s.trim())
     : []
+  // Slide text direction follows the CONTENT being shown, not the UI locale.
+  const lyricsAreArabic = !!song.lyrics_ar && lyrics === song.lyrics_ar
 
-  const title = isAr ? (song.title_ar || song.title) : song.title
+  const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
 
   const [currentSlide, setCurrentSlide] = useState(initialSlide)
   const [showSettings, setShowSettings] = useState(false)
@@ -351,7 +355,7 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
             fontFamily: FONT_MAP[settings.font_family] || FONT_MAP.sans,
             fontSize: `${settings.font_size}px`,
           }}
-          dir={isAr ? 'rtl' : 'ltr'}
+          dir={lyricsAreArabic ? 'rtl' : isAr ? 'rtl' : 'ltr'}
         >
           {slides[currentSlide]}
         </p>
@@ -581,8 +585,8 @@ export function SongPresenter({ song, initialSlide = 0 }: SongPresenterProps) {
               )}
 
               {searchResults.map((result) => {
-                const rTitle = isAr ? (result.title_ar || result.title) : result.title
-                const rArtist = isAr ? (result.artist_ar || result.artist) : result.artist
+                const rTitle = isAr ? (result.title_ar || result.title) : (result.title || result.title_ar)
+                const rArtist = isAr ? (result.artist_ar || result.artist) : (result.artist || result.artist_ar)
                 return (
                   <button
                     key={result.id}

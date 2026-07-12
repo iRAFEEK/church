@@ -200,8 +200,8 @@ export function SongsTable() {
       ) : (
         <div ref={scrollRef} className="rounded-lg border overflow-auto max-h-[70vh]">
           {songs.map((song) => {
-            const title = isAr ? (song.title_ar || song.title) : song.title
-            const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+            const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+            const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
 
             return (
               <div

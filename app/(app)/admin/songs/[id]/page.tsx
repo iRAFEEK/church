@@ -28,9 +28,12 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
 
   if (!song) notFound()
 
-  const title = isAr ? (song.title_ar || song.title) : song.title
-  const artist = isAr ? (song.artist_ar || song.artist) : song.artist
-  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
+  // Prefer the locale-matching text but ALWAYS fall back to the other language:
+  // the shared hymnal is Arabic-only (11k songs have lyrics_ar, ~15 have lyrics),
+  // so an English UI without fallback showed "No lyrics added yet" for everything.
+  const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+  const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
+  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
   const slides = lyrics ? lyrics.split(/\n\s*\n/).filter((s: string) => s.trim()) : []
 
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
@@ -86,7 +89,8 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 className="p-4 rounded-lg border bg-zinc-50 text-center"
               >
                 <div className="text-xs text-muted-foreground mb-2">{t('slide')} {i + 1}</div>
-                <p className="whitespace-pre-line text-sm" dir={isAr ? 'rtl' : 'ltr'}>{slide}</p>
+                {/* dir="auto": the English UI may be showing Arabic-fallback lyrics */}
+                <p className="whitespace-pre-line text-sm" dir="auto">{slide}</p>
               </div>
             ))}
           </div>

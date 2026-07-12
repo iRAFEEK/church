@@ -182,8 +182,8 @@ export function PresenterSearch({ onSelect, onClose }: PresenterSearchProps) {
         )}
 
         {results.map((song, index) => {
-          const title = isAr ? (song.title_ar || song.title) : song.title
-          const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+          const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+          const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
           const slideIndex = getSlideIndex(song)
           const isHighlighted = index === highlightedIndex
 
