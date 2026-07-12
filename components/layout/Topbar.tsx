@@ -35,7 +35,7 @@ export function Topbar({ profile, churchName, churchNameAr, onLangChange }: Topb
 
   return (
     <header
-      className="h-14 border-b bg-background flex items-center justify-between px-4 gap-4"
+      className="sticky top-0 z-30 h-14 border-b bg-background flex items-center justify-between px-4 gap-4"
       style={{ paddingTop: 'var(--safe-area-top)' }}
     >
       {/* Church name / switcher */}

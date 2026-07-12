@@ -47,7 +47,10 @@ export function AppShell({ profile, church, resolvedPermissions, children, isPen
         {t('skipToContent')}
       </a>
       <OfflineBanner />
-      <div className="flex h-dvh overflow-hidden">
+      {/* Desktop: viewport-locked flex row (sidebar + inner-scrolling main).
+          Mobile: natural block flow so the document body scrolls — see globals.css
+          .app-shell-active note (nested scroll swallows the first touch on iOS). */}
+      <div className="md:flex md:h-dvh md:overflow-hidden">
         {/* Sidebar: desktop only */}
         <div className="hidden md:block">
           <Sidebar
@@ -70,7 +73,7 @@ export function AppShell({ profile, church, resolvedPermissions, children, isPen
           {/* Bottom padding clears the bottom nav AND the floating FAB stack
               (quick-actions + help), so page content — especially bottom-aligned
               form action buttons — is never hidden behind them on mobile. */}
-          <main id="main-content" className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
+          <main id="main-content" className="flex-1 md:overflow-y-auto md:overscroll-contain p-4 md:p-6"
             style={{ paddingBottom: 'calc(var(--bottom-nav-height) + 5rem)' }}
           >
             {isPendingChurch && (

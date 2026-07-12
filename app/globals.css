@@ -98,10 +98,16 @@ html {
   transition: none;
 }
 
-/* Prevent body scroll when app shell is active — only <main> should scroll */
-.app-shell-active {
-  height: 100dvh;
-  overflow: hidden;
+/* Desktop: lock the shell to the viewport so only <main> scrolls (sidebar stays put).
+   Mobile: do NOT lock — use native document scroll. A nested scroll container on iOS
+   Safari swallows the first swipe (it fights the address-bar collapse gesture), so the
+   page only scrolls after you tap something. Native body scroll fixes that + gives real
+   momentum and correct toolbar auto-hide. */
+@media (min-width: 768px) {
+  .app-shell-active {
+    height: 100dvh;
+    overflow: hidden;
+  }
 }
 
 /* ─── Mobile & PWA ─────────────────────────────────── */
