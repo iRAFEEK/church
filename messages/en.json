@@ -1374,7 +1374,9 @@
     "fileAcceptHint": "PDF, PowerPoint or image (max 25MB)",
     "present": "Present",
     "open": "Open",
-    "back": "Back"
+    "back": "Back",
+    "wholeChapter": "Whole chapter",
+    "tapVerseHint": "Tap a verse to select it, or keep the whole chapter."
   },
   "songs": {
     "pageTitle": "Songs",

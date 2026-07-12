@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Plus, Trash2, GripVertical, Pencil, Clock, ListOrdered, Music, BookOpen, FileText, Search, Loader2, Upload, ExternalLink, Presentation } from 'lucide-react'
+import { Plus, Trash2, GripVertical, Pencil, Clock, ListOrdered, Music, BookOpen, FileText, Loader2, Upload, ExternalLink, Presentation } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SongsTable, type SongListItem } from '@/components/songs/SongsTable'
 import { BIBLE_BOOKS_AR } from '@/lib/bible/constants'
-import type { Ministry, ApiBibleBook } from '@/types'
+import type { Ministry, ApiBibleBook, ApiBibleChapterContent } from '@/types'
 
 export type SegmentKind = 'generic' | 'song' | 'bible' | 'file'
 export type AttachmentType = 'pdf' | 'pptx' | 'ppt' | 'image'
@@ -51,14 +52,6 @@ interface SegmentEditorProps {
   onChange: (segments: SegmentDraft[]) => void
 }
 
-interface SongResult {
-  id: string
-  title: string
-  title_ar: string | null
-  artist: string | null
-  artist_ar: string | null
-}
-
 type ChapterEntry = { id: string; number: string }
 
 const KIND_META: Record<SegmentKind, { icon: typeof ListOrdered; labelKey: string; descKey: string }> = {
@@ -93,9 +86,6 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
   const [songId, setSongId] = useState<string | null>(null)
   const [songTitle, setSongTitle] = useState<string | null>(null)
   const [songTitleAr, setSongTitleAr] = useState<string | null>(null)
-  const [songQuery, setSongQuery] = useState('')
-  const [songResults, setSongResults] = useState<SongResult[]>([])
-  const [songSearching, setSongSearching] = useState(false)
 
   // Bible fields
   const [bibleId, setBibleId] = useState(DEFAULT_BIBLE_ID)
@@ -106,6 +96,9 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
   const [selectedBookId, setSelectedBookId] = useState('')
   const [selectedChapterId, setSelectedChapterId] = useState('')
   const [verse, setVerse] = useState('')
+  const [chapterContent, setChapterContent] = useState<ApiBibleChapterContent | null>(null)
+  const [chapterLoading, setChapterLoading] = useState(false)
+  const bibleContentRef = useRef<HTMLDivElement>(null)
 
   // File fields
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null)
@@ -127,27 +120,6 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
       })
     return () => controller.abort()
   }, [])
-
-  // Debounced song search (only while the song form is active)
-  useEffect(() => {
-    if (kind !== 'song' || !dialogOpen) return
-    const q = songQuery.trim()
-    if (!q) { setSongResults([]); setSongSearching(false); return }
-    setSongSearching(true)
-    const controller = new AbortController()
-    const timer = setTimeout(() => {
-      fetch(`/api/songs?q=${encodeURIComponent(q)}&pageSize=8&locale=${locale}`, { signal: controller.signal })
-        .then(r => r.json())
-        .then((d: { data?: SongResult[] }) => { if (!controller.signal.aborted) setSongResults(d.data ?? []) })
-        .catch((e) => {
-          if (e instanceof Error && e.name !== 'AbortError') {
-            console.error('[SegmentEditor] Song search failed:', e)
-          }
-        })
-        .finally(() => { if (!controller.signal.aborted) setSongSearching(false) })
-    }, 300)
-    return () => { clearTimeout(timer); controller.abort() }
-  }, [songQuery, kind, dialogOpen, locale])
 
   // Load bible versions once the bible form is active
   useEffect(() => {
@@ -189,6 +161,68 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
     return () => controller.abort()
   }, [kind, dialogOpen, bibleId])
 
+  // Fetch the actual chapter verses once a chapter is chosen — same endpoint the
+  // Bible reader uses — so the admin browses and reads the passage before adding it.
+  useEffect(() => {
+    if (kind !== 'bible' || !dialogOpen || !selectedChapterId) {
+      setChapterContent(null)
+      return
+    }
+    const controller = new AbortController()
+    setChapterLoading(true)
+    fetch(`/api/bible/${bibleId}/chapters/${selectedChapterId}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then((json: { data?: ApiBibleChapterContent | { chapter?: ApiBibleChapterContent } }) => {
+        if (controller.signal.aborted) return
+        const d = json.data as { chapter?: ApiBibleChapterContent } | ApiBibleChapterContent | undefined
+        const content = (d && 'chapter' in d ? d.chapter : d) as ApiBibleChapterContent | undefined
+        setChapterContent(content ?? null)
+      })
+      .catch((e) => {
+        if (e instanceof Error && e.name !== 'AbortError') {
+          console.error('[SegmentEditor] Failed to fetch chapter content:', e)
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setChapterLoading(false) })
+    return () => controller.abort()
+  }, [kind, dialogOpen, bibleId, selectedChapterId])
+
+  // Make each fetched verse tappable + reflect the current verse selection.
+  useEffect(() => {
+    const container = bibleContentRef.current
+    if (!container || !chapterContent) return
+
+    const spans = container.querySelectorAll<HTMLElement>('[data-verse-id]')
+    spans.forEach((el) => {
+      el.setAttribute('tabindex', '0')
+      el.setAttribute('role', 'button')
+      el.classList.add('cursor-pointer', 'rounded', 'px-0.5', '-mx-0.5', 'transition-colors')
+      const vnum = el.getAttribute('data-verse-id')?.split('.').pop() ?? null
+      if (vnum && verse && vnum === verse) el.classList.add('bg-primary/20')
+      else el.classList.remove('bg-primary/20')
+    })
+
+    const pick = (target: EventTarget | null) => {
+      const el = (target as HTMLElement | null)?.closest('[data-verse-id]') as HTMLElement | null
+      if (!el) return
+      const vnum = el.getAttribute('data-verse-id')?.split('.').pop() ?? null
+      if (vnum) setVerse((prev) => (prev === vnum ? '' : vnum))
+    }
+    const handleClick = (e: MouseEvent) => pick(e.target)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      if (!(e.target as HTMLElement).closest('[data-verse-id]')) return
+      e.preventDefault()
+      pick(e.target)
+    }
+    container.addEventListener('click', handleClick)
+    container.addEventListener('keydown', handleKeyDown)
+    return () => {
+      container.removeEventListener('click', handleClick)
+      container.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [chapterContent, verse])
+
   const totalDuration = segments.reduce((sum, s) => sum + (s.duration_minutes || 0), 0)
 
   const resetFields = () => {
@@ -201,12 +235,11 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
     setSongId(null)
     setSongTitle(null)
     setSongTitleAr(null)
-    setSongQuery('')
-    setSongResults([])
     setBibleId(DEFAULT_BIBLE_ID)
     setSelectedBookId('')
     setSelectedChapterId('')
     setVerse('')
+    setChapterContent(null)
     setAttachmentUrl(null)
     setAttachmentName(null)
     setAttachmentType(null)
@@ -259,14 +292,12 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
     setStep('form')
   }
 
-  const pickSong = (s: SongResult) => {
+  const pickSong = (s: SongListItem) => {
     setSongId(s.id)
     setSongTitle(s.title)
     setSongTitleAr(s.title_ar)
     setTitle(s.title)
     setTitleAr(s.title_ar || '')
-    setSongResults([])
-    setSongQuery('')
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,19 +330,14 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
   const bookName = (b: ApiBibleBook) => (isRTL && BIBLE_BOOKS_AR[b.id] ? BIBLE_BOOKS_AR[b.id] : b.name)
 
   const buildBibleRef = (): { ref: BibleRefDraft; title: string; titleAr: string } | null => {
-    if (!selectedBookId || !selectedChapterId) return null
-    const book = bibleBooks.find(b => b.id === selectedBookId)
-    if (!book) return null
-    const chapter = chapterEntries.find(c => c.id === selectedChapterId)
-    const chapterNum = chapter?.number ?? ''
+    if (!chapterContent) return null
     const v = verse ? parseInt(verse, 10) : null
-    const suffix = `${chapterNum}${v ? `:${v}` : ''}`
-    const enName = book.name
-    const arName = BIBLE_BOOKS_AR[book.id] || book.name
-    const refEn = `${enName} ${suffix}`.trim()
-    const refAr = `${arName} ${suffix}`.trim()
+    const suffix = v ? `:${v}` : ''
+    const arName = BIBLE_BOOKS_AR[chapterContent.bookId] || chapterContent.reference
+    const refEn = `${chapterContent.reference}${suffix}`.trim()
+    const refAr = `${arName} ${chapterContent.number}${suffix}`.trim()
     return {
-      ref: { bibleId, chapterId: selectedChapterId, reference: isRTL ? refAr : refEn, verse: v },
+      ref: { bibleId, chapterId: chapterContent.id, reference: isRTL ? refAr : refEn, verse: v },
       title: refEn,
       titleAr: refAr,
     }
@@ -319,7 +345,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
 
   const canSave = (() => {
     if (kind === 'song') return !!songId
-    if (kind === 'bible') return !!selectedBookId && !!selectedChapterId
+    if (kind === 'bible') return !!chapterContent
     if (kind === 'file') return !!attachmentUrl
     return !!title.trim()
   })()
@@ -512,7 +538,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className={cn('sm:max-w-md max-h-[90vh] overflow-y-auto', isRTL && 'rtl')}>
+        <DialogContent className={cn('sm:max-w-2xl max-h-[90vh] overflow-y-auto', isRTL && 'rtl')}>
           <DialogHeader>
             <DialogTitle>
               {step === 'kind'
@@ -592,45 +618,7 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                       </Button>
                     </div>
                   ) : (
-                    <>
-                      <div className="relative">
-                        <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-zinc-400" />
-                        <Input
-                          value={songQuery}
-                          onChange={(e) => setSongQuery(e.target.value)}
-                          placeholder={t('searchSongPlaceholder')}
-                          dir="auto"
-                          className="text-base ps-9"
-                        />
-                        {songSearching && (
-                          <Loader2 className="absolute top-1/2 -translate-y-1/2 end-3 h-4 w-4 text-zinc-400 animate-spin" />
-                        )}
-                      </div>
-                      {songQuery.trim() && !songSearching && songResults.length === 0 && (
-                        <p className="text-xs text-zinc-500 mt-2">{t('noSongsFound')}</p>
-                      )}
-                      {songResults.length > 0 && (
-                        <div className="mt-2 space-y-1 max-h-56 overflow-y-auto rounded-lg border border-zinc-200">
-                          {songResults.map((s) => (
-                            <button
-                              key={s.id}
-                              type="button"
-                              onClick={() => pickSong(s)}
-                              className="w-full text-start px-3 py-2.5 min-h-[44px] hover:bg-zinc-50 border-b border-zinc-100 last:border-0 transition-colors"
-                            >
-                              <span className="text-sm font-medium text-zinc-800 block truncate">
-                                {isRTL ? (s.title_ar || s.title) : s.title}
-                              </span>
-                              {(s.artist || s.artist_ar) && (
-                                <span className="text-xs text-zinc-500 block truncate">
-                                  {isRTL ? (s.artist_ar || s.artist) : s.artist}
-                                </span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
+                    <SongsTable onSelect={pickSong} />
                   )}
                 </div>
               )}
@@ -666,36 +654,54 @@ export function SegmentEditor({ segments, onChange }: SegmentEditorProps) {
                       ))}
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="bible-chapter" className="text-sm text-zinc-500 mb-1 block">{t('chapter')} *</Label>
-                      <select
-                        id="bible-chapter"
-                        value={selectedChapterId}
-                        onChange={(e) => setSelectedChapterId(e.target.value)}
-                        disabled={!selectedBookId}
-                        className="w-full h-11 px-3 rounded-lg border border-zinc-200 bg-white text-base disabled:opacity-50"
-                      >
-                        <option value="">{t('selectChapterPlaceholder')}</option>
-                        {chapterEntries.map(c => (
-                          <option key={c.id} value={c.id}>{c.number}</option>
-                        ))}
-                      </select>
+                  <div>
+                    <Label htmlFor="bible-chapter" className="text-sm text-zinc-500 mb-1 block">{t('chapter')} *</Label>
+                    <select
+                      id="bible-chapter"
+                      value={selectedChapterId}
+                      onChange={(e) => { setSelectedChapterId(e.target.value); setVerse('') }}
+                      disabled={!selectedBookId}
+                      className="w-full h-11 px-3 rounded-lg border border-zinc-200 bg-white text-base disabled:opacity-50"
+                    >
+                      <option value="">{t('selectChapterPlaceholder')}</option>
+                      {chapterEntries.map(c => (
+                        <option key={c.id} value={c.id}>{c.number}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Read the passage, then tap a verse or keep the whole chapter */}
+                  {chapterLoading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Loader2 className="h-5 w-5 text-zinc-400 animate-spin" />
                     </div>
-                    <div>
-                      <Label htmlFor="bible-verse" className="text-sm text-zinc-500 mb-1 block">{t('verseOptional')}</Label>
-                      <Input
-                        id="bible-verse"
-                        type="number"
-                        min={1}
-                        value={verse}
-                        onChange={(e) => setVerse(e.target.value)}
-                        dir="ltr"
-                        className="text-base"
-                        placeholder="1"
+                  ) : chapterContent ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-zinc-800" dir="auto">
+                          {isRTL
+                            ? `${BIBLE_BOOKS_AR[chapterContent.bookId] || chapterContent.reference} ${chapterContent.number}${verse ? `:${verse}` : ''}`
+                            : `${chapterContent.reference}${verse ? `:${verse}` : ''}`}
+                        </span>
+                        <Button
+                          type="button"
+                          variant={verse ? 'outline' : 'secondary'}
+                          size="sm"
+                          className="h-9"
+                          onClick={() => setVerse('')}
+                        >
+                          {t('wholeChapter')}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-zinc-500">{t('tapVerseHint')}</p>
+                      <div
+                        ref={bibleContentRef}
+                        dir={isRTL ? 'rtl' : 'ltr'}
+                        className="prose prose-sm max-w-none bible-content text-base leading-relaxed max-h-[45vh] overflow-y-auto rounded-lg border border-zinc-200 p-3"
+                        dangerouslySetInnerHTML={{ __html: chapterContent.content }}
                       />
                     </div>
-                  </div>
+                  ) : null}
                 </div>
               )}
 

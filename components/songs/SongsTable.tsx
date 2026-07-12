@@ -10,7 +10,7 @@ import { ListShimmer } from '@/components/ui/list-shimmer'
 import { toast } from 'sonner'
 import { AddToServiceDialog, type AddToServicePayload } from '@/components/events/AddToServiceDialog'
 
-interface SongListItem {
+export interface SongListItem {
   id: string
   title: string
   title_ar: string | null
@@ -47,14 +47,21 @@ function setCache(key: string, data: SongListItem[], hasMore: boolean) {
 
 type SongsTableProps = {
   canManageEvents?: boolean
+  /**
+   * When provided, the table acts as a picker: clicking a row calls `onSelect(song)`
+   * instead of navigating to the song detail page. In this "pick mode" the per-row
+   * Present / Add-to-service actions are hidden (they belong to the standalone page).
+   */
+  onSelect?: (song: SongListItem) => void
 }
 
-export function SongsTable({ canManageEvents = false }: SongsTableProps) {
+export function SongsTable({ canManageEvents = false, onSelect }: SongsTableProps) {
   const t = useTranslations('songs')
   const tService = useTranslations('addToService')
   const locale = useLocale()
   const isAr = locale === 'ar'
   const router = useRouter()
+  const pickMode = !!onSelect
 
   const [servicePayload, setServicePayload] = useState<AddToServicePayload | null>(null)
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
@@ -215,7 +222,10 @@ export function SongsTable({ canManageEvents = false }: SongsTableProps) {
             return (
               <div
                 key={song.id}
-                onClick={() => router.push(`/admin/songs/${song.id}`)}
+                onClick={() => {
+                  if (onSelect) onSelect(song)
+                  else router.push(`/admin/songs/${song.id}`)
+                }}
                 className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
@@ -235,7 +245,7 @@ export function SongsTable({ canManageEvents = false }: SongsTableProps) {
                   {song.tags?.slice(0, 2).map(tag => (
                     <Badge key={tag} variant="outline" className="hidden sm:inline-flex text-xs">{tag}</Badge>
                   ))}
-                  {canManageEvents && (
+                  {!pickMode && canManageEvents && (
                     <button
                       type="button"
                       onClick={(e) => {
@@ -255,16 +265,18 @@ export function SongsTable({ canManageEvents = false }: SongsTableProps) {
                       <CalendarPlus className="h-4 w-4 text-primary" />
                     </button>
                   )}
-                  <a
-                    href={`/presenter/songs/${song.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
-                    title={t('present')}
-                  >
-                    <Presentation className="h-4 w-4 text-primary" />
-                  </a>
+                  {!pickMode && (
+                    <a
+                      href={`/presenter/songs/${song.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                      title={t('present')}
+                    >
+                      <Presentation className="h-4 w-4 text-primary" />
+                    </a>
+                  )}
                 </div>
               </div>
             )
@@ -280,7 +292,7 @@ export function SongsTable({ canManageEvents = false }: SongsTableProps) {
         </div>
       )}
 
-      {canManageEvents && (
+      {!pickMode && canManageEvents && (
         <AddToServiceDialog
           open={serviceDialogOpen}
           onOpenChange={setServiceDialogOpen}
