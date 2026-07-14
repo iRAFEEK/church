@@ -7,6 +7,8 @@
 
 > 👋 **New engineer? Start with [docs/ENGINEERING_ONBOARDING.md](docs/ENGINEERING_ONBOARDING.md)** — the read-first master guide. It links the rest: [SYSTEM_DESIGN](docs/SYSTEM_DESIGN.md), [DELIVERED](docs/DELIVERED.md), [FEATURE_FLAGS](docs/FEATURE_FLAGS.md), [BACKLOG](docs/BACKLOG.md), [DEV_ENVIRONMENT](docs/DEV_ENVIRONMENT.md), and the Week-1 task [RAFEEK_WEEK1_TESTING](docs/RAFEEK_WEEK1_TESTING.md). To build here with AI, read [BUILDING_WITH_AGENTS](docs/BUILDING_WITH_AGENTS.md) (LLM basics → advanced prompting, which agent to use, example prompts). When stuck, run **`/ekklesia-help`** (the `Ekklesia-technical-help` mentor agent).
 
+> ⚙️ **OPERATING PROTOCOL (every task — agents *and* chat):** use the **proper specialist agent** for the job, and **review every code change on all sides** (`code-reviewer`; + `03-security`/`05-database` for sensitive changes) before it's done. See **[## Operating Protocol](#operating-protocol--agent-first--mandatory-multi-side-review)** below. Not optional.
+
 ---
 
 ## Startup Ritual — Read This First
@@ -27,6 +29,26 @@ cat .claude/skills/optimization/SKILL.md    # for performance work
 ```
 
 Do not skip step 3. The skills contain patterns that are not repeated in this file.
+
+---
+
+## Operating Protocol — Agent-First + Mandatory Multi-Side Review
+
+> **This applies to EVERY task in this repo — background agents AND interactive chat sessions (including ad-hoc requests). It is not optional. If you are doing project work here, you follow this.**
+
+1. **Agent-first — use the proper specialist agent for the job; don't wing it.**
+   - Build / fix / refactor → `coding-agent` (or `feature-builder` for a full feature).
+   - Audit → the specialist auditor (`03-security`, `04-performance`, `05-database`, `02-quality`, `01-architecture`), or `07-cto` for a full sweep.
+   - Review a diff → `code-reviewer`. UI/UX → `ux-designer`. Test data → `seed-feature` (staging only). Understand / get help → `Ekklesia-technical-help` (`/ekklesia-help`).
+   - Roster + example prompts: the table below and [docs/BUILDING_WITH_AGENTS.md](docs/BUILDING_WITH_AGENTS.md).
+
+2. **Mandatory multi-side review on every code change — before it is "done", before commit/PR.** Any change that touches code is reviewed across **all** dimensions — security, correctness/quality, performance, database/RLS, RTL, i18n, mobile, analytics — via **`code-reviewer`** (it covers all eight). For **security- or finance/payment-sensitive** changes, ALSO run the matching specialist auditor (`03-security` / `05-database`) and **adversarially verify** the findings. Fix what they surface before shipping. The Stop hook auto-runs `code-review.sh --last-commit` as a backstop — do **not** rely on it alone; review before you declare done.
+
+3. **Review is IN ADDITION to the Definition-of-Done gates** (§13): tsc 0 · RTL 0 · vitest green · build clean · i18n ×3 · `church_id` · `apiHandler` · `t()`. Both must pass.
+
+4. **Never production.** All work runs on staging + the seeded test churches; prod changes need explicit human sign-off.
+
+This is how we keep quality high while agents do the work: **the right agent for the job, and every change reviewed on every side.**
 
 ---
 

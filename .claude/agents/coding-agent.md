@@ -186,6 +186,8 @@ npm run build              # clean
 # RTL grep from CLAUDE.md §12 → must return 0
 ```
 
+**Then — MANDATORY multi-side review (Operating Protocol, CLAUDE.md).** The gates are not enough on their own. Run the `code-reviewer` agent on your changes (or `bash .claude/scripts/code-review.sh`) — it audits security, correctness, performance, DB/RLS, RTL, i18n, mobile, and analytics in one pass. For any **security-, finance-, or payment-sensitive** change, ALSO run `03-security` (and `05-database` for schema/RLS) and adversarially verify. **Address every finding before you declare done.** Do not rely only on the Stop hook.
+
 Then follow `.claude/skills/context-update/SKILL.md` to record the work in **CLAUDE.md**
 (change-log row + any status/schema updates). That change log — not any separate file — is how the
 next agent learns what you did.

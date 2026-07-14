@@ -214,6 +214,8 @@ npm run build              # clean
 # RTL grep from CLAUDE.md §12 → must return 0
 ```
 
+**Then — MANDATORY multi-side review (Operating Protocol, CLAUDE.md).** After the gates, run the full review before the feature is done: `code-reviewer` on the whole diff (security, correctness, performance, DB/RLS, RTL, i18n, mobile, analytics), PLUS `03-security` and `05-database` on any new routes/migrations, and adversarially verify their findings. A feature is not "built" until it has passed both the gates AND multi-side review, and you've addressed the findings.
+
 Then follow `.claude/skills/context-update/SKILL.md` to update **CLAUDE.md** — add a change-log row
 and update the schema/status/migration sections as needed. Capture, at minimum:
 

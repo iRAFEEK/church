@@ -4,6 +4,8 @@
 >
 > Read `docs/ENGINEERING_ONBOARDING.md` first for the codebase itself; read this for **how we build it**. When stuck, run **`/ekklesia-help`**.
 
+> ⚙️ **Mandatory operating protocol (every task, agents *and* chat):** use the **proper specialist agent** for the job, and **review every code change on all sides** with `code-reviewer` (plus `03-security`/`05-database` + adversarial verification for security/finance/payment changes) **before it's done**. This is not optional — it's codified in `CLAUDE.md` → "Operating Protocol". Parts 2–5 below show you how.
+
 ---
 
 ## Table of contents
