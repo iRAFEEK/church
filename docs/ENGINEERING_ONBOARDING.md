@@ -99,7 +99,7 @@ This repo ships with a full Claude Code **agent + skill system** in `.claude/`. 
 
 **Skills** (`.claude/skills/*/SKILL.md`) — pattern libraries an agent (or you) reads *before* working. The important ones: `fix-standards` (before any change), `component-patterns` (React), `data-patterns` (API/queries), `product-domain` (the domain), `code-quality`, `optimization`, `ux-design`, `analytics`, and `context-update` (**mandatory at the end of every task**).
 
-To go deep on how agents work in general, your intern plan links the Anthropic prompt-engineering tutorial and "Building Effective Agents." To go deep on *ours*, read the agent files themselves — they're just Markdown.
+**To learn to build *with* the agents — how LLMs/Claude work, which agent to use, and example prompts tailored to this repo (beginner → advanced) — read [`docs/BUILDING_WITH_AGENTS.md`](BUILDING_WITH_AGENTS.md).** It's the flagship guide for engineering on this platform with AI. To go deep on *ours* specifically, the agent files themselves are just readable Markdown.
 
 ---
 
@@ -160,5 +160,6 @@ Things you can ask it right now:
 - [ ] `docs/DEV_ENVIRONMENT.md` — then set up + get the 4 gates green
 - [ ] `docs/DELIVERED.md` + `docs/FEATURE_FLAGS.md` (skim) + `docs/BACKLOG.md`
 - [ ] Skim the `.claude/agents/*` roster + `.claude/skills/*`
+- [ ] `docs/BUILDING_WITH_AGENTS.md` — how to build here with AI agents (LLM basics → advanced prompting)
 - [ ] **First task:** `docs/RAFEEK_WEEK1_TESTING.md`
 - [ ] Keep `/ekklesia-help` handy the whole time
