@@ -30,15 +30,19 @@ type UserRole = 'member' | 'group_leader' | 'ministry_leader' | 'super_admin'
 
 `super_admin` bypasses ALL permission checks.
 
-### 22 granular permissions
+### Granular permissions (the real keys)
 
-Beyond role-based access, there are granular permissions:
-- `view_members`, `manage_members`, `manage_member_roles`
-- `view_visitors`, `manage_visitors`
-- `view_events`, `manage_events`
-- `view_serving`, `manage_serving`
-- `view_finance`, `manage_finance`, `approve_finance`
-- `send_notifications`
+Beyond role-based access there are granular permission keys. These are the **actual keys** defined in `lib/permissions.ts` (`ALL_PERMISSIONS`) and typed as `PermissionKey` in `types/index.ts` — every key starts with `can_`:
+- `can_view_members`, `can_manage_members`, `can_view_member_phone`
+- `can_view_visitors`, `can_manage_visitors`
+- `can_manage_events`, `can_manage_templates`
+- `can_manage_serving`, `can_manage_announcements`, `can_manage_songs`, `can_manage_outreach`
+- `can_view_reports`, `can_view_prayers`
+- `can_view_church_needs`, `can_manage_church_needs`
+- `can_view_finances`, `can_manage_finances`, `can_manage_donations`, `can_view_own_giving`, `can_manage_budgets`, `can_approve_expenses`, `can_submit_expenses`, `can_manage_campaigns`, `can_reconcile_bank`
+- `can_manage_liturgy`, `can_manage_locations`, `can_book_locations`
+
+> There is NO `manage_finance` / `view_finance` / `send_notifications` key — those are stale names. Use the `can_*` keys above.
 
 ### Permission resolution — 3 layers (additive only)
 
@@ -50,16 +54,14 @@ Layer 2: Church-level role defaults (DB — role_permission_defaults table)
 Layer 3: User-specific overrides (DB — profiles.permissions JSONB)
 ```
 
-Called via: `getCurrentUserWithRole()` in `lib/auth.ts`
-Returns: `{ user, profile, churchId, resolvedPermissions }`
+Resolved via `getCurrentUserWithRole()` / `requirePermission()` in `lib/auth.ts`. `apiHandler`
+resolves the caller's permissions and enforces `requirePermissions` for you — you rarely check by hand.
 
-Check permissions in routes:
+Enforce permissions declaratively in routes (preferred):
 ```typescript
-export const POST = apiHandler(async ({ profile }) => {
-  if (!profile.permissions?.manage_finance) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
-  }
-}, { requireRoles: ['super_admin', 'ministry_leader'] })
+export const POST = apiHandler(async ({ supabase, churchId, profile }) => {
+  // handler only runs if the caller has BOTH the role and every listed permission
+}, { requireRoles: ['super_admin', 'ministry_leader'], requirePermissions: ['can_manage_finances'] })
 ```
 
 ---
@@ -85,29 +87,34 @@ Users switch churches at `/select-church`. The session updates to reflect the ne
 
 ## Feature flags
 
-Per-church feature toggles stored in `church_features` table.
-Check before rendering feature-gated content:
+The real flag set + defaults live in `lib/features.ts` (`FeatureFlag` type + `DEFAULT_FLAGS`).
+Env overrides use `NEXT_PUBLIC_FEATURE_<FLAG>=true|false`; per-church overrides come from the
+`church_features` table via `isFeatureEnabledForChurch()`.
 
 ```typescript
-import { isFeatureEnabled } from '@/lib/features'
+import { isFeatureEnabled, isFeatureEnabledForChurch } from '@/lib/features'
 
-// Features that can be toggled per church:
-'finance'      // Full financial management module
-'community'    // Cross-church needs marketplace
-'bible'        // Bible reader with bookmarks/highlights
-'serving'      // Volunteering/serving slot management
-'outreach'     // Visitor and outreach tracking
+// The actual flags (name → default):
+// advanced_reporting → false   sms_notifications → false   api_access → false
+// custom_fields → false        audit_log_ui → false        outreach_module → true
+// song_presenter → true        liturgy_module → true
+// finance → false   ← OFF (in development)   templates → false   ← OFF (pilot-gated)
 ```
 
-```typescript
-// In Server Components
-const hasFinance = await isFeatureEnabled(churchId, 'finance')
-if (!hasFinance) return notFound()
+> ⚠️ **`finance` is OFF and `templates` is OFF.** Both are gated in `middleware.ts` + navigation:
+> the finance nav/pages/`/finance/my-giving` redirect and every `/api/finance/*` route returns 404;
+> the templates nav/`/admin/templates*`/`/admin/events/from-template` + `/api/templates*` are gated
+> the same way. Do NOT assume finance or templates are usable in a running app — treat both as
+> in-development until re-enabled with `NEXT_PUBLIC_FEATURE_FINANCE=true` / `NEXT_PUBLIC_FEATURE_TEMPLATES=true`.
 
-// In API routes
-export const GET = apiHandler(async ({ churchId }) => {
-  const hasFeature = await isFeatureEnabled(churchId, 'community')
-  if (!hasFeature) return Response.json({ error: 'Feature not enabled' }, { status: 403 })
+```typescript
+// Synchronous (defaults + env override) — use for global gates
+if (!isFeatureEnabled('finance')) return notFound()
+
+// Per-church (DB-backed) — use when a church can toggle the feature
+export const GET = apiHandler(async ({ supabase, churchId }) => {
+  const on = await isFeatureEnabledForChurch(supabase, 'liturgy_module', churchId)
+  if (!on) return Response.json({ error: 'Feature not enabled' }, { status: 403 })
 })
 ```
 
@@ -121,7 +128,7 @@ ar       — Modern Standard Arabic (RTL) — formal, used in official content
 ar-eg    — Egyptian Arabic dialect (RTL) — informal, used in conversational UI
 ```
 
-~1,904 translation keys organized by feature module.
+~2,700+ translation keys organized by feature module (kept at parity across all 3 locale files).
 
 Auto-detection: middleware reads Accept-Language header and geolocation, defaults to Arabic for Egypt.
 
@@ -196,6 +203,12 @@ Leader closes gathering with notes
 ---
 
 ## Finance module — double-entry accounting
+
+> ⚠️ **Finance is currently FLAGGED OFF (in development).** The whole surface is unreachable in a
+> running app — middleware redirects the pages and returns 404 for `/api/finance/*`. It also has
+> known schema/code drift (budget creation + some transactions still fail). The rules below describe
+> the intended design; do not assume finance works today. Re-enable on staging with
+> `NEXT_PUBLIC_FEATURE_FINANCE=true` when reconciling it.
 
 **This is real financial data. Treat with extreme care.**
 
@@ -310,6 +323,34 @@ Multiple Bible versions — users choose their preferred version (`profiles.pref
 // bible_bookmarks — per user per verse
 // bible_highlights — per user per verse with color
 ```
+
+---
+
+## Newer modules (know these exist)
+
+The app has grown well past the original MVP. Migrations run through **091** today
+(`supabase/migrations/`). Modules added since the early docs:
+
+- **Service Builder (event run-of-show).** `event_segments` has a `kind` column
+  (`generic` | `song` | `bible` | `file`). A run-of-show item can BE a song (present via
+  `/presenter/songs`), a Bible passage (`/presenter/bible`), or an uploaded slide deck / PDF
+  (public `service-attachments` storage bucket). See migration 091 + `app/(app)/admin/events/`.
+- **Community needs marketplace** — cross-church needs + responses + threaded messaging (see its own
+  section below). Migrations 035/036/042/043/044.
+- **Shared song hymnal** — songs can be church-scoped OR global (`church_id` nullable); a church can
+  publish a song to the global library. The seeded hymnal is ~11k songs. Search runs Arabic
+  normalization + lyrics full-text under the caller's RLS. Migrations 066–073, 090.
+- **Coptic liturgy module** — Agpeya hours, psalmody, lectionary readings, clergy-only resources.
+  Gated by the `liturgy_module` flag. Migration 065.
+- **Locations & room bookings** — availability checks + "my bookings". Migration 064.
+- **Onboarding-approval model** — church onboarding is concierge (request → platform-operator
+  approve; `churches.status` pending/active/rejected/inactive). Member joins need church-admin
+  approval (`user_churches.status` active/managed/invited/pending). Identity is phone/WhatsApp OTP
+  with a claimable "shadow identity" for leader-added members. Platform approvers are managed via
+  `platform_admins` + `PLATFORM_ADMIN_EMAILS`. Migrations 078/079/082/084/087/088. See
+  `ONBOARDING_PLAN.md`.
+- **Per-church privacy + channel controls** — `member_directory_visibility` (who sees member phones)
+  and `whatsapp_notifications_enabled` (opt-in for the paid WhatsApp channel). Migrations 080/081.
 
 ---
 

@@ -5,6 +5,8 @@
 
 > ⚠️ **FINANCE IS OFF.** The finance module is gated behind a feature flag (`finance`, default off in `lib/features.ts`) and **unreachable** — middleware redirects `/admin/finance/*` and `/finance/my-giving`, and returns 404 for all `/api/finance/*`. It is treated as in-development (it has deeper schema/code drift: budget creation + double-entry transactions still fail). Re-enable with `NEXT_PUBLIC_FEATURE_FINANCE=true` once reconciled. Do not assume finance works.
 
+> 👋 **New engineer? Start with [docs/ENGINEERING_ONBOARDING.md](docs/ENGINEERING_ONBOARDING.md)** — the read-first master guide. It links the rest: [SYSTEM_DESIGN](docs/SYSTEM_DESIGN.md), [DELIVERED](docs/DELIVERED.md), [FEATURE_FLAGS](docs/FEATURE_FLAGS.md), [BACKLOG](docs/BACKLOG.md), [DEV_ENVIRONMENT](docs/DEV_ENVIRONMENT.md), and the Week-1 task [RAFEEK_WEEK1_TESTING](docs/RAFEEK_WEEK1_TESTING.md). When stuck, run **`/ekklesia-help`** (the `Ekklesia-technical-help` mentor agent).
+
 ---
 
 ## Startup Ritual — Read This First

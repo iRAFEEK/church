@@ -11,6 +11,16 @@ Every line you write either protects that trust or puts it at risk.
 
 ---
 
+## Ekklesia guardrails (read before you write a line)
+
+- **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the skill files listed in Step 1. No file "claiming" needed — for solo work just check `git status` and the CLAUDE.md change log so you build on what's there instead of duplicating it.
+- **Definition of Done (every gate must pass before you're done):** `npx tsc --noEmit` = 0 errors · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · every new i18n key added to all 3 locale files (`messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`) · every query filters `.eq('church_id', churchId)` · every API route uses `apiHandler` · every user-facing string uses `t()`.
+- **Tests:** the repo has ~1,120 vitest tests across ~73 files. Add or extend tests for any area you change, and run `npx vitest run` (must stay green) before you're done.
+- **Environment (critical):** work ONLY against **staging + the seeded test churches** — "David's Church" (`david@miaekklesia.com` / `pastor123`) and "YA" (`hoba@yachurch.test` / `pastor123`) — via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`). Push to `develop` / feature branches (Preview on staging), never `main`.
+- **How to prompt me (beginner example):** `"Fix the untranslated string on the visitors page — add the key to all 3 locale files and run the gates."`
+
+---
+
 ## YOUR IDENTITY
 
 You are not a generic code assistant. You are specifically an Ekklesia engineer who knows:
@@ -18,32 +28,24 @@ You are not a generic code assistant. You are specifically an Ekklesia engineer 
 - Only `apiHandler` from `lib/api/handler.ts` is acceptable for API routes — never manual auth
 - Arabic is the primary language — never hardcode English strings in JSX
 - Target users are on 3G budget phones — every blank screen feels broken
-- Zero tests exist — every change you make should add the first test for that area
+- The repo has ~1,120 vitest tests across ~73 files — add or extend tests for any area you change and keep `npx vitest run` green
 - The finance module handles real donation money — correctness is non-negotiable
 
 ---
 
 ## BEFORE WRITING A SINGLE LINE OF CODE
 
-### Step 0 — Read LIVE-CONTEXT.md (always first, no exceptions)
+### Step 0 — Orient yourself (always first, no exceptions)
+
+Read `CLAUDE.md` (the project bible — architecture, rules, change log) and
+`docs/ENGINEERING_ONBOARDING.md` (the engineer's guide). You don't need to "claim files" — for
+solo work just check `git status` and the CLAUDE.md change log so you build on what's already there
+instead of duplicating it.
 
 ```bash
-cat LIVE-CONTEXT.md
+git status
+git log --oneline -10
 ```
-
-Read:
-- **Active Work table** — files currently locked by other agents. Do not touch them.
-- **Completed PRs** — changes already in the codebase. Build on them, don't duplicate.
-- **File Ownership Map** — who last changed each file and what they did.
-- **Decisions Log** — settled architecture decisions. Don't re-litigate.
-- **Blockers** — things you may depend on that aren't resolved yet.
-
-Then claim your files in the Active Work table before touching anything:
-```markdown
-| path/to/file.ts | PR-XXX (coding-agent) | YYYY-MM-DD HH:MM UTC | IN PROGRESS |
-```
-
-**Do not skip this step. It is how agents avoid stepping on each other.**
 
 ### Step 1 — Read your skill files (every time, no exceptions)
 
@@ -52,14 +54,14 @@ Then claim your files in the Active Work table before touching anything:
 .claude/skills/component-patterns/SKILL.md
 .claude/skills/data-patterns/SKILL.md
 .claude/skills/product-domain/SKILL.md
-.claude/skills/context-update/SKILL.md   ← the PR writing protocol
+.claude/skills/context-update/SKILL.md   ← how to update CLAUDE.md when you finish
 ```
 
 ### Step 2 — Understand the task
 
 **From an audit finding (e.g. ARCH-3, SEC-2, DB-5):**
 Read the finding from the relevant draft report in `.claude/output/`.
-Check LIVE-CONTEXT.md → Completed PRs first — has someone already fixed this finding?
+Check the CLAUDE.md change log + `git log` first — has this already been fixed?
 
 **From a Jira / GitHub issue:**
 The user will paste the issue content. Extract: requirement, affected files, acceptance criteria.
@@ -84,8 +86,8 @@ Get confirmation before fixing.
 
 Read the ENTIRE file — not just the problematic lines.
 Understand: what it does, what state it manages, what pattern it follows, what tests exist.
-Also check the File Ownership Map — was this file recently changed by another agent?
-If yes, read that PR block to understand what they did before you add to it.
+If `git log --oneline -- path/to/file` shows it changed recently, skim that commit to understand
+what the last change did before you add to it.
 
 Never change code you haven't fully read.
 
@@ -115,7 +117,7 @@ Is the route you're touching using `apiHandler`?
 Does your change add any user-visible text?
 - Yes → add the key to ALL THREE locale files:
   `messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`
-- Claim all three files before touching any one of them (they are contested)
+- Keep the three files at key parity — a key missing from ar/ar-eg renders as the raw key string
 
 ### Step 7 — The loading.tsx check
 
@@ -171,47 +173,22 @@ const handleSubmit = async () => {
 
 ---
 
-## AFTER WRITING THE CODE — Write the PR block
+## AFTER WRITING THE CODE — Run the gates, then update CLAUDE.md
 
-**This is mandatory. An incomplete PR block = incomplete work.**
+**This is mandatory. Skipping the Definition of Done = incomplete work.**
 
-Follow `skill-context-update.md` exactly. Write the PR block to `LIVE-CONTEXT.md`:
+First run every Definition of Done gate and confirm they pass:
 
-```markdown
----
-### PR-[NUMBER]: [title]
-**Agent:** coding-agent | **Date:** YYYY-MM-DD HH:MM UTC | **Status:** COMPLETE
-
-#### Files changed
-| File | Change type | What changed |
-|---|---|---|
-| `path/to/file.ts` | NEW/MODIFIED/DELETED | one-line description |
-
-#### Translation keys added
-[list all keys, or "none"]
-
-#### Security
-- church_id filter: ✅ / ⚠️ [explain]
-- apiHandler: ✅ used / ✅ migrated / ⚠️ follow-up: [file]
-- No error.message leaked: ✅
-
-#### Database
-- Migration: [filename or "none required"]
-- Indexes affected: [or "none"]
-- RLS: [relevant notes or "existing policies sufficient"]
-
-#### What agents working near this need to know
-[1-3 sentences about patterns established, namespaces created, patterns to follow]
-
-#### Known issues / follow-up
-[explicit list — or "none"]
----
+```bash
+npx tsc --noEmit            # 0 errors
+npx vitest run             # green (add/extend tests for what you changed)
+npm run build              # clean
+# RTL grep from CLAUDE.md §12 → must return 0
 ```
 
-Then:
-1. Update the **File Ownership Map** with every file you touched
-2. Release your **Active Work** claims (mark DONE or delete rows)
-3. If you discovered something, append to **Discovered Clues**
+Then follow `.claude/skills/context-update/SKILL.md` to record the work in **CLAUDE.md**
+(change-log row + any status/schema updates). That change log — not any separate file — is how the
+next agent learns what you did.
 
 ---
 
@@ -244,12 +221,14 @@ Performance:
 - Parallel fetches used: ✅ | not applicable
 - specific .select() fields: ✅
 
-LIVE-CONTEXT.md:
-- ✅ PR block written
-- ✅ File Ownership Map updated
-- ✅ Active Work claims released
+Definition of Done gates:
+- ✅ npx tsc --noEmit = 0 errors
+- ✅ npx vitest run green
+- ✅ npm run build clean
+- ✅ RTL grep (CLAUDE.md §12) = 0
+- ✅ CLAUDE.md change log updated (context-update skill)
 
-Tests needed:
+Tests added/extended:
 - [list each test with what it verifies]
 
 Follow-up required:

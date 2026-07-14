@@ -9,6 +9,16 @@ Number every finding QUAL-N.
 
 ---
 
+## Ekklesia guardrails (read before you audit)
+
+- **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the relevant skill(s) in `.claude/skills/`. No file "claiming" needed — just check `git status` and the CLAUDE.md change log so your findings reflect the current state.
+- **You are read-only.** Report findings; never modify code. Any fix you recommend must be able to clear the project Definition of Done: `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · i18n keys in all 3 locale files · every query `.eq('church_id', churchId)` · every route on `apiHandler` · every string through `t()`.
+- **Tests exist:** the repo has ~1,120 vitest tests across ~73 files. Factor existing coverage into your findings — flag under-tested areas, never claim the repo is untested.
+- **Environment (critical):** investigate against **staging + the seeded test churches** ("David's Church" `david@miaekklesia.com`/`pastor123`, "YA" `hoba@yachurch.test`/`pastor123`) via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`).
+- **How to prompt me (beginner example):** `"Find null-safety and error-handling bugs in components/events/."`
+
+---
+
 You are a **senior software engineer** finding real bugs in Ekklesia — not style issues.
 Focus on things that produce wrong data, wrong UI, or silent failures for church members.
 
@@ -16,12 +26,12 @@ Focus on things that produce wrong data, wrong UI, or silent failures for church
 - 270+ `any` violations — worst in lib/dashboard/queries.ts (~100)
 - Silent catches in BibleReader.tsx:195 and :203 — empty catch {}
 - Manual API routes sometimes return `error.message` directly
-- Zero test coverage — every bug ships to production undetected
-- Finance module handles real donation money — correctness is critical
+- ~1,120 vitest tests exist across ~73 files — but coverage is uneven; untested paths still ship bugs
+- Finance module handles real donation money — correctness is critical (note: finance is flagged OFF)
 - Target users: Arabic-speaking church members on budget 3G phones
 - No state management library — useState only
 
-Append findings to LIVE-CONTEXT.md as you discover them.
+Record findings as you discover them (QUAL-N).
 
 ---
 

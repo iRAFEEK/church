@@ -2,7 +2,15 @@
 
 > Canonical product spec, derived from the codebase. Cross-check against `CLAUDE.md`
 > (overview, schema, migrations, change log). Source files are cited inline.
-> Last derived: 2026-07-01.
+> For architecture/how-it-works, see `docs/SYSTEM_DESIGN.md`.
+>
+> **Last updated: 2026-07-14** · Migration ceiling: **091** (Service Builder).
+> **Current status:** deployed and **live on `miaekklesia.com`** (Vercel + Cloudflare DNS),
+> **pre-pilot** — code-complete and ready for the first pilot with known church leaders, not
+> publicly launched. Finance is **OFF** (flagged, in development); event templates are **OFF**
+> (flagged, pilot-not-ready). Prod is gated on applying migrations 087–088 (approver-from-UI +
+> member-approval queue); the platform-operator allowlist already works via the
+> `PLATFORM_ADMIN_EMAILS` env var (`CLAUDE.md` §10).
 
 ---
 
@@ -83,10 +91,10 @@ Every module below is live and wired unless noted. Nav gating (roles + permissio
 | **Groups** | Small-group CRUD; membership; join requests (request→approve, migration 058); "My Group" for group leaders. | super_admin (admin), group_leader (own group), member (join) |
 | **Gatherings & attendance** | Group meeting instances; attendance roster (present/absent/excused/late), swipe attendance; per-gathering prayer list. | group_leader (record), member (attend) |
 | **Ministries + meetings** | Ministry teams with member management, ministry meetings (migration 059), action items/tasks (migration 063), and ministry-scoped notifications. | ministry_leader, super_admin |
-| **Events + service planning + templates** | Events with run-of-show segments, service needs & volunteer assignments (assigned/confirmed/declined), role presets; members express serving interest (service requests, migration 062); reusable templates with recurrence + custom fields; calendar view. | ministry_leader (manage), member (register/serve) |
+| **Events + service planning + Service Builder** | Events with a **run-of-show** builder ("Service Builder", migration 091): each segment can be a plain item, a **song** (present via `/presenter/songs`), a **Bible passage** (`/presenter/bible`), or an **uploaded slide deck/PDF/image** (public `service-attachments` bucket); "Add to service" from the Songs & Bible pages. Plus service needs & volunteer assignments (assigned/confirmed/declined) with role presets; members express serving interest (service requests, migration 062); calendar view. **Event templates** (reusable events with recurrence + custom fields) exist but are **flagged OFF** — see §8. | ministry_leader (manage), member (register/serve) |
 | **Serving** | Serving areas & slots (max volunteers), member self-signup, area leaders; atomic signup RPC. | member (sign up), ministry_leader (manage) |
 | **Announcements** | Church announcements (draft/published/archived, pinned, expiry); member-facing feed. | super_admin (manage), all (read) |
-| **Songs + shared hymnal + presenter** | Song CRUD with per-song display settings; a **cross-church shared/global song library** (publish to global, scoped+global read, migrations 066–073); full-screen worship **presenter**. | super_admin (manage), all (view/present) |
+| **Songs + shared hymnal + presenter** | Song CRUD with per-song display settings; a **cross-church shared/global song library** — an ~11,000-song hymnal readable by every church (publish to global, scoped+global read, migrations 066–073; cross-church search fixed in migration 090 — Arabic-normalized + lyrics full-text + prefix, live on prod); full-screen worship **presenter**. | super_admin (manage), all (view/present) |
 | **Bible** | Bible reader with bookmarks & highlights, trigram + Arabic-normalized search, full-screen Bible presenter. | all members |
 | **Prayer** | Member prayer-request submission (private/anonymous options); admin prayer management with assignment to members; "I'm praying" responses (migration 061). | member (submit), super_admin (manage) |
 | **Outreach + assignments** | Home/hospital visit tracking with follow-ups; assign members to outreach leaders for accountability (migration 060). | super_admin / outreach-granted leaders |
@@ -96,6 +104,8 @@ Every module below is live and wired unless noted. Nav gating (roles + permissio
 | **Notifications** | In-app notification center + bell; multi-channel dispatch (in-app, push, email, WhatsApp) with audience/scoping; scheduled cron jobs (event/gathering reminders, visitor SLA, cleanup). | all members |
 
 **Finance — BUILT but flagged OFF and unreachable.** The full double-entry finance module exists (accounts, funds, donations, expenses, campaigns, pledges, budgets, transactions, fiscal years, my-giving; `types/index.ts` finance types; migration 030). It is gated behind the `finance` feature flag (**default off**, `lib/features.ts`): middleware redirects `/admin/finance/*` and `/finance/my-giving` and returns 404 for all `/api/finance/*`; finance nav items are hidden. It is treated as in-development (deeper schema/code drift). Re-enable with `NEXT_PUBLIC_FEATURE_FINANCE=true` once reconciled (`CLAUDE.md` header warning).
+
+**Event templates — BUILT but flagged OFF.** The event-template surface (recurrence, custom fields, template segments; migrations 021/023) is gated behind the `templates` feature flag (**default off**, `lib/features.ts`) exactly like finance: middleware redirects `/admin/templates*` and `/admin/events/from-template` and returns 404 for `/api/templates*` and `/api/events/from-template`; template nav items are hidden. Enable with `NEXT_PUBLIC_FEATURE_TEMPLATES=true` (set on staging/local). Note that the underlying `can_manage_templates` permission still defaults true for leaders (§3) — it's the *surface* that's gated, not the permission.
 
 ---
 
@@ -138,6 +148,7 @@ Phone-uniqueness (Supabase global + a unique partial index on `profiles.phone`) 
 Defined in `lib/features.ts` (env override `NEXT_PUBLIC_FEATURE_<FLAG>=true|false`; async per-church via `church_features`):
 
 - **`finance` — OFF (default).** Whole finance surface gated in middleware + nav; unreachable until reconciled (§4).
+- **`templates` — OFF (default).** Whole event-template surface gated in middleware + nav, mirroring finance; enable with `NEXT_PUBLIC_FEATURE_TEMPLATES=true` (§4).
 - **`liturgy_module`, `song_presenter`, `outreach_module` — ON (default).** Live modules.
 - **`advanced_reporting`, `sms_notifications`, `api_access`, `custom_fields`, `audit_log_ui` — OFF (default).**
 - **WhatsApp notifications — per-church opt-in (paid).** `churches.whatsapp_notifications_enabled` (default `false`, migration 080). Cost-control gate: default is **free push + in-app only**; a recipient's `notification_pref='whatsapp'` falls back to push+in-app unless the church opts in. Does **not** affect WhatsApp OTP/verification. Managed at `/admin/settings/notifications`.

@@ -9,6 +9,16 @@ Never modify any file in the codebase. Write only to the output files specified.
 
 ---
 
+## Ekklesia guardrails (read before you dig)
+
+- **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the relevant skill(s) in `.claude/skills/`. No file "claiming" needed — just check `git status` and the CLAUDE.md change log so your findings reflect the current state.
+- **You are read-only.** Report findings; never modify code. Any fix you recommend must be able to clear the project Definition of Done: `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · i18n keys in all 3 locale files · every query `.eq('church_id', churchId)` · every route on `apiHandler` · every string through `t()`.
+- **Tests exist:** the repo has ~1,120 vitest tests across ~73 files. Factor existing coverage into your findings — flag under-tested areas, never claim the repo is untested.
+- **Environment (critical):** investigate against **staging + the seeded test churches** ("David's Church" `david@miaekklesia.com`/`pastor123`, "YA" `hoba@yachurch.test`/`pastor123`) via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`).
+- **How to prompt me (beginner example):** `"Investigate app/api/events/ — list every route's auth pattern and any query missing a church_id filter."`
+
+---
+
 You are the **Codebase Archaeologist** for Ekklesia.
 
 A full recon has already been run. Read it first — do not re-discover what is already known:
@@ -23,14 +33,13 @@ The recon gave us the map. You give us the detail that specialist agents need to
 - 4 roles: member, group_leader, ministry_leader, super_admin
 - Multi-tenant: church_id on every table, RLS as secondary defense
 - Arabic-first (RTL), 3 locales (en/ar/ar-eg), target: budget phones on 3G
-- ZERO test coverage — no framework, no test files
-- 105 of 116 API routes use manual auth (not apiHandler)
+- The repo has ~1,120 vitest tests across ~73 files — find under-tested areas, don't claim there are none
+- Most API routes are on `apiHandler` now; flag any that still use manual auth
 - 270+ `any` type violations
 - `.env.local` potentially in git history with private keys
 - 2 confirmed empty catch blocks in BibleReader.tsx:195 and :203
 
-As you discover things, **append to LIVE-CONTEXT.md immediately** under "Discovered clues".
-Do not batch — write as you go so parallel agents benefit.
+Write your findings to the output file specified below. Keep notes as you go so nothing is lost.
 
 ---
 
@@ -274,9 +283,8 @@ Use this structure:
 [what it does, production risk level]
 ```
 
-Also append a summary of the most critical findings to the
-"Codebase map" section of `LIVE-CONTEXT.md` as you go —
-so parallel agents can start work immediately.
+Lead the output file with a short summary of the most critical findings so a reader
+can start work immediately.
 
 Be exhaustive. If a section has nothing to report, write "None found."
 Do not skip sections.

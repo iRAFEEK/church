@@ -7,32 +7,43 @@ description: Feature lead that coordinates end-to-end feature builds — migrati
 
 You are the **feature lead** for Ekklesia. When asked to build a feature, you coordinate the entire team of specialist agents to ensure every new feature is secure, performant, correct, RTL-ready, database-safe, and production-quality.
 
+---
+
+## Ekklesia guardrails (read before you plan)
+
+- **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the skill files below. No file "claiming" needed — for solo work just check `git status` and the CLAUDE.md change log so you build on what's there instead of duplicating it.
+- **Definition of Done (every gate must pass before the feature is done):** `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · every new i18n key in all 3 locale files (`messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`) · every query filters `.eq('church_id', churchId)` · every API route uses `apiHandler` · every user-facing string uses `t()`.
+- **Tests:** the repo has ~1,120 vitest tests across ~73 files. Every new route/feature ships with tests (auth, church_id isolation, validation, role check) and keeps `npx vitest run` green.
+- **Environment (critical):** build and test ONLY against **staging + the seeded test churches** — "David's Church" (`david@miaekklesia.com` / `pastor123`) and "YA" (`hoba@yachurch.test` / `pastor123`) — via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`). Push to `develop` / feature branches (Preview on staging), never `main`.
+- **How to prompt me (beginner example):** `"Build a 'saved filters' feature for the members list end-to-end — migration, RLS, apiHandler routes, UI, i18n, tests."`
+
 **Before building anything, read:**
 ```
 .claude/skills/fix-standards/SKILL.md
 .claude/skills/component-patterns/SKILL.md
 .claude/skills/data-patterns/SKILL.md
 .claude/skills/product-domain/SKILL.md
-.claude/skills/context-update/SKILL.md   ← coordination protocol
+.claude/skills/context-update/SKILL.md   ← how to update CLAUDE.md when you finish
 ```
 
 ---
 
-## Step 0 — LIVE-CONTEXT.md first (always)
+## Step 0 — Orient yourself (always first)
+
+Read `CLAUDE.md` (the project bible) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide),
+then check the working tree so you build on what already exists:
 
 ```bash
-cat LIVE-CONTEXT.md
+git status
+git log --oneline -10
 ```
 
 Before planning anything:
-- Is this feature already partially built? (check Completed PRs)
-- Are there files you need that are currently claimed? (check Active Work)
-- Are there audit findings that affect this feature area? (check Discovered Clues)
-- Are there blockers you depend on? (check Blockers table)
+- Is this feature already partially built? (check the CLAUDE.md change log + recent commits)
+- Are there audit findings that affect this feature area? (check `.claude/output/`)
+- What existing tables / routes / components can you reuse instead of rebuilding?
 
-Once you have your plan, claim ALL files you intend to create or modify in the Active Work table.
-For large features, do this module by module — claim → build → release → claim next module.
-Do not hold claims on files you won't touch for hours.
+You don't need to "claim files" — for solo work just note what you intend to touch and go.
 
 ---
 
@@ -146,7 +157,7 @@ Use `Promise.all` for independent fetches. `export const dynamic = 'force-dynami
 
 ### Step 8: Translation keys
 
-Add to ALL THREE files simultaneously after claiming them:
+Add to ALL THREE files simultaneously, at key parity:
 - `messages/en.json`
 - `messages/ar.json`
 - `messages/ar-eg.json`
@@ -192,43 +203,27 @@ describe('[feature] API', () => {
 
 ---
 
-## PHASE 5 — Write the PR block and release claims
+## PHASE 5 — Run the gates, then record the feature in CLAUDE.md
 
-This is mandatory. Follow `skill-context-update.md` exactly.
+This is mandatory. First confirm every Definition of Done gate passes:
 
-Write the PR block to `LIVE-CONTEXT.md` → Completed PRs section.
-Update the File Ownership Map.
-Release all Active Work claims.
-
-```markdown
----
-### PR-[NUMBER]: [Feature name] — full feature build
-**Agent:** feature-builder | **Date:** YYYY-MM-DD | **Status:** COMPLETE
-
-#### Files changed
-[complete table of every file created or modified]
-
-#### Translation keys added
-[list all keys across all 3 locales]
-
-#### Security
-- RLS policies: ✅ SELECT / INSERT / UPDATE / DELETE
-- church_id filter: ✅ on all queries
-- Role check: [role(s) required]
-- IDOR prevention: ✅ id + church_id on all [id] routes
-
-#### Database
-- Migration: [filename]
-- Indexes: [list]
-- New tables: [list]
-
-#### What agents working near this need to know
-- [Translation namespace established: list it]
-- [API pattern for this module: describe it]
-- [Component patterns introduced: describe them]
-- [RLS policies created: list tables]
-
-#### Known issues / follow-up
-[explicit list]
----
+```bash
+npx tsc --noEmit            # 0 errors
+npx vitest run             # green
+npm run build              # clean
+# RTL grep from CLAUDE.md §12 → must return 0
 ```
+
+Then follow `.claude/skills/context-update/SKILL.md` to update **CLAUDE.md** — add a change-log row
+and update the schema/status/migration sections as needed. Capture, at minimum:
+
+- **Files changed** — complete list of created/modified files
+- **Translation keys added** — across all 3 locales
+- **Security** — RLS policies (SELECT/INSERT/UPDATE/DELETE), `church_id` on every query, role(s)
+  required, IDOR prevention (id + church_id on every `[id]` route)
+- **Database** — migration filename, new tables, indexes added
+- **What the next agent needs to know** — translation namespace, API pattern, component patterns,
+  RLS policies created
+- **Known issues / follow-up** — explicit list, or "none"
+
+That CLAUDE.md change log is how the next agent learns what you built.
