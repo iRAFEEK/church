@@ -1,0 +1,60 @@
+erDiagram
+    churches ||--o{ profiles : "church_id"
+    churches ||--o{ user_churches : "church_id"
+    churches ||--o{ groups : "church_id"
+    churches ||--o{ ministries : "church_id"
+    churches ||--o{ events : "church_id"
+    churches ||--o{ visitors : "church_id"
+    churches ||--o{ notifications : "church_id"
+    profiles ||--o{ user_churches : "user_id"
+    profiles ||--o{ group_members : "profile_id"
+    groups ||--o{ group_members : "group_id"
+    events ||--o{ event_segments : "event_id"
+
+    churches {
+        uuid id PK
+        text name
+        text status
+    }
+    profiles {
+        uuid id PK
+        uuid church_id FK
+        text role
+    }
+    user_churches {
+        uuid user_id FK
+        uuid church_id FK
+        text role
+        text status
+    }
+    groups {
+        uuid id PK
+        uuid church_id FK
+    }
+    group_members {
+        uuid group_id FK
+        uuid profile_id FK
+        uuid church_id FK
+    }
+    ministries {
+        uuid id PK
+        uuid church_id FK
+    }
+    events {
+        uuid id PK
+        uuid church_id FK
+    }
+    event_segments {
+        uuid id PK
+        uuid event_id FK
+        text kind
+    }
+    visitors {
+        uuid id PK
+        uuid church_id FK
+    }
+    notifications {
+        uuid id PK
+        uuid church_id FK
+        uuid profile_id FK
+    }

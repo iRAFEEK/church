@@ -41,70 +41,13 @@ database. A bug in one layer should not leak data because the next layer still h
 
 ### System context
 
-```mermaid
-flowchart LR
-    subgraph Client["Client"]
-        PWA["PWA / Browser (Next.js, next-intl, FCM service worker)"]
-    end
-    subgraph Vercel["Vercel — Next.js 15"]
-        MW["middleware.ts (auth gate + flags + locale)"]
-        RSC["Server Components"]
-        API["API routes (apiHandler)"]
-    end
-    subgraph Supabase["Supabase"]
-        PG[("Postgres + RLS")]
-        AUTH["Auth"]
-        STO["Storage (service-attachments, photos)"]
-    end
-    subgraph External["External services"]
-        FCM["FCM (push)"]
-        WA["Meta WhatsApp (OTP + opt-in notifications)"]
-        RESEND["Resend (email)"]
-        PH["PostHog (analytics)"]
-        REDIS["Upstash Redis (rate limiting)"]
-    end
-
-    PWA -->|"HTTPS"| MW
-    MW --> RSC
-    MW --> API
-    RSC --> PG
-    API --> PG
-    RSC --> AUTH
-    API --> AUTH
-    API --> STO
-    PWA -->|"events"| PH
-    PWA -->|"token / SW"| FCM
-    API -->|"rate limit"| REDIS
-    API -->|"email"| RESEND
-    API -->|"push send"| FCM
-    API -->|"notifications + OTP"| WA
-    AUTH -->|"Send-SMS hook"| WA
-```
+![System context — overall architecture](diagrams/system-context.svg)
 
 *How the pieces talk: the PWA reaches Supabase only through Vercel (middleware → Server Components / API routes); the app-server calls FCM, Resend, WhatsApp and Upstash, while the browser talks to PostHog and FCM directly.*
 
 ### Request lifecycle
 
-```mermaid
-flowchart TD
-    A["Browser / PWA"] --> B["middleware.ts"]
-    B --> B1["Set x-pathname; detect lang cookie (geo / Accept-Language)"]
-    B1 --> B2{"Feature flag OFF for this path?"}
-    B2 -->|"/admin/finance, /admin/templates page"| R1["307 redirect (/dashboard or /login)"]
-    B2 -->|"/api/finance, /api/templates"| R2["404 Not found"]
-    B2 -->|"flag OK"| B3{"Public path?"}
-    B3 -->|"yes"| PUB["Continue without auth"]
-    B3 -->|"no"| B4{"getSession() — session present?"}
-    B4 -->|"no"| L["307 /login"]
-    B4 -->|"yes"| C{"Route type"}
-    C -->|"Server Component"| D["getCurrentUserWithRole() — getUser() secure verify + user_churches role/status"]
-    C -->|"API route"| E["apiHandler wrapper — brute limit, getUser, profile, role/perms, rate limit"]
-    D --> F["Supabase query .eq('church_id', churchId) + Zod-validated input"]
-    E --> F
-    F --> H[("Postgres — RLS re-checks church_id / role")]
-    H --> RESP["Response (+ Server-Timing header on API routes)"]
-    RESP --> A
-```
+![Request lifecycle](diagrams/request-lifecycle.svg)
 
 *The browser-to-DB path, layered: middleware is the coarse gate (flags, locale, session redirect), then a page or `apiHandler` does the fine-grained auth, and Postgres RLS is the last check inside the database.*
 
@@ -123,17 +66,7 @@ Never trust `getSession()` for authorization — only for the cheap redirect gat
 and it is non-negotiable. RLS enforces the same rule server-side, but application code must not
 rely on RLS alone — filter explicitly.
 
-```mermaid
-flowchart TD
-    Q["Query from apiHandler / Server Component"] --> G1["Layer 1 — app filter: .eq('church_id', profile.church_id)"]
-    G1 --> G2["Layer 2 — Postgres RLS policy checks church_id"]
-    G2 --> R["Only the caller's church rows returned"]
-
-    B["Bug path: handler forgets .eq('church_id', ...)"] --> G2b["RLS is still enforced inside Postgres"]
-    G2b --> R2["Other churches' rows stay blocked (defense in depth)"]
-
-    ADM["createAdminClient() — service role"] -.->|"bypasses RLS: system tasks only, must self-scope"| DIRECT["Direct DB access"]
-```
+![Multi-tenancy and Row-Level Security](diagrams/multitenancy-rls.svg)
 
 *A query is guarded twice — the app-layer `church_id` filter and the database RLS policy — so if a handler forgets the filter, RLS still prevents cross-church reads. Only the service-role admin client bypasses RLS, and it must scope by hand.*
 
@@ -165,68 +98,7 @@ strictly single-tenant.
 
 ### Core data model (tenancy-centered)
 
-```mermaid
-erDiagram
-    churches ||--o{ profiles : "church_id"
-    churches ||--o{ user_churches : "church_id"
-    churches ||--o{ groups : "church_id"
-    churches ||--o{ ministries : "church_id"
-    churches ||--o{ events : "church_id"
-    churches ||--o{ visitors : "church_id"
-    churches ||--o{ notifications : "church_id"
-    profiles ||--o{ user_churches : "user_id"
-    profiles ||--o{ group_members : "profile_id"
-    groups ||--o{ group_members : "group_id"
-    events ||--o{ event_segments : "event_id"
-
-    churches {
-        uuid id PK
-        text name
-        text status
-    }
-    profiles {
-        uuid id PK
-        uuid church_id FK
-        text role
-    }
-    user_churches {
-        uuid user_id FK
-        uuid church_id FK
-        text role
-        text status
-    }
-    groups {
-        uuid id PK
-        uuid church_id FK
-    }
-    group_members {
-        uuid group_id FK
-        uuid profile_id FK
-        uuid church_id FK
-    }
-    ministries {
-        uuid id PK
-        uuid church_id FK
-    }
-    events {
-        uuid id PK
-        uuid church_id FK
-    }
-    event_segments {
-        uuid id PK
-        uuid event_id FK
-        text kind
-    }
-    visitors {
-        uuid id PK
-        uuid church_id FK
-    }
-    notifications {
-        uuid id PK
-        uuid church_id FK
-        uuid profile_id FK
-    }
-```
+![Core data model (ER)](diagrams/data-model-er.svg)
 
 *A representative slice (~10 of ~50 tables): `churches` is the tenant root and almost every table carries the `church_id` linking column. One auth identity (`profiles`) belongs to many churches via `user_churches`, which holds the authoritative per-church `role` and `status`.*
 
@@ -278,21 +150,7 @@ Rules:
 - **User overrides are additive only** — they can grant (`true`) but never revoke
   (`lib/permissions.ts:181`). To remove access you change the church/role default, not the override.
 
-```mermaid
-flowchart TD
-    CK["Supabase Auth cookie (SSR)"] --> GU["auth.getUser() — secure verify"]
-    GU --> PF["Load profiles + church (one joined query)"]
-    PF --> UC["Cross-ref user_churches role + status"]
-    UC --> ST{"status == active?"}
-    ST -->|"no"| PEND["redirect /membership-pending"]
-    ST -->|"yes"| ROLE["effectiveRole = user_churches.role ?? profiles.role"]
-    ROLE --> SA{"role == super_admin?"}
-    SA -->|"yes"| ALL["resolvedPermissions = every permission true"]
-    SA -->|"no"| L1["Layer 1: HARDCODED_ROLE_DEFAULTS[role]"]
-    L1 --> L2["Layer 2: role_permission_defaults (church, role)"]
-    L2 --> L3["Layer 3: profiles.permissions overrides (additive — true only)"]
-    L3 --> OUT["resolvedPermissions"]
-```
+![Auth and permission resolution](diagrams/auth-permissions.svg)
 
 *From cookie to resolved permissions (`lib/auth.ts`, `lib/permissions.ts`): the per-church `user_churches.role` wins over `profiles.role`, `super_admin` short-circuits to all-true, and the three permission layers merge additively (overrides can grant but never revoke).*
 
@@ -329,34 +187,7 @@ because the wrapper does it. Do not hand-roll auth/role/rate-limit logic in a ro
 11. **Error handling** — a thrown `ValidationError` → **422** with `fields`; anything else →
     **500** with a generic message (never leak internals) (`:209`).
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant H as apiHandler
-    participant SB as Supabase
-    participant RL as Rate limiter
-    participant BODY as Handler body
-
-    C->>H: request
-    H->>RL: IP brute-force check (200/min)
-    RL-->>H: over limit -> 429
-    H->>SB: auth.getUser()
-    SB-->>H: no session -> 401
-    H->>SB: load profiles row
-    SB-->>H: missing -> 403 (unless profileOptional)
-    H->>SB: user_churches role + status
-    SB-->>H: status not active -> 403
-    H->>H: resolve effective role + permissions
-    H->>RL: per-user rate limit (relaxed / normal / strict)
-    RL-->>H: over limit -> 429
-    H->>H: requireRoles -> 403 if not allowed
-    H->>H: requirePermissions -> 403 if any missing
-    H->>SB: requireActiveChurch? read churches.status
-    SB-->>H: pending -> 403
-    H->>BODY: run handler (Zod validate -> 422 on failure)
-    BODY-->>H: plain object or Response
-    H-->>C: NextResponse.json + Server-Timing (or 500 on unhandled throw)
-```
+![apiHandler pipeline](diagrams/apihandler-pipeline.svg)
 
 *The ordered gauntlet inside `lib/api/handler.ts`: each dashed reply is an early-exit failure branch (401 / 403 / 429 / 422) that stops before the handler body runs; only a request that clears every gate reaches your code.*
 
@@ -500,21 +331,7 @@ off, requests to that module's pages are **307-redirected** (to `/dashboard` if 
 - `templates` OFF → blocks `/admin/templates*`, `/admin/events/from-template`, `/api/templates*`,
   `/api/events/from-template`.
 
-```mermaid
-flowchart TD
-    F["isFeatureEnabled(flag)"] --> E1{"env NEXT_PUBLIC_FEATURE_* set?"}
-    E1 -->|"= true"| ON["enabled"]
-    E1 -->|"= false"| OFF["disabled"]
-    E1 -->|"unset"| DEF["DEFAULT_FLAGS[flag]"]
-    DEF --> CH{"per-church? isFeatureEnabledForChurch()"}
-    CH -->|"church_features row exists"| ROW["use row.enabled"]
-    CH -->|"no row"| DEF2["fall back to DEFAULT_FLAGS"]
-
-    OFF --> MW["Middleware gate (finance / templates OFF)"]
-    MW --> P{"which surface?"}
-    P -->|"/admin/finance, /admin/templates page"| RED["307 redirect (/dashboard or /login)"]
-    P -->|"/api/finance, /api/templates route"| NF["404 Not found"]
-```
+![Feature-flag gating](diagrams/feature-flags.svg)
 
 *Flag resolution order (`lib/features.ts`): env override wins, else the hardcoded default, and the async per-church check layers a `church_features` row on top. When a gated flag is OFF, `middleware.ts` 307-redirects the pages and 404s the API routes, so the surface is unreachable.*
 
@@ -542,14 +359,7 @@ via the service-role client to a **church-scoped, unguessable path**
 
 ### Service Builder — run-of-show segments
 
-```mermaid
-flowchart TD
-    SEG["event_segments row"] --> K{"kind"}
-    K -->|"generic"| G["Titled item + notes (no linked target)"]
-    K -->|"song"| S["song_id -> /presenter/songs/[id]"]
-    K -->|"bible"| B["bible_ref {bibleId, chapterId} -> /presenter/bible/[bibleId]/[chapterId]"]
-    K -->|"file"| F["attachment_url -> service-attachments public URL (projector)"]
-```
+![Service Builder run-of-show](diagrams/service-builder.svg)
 
 *Migration 091 gave each run-of-show segment a `kind`: a plain titled item, a song (deep-links the song presenter), a Bible passage (deep-links the Bible presenter), or an uploaded slide deck/PDF served from the public `service-attachments` bucket.*
 
@@ -581,24 +391,7 @@ The dispatcher uses the **admin (service-role) client** because notifications le
 per-user RLS boundary (`dispatcher.ts:5`). Templates (bilingual title/body/subject per type) live in
 `lib/messaging/templates.ts`, interpolated with `interpolate()`.
 
-```mermaid
-flowchart TD
-    T["Feature code calls a notify* trigger (triggers.ts)"] --> REQ["Build NotificationRequest"]
-    REQ --> D["sendNotification() dispatcher (admin/service-role client)"]
-    D --> CHAN["Resolve channels from notification_pref"]
-    CHAN --> CONTACT["Load contact info + church whatsapp_notifications_enabled"]
-    CONTACT --> INAPP["Always: create in-app notification"]
-    CONTACT --> WA{"whatsapp selected AND church opted in?"}
-    WA -->|"yes"| WASEND["WhatsApp via Meta Cloud API"]
-    WA -->|"no"| FALL["Fall back to free channels (in-app + push)"]
-    CONTACT --> EMAIL{"email selected + address?"}
-    EMAIL -->|"yes"| ESEND["Email via Resend"]
-    CONTACT --> PUSH{"push selected + FCM configured?"}
-    PUSH -->|"yes"| PSEND["Push via FCM"]
-    WASEND --> LOG["Write notifications_log"]
-    ESEND --> LOG
-    PSEND --> LOG
-```
+![Messaging and notifications pipeline](diagrams/messaging-pipeline.svg)
 
 *A trigger builds a `NotificationRequest` and the dispatcher fans it out: in-app is always created, WhatsApp fires only when the recipient's church has opted in to the paid channel (otherwise it silently falls back to free channels), and email/push go out per preference — every non-in-app send is logged.*
 
@@ -624,37 +417,7 @@ segments can be a song/Bible passage/uploaded file + the `service-attachments` b
    human runs the SQL in the Supabase SQL editor. Auth-trigger changes (e.g. migration 088's
    `handle_new_user` rewrite) are especially gated (`CLAUDE.md` §10 "Pending").
 
-```mermaid
-flowchart LR
-    subgraph Dev["Developer"]
-        FB["feature/* branch"]
-        SQL["Write migration SQL"]
-    end
-    subgraph CI["PR / CI"]
-        PR["Pull request -> develop"]
-        CHECKS["typecheck + tests + RTL + i18n"]
-    end
-    subgraph Staging["Preview / Staging"]
-        PREV["Vercel Preview"]
-        SDB[("Staging Supabase")]
-    end
-    subgraph Prod["Production (lead merges only)"]
-        MAIN["main branch"]
-        PDEP["Vercel Production — miaekklesia.com"]
-        PDB[("Prod Supabase")]
-    end
-
-    FB --> PR
-    SQL --> PR
-    PR --> CHECKS
-    CHECKS --> PREV
-    PREV --> SDB
-    SQL -->|"apply first"| SDB
-    PREV -->|"QA + explicit sign-off"| MAIN
-    MAIN --> PDEP
-    PDEP --> PDB
-    SDB -->|"human sign-off before prod apply"| PDB
-```
+![Environments and deploy flow](diagrams/environments-deploy.svg)
 
 *Only `main` reaches production: `feature/*` branches open PRs into `develop` and get a Vercel Preview wired to the staging Supabase; migrations are applied to staging first and only reach prod after explicit human sign-off.*
 

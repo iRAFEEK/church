@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant C as Client
+    participant H as apiHandler
+    participant SB as Supabase
+    participant RL as Rate limiter
+    participant BODY as Handler body
+
+    C->>H: request
+    H->>RL: IP brute-force check (200/min)
+    RL-->>H: over limit -> 429
+    H->>SB: auth.getUser()
+    SB-->>H: no session -> 401
+    H->>SB: load profiles row
+    SB-->>H: missing -> 403 (unless profileOptional)
+    H->>SB: user_churches role + status
+    SB-->>H: status not active -> 403
+    H->>H: resolve effective role + permissions
+    H->>RL: per-user rate limit (relaxed / normal / strict)
+    RL-->>H: over limit -> 429
+    H->>H: requireRoles -> 403 if not allowed
+    H->>H: requirePermissions -> 403 if any missing
+    H->>SB: requireActiveChurch? read churches.status
+    SB-->>H: pending -> 403
+    H->>BODY: run handler (Zod validate -> 422 on failure)
+    BODY-->>H: plain object or Response
+    H-->>C: NextResponse.json + Server-Timing (or 500 on unhandled throw)

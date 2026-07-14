@@ -1,0 +1,18 @@
+flowchart TD
+    A["Browser / PWA"] --> B["middleware.ts"]
+    B --> B1["Set x-pathname; detect lang cookie (geo / Accept-Language)"]
+    B1 --> B2{"Feature flag OFF for this path?"}
+    B2 -->|"/admin/finance, /admin/templates page"| R1["307 redirect (/dashboard or /login)"]
+    B2 -->|"/api/finance, /api/templates"| R2["404 Not found"]
+    B2 -->|"flag OK"| B3{"Public path?"}
+    B3 -->|"yes"| PUB["Continue without auth"]
+    B3 -->|"no"| B4{"getSession() — session present?"}
+    B4 -->|"no"| L["307 /login"]
+    B4 -->|"yes"| C{"Route type"}
+    C -->|"Server Component"| D["getCurrentUserWithRole() — getUser() secure verify + user_churches role/status"]
+    C -->|"API route"| E["apiHandler wrapper — brute limit, getUser, profile, role/perms, rate limit"]
+    D --> F["Supabase query .eq('church_id', churchId) + Zod-validated input"]
+    E --> F
+    F --> H[("Postgres — RLS re-checks church_id / role")]
+    H --> RESP["Response (+ Server-Timing header on API routes)"]
+    RESP --> A

@@ -1,0 +1,37 @@
+flowchart LR
+    subgraph Client["Client"]
+        PWA["PWA / Browser (Next.js, next-intl, FCM service worker)"]
+    end
+    subgraph Vercel["Vercel — Next.js 15"]
+        MW["middleware.ts (auth gate + flags + locale)"]
+        RSC["Server Components"]
+        API["API routes (apiHandler)"]
+    end
+    subgraph Supabase["Supabase"]
+        PG[("Postgres + RLS")]
+        AUTH["Auth"]
+        STO["Storage (service-attachments, photos)"]
+    end
+    subgraph External["External services"]
+        FCM["FCM (push)"]
+        WA["Meta WhatsApp (OTP + opt-in notifications)"]
+        RESEND["Resend (email)"]
+        PH["PostHog (analytics)"]
+        REDIS["Upstash Redis (rate limiting)"]
+    end
+
+    PWA -->|"HTTPS"| MW
+    MW --> RSC
+    MW --> API
+    RSC --> PG
+    API --> PG
+    RSC --> AUTH
+    API --> AUTH
+    API --> STO
+    PWA -->|"events"| PH
+    PWA -->|"token / SW"| FCM
+    API -->|"rate limit"| REDIS
+    API -->|"email"| RESEND
+    API -->|"push send"| FCM
+    API -->|"notifications + OTP"| WA
+    AUTH -->|"Send-SMS hook"| WA

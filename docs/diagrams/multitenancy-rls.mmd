@@ -1,0 +1,9 @@
+flowchart TD
+    Q["Query from apiHandler / Server Component"] --> G1["Layer 1 — app filter: .eq('church_id', profile.church_id)"]
+    G1 --> G2["Layer 2 — Postgres RLS policy checks church_id"]
+    G2 --> R["Only the caller's church rows returned"]
+
+    B["Bug path: handler forgets .eq('church_id', ...)"] --> G2b["RLS is still enforced inside Postgres"]
+    G2b --> R2["Other churches' rows stay blocked (defense in depth)"]
+
+    ADM["createAdminClient() — service role"] -.->|"bypasses RLS: system tasks only, must self-scope"| DIRECT["Direct DB access"]

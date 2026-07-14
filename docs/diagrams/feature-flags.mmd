@@ -1,0 +1,13 @@
+flowchart TD
+    F["isFeatureEnabled(flag)"] --> E1{"env NEXT_PUBLIC_FEATURE_* set?"}
+    E1 -->|"= true"| ON["enabled"]
+    E1 -->|"= false"| OFF["disabled"]
+    E1 -->|"unset"| DEF["DEFAULT_FLAGS[flag]"]
+    DEF --> CH{"per-church? isFeatureEnabledForChurch()"}
+    CH -->|"church_features row exists"| ROW["use row.enabled"]
+    CH -->|"no row"| DEF2["fall back to DEFAULT_FLAGS"]
+
+    OFF --> MW["Middleware gate (finance / templates OFF)"]
+    MW --> P{"which surface?"}
+    P -->|"/admin/finance, /admin/templates page"| RED["307 redirect (/dashboard or /login)"]
+    P -->|"/api/finance, /api/templates route"| NF["404 Not found"]

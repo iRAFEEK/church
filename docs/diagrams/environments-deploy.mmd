@@ -1,0 +1,29 @@
+flowchart LR
+    subgraph Dev["Developer"]
+        FB["feature/* branch"]
+        SQL["Write migration SQL"]
+    end
+    subgraph CI["PR / CI"]
+        PR["Pull request -> develop"]
+        CHECKS["typecheck + tests + RTL + i18n"]
+    end
+    subgraph Staging["Preview / Staging"]
+        PREV["Vercel Preview"]
+        SDB[("Staging Supabase")]
+    end
+    subgraph Prod["Production (lead merges only)"]
+        MAIN["main branch"]
+        PDEP["Vercel Production — miaekklesia.com"]
+        PDB[("Prod Supabase")]
+    end
+
+    FB --> PR
+    SQL --> PR
+    PR --> CHECKS
+    CHECKS --> PREV
+    PREV --> SDB
+    SQL -->|"apply first"| SDB
+    PREV -->|"QA + explicit sign-off"| MAIN
+    MAIN --> PDEP
+    PDEP --> PDB
+    SDB -->|"human sign-off before prod apply"| PDB

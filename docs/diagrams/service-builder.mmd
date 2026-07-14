@@ -1,0 +1,6 @@
+flowchart TD
+    SEG["event_segments row"] --> K{"kind"}
+    K -->|"generic"| G["Titled item + notes (no linked target)"]
+    K -->|"song"| S["song_id -> /presenter/songs/[id]"]
+    K -->|"bible"| B["bible_ref {bibleId, chapterId} -> /presenter/bible/[bibleId]/[chapterId]"]
+    K -->|"file"| F["attachment_url -> service-attachments public URL (projector)"]

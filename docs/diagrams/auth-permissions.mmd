@@ -1,0 +1,13 @@
+flowchart TD
+    CK["Supabase Auth cookie (SSR)"] --> GU["auth.getUser() — secure verify"]
+    GU --> PF["Load profiles + church (one joined query)"]
+    PF --> UC["Cross-ref user_churches role + status"]
+    UC --> ST{"status == active?"}
+    ST -->|"no"| PEND["redirect /membership-pending"]
+    ST -->|"yes"| ROLE["effectiveRole = user_churches.role ?? profiles.role"]
+    ROLE --> SA{"role == super_admin?"}
+    SA -->|"yes"| ALL["resolvedPermissions = every permission true"]
+    SA -->|"no"| L1["Layer 1: HARDCODED_ROLE_DEFAULTS[role]"]
+    L1 --> L2["Layer 2: role_permission_defaults (church, role)"]
+    L2 --> L3["Layer 3: profiles.permissions overrides (additive — true only)"]
+    L3 --> OUT["resolvedPermissions"]
