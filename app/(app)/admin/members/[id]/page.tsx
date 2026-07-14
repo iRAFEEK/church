@@ -11,6 +11,7 @@ import { ArrowRight, Phone, Mail, Briefcase, Calendar, Shield, MapPin, Home } fr
 import { MemberRoleEditor } from '@/components/profile/MemberRoleEditor'
 import { ConnectionSummary } from '@/components/profile/ConnectionSummary'
 import { MemberPermissionEditor } from '@/components/permissions/MemberPermissionEditor'
+import { OutreachAssignmentPanel } from '@/components/outreach/OutreachAssignmentPanel'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { canViewMemberPhone, type MemberDirectoryVisibility } from '@/lib/members/visibility'
 import type { Profile, ProfileMilestone } from '@/types'
@@ -137,12 +138,12 @@ export default async function MemberDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="info">
-        <TabsList className={`grid w-full ${admin && canManageOutreach ? 'grid-cols-5' : admin || canManageOutreach ? 'grid-cols-4' : 'grid-cols-3'}`}>
-          <TabsTrigger value="info">{t('tabInfo')}</TabsTrigger>
-          <TabsTrigger value="involvement">{t('tabInvolvement')}</TabsTrigger>
-          <TabsTrigger value="milestones">{t('tabMilestones')}</TabsTrigger>
-          {canManageOutreach && <TabsTrigger value="outreach">{t('tabOutreach')}</TabsTrigger>}
-          {admin && <TabsTrigger value="admin">{t('tabAdmin')}</TabsTrigger>}
+        <TabsList className={`flex w-full overflow-x-auto md:grid ${admin && canManageOutreach ? 'md:grid-cols-5' : admin || canManageOutreach ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+          <TabsTrigger value="info" className="shrink-0">{t('tabInfo')}</TabsTrigger>
+          <TabsTrigger value="involvement" className="shrink-0">{t('tabInvolvement')}</TabsTrigger>
+          <TabsTrigger value="milestones" className="shrink-0">{t('tabMilestones')}</TabsTrigger>
+          {canManageOutreach && <TabsTrigger value="outreach" className="shrink-0">{t('tabOutreach')}</TabsTrigger>}
+          {admin && <TabsTrigger value="admin" className="shrink-0">{t('tabAdmin')}</TabsTrigger>}
         </TabsList>
 
         {/* Info Tab */}
@@ -286,11 +287,20 @@ export default async function MemberDetailPage({
                 {/* Link to full outreach page */}
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/admin/outreach/${memberProfile.id}`}>
-                    {t('tabOutreach')} →
+                    {t('tabOutreach')} <span className="inline-block rtl:rotate-180">→</span>
                   </Link>
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Assignable outreach visits (gated by can_manage_outreach above) */}
+            <div className="mt-4">
+              <OutreachAssignmentPanel
+                memberId={memberProfile.id}
+                currentUserId={currentUser.id}
+                canManage={canManageOutreach}
+              />
+            </div>
           </TabsContent>
         )}
 

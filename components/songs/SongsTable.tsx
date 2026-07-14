@@ -5,11 +5,12 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Music, Search, Loader2, Presentation } from 'lucide-react'
+import { Music, Search, Loader2, Presentation, CalendarPlus } from 'lucide-react'
 import { ListShimmer } from '@/components/ui/list-shimmer'
 import { toast } from 'sonner'
+import { AddToServiceDialog, type AddToServicePayload } from '@/components/events/AddToServiceDialog'
 
-interface SongListItem {
+export interface SongListItem {
   id: string
   title: string
   title_ar: string | null
@@ -17,6 +18,8 @@ interface SongListItem {
   artist_ar: string | null
   tags: string[]
   is_active: boolean
+  /** Plain-text lyric context around the match (search results only) */
+  snippet?: string | null
 }
 
 const PAGE_SIZE = 50
@@ -42,11 +45,26 @@ function setCache(key: string, data: SongListItem[], hasMore: boolean) {
   queryCache.set(key, { data, hasMore, ts: Date.now() })
 }
 
-export function SongsTable() {
+type SongsTableProps = {
+  canManageEvents?: boolean
+  /**
+   * When provided, the table acts as a picker: clicking a row calls `onSelect(song)`
+   * instead of navigating to the song detail page. In this "pick mode" the per-row
+   * Present / Add-to-service actions are hidden (they belong to the standalone page).
+   */
+  onSelect?: (song: SongListItem) => void
+}
+
+export function SongsTable({ canManageEvents = false, onSelect }: SongsTableProps) {
   const t = useTranslations('songs')
+  const tService = useTranslations('addToService')
   const locale = useLocale()
   const isAr = locale === 'ar'
   const router = useRouter()
+  const pickMode = !!onSelect
+
+  const [servicePayload, setServicePayload] = useState<AddToServicePayload | null>(null)
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
 
   const [songs, setSongs] = useState<SongListItem[]>([])
   const [query, setQuery] = useState('')
@@ -89,7 +107,10 @@ export function SongsTable() {
         page: String(pageNum),
         pageSize: String(PAGE_SIZE),
       })
-      if (q.trim()) params.set('q', q.trim())
+      if (q.trim()) {
+        params.set('q', q.trim())
+        params.set('locale', locale) // lyric snippet language for the search RPC
+      }
 
       const res = await fetch(`/api/songs?${params}`, { signal: controller.signal })
       if (!res.ok) throw new Error('Failed to load songs')
@@ -114,7 +135,7 @@ export function SongsTable() {
       setSearching(false)
       setLoadingMore(false)
     }
-  }, [t])
+  }, [t, locale])
 
   // Initial load
   useEffect(() => {
@@ -195,13 +216,16 @@ export function SongsTable() {
       ) : (
         <div ref={scrollRef} className="rounded-lg border overflow-auto max-h-[70vh]">
           {songs.map((song) => {
-            const title = isAr ? (song.title_ar || song.title) : song.title
-            const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+            const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+            const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
 
             return (
               <div
                 key={song.id}
-                onClick={() => router.push(`/admin/songs/${song.id}`)}
+                onClick={() => {
+                  if (onSelect) onSelect(song)
+                  else router.push(`/admin/songs/${song.id}`)
+                }}
                 className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
@@ -212,21 +236,47 @@ export function SongsTable() {
                   {artist && (
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{artist}</p>
                   )}
+                  {/* Matched lyric context (only present on search results) */}
+                  {song.snippet && query.trim() && (
+                    <p className="text-xs text-muted-foreground/80 truncate mt-0.5" dir="auto">{song.snippet}</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {song.tags?.slice(0, 2).map(tag => (
                     <Badge key={tag} variant="outline" className="hidden sm:inline-flex text-xs">{tag}</Badge>
                   ))}
-                  <a
-                    href={`/presenter/songs/${song.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
-                    title={t('present')}
-                  >
-                    <Presentation className="h-4 w-4 text-primary" />
-                  </a>
+                  {!pickMode && canManageEvents && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setServicePayload({
+                          kind: 'song',
+                          title: (song.title || song.title_ar) ?? '',
+                          title_ar: song.title_ar,
+                          song_id: song.id,
+                        })
+                        setServiceDialogOpen(true)
+                      }}
+                      className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                      title={tService('button')}
+                      aria-label={tService('button')}
+                    >
+                      <CalendarPlus className="h-4 w-4 text-primary" />
+                    </button>
+                  )}
+                  {!pickMode && (
+                    <a
+                      href={`/presenter/songs/${song.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex h-11 w-11 items-center justify-center rounded-md hover:bg-primary/10 transition-colors"
+                      title={t('present')}
+                    >
+                      <Presentation className="h-4 w-4 text-primary" />
+                    </a>
+                  )}
                 </div>
               </div>
             )
@@ -240,6 +290,14 @@ export function SongsTable() {
             </div>
           )}
         </div>
+      )}
+
+      {!pickMode && canManageEvents && (
+        <AddToServiceDialog
+          open={serviceDialogOpen}
+          onOpenChange={setServiceDialogOpen}
+          payload={servicePayload}
+        />
       )}
     </div>
   )

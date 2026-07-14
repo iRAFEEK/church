@@ -17,7 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { UserPlus, Loader2, Users } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
+import { UserPlus, Loader2, Users, Phone, MapPin, Home, CheckCircle2 } from 'lucide-react'
+import { analytics } from '@/lib/analytics'
 
 interface ProfileInfo {
   id: string
@@ -73,6 +83,15 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   in_progress: 'default',
   completed: 'outline',
   cancelled: 'destructive',
+}
+
+// DB status values are snake_case ('in_progress') but the i18n keys are camelCase
+// ('inProgress') — map explicitly so the badge never renders a raw DB value.
+const STATUS_LABEL_KEY: Record<string, 'pending' | 'inProgress' | 'completed' | 'cancelled'> = {
+  pending: 'pending',
+  in_progress: 'inProgress',
+  completed: 'completed',
+  cancelled: 'cancelled',
 }
 
 export function OutreachAssignmentPanel({ memberId, currentUserId, canManage }: OutreachAssignmentPanelProps) {
@@ -333,7 +352,7 @@ export function OutreachAssignmentPanel({ memberId, currentUserId, canManage }: 
                       </p>
                     </div>
                     <Badge variant={STATUS_VARIANT[a.status] || 'secondary'}>
-                      {t(a.status as 'pending' | 'inProgress' | 'completed' | 'cancelled')}
+                      {t(STATUS_LABEL_KEY[a.status] ?? 'pending')}
                     </Badge>
                   </div>
 
@@ -389,5 +408,267 @@ export function OutreachAssignmentPanel({ memberId, currentUserId, canManage }: 
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Member-facing "My Visits" list — used by app/(app)/outreach/page.tsx.
+// Shows the assignments where the signed-in user is the assignee, with the
+// purpose-bound contact info of the person to visit, and a "Log this visit"
+// dialog that completes the assignment.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface MyVisitMember {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  first_name_ar: string | null
+  last_name_ar: string | null
+  phone: string | null
+  address: string | null
+  address_ar: string | null
+  city: string | null
+  city_ar: string | null
+  address_notes: string | null
+}
+
+interface MyVisitAssignment {
+  id: string
+  member_id: string
+  notes: string | null
+  status: string
+  created_at: string
+  updated_at: string
+  member: MyVisitMember | null
+}
+
+type MyVisitsListProps = {
+  churchId: string
+  role: string
+}
+
+export function MyVisitsList({ churchId, role }: MyVisitsListProps) {
+  const t = useTranslations('outreach')
+  const locale = useLocale()
+  const isAr = locale.startsWith('ar')
+
+  const [active, setActive] = useState<MyVisitAssignment[]>([])
+  const [completed, setCompleted] = useState<MyVisitAssignment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Log-visit dialog state
+  const [logTarget, setLogTarget] = useState<MyVisitAssignment | null>(null)
+  const [visitDate, setVisitDate] = useState('')
+  const [visitNotes, setVisitNotes] = useState('')
+  const [needsFollowup, setNeedsFollowup] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const fetchMine = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const res = await fetch('/api/outreach/assignments/my', signal ? { signal } : undefined)
+      if (res.ok && !signal?.aborted) {
+        const json = await res.json()
+        setActive(json.active ?? [])
+        setCompleted(json.completed ?? [])
+      }
+    } catch (e) {
+      if (e instanceof Error && e.name !== 'AbortError') {
+        toast.error(t('error'))
+      }
+    } finally {
+      if (!signal?.aborted) setLoading(false)
+    }
+  }, [t])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchMine(controller.signal)
+    return () => controller.abort()
+  }, [fetchMine])
+
+  const openLogDialog = (assignment: MyVisitAssignment) => {
+    setLogTarget(assignment)
+    setVisitDate(new Date().toISOString().split('T')[0])
+    setVisitNotes('')
+    setNeedsFollowup(false)
+  }
+
+  const handleLogVisit = async () => {
+    if (isSubmitting || !logTarget) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch(`/api/outreach/assignments/${logTarget.id}/log`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visit_date: visitDate,
+          notes: visitNotes || null,
+          needs_followup: needsFollowup,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      analytics.outreach.visitLogged({ church_id: churchId, role, locale, visit_type: 'assigned' })
+      toast.success(t('saved'))
+      setLogTarget(null)
+      setLoading(true)
+      fetchMine()
+    } catch {
+      toast.error(t('error'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const memberName = (m: MyVisitMember | null) => getDisplayName(m, isAr)
+  const memberAddress = (m: MyVisitMember | null) =>
+    m ? (isAr ? (m.address_ar || m.address) : (m.address || m.address_ar)) : null
+  const memberCity = (m: MyVisitMember | null) =>
+    m ? (isAr ? (m.city_ar || m.city) : (m.city || m.city_ar)) : null
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="border rounded-lg p-4 space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {active.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
+          <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <MapPin className="size-6 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">{t('myVisitsEmpty')}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {active.map(a => (
+            <Card key={a.id}>
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-base font-semibold min-w-0 truncate">{memberName(a.member)}</p>
+                  <Badge variant={STATUS_VARIANT[a.status] || 'secondary'}>
+                    {t(STATUS_LABEL_KEY[a.status] ?? 'pending')}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1.5">
+                  {(memberAddress(a.member) || memberCity(a.member)) && (
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <Home className="h-4 w-4 mt-0.5 shrink-0" />
+                      <span>
+                        {[memberAddress(a.member), memberCity(a.member)].filter(Boolean).join(' — ')}
+                      </span>
+                    </div>
+                  )}
+                  {a.member?.address_notes && (
+                    <p className="text-xs text-muted-foreground ms-6">{a.member.address_notes}</p>
+                  )}
+                  {a.member?.phone && (
+                    <a
+                      href={`tel:${a.member.phone}`}
+                      className="inline-flex items-center gap-2 text-sm text-primary min-h-11"
+                    >
+                      <Phone className="h-4 w-4" />
+                      <span dir="ltr">{a.member.phone}</span>
+                    </a>
+                  )}
+                </div>
+
+                {a.notes && (
+                  <div className="rounded-md bg-muted p-2.5">
+                    <p className="text-xs font-medium text-muted-foreground mb-0.5">{t('assignerNotes')}</p>
+                    <p className="text-sm">{a.notes}</p>
+                  </div>
+                )}
+
+                <Button className="h-11 w-full" onClick={() => openLogDialog(a)}>
+                  <CheckCircle2 className="h-4 w-4 me-2" />
+                  {t('logThisVisit')}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {completed.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-muted-foreground">{t('completedVisits')}</h2>
+          <div className="space-y-2">
+            {completed.map(a => (
+              <div key={a.id} className="flex items-center gap-3 border rounded-lg p-3">
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                <p className="text-sm flex-1 min-w-0 truncate">{memberName(a.member)}</p>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(a.updated_at).toLocaleDateString(locale)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Log visit dialog */}
+      <Dialog open={!!logTarget} onOpenChange={(open) => { if (!open) setLogTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t('logNewVisit')}{logTarget ? ` — ${memberName(logTarget.member)}` : ''}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="my-visit-date">{t('visitDate')}</Label>
+              <Input
+                id="my-visit-date"
+                type="date"
+                dir="ltr"
+                className="h-11 text-base"
+                value={visitDate}
+                onChange={e => setVisitDate(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="my-visit-notes">{t('visitNotes')}</Label>
+              <Textarea
+                id="my-visit-notes"
+                dir="auto"
+                className="text-base"
+                rows={3}
+                value={visitNotes}
+                onChange={e => setVisitNotes(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between min-h-11">
+              <Label htmlFor="my-visit-followup">{t('followupNeeded')}</Label>
+              <Switch
+                id="my-visit-followup"
+                checked={needsFollowup}
+                onCheckedChange={setNeedsFollowup}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button className="h-11 w-full" onClick={handleLogVisit} disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="size-4 animate-spin me-2" /> : null}
+              {t('logVisit')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

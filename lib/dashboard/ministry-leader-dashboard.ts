@@ -199,11 +199,16 @@ export async function fetchMinistryLeaderDashboardV2(
     const p = m.profiles
     if (!p || seenIds.has(p.id)) continue
     seenIds.add(p.id)
+    const name = `${p.first_name || ''} ${p.last_name || ''}`.trim()
+    const nameAr = `${p.first_name_ar || ''} ${p.last_name_ar || ''}`.trim() || null
     attentionItems.push({
       type: 'at_risk_member',
       id: p.id,
-      label: `${p.first_name || ''} ${p.last_name || ''}`.trim() || `${p.first_name_ar || ''} ${p.last_name_ar || ''}`.trim(),
-      sublabel: 'At risk',
+      label: name || nameAr || '',
+      sublabel: '',
+      name: name || nameAr || '',
+      nameAr,
+      params: {},
       href: `/admin/members/${p.id}`,
     })
   }

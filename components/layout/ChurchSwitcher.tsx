@@ -91,7 +91,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
         <Button
           variant="ghost"
           size="sm"
-          className="h-auto py-0.5 px-2 gap-1 font-semibold text-xs md:text-sm max-w-[200px] justify-start"
+          className="min-h-11 py-1 px-2 gap-1 font-semibold text-xs md:text-sm max-w-[200px] justify-start"
         >
           <span className="truncate">{displayName}</span>
           {loaded ? (
@@ -117,7 +117,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
           return (
             <DropdownMenuItem
               key={membership.church_id}
-              className="gap-2 cursor-pointer"
+              className="min-h-11 gap-2 cursor-pointer"
               disabled={switchingId !== null}
               onSelect={() => !membership.is_active && handleSwitch(membership.church_id)}
             >
@@ -157,7 +157,7 @@ export function ChurchSwitcher({ churchName, churchNameAr }: ChurchSwitcherProps
         })}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+        <DropdownMenuItem asChild className="min-h-11 gap-2 cursor-pointer">
           <Link href="/churches/join">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
               <Plus className="h-4 w-4 text-muted-foreground" />

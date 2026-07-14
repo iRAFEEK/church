@@ -158,7 +158,8 @@ export function PresenterSearch({ onSelect, onClose }: PresenterSearchProps) {
         />
         <button
           onClick={onClose}
-          className="text-zinc-400 hover:text-white p-2 transition-colors"
+          className="text-zinc-400 hover:text-white h-11 w-11 shrink-0 flex items-center justify-center transition-colors"
+          aria-label={t('shortcutClose')}
         >
           <X className="h-5 w-5" />
         </button>
@@ -181,8 +182,8 @@ export function PresenterSearch({ onSelect, onClose }: PresenterSearchProps) {
         )}
 
         {results.map((song, index) => {
-          const title = isAr ? (song.title_ar || song.title) : song.title
-          const artist = isAr ? (song.artist_ar || song.artist) : song.artist
+          const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+          const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
           const slideIndex = getSlideIndex(song)
           const isHighlighted = index === highlightedIndex
 

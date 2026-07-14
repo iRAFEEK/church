@@ -26,7 +26,7 @@ export default async function AdminSongsPage() {
         )}
       </div>
 
-      <SongsTable />
+      <SongsTable canManageEvents={user.resolvedPermissions.can_manage_events} />
     </div>
   )
 }

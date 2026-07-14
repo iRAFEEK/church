@@ -14,6 +14,7 @@ export type FeatureFlag =
   | 'song_presenter'
   | 'liturgy_module'
   | 'finance'
+  | 'templates'
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   advanced_reporting: false,
@@ -29,6 +30,12 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   // in middleware + navigation. Re-enable with NEXT_PUBLIC_FEATURE_FINANCE=true
   // (globally) when ready; per-church enablement can layer on top later.
   finance: false,
+  // Event templates are OFF in production until the module is pilot-ready.
+  // The whole surface (nav, /admin/templates*, /admin/events/from-template,
+  // /api/templates*, /api/events/from-template) is gated in middleware +
+  // navigation, mirroring the finance gate. Re-enable with
+  // NEXT_PUBLIC_FEATURE_TEMPLATES=true (set on staging/local).
+  templates: false,
 }
 
 // ARCH: Synchronous check against defaults + env overrides.

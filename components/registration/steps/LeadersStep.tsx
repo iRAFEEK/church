@@ -206,7 +206,7 @@ export function LeadersStep({ leaders, onUpdate, onNext, onSkip }: LeadersStepPr
           onClick={onNext}
         >
           {leaders.length > 0 ? t('continue') : t('continueEmpty')}
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4 rtl:rotate-180" />
         </Button>
         {leaders.length === 0 && (
           <Button

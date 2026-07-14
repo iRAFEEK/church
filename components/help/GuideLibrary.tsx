@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { ChevronDown, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { GuideCategory } from '@/lib/help/guide-data'
+import { pickGuideText, type GuideCategory } from '@/lib/help/guide-data'
 
 interface GuideLibraryProps {
   categories: GuideCategory[]
@@ -17,6 +17,8 @@ interface GuideLibraryProps {
  */
 export function GuideLibrary({ categories }: GuideLibraryProps) {
   const t = useTranslations('helpGuide')
+  const locale = useLocale()
+  const isAr = locale.startsWith('ar')
   const [openId, setOpenId] = useState<string | null>(categories[0]?.id ?? null)
 
   return (
@@ -33,7 +35,7 @@ export function GuideLibrary({ categories }: GuideLibraryProps) {
             >
               <span className="text-3xl" aria-hidden>{cat.icon}</span>
               <span className="flex-1">
-                <span className="block font-semibold text-zinc-900">{cat.title}</span>
+                <span className="block font-semibold text-zinc-900" dir="auto">{pickGuideText(cat.titles, locale)}</span>
                 <span className="block text-xs text-zinc-500">{t('lessonCount', { count: cat.lessons.length })}</span>
               </span>
               <ChevronDown className={cn('h-5 w-5 text-zinc-400 transition-transform', open && 'rotate-180')} />
@@ -50,7 +52,9 @@ export function GuideLibrary({ categories }: GuideLibraryProps) {
                         className="flex items-center gap-3 px-4 py-3 min-h-[52px] hover:bg-amber-50 active:bg-amber-100 transition-colors"
                       >
                         <span className="text-2xl w-8 text-center" aria-hidden>{lesson.icon}</span>
-                        <span className="flex-1 text-sm font-medium text-zinc-800" dir="rtl">{lesson.title}</span>
+                        <span className="flex-1 text-sm font-medium text-zinc-800" dir={isAr ? 'rtl' : 'auto'}>
+                          {pickGuideText(lesson.titles, locale)}
+                        </span>
                         {hasVideo && (
                           <span className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-600 shrink-0" aria-label={t('hasVideo')}>
                             <Play className="h-3.5 w-3.5 fill-current" />

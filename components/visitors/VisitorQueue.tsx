@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { UserPlus, Phone, Mail, Cake, Info, Briefcase, ChevronRight } from 'lucide-react'
 import { formatDistanceToNow } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery'
 
 type Leader = {
   id: string
@@ -67,13 +68,16 @@ export function VisitorQueue({
   visitors,
   leaders,
   slaHours,
+  focusVisitorId,
 }: {
   visitors: Visitor[]
   leaders: Leader[]
   slaHours: number
+  focusVisitorId?: string
 }) {
   const t = useTranslations('visitors')
   const locale = useLocale()
+  const isDesktop = useMediaQuery('(min-width: 768px)')
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Visitor | null>(null)
@@ -84,10 +88,31 @@ export function VisitorQueue({
   const [loading, setLoading] = useState(false)
   const submittingRef = useRef(false)
   const [localVisitors, setLocalVisitors] = useState(visitors)
+  const [highlightId, setHighlightId] = useState<string | null>(null)
+  const didFocusRef = useRef(false)
+
+  // Deep link from the admin notification (?visitor=<id>): scroll the card into
+  // view, highlight it briefly, and open its detail sheet. If the id isn't in
+  // the list (old/converted visitor), do nothing.
+  useEffect(() => {
+    if (!focusVisitorId || didFocusRef.current) return
+    const target = localVisitors.find(v => v.id === focusVisitorId)
+    if (!target) return
+    didFocusRef.current = true
+    setDetailVisitor(target)
+    setHighlightId(focusVisitorId)
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`visitor-${focusVisitorId}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+    const timer = setTimeout(() => setHighlightId(null), 2500)
+    return () => clearTimeout(timer)
+  }, [focusVisitorId, localVisitors])
 
   const STATUS_LABELS: Record<string, string> = {
-    new: t('statusNew'),
-    assigned: t('statusAssigned'),
+    new: t('statusNewNeedsLeader'),
+    assigned: t('statusHasLeader'),
     contacted: t('statusContacted'),
     converted: t('statusConverted'),
     lost: t('statusLost'),
@@ -241,7 +266,14 @@ export function VisitorQueue({
               const secondary = getSecondaryCTA(v)
 
               return (
-                <div key={v.id} className="hover:bg-zinc-50/50 transition-colors">
+                <div
+                  key={v.id}
+                  id={`visitor-${v.id}`}
+                  className={cn(
+                    'hover:bg-zinc-50/50 transition-all duration-700',
+                    highlightId === v.id && 'ring-2 ring-primary ring-inset bg-primary/5'
+                  )}
+                >
                   <div className="flex items-center gap-3 px-4 py-3.5">
                     {/* Avatar */}
                     <div
@@ -268,7 +300,7 @@ export function VisitorQueue({
                         </span>
                         {isOverdue(v) && (
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
-                            {t('queueOverdueSla')}
+                            {t('waitingTooLong')}
                           </span>
                         )}
                       </div>
@@ -295,10 +327,10 @@ export function VisitorQueue({
                       )}
                     </div>
 
-                    {/* Mobile chevron */}
+                    {/* Mobile chevron — decorative only; the info button beside it is the tap target */}
                     <ChevronRight
-                      className="h-4 w-4 text-zinc-300 shrink-0 sm:hidden rtl:rotate-180"
-                      onClick={() => setDetailVisitor(v)}
+                      aria-hidden
+                      className="h-4 w-4 text-zinc-300 shrink-0 sm:hidden rtl:rotate-180 pointer-events-none"
                     />
                   </div>
 
@@ -321,15 +353,11 @@ export function VisitorQueue({
         )}
       </div>
 
-      {/* Visitor Detail Bottom Sheet */}
-      <Sheet open={!!detailVisitor} onOpenChange={() => setDetailVisitor(null)}>
-        <SheetContent side="bottom" className="rounded-t-2xl pb-8 max-h-[85vh] overflow-y-auto">
-          {detailVisitor && (
+      {/* Visitor detail — centered Dialog on desktop, bottom Sheet on phones */}
+      {detailVisitor && (() => {
+        const detailTitle = `${detailVisitor.first_name} ${detailVisitor.last_name}`
+        const detailBody = (
             <>
-              <SheetHeader className="mb-4">
-                <SheetTitle>{detailVisitor.first_name} {detailVisitor.last_name}</SheetTitle>
-              </SheetHeader>
-
               {/* Status */}
               <div className="flex items-center gap-2 mb-4">
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${STATUS_COLORS[detailVisitor.status]}`}>
@@ -337,13 +365,20 @@ export function VisitorQueue({
                 </span>
                 {isOverdue(detailVisitor) && (
                   <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700">
-                    {t('queueOverdueSla')}
+                    {t('waitingTooLong')}
                   </span>
                 )}
                 <span className="text-xs text-zinc-400">
                   {t('queueVisitedAgo')} {formatDistanceToNow(detailVisitor.visited_at, locale)}
                 </span>
               </div>
+
+              {/* Plain-language explanation of "waiting too long" */}
+              {isOverdue(detailVisitor) && (
+                <p className="text-xs text-red-600 -mt-2 mb-4">
+                  {t('waitingTooLongExplain', { hours: slaHours })}
+                </p>
+              )}
 
               {/* Contact info */}
               <div className="space-y-2.5 mb-6">
@@ -417,9 +452,28 @@ export function VisitorQueue({
                 })()}
               </div>
             </>
-          )}
-        </SheetContent>
-      </Sheet>
+        )
+
+        return isDesktop ? (
+          <Dialog open onOpenChange={() => setDetailVisitor(null)}>
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{detailTitle}</DialogTitle>
+              </DialogHeader>
+              {detailBody}
+            </DialogContent>
+          </Dialog>
+        ) : (
+          <Sheet open onOpenChange={() => setDetailVisitor(null)}>
+            <SheetContent side="bottom" className="rounded-t-2xl pb-8 max-h-[85vh] overflow-y-auto">
+              <SheetHeader className="mb-4">
+                <SheetTitle>{detailTitle}</SheetTitle>
+              </SheetHeader>
+              {detailBody}
+            </SheetContent>
+          </Sheet>
+        )
+      })()}
 
       {/* Action Dialog */}
       <Dialog open={!!selected && !!mode} onOpenChange={() => { setSelected(null); setMode(null) }}>

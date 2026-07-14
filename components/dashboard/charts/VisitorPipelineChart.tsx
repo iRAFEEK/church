@@ -22,16 +22,20 @@ const statusColors: Record<string, string> = {
 
 interface Props {
   data: VisitorPipelineItem[]
-  locale: string
+  /**
+   * Translated follow-up funnel labels, passed in by the parent
+   * (e.g. new → "Waiting for a leader"). No label copy lives in this chart.
+   */
+  labels: Record<VisitorPipelineItem['status'], string>
 }
 
-export function VisitorPipelineChart({ data, locale }: Props) {
+export function VisitorPipelineChart({ data, labels }: Props) {
   const t = useTranslations('dashboard')
 
   const total = data.reduce((sum, d) => sum + d.count, 0)
 
   const chartData = data.map(d => ({
-    name: t(`pipeline_${d.status}`),
+    name: labels[d.status],
     count: d.count,
     status: d.status,
   }))
@@ -40,8 +44,8 @@ export function VisitorPipelineChart({ data, locale }: Props) {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t('chartVisitorPipeline')}</CardTitle>
-          <CardDescription>{t('chartVisitorPipelineDesc')}</CardDescription>
+          <CardTitle className="text-base">{t('chartVisitorFunnelTitle')}</CardTitle>
+          <CardDescription>{t('chartVisitorFunnelDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
@@ -55,8 +59,8 @@ export function VisitorPipelineChart({ data, locale }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{t('chartVisitorPipeline')}</CardTitle>
-        <CardDescription>{t('chartVisitorPipelineDesc')}</CardDescription>
+        <CardTitle className="text-base">{t('chartVisitorFunnelTitle')}</CardTitle>
+        <CardDescription>{t('chartVisitorFunnelDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[200px]" dir="ltr">
@@ -67,7 +71,7 @@ export function VisitorPipelineChart({ data, locale }: Props) {
                 dataKey="name"
                 type="category"
                 tick={{ fontSize: 11 }}
-                width={80}
+                width={110}
                 className="text-muted-foreground"
               />
               <Tooltip

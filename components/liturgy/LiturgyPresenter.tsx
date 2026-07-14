@@ -214,8 +214,8 @@ export function LiturgyPresenter({ section, content }: LiturgyPresenterProps) {
       className="fixed inset-0 bg-black text-white flex flex-col select-none"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-black/80 backdrop-blur-sm z-10 gap-2">
+      {/* Top bar — wraps on narrow screens so the 8 controls never overflow/clip the title */}
+      <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-black/80 backdrop-blur-sm z-10 gap-2">
         {/* Back */}
         <Button
           variant="ghost"

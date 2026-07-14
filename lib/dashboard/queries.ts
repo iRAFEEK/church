@@ -1,6 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
+// Reworked admin dashboards (humanized needs-attention, visitor funnel labels) live in
+// the split modules; the local copies below are legacy for the other roles.
+import { fetchAdminDashboard as fetchAdminDashboardV2 } from '@/lib/dashboard/admin-dashboard'
+import { fetchMinistryLeaderDashboardV2 as fetchMinistryLeaderDashboardSplit } from '@/lib/dashboard/ministry-leader-dashboard'
 import type {
   AdminDashboardData,
   LeaderDashboardData,
@@ -26,7 +30,7 @@ export const getCachedAdminDashboard = (churchId: string, profileId: string, sla
   unstable_cache(
     async () => {
       const supabase = await createAdminClient()
-      return fetchAdminDashboard(supabase, profileId, churchId, slaHours)
+      return fetchAdminDashboardV2(supabase, profileId, churchId, slaHours)
     },
     [`admin-dashboard-${churchId}`],
     { tags: [`dashboard-${churchId}`], revalidate: 300 }
@@ -36,7 +40,7 @@ export const getCachedMinistryLeaderDashboard = (churchId: string, profileId: st
   unstable_cache(
     async () => {
       const supabase = await createAdminClient()
-      return fetchMinistryLeaderDashboardV2(supabase, profileId, churchId)
+      return fetchMinistryLeaderDashboardSplit(supabase, profileId, churchId)
     },
     [`ministry-leader-dashboard-${churchId}-${profileId}`],
     { tags: [`dashboard-${churchId}`], revalidate: 300 }

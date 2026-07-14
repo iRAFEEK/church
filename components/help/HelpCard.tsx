@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { X, Play } from 'lucide-react'
 import type { HelpItem } from '@/lib/help/registry'
@@ -14,6 +14,7 @@ interface HelpCardProps {
 export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
   const locale = useLocale()
   const isAr = locale.startsWith('ar')
+  const t = useTranslations('helpGuide')
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
@@ -29,7 +30,8 @@ export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-muted text-muted-foreground"
+            aria-label={t('close')}
+            className="h-11 w-11 -me-3 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -62,7 +64,7 @@ export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
               }}
             >
               <Play className="h-3.5 w-3.5" />
-              {isAr ? 'أرني الخطوات' : 'Walk me through it'}
+              {t('walkMeThrough')}
             </Button>
           )}
           <Button
@@ -70,7 +72,7 @@ export function HelpCard({ item, onClose, onWalkthrough }: HelpCardProps) {
             className="flex-1"
             onClick={onClose}
           >
-            {isAr ? 'فهمت' : 'Got it'}
+            {t('gotIt')}
           </Button>
         </div>
       </div>

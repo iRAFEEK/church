@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Plus, X, Calendar, Users, Heart, Music, Megaphone, BookOpen, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -19,6 +19,7 @@ interface FABProps {
 export function FAB({ profile }: FABProps) {
   const [open, setOpen] = useState(false)
   const locale = useLocale()
+  const t = useTranslations('common')
   const isRTL = locale.startsWith('ar')
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -115,7 +116,7 @@ export function FAB({ profile }: FABProps) {
             'hover:bg-primary/90 active:scale-90 transition-all duration-200',
             'ms-auto'
           )}
-          aria-label={open ? 'Close' : 'Quick actions'}
+          aria-label={open ? t('close') : t('quickActions')}
         >
           {open ? (
             <X className="h-6 w-6 transition-transform duration-200" />

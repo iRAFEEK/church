@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/select'
 import {
   ChevronLeft, ChevronRight, Loader2, BookOpen,
-  Bookmark, Minus, Plus, Presentation, Type,
+  Bookmark, Minus, Plus, Presentation, Type, CalendarPlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { AddToServiceDialog } from '@/components/events/AddToServiceDialog'
 import { ChapterContent } from './ChapterContent'
 import { BibleSearch } from './BibleSearchDialog'
 import { BookmarksList } from './BookmarksList'
@@ -38,10 +39,12 @@ interface BibleReaderProps {
   books: ApiBibleBook[]
   chaptersMap: Record<string, { id: string; number: string }[]>
   initialBibleId: string
+  canManageEvents?: boolean
 }
 
-export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderProps) {
+export function BibleReader({ books, chaptersMap, initialBibleId, canManageEvents = false }: BibleReaderProps) {
   const t = useTranslations('bible')
+  const tService = useTranslations('addToService')
 
   // Version state
   const [bibleId, setBibleId] = useState(initialBibleId)
@@ -62,6 +65,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
   const [loading, setLoading] = useState(false)
   const [versionLoading, setVersionLoading] = useState(false)
   const [showBookmarks, setShowBookmarks] = useState(false)
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     if (typeof window !== 'undefined') {
       return parseInt(localStorage.getItem('ekklesia_bible_font_size') || '18', 10)
@@ -367,6 +371,19 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               <Presentation className="h-4 w-4" />
             </Button>
           )}
+
+          {/* Add to service — admin only, once a chapter is open */}
+          {chapterContent && canManageEvents && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setServiceDialogOpen(true)}
+              className="h-10 w-10 p-0"
+              aria-label={tService('button')}
+            >
+              <CalendarPlus className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -422,7 +439,7 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               onClick={() => navigateChapter('prev')}
               aria-label={t('back')}
             >
-              <ChevronLeft className="h-4 w-4 me-1" />
+              <ChevronLeft className="h-4 w-4 me-1 rtl:rotate-180" />
               {t('back')}
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -434,8 +451,8 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
               disabled={!hasNext}
               onClick={() => navigateChapter('next')}
             >
-              {t('chapter')} →
-              <ChevronRight className="h-4 w-4 ms-1" />
+              {t('chapter')}
+              <ChevronRight className="h-4 w-4 ms-1 rtl:rotate-180" />
             </Button>
           </div>
         </div>
@@ -449,6 +466,26 @@ export function BibleReader({ books, chaptersMap, initialBibleId }: BibleReaderP
             {!selectedBookId ? t('selectBook') : t('selectChapter')}
           </p>
         </div>
+      )}
+
+      {canManageEvents && (
+        <AddToServiceDialog
+          open={serviceDialogOpen}
+          onOpenChange={setServiceDialogOpen}
+          payload={
+            chapterContent
+              ? {
+                  kind: 'bible',
+                  title: chapterContent.reference,
+                  bible_ref: {
+                    bibleId,
+                    chapterId: chapterContent.id,
+                    reference: chapterContent.reference,
+                  },
+                }
+              : null
+          }
+        />
       )}
     </div>
   )

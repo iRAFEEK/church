@@ -829,3 +829,96 @@ export async function notifyMeetingActionAssigned(
     logger.error('notifyMeetingActionAssigned failed', { module: 'messaging', churchId, error })
   }
 }
+
+/**
+ * Notify church admins (super_admin + ministry_leader) that a NEW VISITOR just
+ * registered via the public QR /join form, deep-linking to the visitors list.
+ * Called from POST /api/visitors. Uses the ADMIN client: the caller is anonymous
+ * (public form), so the user-bound client can't read profiles or insert
+ * notifications for other users.
+ */
+export async function notifyVisitorRegistered(visitorId: string, churchId: string) {
+  try {
+    const supabase = await createAdminClient()
+
+    const [{ data: visitor }, { data: admins }] = await Promise.all([
+      supabase
+        .from('visitors')
+        .select('first_name, last_name')
+        .eq('id', visitorId)
+        .eq('church_id', churchId)
+        .single(),
+      supabase
+        .from('profiles')
+        .select('id')
+        .eq('church_id', churchId)
+        .in('role', ['super_admin', 'ministry_leader'])
+        .eq('status', 'active'),
+    ])
+
+    if (!visitor || !admins?.length) return
+
+    const visitorName = `${visitor.first_name} ${visitor.last_name ?? ''}`.trim()
+    const template = TEMPLATES.visitor_registered
+
+    await Promise.all(admins.map(admin =>
+      sendNotification({
+        profileId: admin.id,
+        churchId,
+        type: 'visitor_registered',
+        titleEn: template.titleEn,
+        titleAr: template.titleAr,
+        bodyEn: interpolate(template.bodyEn, { visitorName }),
+        bodyAr: interpolate(template.bodyAr, { visitorName }),
+        referenceId: visitorId,
+        referenceType: 'visitor',
+        data: { visitorName, href: `/admin/visitors?visitor=${visitorId}` },
+      })
+    ))
+  } catch (error) {
+    logger.error('notifyVisitorRegistered failed', { module: 'messaging', churchId, error })
+  }
+}
+
+/**
+ * Notify a member that an outreach VISIT was assigned to them, deep-linking to
+ * their "My Visits" page. Called from POST /api/outreach/assignments.
+ */
+export async function notifyOutreachVisitAssigned(
+  assignmentId: string,
+  memberId: string,
+  assignedToId: string,
+  churchId: string,
+) {
+  try {
+    const supabase = await createClient()
+
+    const { data: member } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, first_name_ar, last_name_ar')
+      .eq('id', memberId)
+      .eq('church_id', churchId)
+      .single()
+
+    if (!member) return
+
+    const nameEn = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
+    const nameAr = `${member.first_name_ar ?? ''} ${member.last_name_ar ?? ''}`.trim()
+    const template = TEMPLATES.outreach_visit_assigned
+
+    await sendNotification({
+      profileId: assignedToId,
+      churchId,
+      type: 'outreach_visit_assigned',
+      titleEn: template.titleEn,
+      titleAr: template.titleAr,
+      bodyEn: interpolate(template.bodyEn, { memberName: nameEn || nameAr }),
+      bodyAr: interpolate(template.bodyAr, { memberName: nameAr || nameEn }),
+      referenceId: assignmentId,
+      referenceType: 'outreach_assignment',
+      data: { memberName: nameAr || nameEn, href: '/outreach' },
+    })
+  } catch (error) {
+    logger.error('notifyOutreachVisitAssigned failed', { module: 'messaging', churchId, error })
+  }
+}

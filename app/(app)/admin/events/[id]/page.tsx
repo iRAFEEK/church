@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { EventRegistrations } from '@/components/events/EventRegistrations'
 import { InlineStaffingManager } from '@/components/events/InlineStaffingManager'
 import { EventRunOfShow } from '@/components/events/EventRunOfShow'
+import { EventSegmentsManager } from '@/components/events/EventSegmentsManager'
 import { EventDeleteButton } from '@/components/events/EventDeleteButton'
 import { EventServiceRequests } from '@/components/events/EventServiceRequests'
 import { getTranslations, getLocale } from 'next-intl/server'
@@ -120,7 +121,14 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">{t('runOfShow')}</h2>
         <Suspense fallback={<SectionSkeleton />}>
-          <EventRunOfShow eventId={id} />
+          {/* Admins get the editable manager (shown even when empty so they can
+              add the first segment); members keep read-only EventRunOfShow on
+              the member-facing detail page. */}
+          {user.resolvedPermissions.can_manage_events ? (
+            <EventSegmentsManager eventId={id} />
+          ) : (
+            <EventRunOfShow eventId={id} />
+          )}
         </Suspense>
       </div>
 

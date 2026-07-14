@@ -82,26 +82,34 @@ export function AdminDashboard({ data }: Props) {
           href="/admin/events/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <Calendar className="h-4 w-4" /> {isAr ? 'حدث جديد' : 'New Event'}
+          <Calendar className="h-4 w-4" /> {t('quickNewEvent')}
         </Link>
         <Link
           href="/admin/announcements/new"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <Megaphone className="h-4 w-4" /> {isAr ? 'إعلان' : 'Announcement'}
+          <Megaphone className="h-4 w-4" /> {t('quickAnnouncement')}
         </Link>
         <Link
           href="/admin/visitors"
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 text-sm font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform"
         >
-          <UserPlus className="h-4 w-4" /> {isAr ? 'الزوار' : 'Visitors'}
+          <UserPlus className="h-4 w-4" /> {t('quickVisitors')}
         </Link>
       </div>
 
       {/* Row 2: Charts */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <AttendanceTrendChart data={data.attendanceTrend} locale={locale} />
-        <VisitorPipelineChart data={data.visitorPipeline} locale={locale} />
+        <VisitorPipelineChart
+          data={data.visitorPipeline}
+          labels={{
+            new: t('pipelineWaitingLeader'),
+            assigned: t('pipelineHasLeader'),
+            contacted: t('pipelineContacted'),
+            converted: t('pipelineBecameMember'),
+          }}
+        />
       </div>
 
       {/* Row 3: Attention + Upcoming */}

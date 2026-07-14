@@ -11,6 +11,7 @@
     "search": "Search",
     "confirm": "Confirm",
     "close": "Close",
+    "quickActions": "Quick actions",
     "loading": "Loading...",
     "saving": "Saving...",
     "back": "Back",
@@ -451,7 +452,12 @@
     "howHeardWebsite": "Website",
     "howHeardEvent": "Event",
     "howHeardWalkIn": "Walk-in",
-    "howHeardOther": "Other"
+    "howHeardOther": "Other",
+    "statusNewNeedsLeader": "New — needs a leader",
+    "statusHasLeader": "Has a leader",
+    "waitingTooLong": "Waiting too long",
+    "waitingTooLongExplain": "No one has reached out for over {hours} hours",
+    "waitingAlert": "{count} visitors are waiting too long — no one has reached out for over {hours} hours"
   },
   "groups": {
     "backToGroups": "Groups",
@@ -966,6 +972,12 @@
     "leaderPrayersEmpty": "No active prayer requests",
     "leaderPrayersPrivate": "Private",
     "leaderQuickActions": "Quick Actions",
+    "quickEvents": "Events",
+    "quickServing": "Serving",
+    "quickBible": "Bible",
+    "quickNews": "News",
+    "quickAlerts": "Alerts",
+    "quickProfile": "Profile",
     "leaderStartGathering": "Start Gathering",
     "leaderViewVisitors": "View My Visitors",
     "leaderRecentGatherings": "Recent Gatherings",
@@ -977,7 +989,24 @@
     "mlUpcomingEvents": "Ministry Events",
     "mlNoEvents": "No upcoming events for your ministry",
     "mlMyAssignments": "My Service Assignments",
-    "mlNoAssignments": "No active service assignments"
+    "mlNoAssignments": "No active service assignments",
+    "pipelineWaitingLeader": "Waiting for a leader",
+    "pipelineHasLeader": "Has a leader",
+    "pipelineContacted": "Contacted",
+    "pipelineBecameMember": "Became a member",
+    "chartVisitorFunnelTitle": "Visitor Follow-up",
+    "chartVisitorFunnelDesc": "Where each visitor is on the path to membership",
+    "attentionVisitorWaiting": "Waiting {days, plural, one {# day} other {# days}}",
+    "attentionVisitorWaitingNoLeader": "Waiting {days, plural, one {# day} other {# days}}, no leader yet",
+    "attentionAtRiskSublabel": "Missing from gatherings — plan a visit",
+    "attentionSlotFill": "{filled} of {needed} volunteers signed up",
+    "attentionPrayerLabel": "{count, plural, one {# prayer request waiting} other {# prayer requests waiting}}",
+    "attentionPrayerSublabel": "Church prayers — review and assign someone to follow up",
+    "attentionOutreachLabel": "Follow-up visits due",
+    "attentionOutreachSublabel": "{count, plural, one {# visit needs a follow-up} other {# visits need a follow-up}}",
+    "quickNewEvent": "New Event",
+    "quickAnnouncement": "Announcement",
+    "quickVisitors": "Visitors"
   },
   "authLayout": {
     "subtitle": "Ekklesia"
@@ -1059,11 +1088,19 @@
       "meeting_action_assigned": "Task Assigned",
       "ministry_member_added": "Added to Ministry",
       "visitor": "Visitor",
-      "outreach_assignment": "Outreach Assignment"
+      "outreach_assignment": "Outreach Assignment",
+      "visitor_registered": "New visitor",
+      "outreach_visit_assigned": "Visit assigned"
     },
     "viewRelated": "View Details",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "timeAgo": {
+      "justNow": "just now",
+      "m": "{count}m ago",
+      "h": "{count}h ago",
+      "d": "{count}d ago"
+    }
   },
   "events": {
     "adminPageTitle": "Events",
@@ -1215,7 +1252,15 @@
     "rolePresets": "Role Presets",
     "addRolePreset": "Add Role",
     "type_training": "Training",
-    "type_meeting": "Meeting"
+    "type_meeting": "Meeting",
+    "rolePresetName": "Role name",
+    "rolePresetNameAr": "Role name (Arabic)",
+    "rolePresetCount": "Total",
+    "runOfShowHint": "Add anything that happens in the service — songs, readings, a slideshow, announcements…",
+    "saveRunOfShow": "Save Run of Show",
+    "savingRunOfShow": "Saving...",
+    "runOfShowSaved": "Run of show saved",
+    "runOfShowSaveError": "Failed to save the run of show. Please try again."
   },
   "templates": {
     "pageTitle": "Event Templates",
@@ -1302,7 +1347,36 @@
     "templateNamePlaceholder": "e.g., Sunday Morning Service",
     "templateNameArPlaceholder": "e.g., Sunday Service",
     "templateNotesPlaceholder": "e.g., Remind pastor about communion, prepare extra chairs",
-    "customFieldOptionsPlaceholder": "Option 1, Option 2, Option 3"
+    "customFieldOptionsPlaceholder": "Option 1, Option 2, Option 3",
+    "chooseKind": "What are you adding?",
+    "kindGeneric": "Item",
+    "kindGenericDesc": "A titled item with duration and notes",
+    "kindSong": "Song",
+    "kindSongDesc": "Pick a song from the hymnal",
+    "kindBible": "Bible passage",
+    "kindBibleDesc": "A Bible passage to present",
+    "kindFile": "File",
+    "kindFileDesc": "A PDF, slideshow or image",
+    "searchSong": "Song",
+    "searchSongPlaceholder": "Search by title or lyrics…",
+    "noSongsFound": "No songs found",
+    "changeSong": "Change",
+    "bibleVersion": "Bible version",
+    "book": "Book",
+    "chapter": "Chapter",
+    "verseOptional": "Verse (optional)",
+    "selectBookPlaceholder": "Select a book",
+    "selectChapterPlaceholder": "Chapter",
+    "chooseFile": "Choose file",
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed. Please try again.",
+    "removeFile": "Remove",
+    "fileAcceptHint": "PDF, PowerPoint or image (max 25MB)",
+    "present": "Present",
+    "open": "Open",
+    "back": "Back",
+    "wholeChapter": "Whole chapter",
+    "tapVerseHint": "Tap a verse to select it, or keep the whole chapter."
   },
   "songs": {
     "pageTitle": "Songs",
@@ -1349,6 +1423,9 @@
     "songDeleted": "Song deleted",
     "errorGeneral": "An error occurred",
     "confirmDelete": "Are you sure you want to delete \"{title}\"?",
+    "confirmDeleteTitle": "Delete song?",
+    "confirmDeleteAction": "Delete",
+    "delete": "Delete",
     "present": "Present",
     "edit": "Edit",
     "displaySettings": "Display Settings",
@@ -1527,7 +1604,8 @@
     "keepSignup": "Keep Sign-up",
     "noAreasBody": "Create serving areas to organize your volunteer teams.",
     "noSlotsBody": "Create serving slots for your team to sign up.",
-    "noOpenSlotsBody": "Check back later for new serving opportunities."
+    "noOpenSlotsBody": "Check back later for new serving opportunities.",
+    "signups": "Signups"
   },
   "timeAgo": {
     "now": "Just now",
@@ -1550,6 +1628,8 @@
     "selectBook": "Select a Book",
     "selectChapter": "Select a Chapter",
     "chapter": "Chapter",
+    "next": "Next",
+    "previous": "Previous",
     "verse": "Verse",
     "search": "Search the Bible",
     "searchPlaceholder": "Search for a word or phrase...",
@@ -1560,6 +1640,10 @@
     "bookmarksEmpty": "No bookmarks yet",
     "bookmarkAdded": "Bookmark added",
     "bookmarkRemoved": "Bookmark removed",
+    "deleteBookmarkTitle": "Remove bookmark?",
+    "deleteBookmarkBody": "This bookmark will be removed.",
+    "deleteBookmarkConfirm": "Remove",
+    "deleteBookmarkCancel": "Cancel",
     "highlights": "Highlights",
     "highlightAdded": "Highlight added",
     "highlightRemoved": "Highlight removed",
@@ -1608,7 +1692,8 @@
     "searchBook": "Search books...",
     "decreaseFontSize": "Decrease font size",
     "increaseFontSize": "Increase font size",
-    "errorGeneral": "Something went wrong. Please try again."
+    "errorGeneral": "Something went wrong. Please try again.",
+    "present": "Present"
   },
   "notificationComposer": {
     "pageTitle": "Send Notifications",
@@ -1697,7 +1782,18 @@
     "removeImage": "Remove image",
     "invalidImage": "Please select an image file",
     "imageTooLarge": "Image must be under 5MB",
-    "uploadFailed": "Failed to upload image"
+    "uploadFailed": "Failed to upload image",
+    "audienceMode_everyone_label": "Everyone in the church",
+    "audienceMode_everyone_help": "Send to every member",
+    "audienceMode_specific_label": "Specific groups or ministries",
+    "audienceMode_specific_help": "Choose which groups or ministries will receive it",
+    "audienceMode_advanced_label": "Advanced targeting",
+    "audienceMode_advanced_help": "Filter by role, status, visitors, or gender",
+    "reachCount": "This will reach {total} people",
+    "next": "Next",
+    "back": "Back",
+    "audienceRequired": "Choose who will receive this message first",
+    "editAudience": "Edit audience"
   },
   "bottomNav": {
     "home": "Home",
@@ -1871,6 +1967,7 @@
     "step4": {
       "headline": "Welcome your visitors",
       "subheadline": "Write a message visitors will see when they scan your QR code",
+      "messageLabel": "Welcome message",
       "messagePlaceholder": "Welcome to our church! We're glad you're here...",
       "previewLabel": "How visitors will see it",
       "continue": "Continue",
@@ -2047,7 +2144,9 @@
       "pray": "Failed to update prayer status"
     },
     "archiveAction": "Archive",
-    "deleteAction": "Delete"
+    "deleteAction": "Delete",
+    "newRequest": "I have a prayer request",
+    "closeForm": "Close"
   },
   "outreach": {
     "pageTitle": "Outreach",
@@ -2111,7 +2210,13 @@
     "deleteVisitBody": "Are you sure you want to delete this visit record? This action cannot be undone.",
     "deleteVisitCancel": "Cancel",
     "deleteVisitConfirm": "Delete",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "myVisitsTitle": "My Visits",
+    "myVisitsSubtitle": "People assigned to you for a visit",
+    "myVisitsEmpty": "No visits assigned to you right now",
+    "logThisVisit": "Log this visit",
+    "completedVisits": "Completed",
+    "assignerNotes": "Notes from the assigner"
   },
   "calendar": {
     "pageTitle": "Church Calendar",
@@ -2857,7 +2962,9 @@
     "approvedToast": "Member approved",
     "rejectedToast": "Request declined",
     "errorToast": "Something went wrong. Please try again.",
-    "unnamed": "Unnamed"
+    "unnamed": "Unnamed",
+    "visitorsBannerText": "Looking for people who filled the welcome (QR) form? They appear in the Visitors list.",
+    "visitorsBannerLink": "Go to Visitors"
   },
   "pendingChurch": {
     "title": "Your church is under review",
@@ -2898,7 +3005,10 @@
     "backToLibrary": "All lessons",
     "nextLesson": "Next lesson",
     "watchThisPage": "Watch how this page works",
-    "allLessons": "How to Use"
+    "allLessons": "How to Use",
+    "walkMeThrough": "Walk me through it",
+    "gotIt": "Got it",
+    "close": "Close"
   },
   "pendingHome": {
     "title": "Your church is under review",
@@ -2950,5 +3060,15 @@
     "errorToast": "Something went wrong",
     "ownerBadge": "Owner",
     "removeLabel": "Remove approver"
+  },
+  "addToService": {
+    "title": "Add to service",
+    "description": "Choose an upcoming event to add this to.",
+    "button": "Add to service",
+    "empty": "No upcoming events — create one first.",
+    "createEvent": "Create event",
+    "success": "Added to {event}",
+    "error": "Couldn't add to service. Please try again.",
+    "errorLoad": "Couldn't load events. Please try again."
   }
 }

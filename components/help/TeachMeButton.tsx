@@ -34,6 +34,7 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
 
   const items = getHelpItems(pathname, role)
   const t = useTranslations('helpGuide')
+  const tCommon = useTranslations('common')
   const lessonId = lessonIdForPath(pathname, role)
 
   // Close on outside click
@@ -92,7 +93,9 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
         ref={containerRef}
         className={cn(
           'fixed z-50',
-          'end-4',
+          // Opposite corner from the quick-actions FAB (which is end-4) so the two
+          // never overlap. start-4 = bottom-start (left in LTR, right in RTL — logical).
+          'start-4',
         )}
         style={{
           bottom: 'calc(var(--bottom-nav-height, 0px) + 1rem)',
@@ -163,7 +166,7 @@ export function TeachMeButton({ role }: TeachMeButtonProps) {
             'flex items-center justify-center',
             'hover:bg-blue-700 active:scale-90 transition-all duration-200',
           )}
-          aria-label={open ? 'Close help' : 'Teach me'}
+          aria-label={open ? tCommon('close') : t('title')}
         >
           {open ? (
             <X className="h-5 w-5 transition-transform duration-200" />

@@ -23,12 +23,12 @@ export function MemberDashboard({ data }: Props) {
     <div className="space-y-6">
       {/* Mobile Quick Actions (visible on small screens) */}
       <div className="grid grid-cols-3 gap-3 md:hidden">
-        <QuickActionCard href="/events" icon={Calendar} label={isAr ? 'الأحداث' : 'Events'} count={data.upcomingEvents.length} />
-        <QuickActionCard href="/serving" icon={HandHeart} label={isAr ? 'الخدمة' : 'Serving'} count={data.servingSlots.length} />
-        <QuickActionCard href="/bible" icon={BookOpen} label={isAr ? 'الكتاب' : 'Bible'} />
-        <QuickActionCard href="/announcements" icon={Megaphone} label={isAr ? 'إعلانات' : 'News'} count={data.recentAnnouncements.length} />
-        <QuickActionCard href="/notifications" icon={Bell} label={isAr ? 'تنبيهات' : 'Alerts'} count={data.kpis.unreadNotifications || undefined} />
-        <QuickActionCard href="/profile" icon={User} label={isAr ? 'ملفي' : 'Profile'} />
+        <QuickActionCard href="/events" icon={Calendar} label={t('quickEvents')} count={data.upcomingEvents.length} />
+        <QuickActionCard href="/serving" icon={HandHeart} label={t('quickServing')} count={data.servingSlots.length} />
+        <QuickActionCard href="/bible" icon={BookOpen} label={t('quickBible')} />
+        <QuickActionCard href="/announcements" icon={Megaphone} label={t('quickNews')} count={data.recentAnnouncements.length} />
+        <QuickActionCard href="/notifications" icon={Bell} label={t('quickAlerts')} count={data.kpis.unreadNotifications || undefined} />
+        <QuickActionCard href="/profile" icon={User} label={t('quickProfile')} />
       </div>
 
       {/* Desktop KPIs (hidden on mobile) */}

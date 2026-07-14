@@ -48,7 +48,7 @@ export default function SelectChurchPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        toast.error(t('switchChurchError'), { description: data.error })
+        toast.error(t('error'), { description: data.error })
         return
       }
 
@@ -62,9 +62,9 @@ export default function SelectChurchPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl">{t('selectChurchTitle')}</CardTitle>
+        <CardTitle className="text-2xl">{t('title')}</CardTitle>
         <CardDescription>
-          {t('selectChurchDescription')}
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>

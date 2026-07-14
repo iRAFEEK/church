@@ -279,9 +279,12 @@ export function VisitorForm({ churchId, churchName, churchNameAr, fields }: Prop
                 </p>
               )}
 
-              <Button type="submit" className="w-full mt-2" disabled={submitting}>
-                {submitting ? t('submitting') : t('submitButton')}
-              </Button>
+              {/* Sticky on mobile so the on-screen keyboard never strands the submit button */}
+              <div className="sticky bottom-0 bg-white pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:static md:bg-transparent md:p-0 md:pt-2">
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? t('submitting') : t('submitButton')}
+                </Button>
+              </div>
             </form>
           </Form>
         </div>

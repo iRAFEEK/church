@@ -5,7 +5,7 @@ import { BibleReader } from '@/components/bible/BibleReader'
 
 export default async function BiblePage() {
   const t = await getTranslations('bible')
-  const { profile, church } = await getCurrentUserWithRole()
+  const { profile, church, resolvedPermissions } = await getCurrentUserWithRole()
 
   const bibleId = profile.preferred_bible_id || church.default_bible_id || 'ar-svd'
 
@@ -25,6 +25,7 @@ export default async function BiblePage() {
         books={books}
         chaptersMap={chaptersMap}
         initialBibleId={bibleId}
+        canManageEvents={resolvedPermissions.can_manage_events}
       />
     </div>
   )

@@ -96,6 +96,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                       variant="ghost"
                       size="sm"
                       className="h-9 px-2 text-destructive hover:text-destructive"
+                      aria-label={t('deleteVisitTitle')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -128,7 +129,7 @@ export function VisitHistoryList({ visits, onDelete }: Props) {
                 <span className="text-xs text-muted-foreground">{t('visitedBy')}:</span>
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={visit.visitor.photo_url || undefined} />
-                  <AvatarFallback className="text-[8px]">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                 </Avatar>
                 <span className="text-xs">{visitorName}</span>
               </div>

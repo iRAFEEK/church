@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { getTranslations, getLocale } from 'next-intl/server'
 import { Pencil, Presentation, Trash2 } from 'lucide-react'
 import { SongDeleteButton } from './SongDeleteButton'
+import { SongDetailActions } from '@/components/songs/SongDetailActions'
 
 export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -28,22 +29,26 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
 
   if (!song) notFound()
 
-  const title = isAr ? (song.title_ar || song.title) : song.title
-  const artist = isAr ? (song.artist_ar || song.artist) : song.artist
-  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : song.lyrics
+  // Prefer the locale-matching text but ALWAYS fall back to the other language:
+  // the shared hymnal is Arabic-only (11k songs have lyrics_ar, ~15 have lyrics),
+  // so an English UI without fallback showed "No lyrics added yet" for everything.
+  const title = isAr ? (song.title_ar || song.title) : (song.title || song.title_ar)
+  const artist = isAr ? (song.artist_ar || song.artist) : (song.artist || song.artist_ar)
+  const lyrics = isAr ? (song.lyrics_ar || song.lyrics) : (song.lyrics || song.lyrics_ar)
   const slides = lyrics ? lyrics.split(/\n\s*\n/).filter((s: string) => s.trim()) : []
 
   const isAdmin = ['ministry_leader', 'super_admin'].includes(user.profile.role)
   const isLeader = ['group_leader', 'ministry_leader', 'super_admin'].includes(user.profile.role)
+  const canManageEvents = user.resolvedPermissions.can_manage_events
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           {artist && <p className="text-sm text-muted-foreground mt-1">{artist}</p>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {lyrics && (
             <a href={`/presenter/songs/${song.id}`} target="_blank" rel="noopener noreferrer">
               <Button variant="default">
@@ -51,6 +56,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 {t('present')}
               </Button>
             </a>
+          )}
+          {canManageEvents && (
+            <SongDetailActions songId={song.id} title={title || ''} titleAr={song.title_ar} />
           )}
           {isLeader && (
             <Link href={`/admin/songs/${song.id}/edit`}>
@@ -86,7 +94,8 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 className="p-4 rounded-lg border bg-zinc-50 text-center"
               >
                 <div className="text-xs text-muted-foreground mb-2">{t('slide')} {i + 1}</div>
-                <p className="whitespace-pre-line text-sm" dir={isAr ? 'rtl' : 'ltr'}>{slide}</p>
+                {/* dir="auto": the English UI may be showing Arabic-fallback lyrics */}
+                <p className="whitespace-pre-line text-sm" dir="auto">{slide}</p>
               </div>
             ))}
           </div>

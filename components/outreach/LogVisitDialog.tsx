@@ -108,6 +108,7 @@ export function LogVisitDialog({ profileId, trigger, onSaved }: Props) {
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
+              dir="auto"
             />
           </div>
 
@@ -140,6 +141,7 @@ export function LogVisitDialog({ profileId, trigger, onSaved }: Props) {
                   value={followupNotes}
                   onChange={e => setFollowupNotes(e.target.value)}
                   rows={2}
+                  dir="auto"
                 />
               </div>
             </>

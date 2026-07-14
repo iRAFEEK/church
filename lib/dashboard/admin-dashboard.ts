@@ -41,6 +41,8 @@ interface VisitorRow {
   id: string
   first_name: string
   last_name: string
+  visited_at: string
+  assigned_to: string | null
 }
 
 interface SlotWithSignupsRow {
@@ -98,6 +100,30 @@ interface AtRiskGroupMemberRow {
     id: string; first_name: string | null; last_name: string | null
     first_name_ar: string | null; last_name_ar: string | null
   } | null
+}
+
+// ─── Helpers ──────────────────────────────────────
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+/** Whole days since the visitor first visited (never negative). */
+function daysWaiting(visitedAt: string, now: Date): number {
+  return Math.max(0, Math.floor((now.getTime() - new Date(visitedAt).getTime()) / MS_PER_DAY))
+}
+
+/** One attention item per overdue visitor — name + structured params, translated at render time. */
+function visitorAttentionItem(v: VisitorRow, now: Date): AttentionItem {
+  const name = `${v.first_name} ${v.last_name}`.trim()
+  return {
+    type: 'visitor_sla',
+    id: v.id,
+    label: name,
+    sublabel: '',
+    name,
+    nameAr: null,
+    params: { days: daysWaiting(v.visited_at, now), noLeader: v.assigned_to === null },
+    href: `/admin/visitors?visitor=${v.id}`,
+  }
 }
 
 // ─── Admin Dashboard ──────────────────────────────
@@ -196,13 +222,14 @@ export async function fetchAdminDashboard(
       .eq('status', 'at_risk')
       .limit(5),
 
-    // 10. SLA visitors (attention)
+    // 10. SLA-overdue visitors (attention) — longest waiting first
     supabase
       .from('visitors')
-      .select('id, first_name, last_name')
+      .select('id, first_name, last_name, visited_at, assigned_to')
       .eq('church_id', churchId)
       .in('status', ['new', 'assigned'])
       .lte('visited_at', slaThreshold)
+      .order('visited_at', { ascending: true })
       .limit(5),
 
     // 11. Unfilled slots (attention)
@@ -297,25 +324,24 @@ export async function fetchAdminDashboard(
     { status: 'converted', count: pipelineCounts.converted },
   ]
 
-  // Process attention items
+  // Process attention items — most urgent first (visitors waiting longest lead)
   const attentionItems: AttentionItem[] = []
 
   for (const v of (slaVisitorsRes.data || []) as VisitorRow[]) {
-    attentionItems.push({
-      type: 'visitor_sla',
-      id: v.id,
-      label: `${v.first_name} ${v.last_name}`,
-      sublabel: 'SLA overdue',
-      href: `/admin/visitors`,
-    })
+    attentionItems.push(visitorAttentionItem(v, now))
   }
 
   for (const m of (atRiskRes.data || []) as ProfileRow[]) {
+    const name = `${m.first_name || ''} ${m.last_name || ''}`.trim()
+    const nameAr = `${m.first_name_ar || ''} ${m.last_name_ar || ''}`.trim() || null
     attentionItems.push({
       type: 'at_risk_member',
       id: m.id,
-      label: `${m.first_name || ''} ${m.last_name || ''}`.trim() || `${m.first_name_ar || ''} ${m.last_name_ar || ''}`.trim(),
-      sublabel: 'At risk',
+      label: name || nameAr || '',
+      sublabel: '',
+      name: name || nameAr || '',
+      nameAr,
+      params: {},
       href: `/admin/members/${m.id}`,
     })
   }
@@ -327,7 +353,10 @@ export async function fetchAdminDashboard(
         type: 'unfilled_slot',
         id: slot.id,
         label: slot.title || slot.title_ar || '',
-        sublabel: `${activeSignups}/${slot.max_volunteers} filled`,
+        sublabel: '',
+        name: slot.title || slot.title_ar || '',
+        nameAr: slot.title_ar,
+        params: { filled: activeSignups, needed: slot.max_volunteers },
         href: '/serving',
       })
     }
@@ -345,8 +374,9 @@ export async function fetchAdminDashboard(
     attentionItems.push({
       type: 'active_prayer',
       id: 'prayers',
-      label: `${activePrayerCount} active prayer requests`,
-      sublabel: 'Church-wide prayers',
+      label: '',
+      sublabel: '',
+      params: { count: activePrayerCount },
       href: '/admin/prayers',
     })
   }
@@ -362,8 +392,9 @@ export async function fetchAdminDashboard(
     attentionItems.push({
       type: 'outreach_followup',
       id: 'outreach',
-      label: `${followupCount} pending follow-ups`,
-      sublabel: 'Outreach visits',
+      label: '',
+      sublabel: '',
+      params: { count: followupCount },
       href: '/admin/outreach',
     })
   }
@@ -645,13 +676,14 @@ export async function fetchMinistryLeaderDashboard(
       .eq('is_active', true)
       .eq('profiles.status', 'at_risk'),
 
-    // 9. SLA visitors (church-wide attention)
+    // 9. SLA-overdue visitors (church-wide attention) — longest waiting first
     supabase
       .from('visitors')
-      .select('id, first_name, last_name')
+      .select('id, first_name, last_name, visited_at, assigned_to')
       .eq('church_id', churchId)
       .in('status', ['new', 'assigned'])
       .lte('visited_at', slaThreshold)
+      .order('visited_at', { ascending: true })
       .limit(5),
 
     // 10. Unfilled slots (church-wide)
@@ -754,17 +786,11 @@ export async function fetchMinistryLeaderDashboard(
     { status: 'converted', count: pipelineCounts.converted },
   ]
 
-  // Process attention items
+  // Process attention items — most urgent first (visitors waiting longest lead)
   const attentionItems: AttentionItem[] = []
 
   for (const v of (slaVisitorsRes.data || []) as VisitorRow[]) {
-    attentionItems.push({
-      type: 'visitor_sla',
-      id: v.id,
-      label: `${v.first_name} ${v.last_name}`,
-      sublabel: 'SLA overdue',
-      href: `/admin/visitors`,
-    })
+    attentionItems.push(visitorAttentionItem(v, now))
   }
 
   // At-risk from scoped groups
@@ -773,11 +799,16 @@ export async function fetchMinistryLeaderDashboard(
     const p = m.profiles
     if (!p || seenAtRisk.has(p.id)) continue
     seenAtRisk.add(p.id)
+    const name = `${p.first_name || ''} ${p.last_name || ''}`.trim()
+    const nameAr = `${p.first_name_ar || ''} ${p.last_name_ar || ''}`.trim() || null
     attentionItems.push({
       type: 'at_risk_member',
       id: p.id,
-      label: `${p.first_name || ''} ${p.last_name || ''}`.trim() || `${p.first_name_ar || ''} ${p.last_name_ar || ''}`.trim(),
-      sublabel: 'At risk',
+      label: name || nameAr || '',
+      sublabel: '',
+      name: name || nameAr || '',
+      nameAr,
+      params: {},
       href: `/admin/members/${p.id}`,
     })
   }
@@ -789,7 +820,10 @@ export async function fetchMinistryLeaderDashboard(
         type: 'unfilled_slot',
         id: slot.id,
         label: slot.title || slot.title_ar || '',
-        sublabel: `${activeSignups}/${slot.max_volunteers} filled`,
+        sublabel: '',
+        name: slot.title || slot.title_ar || '',
+        nameAr: slot.title_ar,
+        params: { filled: activeSignups, needed: slot.max_volunteers },
         href: '/serving',
       })
     }

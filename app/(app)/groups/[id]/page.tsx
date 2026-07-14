@@ -30,20 +30,43 @@ export default async function GroupLeaderPage({ params }: Params) {
 
   const supabase = await createClient()
 
-  const { data: group } = await supabase
-    .from('groups')
-    .select(`
-      *,
-      ministry:ministry_id(id,name,name_ar),
-      leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
-      co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
-      group_members(
-        id, role_in_group, joined_at, is_active,
-        profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
-      )
-    `)
-    .eq('id', id)
-    .single()
+  // PERF: the gatherings/prayers/pending-request queries key off the route id only,
+  // so they run in the SAME round trip as the group fetch (saves 1-2 RTTs on 3G).
+  const [{ data: group }, { data: gatherings }, { data: activePrayers }, { data: pendingReq }] = await Promise.all([
+    supabase
+      .from('groups')
+      .select(`
+        *,
+        ministry:ministry_id(id,name,name_ar),
+        leader:leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone),
+        co_leader:co_leader_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url),
+        group_members(
+          id, role_in_group, joined_at, is_active,
+          profile:profile_id(id,first_name,last_name,first_name_ar,last_name_ar,photo_url,phone,status)
+        )
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('gatherings')
+      .select('id, scheduled_at, topic, status, attendance(count)')
+      .eq('group_id', id)
+      .order('scheduled_at', { ascending: false })
+      .limit(8),
+    supabase
+      .from('prayer_requests')
+      .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
+      .eq('group_id', id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('group_join_requests')
+      .select('id')
+      .eq('group_id', id)
+      .eq('profile_id', user.profile.id)
+      .eq('status', 'pending')
+      .maybeSingle(),
+  ])
 
   if (!group) notFound()
 
@@ -75,41 +98,20 @@ export default async function GroupLeaderPage({ params }: Params) {
   const activeMembers = (group.group_members || []).filter((m: { is_active: boolean }) => m.is_active)
   const atRiskMembers = activeMembers.filter((m: { profile: { status: string } | null }) => m.profile?.status === 'at_risk')
 
-  // Check for pending join request if not a member/leader
-  let hasPendingRequest = false
-  if (!isLeaderOrAdmin && !isMember) {
-    const { data: pendingReq } = await supabase
-      .from('group_join_requests')
-      .select('id')
-      .eq('group_id', id)
-      .eq('profile_id', user.profile.id)
-      .eq('status', 'pending')
-      .maybeSingle()
-    hasPendingRequest = !!pendingReq
-  }
+  // Pending join request (fetched in the first batch; only meaningful for non-members)
+  const hasPendingRequest = !isLeaderOrAdmin && !isMember && !!pendingReq
 
-  // Fetch allMembers, gatherings, prayers, and join requests in parallel
-  const [{ data: allMembers }, { data: gatherings }, { data: activePrayers }, { data: joinRequests }] = await Promise.all([
+  // Leader-only data (needs isLeaderOrAdmin, which needs the group row — second batch)
+  const [{ data: allMembers }, { data: joinRequests }] = await Promise.all([
     isLeaderOrAdmin
       ? supabase
           .from('profiles')
           .select('id,first_name,last_name,first_name_ar,last_name_ar,photo_url,status')
+          .eq('church_id', user.profile.church_id)
           .eq('status', 'active')
           .order('first_name')
           .limit(200)
       : Promise.resolve({ data: [] as { id: string; first_name: string | null; last_name: string | null; first_name_ar: string | null; last_name_ar: string | null; photo_url: string | null; status: string }[] }),
-    supabase
-      .from('gatherings')
-      .select('id, scheduled_at, topic, status, attendance(count)')
-      .eq('group_id', id)
-      .order('scheduled_at', { ascending: false })
-      .limit(8),
-    supabase
-      .from('prayer_requests')
-      .select('id, content, is_private, status, submitted_by, created_at, submitter:submitted_by(id,first_name,last_name,first_name_ar,last_name_ar,photo_url)')
-      .eq('group_id', id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false }),
     isLeaderOrAdmin
       ? supabase
           .from('group_join_requests')
