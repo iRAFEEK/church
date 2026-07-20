@@ -36,7 +36,7 @@ Four in-app roles (`type UserRole` in `types/index.ts`) plus two non-role actors
 Non-role actors:
 
 - **Public visitor** — unauthenticated. Fills the public QR/visitor intake form at `/join` and views the church landing page at `/welcome` (`app/(public)/`). No account required; lands in the visitor pipeline.
-- **Platform operator** — the people running the SaaS. Identified **purely by email** via the `PLATFORM_ADMIN_EMAILS` env var, deliberately **outside** the church RBAC system (`lib/platform.ts` `isPlatformAdmin`). Approves brand-new churches they are not members of, via `/platform/churches` and `/api/platform/churches`.
+- **Platform operator** — the people running the SaaS. Identified **by email from two sources** (`lib/platform.ts` `isPlatformAdmin`, which is **async**): (1) the `PLATFORM_ADMIN_EMAILS` env var — the bootstrap owner, configured out-of-band and un-removable via the UI so the founder can never be locked out; **OR** (2) a row in the `platform_admins` table (migration 087), where approvers are added at runtime from the Ekklesia admin UI (read via the service-role client, since RLS denies normal clients). `isEnvPlatformAdmin()` is the env-only check used to protect the bootstrap owner from removal. This deliberately sits **outside** the church RBAC system. Platform operators approve brand-new churches they are not members of, via `/platform/churches` and `/api/platform/churches`, and manage the approver list via `/api/platform/admins`.
 
 ---
 
@@ -113,9 +113,17 @@ Every module below is live and wired unless noted. Nav gating (roles + permissio
 
 Reference: `ONBOARDING_PLAN.md` (decided model; concierge churches, phone/WhatsApp-OTP identity, leader-add + claim, request→approve lifecycle).
 
-**Church lifecycle (concierge, operator-gated):** a public "request your church" form creates a **pending** church → a **platform operator** verifies the requester and approves it. `churches.status` = `pending | active | rejected | inactive` (migration 079). A pending church is hidden from search (`is_active=false`), its requester lands on a `/pending-church` "under review" screen (gated by the `(app)` layout), and approval flips it to active and provisions the first `super_admin`. Operator approval runs at `/platform/churches` → `/api/platform/churches` (service-role, scoped to `status='pending'`), gated by `PLATFORM_ADMIN_EMAILS` (`lib/platform.ts`). Registration itself never self-approves (SEC fix in change log).
+**Church lifecycle (concierge, operator-gated):** a public "request your church" form creates a **pending** church → a **platform operator** verifies the requester and approves it. `churches.status` = `pending | active | rejected | inactive` (migration 079). A pending church is hidden from search (`is_active=false`), its requester lands on a `/pending-church` "under review" screen (gated by the `(app)` layout), and approval flips it to active and provisions the first `super_admin`. Operator approval runs at `/platform/churches` → `/api/platform/churches` (service-role, scoped to `status='pending'`), gated by the async `isPlatformAdmin()` check (`lib/platform.ts` — `PLATFORM_ADMIN_EMAILS` env bootstrap **or** a `platform_admins` row; see §2). Registration itself never self-approves (SEC fix in change log).
 
-**Member lifecycle** — `user_churches.status` = `active | managed | invited | inactive` (migration 082; `lib/membership.ts`). Only `active` grants app access to a church; `isActiveMembership()` denies `managed`/`invited`/`inactive` at the auth boundary (`lib/auth.ts`, `lib/membership.ts`). Two doors into one lifecycle:
+**Member lifecycle** — `user_churches.status` = `active | managed | invited | inactive | pending` (migration 082 introduced the first four; migration 084 added `invited`; migration 088 added **`pending`**). Only `active` grants app access to a church; `isActiveMembership()` denies `managed`/`invited`/`inactive`/`pending` at the auth boundary (`lib/auth.ts`, `lib/membership.ts`). The statuses:
+
+- **`active`** — full access to that church.
+- **`managed`** — a leader-created shadow identity that nobody has claimed yet (no login).
+- **`invited`** — a cross-church invite awaiting the person's own consent before it activates.
+- **`pending`** — a **self-signup awaiting church-admin approval**. Migration 088 rewrote `handle_new_user` so every self-signup membership is forced to `pending`; the person has **no app access** until an approver acts, and lands on `/membership-pending` instead of the app shell. The two pre-approved doors set their own status *after* the trigger runs (church founder → `active` via the register upsert; leader pre-add → `managed`/`invited` via `/api/members`).
+- **`inactive`** — a membership that has been switched off.
+
+Two doors into one lifecycle:
 
 - **Door 1 — leader-add + OTP-claim.** A `super_admin`/`ministry_leader` adds a member by name (+ optional phone) via `POST /api/members` → creates a **claimable shadow identity** (a phone-only `auth.admin.createUser` user, `status='managed'`). The person later **claims** it via WhatsApp OTP; `POST /api/members/claim` flips their own `managed` memberships → `active` and stamps `phone_verified_at`. A **pre-added phone = pre-approval** (auto-claim, no queue).
 - **Door 2 — self-signup + leader approve.** A person signs up; an **unknown phone** enters the church join-request queue (`church_join_requests`, migration 078). Approvers are `super_admin` + `ministry_leader` (`/admin/join-requests`); approval grants the membership.

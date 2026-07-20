@@ -15,7 +15,7 @@
 These are small, low-blast-radius, and don't touch auth/RLS/finance. Great warm-ups for Rafeek.
 
 - [ ] **Ship real brand PWA icons** — replace placeholders in `public/icons` (192px, 512px, maskable, apple-touch). Confirm the install prompt shows the real icon. **(S)**
-- [ ] **Narrow the 2 remaining `select('*')`** in API routes to explicit columns. **(S)**
+- [x] **Narrow the remaining `select('*')` in API routes** — **DONE.** Verified 2026-07-20: zero `select('*')` in production code (`app/`, `lib/`, `components/`). The only two matches are in `app/api/songs/__tests__/route.test.ts`, which *asserts its absence*.
 - [ ] **Replace raw `console.*` calls** in `app/`/`lib/` with the structured logger (`lib/logger.ts`). **(S)**
 - [ ] **Run a Lighthouse baseline** on the prod URL for `/dashboard`, `/admin/finance`, `/events`, `/bible`; record scores in `CLAUDE.md §9`. **(S)**
 - [ ] **Finish Egyptian-Arabic translations** — fill missing keys in `messages/ar-eg.json` (and close any `ar` gaps) so all three locale files reach parity. Mechanical, well-scoped, teaches the i18n system. **(S–M)**
@@ -69,7 +69,7 @@ These are correctness/safety gates. Mostly operator actions in the Vercel/Supaba
 
 - [ ] **Sync `CLAUDE.md` + `types/database.ts` with reality** and replace manual DB types with `supabase gen types typescript`. **(M · intern: maybe — the type-gen part is safe)**
 - [ ] **Reduce loose `any` types** (trending up; count in `LAUNCH_CHECKLIST.md`). **(M · intern: yes — file-by-file, low risk)**
-- [ ] **Narrow the remaining `select('*')`** in API routes — see Good first tasks. **(S · intern: yes)**
+- [x] **Narrow the remaining `select('*')`** in API routes — **DONE** (2026-07-20). Zero `select('*')` remain in production code; the only matches are an assertion-of-absence in `app/api/songs/__tests__/route.test.ts`.
 - [ ] **Replace raw `console.*` with the structured logger** — see Good first tasks. **(S · intern: yes)**
 - [ ] **Renumber duplicate migration files** (two `032_*`, two `033_*`; already renamed to `032b`/`033b` to keep order — adopt Supabase timestamped filenames for *new* migrations going forward). **(S · intern: no — migration ordering is subtle)**
 - [ ] **Supabase CLI type generation** to replace the placeholder `types/database.ts`. **(M · intern: maybe)**

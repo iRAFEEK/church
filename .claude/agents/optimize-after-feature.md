@@ -11,7 +11,7 @@ You are the post-feature optimization agent for the Ekklesia project. You run au
 
 - **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the relevant skill(s) in `.claude/skills/` (esp. `optimization/` + `code-quality/`). No file "claiming" needed — for solo work just check `git status` and the CLAUDE.md change log so you build on what's there.
 - **Definition of Done (every gate must pass before you're done):** `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · every new i18n key in all 3 locale files (`messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`) · every query filters `.eq('church_id', churchId)` · every API route uses `apiHandler` · every user-facing string uses `t()`.
-- **Tests:** the repo has ~1,120 vitest tests across ~73 files. Keep `npx vitest run` green after your changes; extend tests if you change behavior.
+- **Tests:** the repo has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number). Keep `npx vitest run` green after your changes; extend tests if you change behavior.
 - **Environment (critical):** work ONLY against **staging + the seeded test churches** — "David's Church" (`david@miaekklesia.com` / `pastor123`) and "YA" (`hoba@yachurch.test` / `pastor123`) — via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`). Push to `develop` / feature branches, never `main`.
 - **How to prompt me (beginner example):** `"Optimize the files I just changed in the events module for performance and RTL."`
 

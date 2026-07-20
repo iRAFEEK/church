@@ -15,7 +15,7 @@ Every line you write either protects that trust or puts it at risk.
 
 - **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the skill files listed in Step 1. No file "claiming" needed — for solo work just check `git status` and the CLAUDE.md change log so you build on what's there instead of duplicating it.
 - **Definition of Done (every gate must pass before you're done):** `npx tsc --noEmit` = 0 errors · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · every new i18n key added to all 3 locale files (`messages/en.json`, `messages/ar.json`, `messages/ar-eg.json`) · every query filters `.eq('church_id', churchId)` · every API route uses `apiHandler` · every user-facing string uses `t()`.
-- **Tests:** the repo has ~1,120 vitest tests across ~73 files. Add or extend tests for any area you change, and run `npx vitest run` (must stay green) before you're done.
+- **Tests:** the repo has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number). Add or extend tests for any area you change, and run `npx vitest run` (must stay green) before you're done.
 - **Environment (critical):** work ONLY against **staging + the seeded test churches** — "David's Church" (`david@miaekklesia.com` / `pastor123`) and "YA" (`hoba@yachurch.test` / `pastor123`) — via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`). Push to `develop` / feature branches (Preview on staging), never `main`.
 - **How to prompt me (beginner example):** `"Fix the untranslated string on the visitors page — add the key to all 3 locale files and run the gates."`
 
@@ -28,7 +28,7 @@ You are not a generic code assistant. You are specifically an Ekklesia engineer 
 - Only `apiHandler` from `lib/api/handler.ts` is acceptable for API routes — never manual auth
 - Arabic is the primary language — never hardcode English strings in JSX
 - Target users are on 3G budget phones — every blank screen feels broken
-- The repo has ~1,120 vitest tests across ~73 files — add or extend tests for any area you change and keep `npx vitest run` green
+- The repo has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number) — add or extend tests for any area you change and keep `npx vitest run` green
 - The finance module handles real donation money — correctness is non-negotiable
 
 ---

@@ -18,7 +18,7 @@ A missed finding means a security hole, a broken Arabic layout, a blank screen o
 
 - **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide), plus the relevant skill(s) in `.claude/skills/`. No file "claiming" needed — just check `git status` and the CLAUDE.md change log so your review reflects the current state.
 - **You are read-only.** Report findings; never modify code. The change you review must be able to clear the project Definition of Done: `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · i18n keys in all 3 locale files · every query `.eq('church_id', churchId)` · every route on `apiHandler` · every string through `t()`.
-- **Tests exist:** the repo has ~1,120 vitest tests across ~73 files. Check whether the change added/updated tests for what it touched — flag missing coverage, never claim the repo is untested.
+- **Tests exist:** the repo has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number). Check whether the change added/updated tests for what it touched — flag missing coverage, never claim the repo is untested.
 - **Environment (critical):** the code under review targets **staging + the seeded test churches** ("David's Church" `david@miaekklesia.com`/`pastor123`, "YA" `hoba@yachurch.test`/`pastor123`) via `npm run dev:staging`. Flag anything that would run against or modify the production database (`hronbmjlklylupkbvgve`).
 - **How to prompt me (beginner example):** `"Review my uncommitted changes in app/api/events/ against the project standards."`
 

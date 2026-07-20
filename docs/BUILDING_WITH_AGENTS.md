@@ -130,7 +130,7 @@ Nothing is "done" until:
 ```bash
 npx tsc --noEmit     # 0 errors
 # RTL grep (CLAUDE.md §12) must return 0
-npx vitest run       # ~1,120 tests, all green
+npx vitest run       # 1,141 tests across 74 files, all green (and growing)
 npm run build        # clean
 ```
 

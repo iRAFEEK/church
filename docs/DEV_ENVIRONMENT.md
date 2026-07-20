@@ -9,6 +9,18 @@
 > Merging to `main` is the *only* path to prod, and only the lead does that — so nothing you
 > push can reach real churches.
 
+> ## ⛔️ SINGLE MOST DANGEROUS FOOTGUN IN THE REPO — READ THIS
+> **`npm run dev` runs against the PRODUCTION database.** It reads `.env.local`, and `.env.local`
+> is currently pointed at the **live prod** Supabase project (`hronbmjlklylupkbvgve`) — verified
+> 2026-07-20. Running `npm run dev` reads and writes **real church member data.**
+>
+> - **ALWAYS use `npm run dev:staging`** (port 3100). It force-overrides the env to the isolated
+>   staging project, so the prod-pointing `.env.local` never takes effect.
+> - **NEVER run plain `npm run dev`** unless the lead has explicitly repointed `.env.local` at a
+>   safe database and told you so.
+> - **The safe long-term fix:** repoint `.env.local` at the **staging** project so that even a
+>   plain `npm run dev` is harmless. Until that happens, `dev:staging` is the only safe command.
+
 ---
 
 ## 1. One-time setup

@@ -3,6 +3,7 @@
     { "path": "/api/cron/gathering-reminders", "schedule": "0 8 * * *" },
     { "path": "/api/cron/visitor-sla", "schedule": "0 8 * * *" },
     { "path": "/api/cron/event-reminders", "schedule": "0 8 * * *" },
-    { "path": "/api/cron/notification-cleanup", "schedule": "0 3 * * 0" }
+    { "path": "/api/cron/notification-cleanup", "schedule": "0 3 * * 0" },
+    { "path": "/api/cron/domain-health", "schedule": "0 * * * *" }
   ]
 }

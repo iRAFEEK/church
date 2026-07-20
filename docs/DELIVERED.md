@@ -273,7 +273,7 @@
 - Distributed rate limiting via Upstash Redis with in-memory fallback.
 - Security headers, `/api/health`, structured logger.
 - **Isolated staging Supabase** (`ekklesia-staging`) + migration/seed scripts guarded by `assertNotProd()`; `npm run dev:staging` on port 3100.
-- Tests: ~1079 unit tests (Vitest) + Playwright e2e (permission enforcement, finance-off, onboarding gate, public visitor intake, persona matrix); GitHub Actions CI.
+- Tests: 1,141 unit tests across 74 files (Vitest — and growing; run `npx vitest run` for the current number) + Playwright e2e (permission enforcement, finance-off, onboarding gate, public visitor intake, persona matrix); GitHub Actions CI.
 - Non-negotiables enforced by agents: 0 TS errors, 0 RTL violations, i18n parity across `en` / `ar` / `ar-eg`.
 
 **Status:** Live.

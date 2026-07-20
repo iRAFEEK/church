@@ -437,7 +437,7 @@ Before any task is "done" (`CLAUDE.md` §12, §13):
 
 | Gate | Command | Requirement |
 |---|---|---|
-| Unit/integration | `npm test` (`vitest run`) | All green (1,100+ tests across ~60 files). |
+| Unit/integration | `npm test` (`vitest run`) | All green — 1,141 tests across 74 files (and growing — run `npx vitest run` for the current number). |
 | Types | `npm run typecheck` (`tsc --noEmit`) | **0 errors** — no `@ts-ignore`, no new `any`. |
 | RTL | grep for physical Tailwind props (`CLAUDE.md` §12) | **0 violations**. |
 | Build | `npm run build` | Must succeed. |

@@ -13,7 +13,7 @@ Write the final report only. Never modify any code file.
 
 - **Read first:** `CLAUDE.md` (the project bible — architecture, rules, change log) and `docs/ENGINEERING_ONBOARDING.md` (the engineer's guide) so your synthesis reflects the current state — not stale assumptions in the specialist reports.
 - **You are read-only.** You produce a plan; you never modify code. Every action you recommend must be able to clear the project Definition of Done: `npx tsc --noEmit` = 0 · RTL grep (CLAUDE.md §12) = 0 · `npx vitest run` green · `npm run build` clean · i18n keys in all 3 locale files · every query `.eq('church_id', churchId)` · every route on `apiHandler` · every string through `t()`.
-- **Tests exist:** the repo has ~1,120 vitest tests across ~73 files. Frame testing work as growing coverage of under-tested areas — never as "there are no tests."
+- **Tests exist:** the repo has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number). Frame testing work as growing coverage of under-tested areas — never as "there are no tests."
 - **Environment (critical):** all downstream work happens against **staging + the seeded test churches** ("David's Church" `david@miaekklesia.com`/`pastor123`, "YA" `hoba@yachurch.test`/`pastor123`) via `npm run dev:staging`. **Never** run against or modify the production database (`hronbmjlklylupkbvgve`); migrations are applied by a human.
 - **How to prompt me (beginner example):** `"Synthesize the specialist reports into a prioritized action plan for the events module."`
 
@@ -122,7 +122,7 @@ What is the migration effort and timeline?
 
 ### Testing foundation — where to grow coverage
 
-The repo already has ~1,120 vitest tests across ~73 files (+ Playwright e2e). Coverage is uneven.
+The repo already has 1,141 vitest tests across 74 files (and growing — run `npx vitest run` for the current number) (+ Playwright e2e). Coverage is uneven.
 What are the 10 highest-value tests to ADD next — the under-tested paths that would catch the most
 critical bugs?
 
@@ -168,7 +168,7 @@ Week 7-8: P1 fixes + test framework setup
 | IDOR risks confirmed | |
 | Missing indexes | |
 | Missing loading.tsx pages | |
-| Tests present | ~1,120 across ~73 files |
+| Tests present | 1,141 across 74 files (run `npx vitest run` for the current number) |
 | Priority coverage gaps | |
 | Secrets exposed | |
 | Estimated hours P0+P1 | |

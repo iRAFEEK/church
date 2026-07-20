@@ -167,7 +167,7 @@ seconds, no cloud cost, no prod risk. **`.env.local` must never again point at p
 
 | Test type | Runs against | Where | Notes |
 |---|---|---|---|
-| Unit / integration (vitest, 1079) | no DB (mocked) | CI + local | already green |
+| Unit / integration (vitest, 1,141 across 74 files — and growing) | no DB (mocked) | CI + local | already green |
 | Schema verification (`verify:schema`) | staging, then prod | CI | gate before each apply |
 | e2e (Playwright, `e2e/`) | local Supabase **or** staging | CI (PR) + local | env-gated already; seeded `password123` users |
 | Manual QA | staging via Vercel Preview URL | browser | the "click through it" environment |

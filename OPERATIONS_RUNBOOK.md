@@ -118,6 +118,39 @@ Record scores in `CLAUDE.md §9`. Target: Performance ≥ 85 on mobile.
 - [ ] **Uptime monitor**: point a checker (e.g. BetterStack, UptimeRobot) at `/api/health`.
 - [ ] **Backups**: enable Point-in-Time Recovery in Supabase → Database → Backups, and **do a test restore** to a scratch project.
 
+### 7a. Domain health monitor (built-in, hourly)
+
+`GET /api/cron/domain-health` runs **hourly** (`0 * * * *`, see `vercel.json`). It fetches
+`$HEALTH_CHECK_URL/api/health` (falls back to `NEXT_PUBLIC_APP_URL`, then
+`https://www.miaekklesia.com`) with a 10s timeout, plus an informational probe of the bare
+apex. DOWN = the request threw **or** the status was not 2xx. On DOWN it logs
+`[CRON] domain health check FAILED` and emails `ALERT_EMAIL` (fallback: first address in
+`PLATFORM_ADMIN_EMAILS`) via Resend.
+
+It always returns HTTP 200 — the `ok` field carries the verdict, and the 200 means the cron
+itself ran. A non-200 would make Vercel retry and double-send alerts.
+
+**Degrades gracefully:** if `RESEND_API_KEY` or the recipient is unset, the cron does **not**
+crash — it logs an error so the outage still surfaces in Vercel logs / Sentry, and returns
+`alerted: false`. Set both env vars or you get logs only, no email.
+
+- [ ] Set `ALERT_EMAIL` in Vercel (Production) and confirm `RESEND_API_KEY` is present.
+
+#### Incident: TLS certificate binding lost (seen in production)
+
+**Symptom:** the site is unreachable over HTTPS while plain HTTP still answers. `curl -v`
+against `https://www.miaekklesia.com` fails during the handshake with
+**"no peer certificate available"**. Vercel's edge has lost the cert binding for the custom
+domain; nothing is wrong with the app code or the database.
+
+**Fix:**
+```bash
+vercel certs issue miaekklesia.com www.miaekklesia.com
+```
+Then **wait ~5 minutes** for propagation before re-testing. **Do not run it repeatedly** —
+Let's Encrypt enforces issuance rate limits, and hammering the command will lock you out of
+re-issuing for hours, turning a 5-minute outage into a much longer one.
+
 ---
 
 ## 8. Independent security / RLS review  🔴 BLOCKER (before 2nd church)

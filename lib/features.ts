@@ -27,8 +27,12 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   liturgy_module: true,
   // Finance is OFF until the module is production-ready. The whole surface
   // (nav, pages, /finance/my-giving, and all /api/finance/* routes) is gated
-  // in middleware + navigation. Re-enable with NEXT_PUBLIC_FEATURE_FINANCE=true
-  // (globally) when ready; per-church enablement can layer on top later.
+  // in middleware + navigation via the SYNCHRONOUS global check isFeatureEnabled()
+  // — which only reads this default + the NEXT_PUBLIC_FEATURE_FINANCE env override.
+  // It does NOT consult the church_features table, so a per-church row CANNOT make
+  // finance reachable today: the only way to turn it on is NEXT_PUBLIC_FEATURE_FINANCE=true
+  // (global). Per-church enablement would require rewiring the gate to the async
+  // isFeatureEnabledForChurch() check first.
   finance: false,
   // Event templates are OFF in production until the module is pilot-ready.
   // The whole surface (nav, /admin/templates*, /admin/events/from-template,

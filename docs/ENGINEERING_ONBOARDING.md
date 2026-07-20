@@ -75,7 +75,7 @@ Before any work is "done" / any PR:
 ```bash
 npx tsc --noEmit          # 0 errors
 # RTL check (must return 0) — full command in CLAUDE.md §12
-npx vitest run            # all ~1,120 tests green
+npx vitest run            # all 1,141 tests across 74 files green (and growing)
 npm run build             # clean
 ```
 Plus: new strings in all 3 locale files, `church_id` on queries, `apiHandler` on routes.
@@ -112,6 +112,12 @@ Full details in **`docs/DEV_ENVIRONMENT.md`**. The essentials:
 npm install
 npm run dev:staging      # http://localhost:3100 — points at the STAGING database
 ```
+
+> ⛔️ **NEVER run plain `npm run dev`.** It reads `.env.local`, which is currently pointed at the
+> **live PRODUCTION database** (`hronbmjlklylupkbvgve`, verified 2026-07-20) — so `npm run dev`
+> reads and writes **real church member data.** **Always** use `npm run dev:staging`, which
+> force-overrides the env to the isolated staging project. This is the single most dangerous
+> footgun in the repo. (Long-term fix: repoint `.env.local` at staging — see `docs/DEV_ENVIRONMENT.md`.)
 Log in with the seeded test pastors:
 - **David's Church** — `david@miaekklesia.com` / `pastor123` (300 members, a full Sunday service run-of-show)
 - **YA** (Arabic church in California) — `hoba@yachurch.test` / `pastor123` (groups, ministries, 6 events)
